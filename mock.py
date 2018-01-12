@@ -21,6 +21,7 @@ class Columns(wx.ScrolledWindow):
 
     def __init__(self, parent):
         wx.ScrolledWindow.__init__(self, parent)
+        self.SetScrollRate(20, 20)
         self.SetBackgroundColour((200, 200, 200))
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.AddSpacer(PAGE_PADDING)
