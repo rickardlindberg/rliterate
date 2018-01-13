@@ -64,6 +64,30 @@ EXAMPLE_DOCUMENT = {
             ],
             "children": [],
         },
+        {
+            "id": genid(),
+            "title": "Child 3",
+            "paragraphs": [],
+            "children": [],
+        },
+        {
+            "id": genid(),
+            "title": "Child 4",
+            "paragraphs": [],
+            "children": [],
+        },
+        {
+            "id": genid(),
+            "title": "Child 5",
+            "paragraphs": [],
+            "children": [],
+        },
+        {
+            "id": genid(),
+            "title": "Child 6",
+            "paragraphs": [],
+            "children": [],
+        },
     ],
 }
 
