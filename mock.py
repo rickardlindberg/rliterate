@@ -401,9 +401,18 @@ class Editable(wx.Panel):
     def OnLeftDclick(self, event):
         self.edit = self.CreateEdit()
         self.edit.SetFocus()
+        self.edit.Bind(wx.EVT_CHAR, self.OnChar)
         self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
         self.sizer.Hide(self.view)
         self.GetTopLevelParent().Layout()
+
+    def OnChar(self, event):
+        if event.KeyCode == wx.WXK_CONTROL_S:
+            self.EndEdit()
+        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
+            self.EndEdit()
+        else:
+            event.Skip()
 
 
 class Paragraph(Editable):
@@ -419,8 +428,7 @@ class Paragraph(Editable):
         return view
 
     def CreateEdit(self):
-        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.paragraph["text"])
-        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
+        edit = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER, value=self.paragraph["text"])
         return edit
 
     def EndEdit(self):
@@ -450,7 +458,7 @@ class Title(Editable):
         increase_font(edit)
         return edit
 
-    def EndEdit(self, event):
+    def EndEdit(self):
         self.document.edit_page(self.page["id"], {"title": self.edit.Value})
 
 
