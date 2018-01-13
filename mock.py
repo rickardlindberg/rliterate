@@ -183,6 +183,10 @@ class Document(object):
         with self.notify():
             pass
 
+    def edit_page(self, page_id, data):
+        with self.notify():
+            self._pages[page_id].update(data)
+
     # Paragraph operations
 
     def add_paragraph(self, page_id, before_id=None):
@@ -371,7 +375,7 @@ class Page(wx.Panel):
         page = self.document.get_page(self.page_id)
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
-        self.AddParagraph(Title(self, page["title"]))
+        self.AddParagraph(Title(self, self.document, page))
         for paragraph in page["paragraphs"]:
             self.AddParagraph(Paragraph(self, self.document, paragraph))
         self.GetTopLevelParent().Layout()
@@ -384,52 +388,78 @@ class Page(wx.Panel):
         )
 
 
-class Paragraph(wx.Panel):
+class Editable(wx.Panel):
 
-    def __init__(self, parent, document, paragraph):
+    def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-
-        self.document = document
-        self.paragraph = paragraph
-
+        self.view = self.CreateView()
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.sizer)
-
-        self.view = wx.StaticText(self, label=self.paragraph["text"])
-        self.view.Wrap(PAGE_BODY_WIDTH)
         self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
-
+        self.SetSizer(self.sizer)
         self.view.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
 
     def OnLeftDclick(self, event):
-        self.sizer.Detach(self.view)
-        self.view.Destroy()
-        del self.view
-
-        self.edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.paragraph["text"])
+        self.edit = self.CreateEdit()
         self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
-        self.edit.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
-
+        self.sizer.Hide(self.view)
         self.GetTopLevelParent().Layout()
+
+
+class Paragraph(Editable):
+
+    def __init__(self, parent, document, paragraph):
+        self.document = document
+        self.paragraph = paragraph
+        Editable.__init__(self, parent)
+
+    def CreateView(self):
+        view = wx.StaticText(self, label=self.paragraph["text"])
+        view.Wrap(PAGE_BODY_WIDTH)
+        return view
+
+    def CreateEdit(self):
+        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.paragraph["text"])
+        edit.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
+        return edit
 
     def OnTextEnter(self, event):
         self.document.edit_paragraph(self.paragraph["id"], {"text": self.edit.Value})
 
 
-class Title(wx.StaticText):
+class Title(Editable):
 
-    def __init__(self, parent, title):
-        wx.StaticText.__init__(
+    def __init__(self, parent, document, page):
+        self.document = document
+        self.page = page
+        Editable.__init__(self, parent)
+
+    def CreateView(self):
+        view = wx.StaticText(
             self,
-            parent,
-            label=title,
+            label=self.page["title"],
             style=wx.ST_ELLIPSIZE_END
         )
-        self.SetToolTip(wx.ToolTip(title))
-        self.Font = self.Font.Larger().Larger()
-        # The space for this control is not calculated correctly when changing
-        # the font. Setting the min height explicitly seems to work.
-        self.MinSize = (-1, self.GetCharHeight())
+        view.SetToolTip(wx.ToolTip(self.page["title"]))
+        increase_font(view)
+        return view
+
+    def CreateEdit(self):
+        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page["title"])
+        edit.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
+        increase_font(edit)
+        return edit
+
+    def OnTextEnter(self, event):
+        self.document.edit_page(self.page["id"], {"title": self.edit.Value})
+
+
+def increase_font(control):
+    # The space for this control is not calculated correctly when changing
+    # the font. Setting min height explicitly seems to work.
+    old_char_height = control.GetCharHeight()
+    old_height = control.Size[1]
+    control.Font = control.Font.Larger().Larger()
+    control.MinSize = (-1, old_height + (control.GetCharHeight() - old_char_height))
 
 
 if __name__ == "__main__":
