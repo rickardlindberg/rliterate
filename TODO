@@ -5,3 +5,12 @@ Problems:
 Ideas:
 
 * Make each column scrollable (like Tweetdeck)
+* Save when clicking outside text field (how to do this?)
+
+Next steps:
+
+* Normalize paragraph when saving
+    * Split into multiple paragraphs on more than one newline
+    * Remove single newlines
+    * Remove paragraph if text is empty
+* Make add button add a "drop target" paragraph type (ala fedrated wiki)
