@@ -1,3 +1,4 @@
+import contextlib
 import uuid
 
 import wx
@@ -67,6 +68,20 @@ EXAMPLE_DOCUMENT = {
 }
 
 
+class Listener(object):
+
+    def __init__(self, fn):
+        self.fn = fn
+        self.observable = None
+
+    def set_observable(self, observable):
+        if self.observable is not None:
+            self.observable.unlisten(self.fn)
+        self.observable = observable
+        self.observable.listen(self.fn)
+        self.fn()
+
+
 class Document(object):
 
     @classmethod
@@ -75,6 +90,21 @@ class Document(object):
 
     def __init__(self, py_obj):
         self.py_obj = py_obj
+        self.listeners = []
+
+    # PUB/SUB
+
+    def listen(self, fn):
+        self.listeners.append(fn)
+
+    def unlisten(self, fn):
+        self.listeners.remove(fn)
+
+    @contextlib.contextmanager
+    def notify(self):
+        yield
+        for fn in self.listeners:
+            fn()
 
     # Queries
 
@@ -105,24 +135,30 @@ class Document(object):
     # Page operations
 
     def add_page(self, title="New page", parent_id=None):
-        pass
+        with self.notify():
+            pass
 
     def remove_page(self, page_id):
-        pass
+        with self.notify():
+            pass
 
     def move_page(self, page_id, target_spec):
-        pass
+        with self.notify():
+            pass
 
     # Paragraph operations
 
     def add_paragraph(self, page_id, before_id=None):
-        pass
+        with self.notify():
+            pass
 
     def remove_paragraph(self, page_id, paragraph_id):
-        pass
+        with self.notify():
+            pass
 
     def edit_paragraph(self, paragraph_id, data):
-        pass
+        with self.notify():
+            pass
 
 
 class MainFrame(wx.Frame):
@@ -163,11 +199,12 @@ class TableOfContents(wx.TreeCtrl):
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeSelChanged)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated)
         self.page_workspace = page_workspace
+        self.listener = Listener(self.Render)
         self.SetDocument(document)
 
     def SetDocument(self, document):
         self.document = document
-        self.Render()
+        self.listener.set_observable(self.document)
 
     def Render(self):
         def add_child(parent, child):
@@ -201,14 +238,25 @@ class PageWorkspace(wx.ScrolledWindow):
         self.SetScrollRate(20, 20)
         self.SetBackgroundColour((200, 200, 200))
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
+        self.listener = Listener(self.Render)
+        self.columns = []
         self.SetDocument(document)
 
     def SetDocument(self, document):
+        while self.columns:
+            column = self.columns.pop()
+            self.sizer.Detach(column)
+            column.Destroy()
         self.document = document
-        self.sizer.Clear(True)
-        self.sizer.AddSpacer(PAGE_PADDING)
         self.scratch_column = self.AddColumn()
+        self.listener.set_observable(self.document)
+
+    def Render(self):
+        for column in self.columns:
+            column.Render()
+        self.Layout()
 
     def OpenScratch(self, page_ids):
         self.scratch_column.SetPages(page_ids)
@@ -216,6 +264,7 @@ class PageWorkspace(wx.ScrolledWindow):
 
     def AddColumn(self):
         column = Column(self, self.document)
+        self.columns.append(column)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
 
@@ -228,15 +277,23 @@ class Column(wx.Panel):
         self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
         self.document = document
+        self.pages = []
+
+    def Render(self):
+        for page in self.pages:
+            page.Render()
 
     def SetPages(self, page_ids):
-        self.sizer.Clear(True)
-        self.sizer.AddSpacer(PAGE_PADDING)
+        while self.pages:
+            page = self.pages.pop()
+            self.sizer.Detach(page)
+            page.Destroy()
         for page_id in page_ids:
             self.AddPage(page_id)
 
     def AddPage(self, page_id):
         page = PageContainer(self, self.document, page_id)
+        self.pages.append(page)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
 
@@ -250,7 +307,12 @@ class PageContainer(wx.Panel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
         self.SetSizer(self.sizer)
-        self.page_body.Render(document.get_page(page_id))
+        self.document = document
+        self.page_id = page_id
+        self.Render()
+
+    def Render(self):
+        self.page_body.Render(self.document.get_page(self.page_id))
 
 
 class Page(wx.Panel):
