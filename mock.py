@@ -161,6 +161,7 @@ class TableOfContents(wx.TreeCtrl):
             style=wx.TR_DEFAULT_STYLE|wx.TR_SINGLE
         )
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeSelChanged)
+        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated)
         self.page_workspace = page_workspace
         self.SetDocument(document)
 
@@ -181,6 +182,16 @@ class TableOfContents(wx.TreeCtrl):
 
     def OnTreeSelChanged(self, event):
         self.page_workspace.OpenScratch([self.GetItemData(event.GetItem()).GetData()])
+
+    def OnTreeItemActivated(self, event):
+        root = event.GetItem()
+        page_ids = []
+        page_ids.append(self.GetItemData(root).GetData())
+        (x, cookie) = self.GetFirstChild(root)
+        while x.IsOk():
+            page_ids.append(self.GetItemData(x).GetData())
+            x = self.GetNextSibling(x)
+        self.page_workspace.OpenScratch(page_ids)
 
 
 class PageWorkspace(wx.ScrolledWindow):
