@@ -1,3 +1,5 @@
+import uuid
+
 import wx
 
 
@@ -5,6 +7,112 @@ PAGE_BODY_WIDTH = 300
 PAGE_PADDING = 10
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 10
+
+
+def genid():
+    return uuid.uuid4().hex
+
+
+EXAMPLE_DOCUMENT = {
+    "id": genid(),
+    "title": "Test document",
+    "paragraphs": [
+        {
+            "id": genid(),
+            "type": "text",
+            "text": "This is just a test document.",
+        },
+    ],
+    "children": [
+        {
+            "id": genid(),
+            "title": "Child 1",
+            "paragraphs": [
+                {
+                    "id": genid(),
+                    "type": "text",
+                    "text": "I am the first child.",
+                },
+            ],
+            "children": [],
+        },
+        {
+            "id": genid(),
+            "title": "Child 2",
+            "paragraphs": [
+                {
+                    "id": genid(),
+                    "type": "text",
+                    "text": "I am the second child.",
+                },
+            ],
+            "children": [],
+        },
+    ],
+}
+
+
+class Document(object):
+
+    @classmethod
+    def from_py_obj(cls, py_obj):
+        return cls(py_obj)
+
+    def __init__(self, py_obj):
+        self.py_obj = py_obj
+
+    # Queries
+
+    def get_toc(self):
+        def page_toc(page):
+            return {
+                "id": page["id"],
+                "title": page["title"],
+                "children": [page_toc(child) for child in page["children"]],
+            }
+        return page_toc(self.py_obj)
+
+    def get_page(self, page_id):
+        def find_page(page):
+            if page["id"] == page_id:
+                return {
+                    "id": page["id"],
+                    "title": page["title"],
+                    "paragraphs": page["paragraphs"],
+                }
+            for child in page["children"]:
+                x = find_page(child)
+                if x is not None:
+                    return x
+            return None
+        return find_page(self.py_obj)
+
+    # Page operations
+
+    def add_page(self, title="New page", parent_id=None):
+        pass
+
+    def remove_page(self, page_id):
+        pass
+
+    def move_page(self, page_id, target_spec):
+        pass
+
+    # Paragraph operations
+
+    def add_paragraph(self, page_id, before_id=None):
+        pass
+
+    def remove_paragraph(self, page_id, paragraph_id):
+        pass
+
+    def edit_paragraph(self, paragraph_id, data):
+        pass
+
+
+import pprint
+pprint.pprint(Document.from_py_obj(EXAMPLE_DOCUMENT).get_toc())
+pprint.pprint(Document.from_py_obj(EXAMPLE_DOCUMENT).get_page(EXAMPLE_DOCUMENT["id"]))
 
 
 class MainFrame(wx.Frame):
