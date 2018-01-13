@@ -428,7 +428,15 @@ class Paragraph(Editable):
         return view
 
     def CreateEdit(self):
-        edit = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER, value=self.paragraph["text"])
+        edit = wx.TextCtrl(
+            self,
+            style=wx.TE_MULTILINE,
+            value=self.paragraph["text"]
+        )
+        # Error is printed if height is too small:
+        # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
+        # Solution: Make it at least 50 heigh.
+        edit.MinSize = (-1, max(50, self.view.Size[1]))
         return edit
 
     def EndEdit(self):
