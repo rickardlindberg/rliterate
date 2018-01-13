@@ -378,7 +378,21 @@ class Page(wx.Panel):
         self.AddParagraph(Title(self, self.document, page))
         for paragraph in page["paragraphs"]:
             self.AddParagraph(Paragraph(self, self.document, paragraph))
+        self.CreateMenu()
         self.GetTopLevelParent().Layout()
+
+    def CreateMenu(self):
+        add_button = wx.BitmapButton(
+            self,
+            bitmap=wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK,
+            wx.ART_BUTTON, (16, 16)),
+            style=wx.NO_BORDER
+        )
+        self.sizer.Add(
+            add_button,
+            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,
+            border=PARAGRAPH_SPACE
+        )
 
     def AddParagraph(self, paragraph):
         self.sizer.Add(
