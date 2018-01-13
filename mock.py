@@ -114,8 +114,20 @@ class MainFrame(wx.Frame):
 
     def __init__(self):
         wx.Frame.__init__(self, None)
-        columns = Columns(self)
+        MainPanel(self)
+
+
+class MainPanel(wx.Panel):
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
         document = Document.from_py_obj(EXAMPLE_DOCUMENT)
+
+        toc = TableOfContents(self)
+        toc.Render(document.get_toc())
+
+        columns = Columns(self)
         column1 = columns.AddColumn()
         page1 = column1.AddPage()
         page1.Render(document.get_page(document.get_toc()["id"]))
@@ -124,6 +136,41 @@ class MainFrame(wx.Frame):
         page2.Render(document.get_page(document.get_toc()["children"][0]["id"]))
         page3 = column2.AddPage()
         page3.Render(document.get_page(document.get_toc()["children"][1]["id"]))
+
+        self.scratch_page = page1
+        self.document = document
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(toc, flag=wx.EXPAND, proportion=0)
+        sizer.Add(columns, flag=wx.EXPAND, proportion=1)
+        self.SetSizer(sizer)
+
+    def Open(self, page_id):
+        self.scratch_page.Render(self.document.get_page(page_id))
+        self.Layout()
+
+
+class TableOfContents(wx.TreeCtrl):
+
+    def __init__(self, parent):
+        wx.TreeCtrl.__init__(
+            self,
+            parent,
+            size=(200, -1)
+        )
+        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeSelChanged)
+
+    def Render(self, toc):
+        def add_child(parent, child):
+            self.AppendItem(parent, child["title"], data=wx.TreeItemData(child["id"]))
+        self.DeleteAllItems()
+        parent = self.AddRoot(toc["title"], data=wx.TreeItemData(toc["id"]))
+        for child in toc["children"]:
+            add_child(parent, child)
+        self.ExpandAll()
+
+    def OnTreeSelChanged(self, event):
+        self.Parent.Open(self.GetItemData(event.GetItem()).GetData())
 
 
 class Columns(wx.ScrolledWindow):
