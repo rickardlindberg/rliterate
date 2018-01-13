@@ -184,8 +184,6 @@ class MainPanel(wx.Panel):
         sizer.Add(page_workspace, flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
 
-        self.Layout()
-
 
 class TableOfContents(wx.TreeCtrl):
 
@@ -252,6 +250,7 @@ class PageWorkspace(wx.ScrolledWindow):
         self.document = document
         self.scratch_column = self.AddColumn()
         self.listener.set_observable(self.document)
+        self.Layout()
 
     def Render(self):
         for column in self.columns:
@@ -371,5 +370,4 @@ if __name__ == "__main__":
     app = wx.App()
     main_frame = MainFrame()
     main_frame.Show()
-    main_frame.Layout()
     app.MainLoop()
