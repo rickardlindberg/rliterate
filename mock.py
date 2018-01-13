@@ -139,100 +139,110 @@ class MainPanel(wx.Panel):
 
         document = Document.from_py_obj(EXAMPLE_DOCUMENT)
 
-        toc = TableOfContents(self)
-        toc.Render(document.get_toc())
+        page_workspace = PageWorkspace(self, document)
 
-        columns = Columns(self)
-        column1 = columns.AddColumn()
-        page1 = column1.AddPage()
-        page1.Render(document.get_page(document.get_toc()["id"]))
-        column2 = columns.AddColumn()
-        page2 = column2.AddPage()
-        page2.Render(document.get_page(document.get_toc()["children"][0]["id"]))
-        page3 = column2.AddPage()
-        page3.Render(document.get_page(document.get_toc()["children"][1]["id"]))
-
-        self.scratch_page = page1
-        self.document = document
+        toc = TableOfContents(self, page_workspace, document)
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
-        sizer.Add(columns, flag=wx.EXPAND, proportion=1)
+        sizer.Add(page_workspace, flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
 
-    def Open(self, page_id):
-        self.scratch_page.Render(self.document.get_page(page_id))
         self.Layout()
 
 
 class TableOfContents(wx.TreeCtrl):
 
-    def __init__(self, parent):
+    def __init__(self, parent, page_workspace, document):
         wx.TreeCtrl.__init__(
             self,
             parent,
-            size=(200, -1)
+            size=(200, -1),
+            style=wx.TR_DEFAULT_STYLE|wx.TR_SINGLE
         )
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeSelChanged)
+        self.page_workspace = page_workspace
+        self.SetDocument(document)
 
-    def Render(self, toc):
+    def SetDocument(self, document):
+        self.document = document
+        self.Render()
+
+    def Render(self):
         def add_child(parent, child):
             self.AppendItem(parent, child["title"], data=wx.TreeItemData(child["id"]))
         self.DeleteAllItems()
+        toc = self.document.get_toc()
         parent = self.AddRoot(toc["title"], data=wx.TreeItemData(toc["id"]))
         for child in toc["children"]:
             add_child(parent, child)
         self.ExpandAll()
+        self.page_workspace.OpenScratch([self.GetItemData(self.GetSelection()).GetData()])
 
     def OnTreeSelChanged(self, event):
-        self.Parent.Open(self.GetItemData(event.GetItem()).GetData())
+        self.page_workspace.OpenScratch([self.GetItemData(event.GetItem()).GetData()])
 
 
-class Columns(wx.ScrolledWindow):
+class PageWorkspace(wx.ScrolledWindow):
 
-    def __init__(self, parent):
+    def __init__(self, parent, document):
         wx.ScrolledWindow.__init__(self, parent)
         self.SetScrollRate(20, 20)
         self.SetBackgroundColour((200, 200, 200))
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
+        self.SetDocument(document)
+
+    def SetDocument(self, document):
+        self.document = document
+        self.sizer.Clear(True)
+        self.sizer.AddSpacer(PAGE_PADDING)
+        self.scratch_column = self.AddColumn()
+
+    def OpenScratch(self, page_ids):
+        self.scratch_column.SetPages(page_ids)
+        self.Layout()
 
     def AddColumn(self):
-        column = Column(self)
+        column = Column(self, self.document)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
 
 
 class Column(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, document):
         wx.Panel.__init__(self, parent, size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1))
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
+        self.document = document
 
-    def AddPage(self):
-        page = Page(self)
+    def SetPages(self, page_ids):
+        self.sizer.Clear(True)
+        self.sizer.AddSpacer(PAGE_PADDING)
+        for page_id in page_ids:
+            self.AddPage(page_id)
+
+    def AddPage(self, page_id):
+        page = PageContainer(self, self.document, page_id)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
 
 
-class Page(wx.Panel):
+class PageContainer(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, document, page_id):
         wx.Panel.__init__(self, parent)
-        self.page_body = PageBody(self)
+        self.page_body = Page(self)
         self.SetBackgroundColour((150, 150, 150))
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
         self.SetSizer(self.sizer)
-
-    def Render(self, page):
-        self.page_body.Render(page)
+        self.page_body.Render(document.get_page(page_id))
 
 
-class PageBody(wx.Panel):
+class Page(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
