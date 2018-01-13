@@ -387,6 +387,9 @@ class Title(wx.StaticText):
         )
         self.SetToolTip(wx.ToolTip(title))
         self.Font = self.Font.Larger().Larger()
+        # The space for this control is not calculated correctly when changing
+        # the font. Setting the min height explicitly seems to work.
+        self.MinSize = (-1, self.GetCharHeight()) # Hack to not have to red
 
 
 if __name__ == "__main__":
