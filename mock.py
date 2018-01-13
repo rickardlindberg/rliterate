@@ -229,7 +229,7 @@ class TableOfContents(wx.TreeCtrl):
         self.page_workspace = page_workspace
         self.listener = Listener(self.Render)
         self.SetDocument(document)
-        self.allow_selection_events = False
+        self.allow_selection_events = True
 
     def SetDocument(self, document):
         self.document = document
