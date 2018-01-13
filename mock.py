@@ -205,24 +205,40 @@ class TableOfContents(wx.TreeCtrl):
         self.page_workspace = page_workspace
         self.listener = Listener(self.Render)
         self.SetDocument(document)
+        self.allow_selection_events = False
 
     def SetDocument(self, document):
         self.document = document
         self.listener.set_observable(self.document)
+        self.page_workspace.OpenScratch([self.GetItemData(self.GetSelection()).GetData()])
 
     def Render(self):
+
         def add_child(parent, child):
-            self.AppendItem(parent, child["title"], data=wx.TreeItemData(child["id"]))
+            tree_id = self.AppendItem(parent, child["title"], data=wx.TreeItemData(child["id"]))
+            preprocess(tree_id, child["id"])
+
+        def preprocess(tree_id, item_id):
+            self.Expand(tree_id)
+            if item_id == selected_id:
+                self.allow_selection_events = False
+                self.SelectItem(tree_id)
+                self.allow_selection_events = True
+
+        selected_id = None
+        if self.GetSelection().IsOk():
+            selected_id = self.GetItemData(self.GetSelection()).GetData()
+
         self.DeleteAllItems()
         toc = self.document.get_toc()
         parent = self.AddRoot(toc["title"], data=wx.TreeItemData(toc["id"]))
         for child in toc["children"]:
             add_child(parent, child)
-        self.ExpandAll()
-        self.page_workspace.OpenScratch([self.GetItemData(self.GetSelection()).GetData()])
+        preprocess(parent, toc["id"])
 
     def OnTreeSelChanged(self, event):
-        self.page_workspace.OpenScratch([self.GetItemData(event.GetItem()).GetData()])
+        if self.allow_selection_events:
+            self.page_workspace.OpenScratch([self.GetItemData(event.GetItem()).GetData()])
 
     def OnTreeItemActivated(self, event):
         root = event.GetItem()
