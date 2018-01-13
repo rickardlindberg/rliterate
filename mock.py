@@ -429,7 +429,7 @@ class Title(wx.StaticText):
         self.Font = self.Font.Larger().Larger()
         # The space for this control is not calculated correctly when changing
         # the font. Setting the min height explicitly seems to work.
-        self.MinSize = (-1, self.GetCharHeight()) # Hack to not have to red
+        self.MinSize = (-1, self.GetCharHeight())
 
 
 if __name__ == "__main__":
