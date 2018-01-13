@@ -400,6 +400,7 @@ class Editable(wx.Panel):
 
     def OnLeftDclick(self, event):
         self.edit = self.CreateEdit()
+        self.edit.SetFocus()
         self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
         self.sizer.Hide(self.view)
         self.GetTopLevelParent().Layout()
@@ -419,10 +420,10 @@ class Paragraph(Editable):
 
     def CreateEdit(self):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.paragraph["text"])
-        edit.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
+        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
         return edit
 
-    def OnTextEnter(self, event):
+    def EndEdit(self):
         self.document.edit_paragraph(self.paragraph["id"], {"text": self.edit.Value})
 
 
@@ -445,11 +446,11 @@ class Title(Editable):
 
     def CreateEdit(self):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page["title"])
-        edit.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
+        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
         increase_font(edit)
         return edit
 
-    def OnTextEnter(self, event):
+    def EndEdit(self, event):
         self.document.edit_page(self.page["id"], {"title": self.edit.Value})
 
 
