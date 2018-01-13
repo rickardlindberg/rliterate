@@ -240,6 +240,7 @@ class Title(wx.StaticText):
             label=title,
             style=wx.ST_ELLIPSIZE_END
         )
+        self.SetToolTip(wx.ToolTip(title))
         self.Font = self.Font.Larger().Larger()
 
 
