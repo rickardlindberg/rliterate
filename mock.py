@@ -120,44 +120,15 @@ class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None)
         columns = Columns(self)
+        document = Document.from_py_obj(EXAMPLE_DOCUMENT)
         column1 = columns.AddColumn()
         page1 = column1.AddPage()
-        page1.Render({
-            "title": "Page 1",
-            "paragraphs": [
-                {
-                    "text": "page 1 p 1 this is this is this is this is this is this is this is this is",
-                },
-                {
-                    "text": "page 1 p 2",
-                },
-            ],
-        })
+        page1.Render(document.get_page(document.get_toc()["id"]))
         column2 = columns.AddColumn()
         page2 = column2.AddPage()
-        page2.Render({
-            "title": "Page 2 has a really long long title",
-            "paragraphs": [
-                {
-                    "text": "page 2 p 1",
-                },
-                {
-                    "text": "page 2 p 2",
-                },
-            ],
-        })
+        page2.Render(document.get_page(document.get_toc()["children"][0]["id"]))
         page3 = column2.AddPage()
-        page3.Render({
-            "title": "Page 3 is the last page",
-            "paragraphs": [
-                {
-                    "text": "page 3 p 1",
-                },
-                {
-                    "text": "page 3 p 2 also has text that is so large that it needs wrapping",
-                },
-            ],
-        })
+        page3.Render(document.get_page(document.get_toc()["children"][1]["id"]))
 
 
 class Columns(wx.ScrolledWindow):
