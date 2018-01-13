@@ -110,11 +110,6 @@ class Document(object):
         pass
 
 
-import pprint
-pprint.pprint(Document.from_py_obj(EXAMPLE_DOCUMENT).get_toc())
-pprint.pprint(Document.from_py_obj(EXAMPLE_DOCUMENT).get_page(EXAMPLE_DOCUMENT["id"]))
-
-
 class MainFrame(wx.Frame):
 
     def __init__(self):
