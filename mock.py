@@ -22,6 +22,11 @@ EXAMPLE_DOCUMENT = {
             "type": "text",
             "text": "This is just a test document.",
         },
+        {
+            "id": genid(),
+            "type": "text",
+            "text": "... some more text ...",
+        },
     ],
     "children": [
         {
@@ -32,6 +37,11 @@ EXAMPLE_DOCUMENT = {
                     "id": genid(),
                     "type": "text",
                     "text": "I am the first child.",
+                },
+                {
+                    "id": genid(),
+                    "type": "text",
+                    "text": "... some more text ...",
                 },
             ],
             "children": [],
@@ -44,6 +54,11 @@ EXAMPLE_DOCUMENT = {
                     "id": genid(),
                     "type": "text",
                     "text": "I am the second child.",
+                },
+                {
+                    "id": genid(),
+                    "type": "text",
+                    "text": "... some more text ...",
                 },
             ],
             "children": [],
