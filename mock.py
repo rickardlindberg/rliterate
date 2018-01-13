@@ -165,13 +165,6 @@ class MainFrame(wx.Frame):
 
     def __init__(self):
         wx.Frame.__init__(self, None)
-        MainPanel(self)
-
-
-class MainPanel(wx.Panel):
-
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
 
         document = Document.from_py_obj(EXAMPLE_DOCUMENT)
 
@@ -250,16 +243,15 @@ class PageWorkspace(wx.ScrolledWindow):
         self.document = document
         self.scratch_column = self.AddColumn()
         self.listener.set_observable(self.document)
-        self.Layout()
+        self.GetTopLevelParent().Layout()
 
     def Render(self):
         for column in self.columns:
             column.Render()
-        self.Layout()
 
     def OpenScratch(self, page_ids):
         self.scratch_column.SetPages(page_ids)
-        self.Layout()
+        self.GetTopLevelParent().Layout()
 
     def AddColumn(self):
         column = Column(self, self.document)
@@ -328,6 +320,7 @@ class Page(wx.Panel):
         self.AddParagraph(Title(self, page["title"]))
         for paragraph in page["paragraphs"]:
             self.AddParagraph(Paragraph(self, paragraph["text"]))
+        self.GetTopLevelParent().Layout()
 
     def AddParagraph(self, paragraph):
         self.sizer.Add(
