@@ -122,7 +122,6 @@ class MainFrame(wx.Frame):
         columns = Columns(self)
         columns.AddColumn()
         columns.AddColumn()
-        columns.AddColumn()
 
 
 class Columns(wx.ScrolledWindow):
@@ -138,11 +137,29 @@ class Columns(wx.ScrolledWindow):
     def AddColumn(self):
         column = Column(self)
         page1 = column.AddPage()
-        page1.AddParagraph("page 1 p 1 this is this is this is this is this is this is this is this is")
-        page1.AddParagraph("page 1 p 2")
+        page1.Render({
+            "title": "Page 1",
+            "paragraphs": [
+                {
+                    "text": "page 1 p 1 this is this is this is this is this is this is this is this is",
+                },
+                {
+                    "text": "page 1 p 2",
+                },
+            ],
+        })
         page2 = column.AddPage()
-        page2.AddParagraph("page 2 p 1")
-        page2.AddParagraph("page 2 p 2")
+        page2.Render({
+            "title": "Page 2 has a really long long title",
+            "paragraphs": [
+                {
+                    "text": "page 2 p 1",
+                },
+                {
+                    "text": "page 1 p 2",
+                },
+            ],
+        })
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
 
@@ -165,18 +182,37 @@ class Page(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        self.inner_panel = wx.Panel(self)
-        self.inner_panel.SetBackgroundColour(wx.WHITE)
-        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.inner_sizer.AddSpacer(PARAGRAPH_SPACE)
-        self.inner_panel.SetSizer(self.inner_sizer)
+        self.page_body = PageBody(self)
         self.SetBackgroundColour((150, 150, 150))
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.inner_panel, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
+        self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
         self.SetSizer(self.sizer)
 
-    def AddParagraph(self, text):
-        self.inner_sizer.Add(Paragraph(self.inner_panel, text), flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, border=PARAGRAPH_SPACE)
+    def Render(self, page):
+        self.page_body.Render(page)
+
+
+class PageBody(wx.Panel):
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.SetBackgroundColour(wx.WHITE)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
+
+    def Render(self, page):
+        self.sizer.Clear(True)
+        self.sizer.AddSpacer(PARAGRAPH_SPACE)
+        self.AddParagraph(Title(self, page["title"]))
+        for paragraph in page["paragraphs"]:
+            self.AddParagraph(Paragraph(self, paragraph["text"]))
+
+    def AddParagraph(self, paragraph):
+        self.sizer.Add(
+            paragraph,
+            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+            border=PARAGRAPH_SPACE
+        )
 
 
 class Paragraph(wx.Panel):
@@ -193,6 +229,18 @@ class Paragraph(wx.Panel):
 
     def OnLeaveWindow(self, event):
         self.SetBackgroundColour(wx.WHITE)
+
+
+class Title(wx.StaticText):
+
+    def __init__(self, parent, title):
+        wx.StaticText.__init__(
+            self,
+            parent,
+            label=title,
+            style=wx.ST_ELLIPSIZE_END
+        )
+        self.Font = self.Font.Larger().Larger()
 
 
 if __name__ == "__main__":
