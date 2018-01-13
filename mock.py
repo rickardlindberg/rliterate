@@ -42,7 +42,7 @@ EXAMPLE_DOCUMENT = {
                 {
                     "id": genid(),
                     "type": "text",
-                    "text": "... some more text ...",
+                    "text": "... some more text ... but this time with really a lot of text so that breaking the paragraph is necessary",
                 },
             ],
             "children": [],
@@ -91,6 +91,19 @@ class Document(object):
     def __init__(self, py_obj):
         self.py_obj = py_obj
         self.listeners = []
+        self._cache()
+
+    def _cache(self):
+        self._pages = {}
+        self._paragraphs = {}
+        self._cache_page(self.py_obj)
+
+    def _cache_page(self, page):
+        self._pages[page["id"]] = page
+        for paragraph in page["paragraphs"]:
+            self._paragraphs[paragraph["id"]] = paragraph
+        for child in page["children"]:
+            self._cache_page(child)
 
     # PUB/SUB
 
@@ -158,7 +171,7 @@ class Document(object):
 
     def edit_paragraph(self, paragraph_id, data):
         with self.notify():
-            pass
+            self._paragraphs[paragraph_id].update(data)
 
 
 class MainFrame(wx.Frame):
@@ -293,33 +306,34 @@ class PageContainer(wx.Panel):
 
     def __init__(self, parent, document, page_id):
         wx.Panel.__init__(self, parent)
-        self.page_body = Page(self)
+        self.page_body = Page(self, document, page_id)
         self.SetBackgroundColour((150, 150, 150))
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
         self.SetSizer(self.sizer)
-        self.document = document
-        self.page_id = page_id
         self.Render()
 
     def Render(self):
-        self.page_body.Render(self.document.get_page(self.page_id))
+        self.page_body.Render()
 
 
 class Page(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, document, page_id):
         wx.Panel.__init__(self, parent)
+        self.document = document
+        self.page_id = page_id
         self.SetBackgroundColour(wx.WHITE)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
 
-    def Render(self, page):
+    def Render(self):
+        page = self.document.get_page(self.page_id)
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
         self.AddParagraph(Title(self, page["title"]))
         for paragraph in page["paragraphs"]:
-            self.AddParagraph(Paragraph(self, paragraph["text"]))
+            self.AddParagraph(Paragraph(self, self.document, paragraph))
         self.GetTopLevelParent().Layout()
 
     def AddParagraph(self, paragraph):
@@ -332,18 +346,34 @@ class Page(wx.Panel):
 
 class Paragraph(wx.Panel):
 
-    def __init__(self, parent, text):
+    def __init__(self, parent, document, paragraph):
         wx.Panel.__init__(self, parent)
-        self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
-        self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
-        text = wx.StaticText(self, label=text)
-        text.Wrap(PAGE_BODY_WIDTH)
 
-    def OnEnterWindow(self, event):
-        self.SetBackgroundColour(wx.YELLOW)
+        self.document = document
+        self.paragraph = paragraph
 
-    def OnLeaveWindow(self, event):
-        self.SetBackgroundColour(wx.WHITE)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
+
+        self.view = wx.StaticText(self, label=self.paragraph["text"])
+        self.view.Wrap(PAGE_BODY_WIDTH)
+        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
+
+        self.view.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
+
+    def OnLeftDclick(self, event):
+        self.sizer.Detach(self.view)
+        self.view.Destroy()
+        del self.view
+
+        self.edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.paragraph["text"])
+        self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
+        self.edit.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
+
+        self.GetTopLevelParent().Layout()
+
+    def OnTextEnter(self, event):
+        self.document.edit_paragraph(self.paragraph["id"], {"text": self.edit.Value})
 
 
 class Title(wx.StaticText):
