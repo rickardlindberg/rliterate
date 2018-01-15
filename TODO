@@ -1,20 +1,23 @@
 Next steps:
 
+* Move paragraphs by drag (between pages and within pages)
+* Read/Write document to disk instead of the in-memory test data
+* TOC operations
+    * Add (as child, before, after)
+    * Move
+    * Indent
+    * Dedent
 * Normalize paragraph when saving
     * Split into multiple paragraphs on more than one newline
     * Remove single newlines
     * Remove paragraph if text is empty
-* Re-order paragraphs by drag
-* TOC operations
-    * Move
-    * Indent
-    * Dedent
 
 Problems:
 
 * Multiple editors can be opened (only last opened is saved)
 * Title texts animates to bigger when going to edit mode
 * TOC does not remember expandedness when re-rendering
+* Factory should drop right into edit mode
 
 Ideas:
 
