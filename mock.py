@@ -191,7 +191,14 @@ class Document(object):
 
     def add_paragraph(self, page_id, before_id=None):
         with self.notify():
-            pass
+            paragraph = {
+                "id": genid(),
+                "type": "factory",
+                "text":
+                "factory",
+            }
+            self._pages[page_id]["paragraphs"].append(paragraph)
+            self._paragraphs[paragraph["id"]] = paragraph
 
     def remove_paragraph(self, page_id, paragraph_id):
         with self.notify():
@@ -377,7 +384,10 @@ class Page(wx.Panel):
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
         self.AddParagraph(Title(self, self.document, page))
         for paragraph in page["paragraphs"]:
-            self.AddParagraph(Paragraph(self, self.document, paragraph))
+            self.AddParagraph({
+                "text": Paragraph,
+                "factory": Factory,
+            }[paragraph["type"]](self, self.document, paragraph))
         self.CreateMenu()
         self.GetTopLevelParent().Layout()
 
@@ -388,11 +398,15 @@ class Page(wx.Panel):
             wx.ART_BUTTON, (16, 16)),
             style=wx.NO_BORDER
         )
+        add_button.Bind(wx.EVT_BUTTON, self.OnButton)
         self.sizer.Add(
             add_button,
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,
             border=PARAGRAPH_SPACE
         )
+
+    def OnButton(self, event):
+        self.document.add_paragraph(self.page_id)
 
     def AddParagraph(self, paragraph):
         self.sizer.Add(
@@ -455,6 +469,37 @@ class Paragraph(Editable):
 
     def EndEdit(self):
         self.document.edit_paragraph(self.paragraph["id"], {"text": self.edit.Value})
+
+
+class Factory(wx.Panel):
+
+    def __init__(self, parent, document, paragraph):
+        self.document = document
+        self.paragraph = paragraph
+        wx.Panel.__init__(self, parent)
+        self.SetBackgroundColour((240, 240, 240))
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(
+            wx.StaticText(self, label="Factory"),
+            flag=wx.TOP|wx.ALIGN_CENTER,
+            border=PARAGRAPH_SPACE
+        )
+        text_button = wx.Button(
+            self,
+            label="Text",
+            style=wx.NO_BORDER
+        )
+        text_button.Bind(wx.EVT_BUTTON, self.OnTextButton)
+        self.sizer.Add(
+            text_button,
+            flag=wx.TOP|wx.ALIGN_CENTER,
+            border=PARAGRAPH_SPACE
+        )
+        self.sizer.AddSpacer(PARAGRAPH_SPACE)
+        self.SetSizer(self.sizer)
+
+    def OnTextButton(self, event):
+        self.document.edit_paragraph(self.paragraph["id"], {"type": "text", "text": "Enter text here..."})
 
 
 class Title(Editable):

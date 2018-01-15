@@ -4,7 +4,6 @@ Next steps:
     * Split into multiple paragraphs on more than one newline
     * Remove single newlines
     * Remove paragraph if text is empty
-* Make add button add a "drop target" paragraph type (ala fedrated wiki)
 
 Problems:
 
@@ -34,3 +33,5 @@ Inspiration:
   "Eve" by Chris Granger
 
 * http://eve-lang.com/deepdives/literate.html
+
+* Add factory button is stolen from fedrated wiki
