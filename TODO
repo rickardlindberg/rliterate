@@ -4,6 +4,11 @@ Next steps:
     * Split into multiple paragraphs on more than one newline
     * Remove single newlines
     * Remove paragraph if text is empty
+* Re-order paragraphs by drag
+* TOC operations
+    * Move
+    * Indent
+    * Dedent
 
 Problems:
 
