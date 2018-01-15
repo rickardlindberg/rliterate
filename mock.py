@@ -62,7 +62,25 @@ EXAMPLE_DOCUMENT = {
                     "text": "... some more text ...",
                 },
             ],
-            "children": [],
+            "children": [
+                {
+                    "id": genid(),
+                    "title": "Child 2 2",
+                    "paragraphs": [
+                        {
+                            "id": genid(),
+                            "type": "text",
+                            "text": "I am the second grandchild.",
+                        },
+                        {
+                            "id": genid(),
+                            "type": "text",
+                            "text": "... some more text ...",
+                        },
+                    ],
+                    "children": [],
+                },
+            ],
         },
         {
             "id": genid(),
@@ -251,9 +269,11 @@ class TableOfContents(wx.TreeCtrl):
 
         def add_child(parent, child):
             tree_id = self.AppendItem(parent, child["title"], data=wx.TreeItemData(child["id"]))
-            preprocess(tree_id, child["id"])
+            for x in child["children"]:
+                add_child(tree_id, x)
+            postprocess(tree_id, child["id"])
 
-        def preprocess(tree_id, item_id):
+        def postprocess(tree_id, item_id):
             self.Expand(tree_id)
             if item_id == selected_id:
                 self.allow_selection_events = False
@@ -269,7 +289,7 @@ class TableOfContents(wx.TreeCtrl):
         parent = self.AddRoot(toc["title"], data=wx.TreeItemData(toc["id"]))
         for child in toc["children"]:
             add_child(parent, child)
-        preprocess(parent, toc["id"])
+        postprocess(parent, toc["id"])
 
     def OnTreeSelChanged(self, event):
         if self.allow_selection_events:
