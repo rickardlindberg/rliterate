@@ -1,4 +1,5 @@
 import contextlib
+import json
 import uuid
 
 import wx
@@ -218,6 +219,32 @@ class Document(object):
             self._pages[page_id]["paragraphs"].append(paragraph)
             self._paragraphs[paragraph["id"]] = paragraph
 
+    def move_paragraph(self, source_page, source_paragraph, target_page, target_paragraph):
+        with self.notify():
+            if (source_page == target_page and
+                source_paragraph == target_paragraph):
+                return
+            paragraph = self._remove_paragraph(source_page, source_paragraph)
+            self._add_paragraph(target_page, paragraph, before_id=target_paragraph)
+
+    def _remove_paragraph(self, page_id, paragraph_id):
+        paragraphs = self._pages[page_id]["paragraphs"]
+        paragraphs.pop(self._p_index(paragraphs, paragraph_id))
+        return self._paragraphs.pop(paragraph_id)
+
+    def _add_paragraph(self, page_id, paragraph, before_id):
+        paragraphs = self._pages[page_id]["paragraphs"]
+        if before_id is None:
+            paragraphs.append(paragraph)
+        else:
+            paragraphs.insert(self._p_index(paragraphs, before_id), paragraph)
+        self._paragraphs[paragraph["id"]] = paragraph
+
+    def _p_index(self, paragraphs, paragraph_id):
+        for index, p in enumerate(paragraphs):
+            if p["id"] == paragraph_id:
+                return index
+
     def remove_paragraph(self, page_id, paragraph_id):
         with self.notify():
             pass
@@ -306,6 +333,14 @@ class TableOfContents(wx.TreeCtrl):
         self.page_workspace.OpenScratch(page_ids)
 
 
+def find_first(items, action):
+    for item in items:
+        result = action(item)
+        if result is not None:
+            return result
+    return None
+
+
 class PageWorkspace(wx.ScrolledWindow):
 
     def __init__(self, parent, document):
@@ -318,6 +353,42 @@ class PageWorkspace(wx.ScrolledWindow):
         self.listener = Listener(self.Render)
         self.columns = []
         self.SetDocument(document)
+        class MyDropTarget(wx.DropTarget):
+            def __init__(self, workspace):
+                wx.DropTarget.__init__(self)
+                self.workspace = workspace
+                self.paragraph = None
+                self.data = None
+                self.custom_do = wx.CustomDataObject("rliterate/paragraph")
+                self.DataObject = self.custom_do
+            def OnDragOver(self, x, y, defResult):
+                self._clear()
+                data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
+                if data is not None:
+                    self.data = data
+                    self.data["window"].SetBackgroundColour((255, 100, 0))
+            def OnData(self, x, y, sdfa):
+                self._clear()
+                data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
+                if data is not None:
+                    self.GetData()
+                    paragraph = json.loads(self.custom_do.GetData())
+                    self.workspace.document.move_paragraph(
+                        source_page=paragraph["page_id"],
+                        source_paragraph=paragraph["paragraph_id"],
+                        target_page=data["page_id"],
+                        target_paragraph=data["paragraph_id"]
+                    )
+            def OnLeave(self):
+                self._clear()
+            def _clear(self):
+                if self.data is not None:
+                    self.data["window"].SetBackgroundColour((255, 255, 255))
+                    self.data = None
+        self.SetDropTarget(MyDropTarget(self))
+
+    def FindParagraph(self, screen_pos):
+        return find_first(self.columns, lambda column: column.FindParagraph(screen_pos))
 
     def SetDocument(self, document):
         while self.columns:
@@ -354,6 +425,9 @@ class Column(wx.Panel):
         self.document = document
         self.pages = []
 
+    def FindParagraph(self, screen_pos):
+        return find_first(self.pages, lambda page: page.FindParagraph(screen_pos))
+
     def Render(self):
         for page in self.pages:
             page.Render()
@@ -384,6 +458,9 @@ class PageContainer(wx.Panel):
         self.SetSizer(self.sizer)
         self.Render()
 
+    def FindParagraph(self, screen_pos):
+        return self.page_body.FindParagraph(screen_pos)
+
     def Render(self):
         self.page_body.Render()
 
@@ -398,16 +475,30 @@ class Page(wx.Panel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
 
+    def FindParagraph(self, screen_pos):
+        client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
+        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
+            data = {"page_id": self.page_id}
+            for paragraph, divider in self.paragraphs:
+                if paragraph is not None:
+                    data["paragraph_id"] = paragraph.paragraph["id"]
+                    if client_y < (paragraph.Position.y + paragraph.Size[1] / 2):
+                        break
+                data["window"] = divider
+                data["paragraph_id"] = None
+            return data
+
     def Render(self):
+        self.paragraphs = []
         page = self.document.get_page(self.page_id)
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
-        self.AddParagraph(Title(self, self.document, page))
+        self.AddParagraph(Title(self, self.document, page), True)
         for paragraph in page["paragraphs"]:
             self.AddParagraph({
                 "text": Paragraph,
                 "factory": Factory,
-            }[paragraph["type"]](self, self.document, paragraph))
+            }[paragraph["type"]](self, self.document, self.page_id, paragraph))
         self.CreateMenu()
         self.GetTopLevelParent().Layout()
 
@@ -428,12 +519,19 @@ class Page(wx.Panel):
     def OnButton(self, event):
         self.document.add_paragraph(self.page_id)
 
-    def AddParagraph(self, paragraph):
+    def AddParagraph(self, paragraph, write_none=False):
         self.sizer.Add(
             paragraph,
-            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
             border=PARAGRAPH_SPACE
         )
+        divider = wx.Panel(self, size=(-1, PARAGRAPH_SPACE))
+        self.sizer.Add(
+            divider,
+            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
+            border=PARAGRAPH_SPACE
+        )
+        self.paragraphs.append((paragraph if write_none is False else None, divider))
 
 
 class Editable(wx.Panel):
@@ -465,15 +563,27 @@ class Editable(wx.Panel):
 
 class Paragraph(Editable):
 
-    def __init__(self, parent, document, paragraph):
+    def __init__(self, parent, document, page_id, paragraph):
         self.document = document
+        self.page_id = page_id
         self.paragraph = paragraph
         Editable.__init__(self, parent)
 
     def CreateView(self):
         view = wx.StaticText(self, label=self.paragraph["text"])
         view.Wrap(PAGE_BODY_WIDTH)
+        view.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         return view
+
+    def OnLeftDown(self, event):
+        my_data = wx.CustomDataObject("rliterate/paragraph")
+        my_data.SetData(json.dumps({
+            "page_id": self.page_id,
+            "paragraph_id": self.paragraph["id"],
+        }))
+        dragSource = wx.DropSource(self)
+        dragSource.SetData(my_data)
+        result = dragSource.DoDragDrop(True)
 
     def CreateEdit(self):
         edit = wx.TextCtrl(
@@ -493,8 +603,9 @@ class Paragraph(Editable):
 
 class Factory(wx.Panel):
 
-    def __init__(self, parent, document, paragraph):
+    def __init__(self, parent, document, page_id, paragraph):
         self.document = document
+        self.page_id = page_id
         self.paragraph = paragraph
         wx.Panel.__init__(self, parent)
         self.SetBackgroundColour((240, 240, 240))

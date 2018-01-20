@@ -1,6 +1,5 @@
 Next steps:
 
-* Move paragraphs by drag (between pages and within pages)
 * Read/Write document to disk instead of the in-memory test data
 * TOC operations
     * Add (as child, before, after)
