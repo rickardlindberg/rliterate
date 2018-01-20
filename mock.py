@@ -477,7 +477,7 @@ class Page(wx.Panel):
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-            return min(
+            return min_or_none(
                 self.drop_points,
                 key=lambda drop_point: drop_point.y_distance_to(client_y)
             )
@@ -771,6 +771,12 @@ def find_first(items, action):
         if result is not None:
             return result
     return None
+
+
+def min_or_none(items, key):
+    if not items:
+        return None
+    return min(items, key=key)
 
 
 if __name__ == "__main__":
