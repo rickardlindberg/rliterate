@@ -283,14 +283,13 @@ class TableOfContents(wx.TreeCtrl):
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeSelChanged)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated)
         self.page_workspace = page_workspace
-        self.listener = Listener(self.Render)
+        self.listener = Listener(lambda: wx.CallAfter(self.Render))
         self.SetDocument(document)
         self.allow_selection_events = True
 
     def SetDocument(self, document):
         self.document = document
         self.listener.set_observable(self.document)
-        self.page_workspace.OpenScratch([self.GetItemData(self.GetSelection()).GetData()])
 
     def Render(self):
 
@@ -317,6 +316,8 @@ class TableOfContents(wx.TreeCtrl):
         for child in toc["children"]:
             add_child(parent, child)
         postprocess(parent, toc["id"])
+        if selected_id is None:
+            self.page_workspace.OpenScratch([self.GetItemData(self.GetSelection()).GetData()])
 
     def OnTreeSelChanged(self, event):
         if self.allow_selection_events:
@@ -404,7 +405,7 @@ class PageWorkspace(wx.ScrolledWindow):
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
-        self.listener = Listener(self.Render)
+        self.listener = Listener(lambda: wx.CallAfter(self.Render))
         self.columns = []
         self.SetDocument(document)
         self.SetDropTarget(MyDropTarget(self))

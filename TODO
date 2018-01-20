@@ -1,7 +1,6 @@
 Next steps:
 
 * Fix drag and drop
-    * Application does not exit cleanly
     * Divider is ugly
 * Read/Write document to disk instead of the in-memory test data
 * TOC operations
