@@ -579,12 +579,34 @@ class ParagraphBase(object):
         self.document = document
         self.page_id = page_id
         self.paragraph = paragraph
-        self.down_pos = None
 
     def configure_drag(self, window):
+        self.mouse_event_helper = MouseEventHelper(window)
+        self.mouse_event_helper.OnDrag = self._on_drag
+
+    def _on_drag(self):
+        data = RliterateDataObject({
+            "page_id": self.page_id,
+            "paragraph_id": self.paragraph["id"],
+        })
+        drag_source = wx.DropSource(self)
+        drag_source.SetData(data)
+        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+
+
+class MouseEventHelper(object):
+
+    def __init__(self, window):
+        self.down_pos = None
         window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         window.Bind(wx.EVT_MOTION, self._on_motion)
         window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+
+    def OnDrag(self):
+        pass
+
+    def OnClick(self):
+        pass
 
     def _on_left_down(self, event):
         self.down_pos = event.Position
@@ -592,13 +614,7 @@ class ParagraphBase(object):
     def _on_motion(self, event):
         if self._should_drag(event.Position):
             self.down_pos = None
-            data = RliterateDataObject({
-                "page_id": self.page_id,
-                "paragraph_id": self.paragraph["id"],
-            })
-            drag_source = wx.DropSource(self)
-            drag_source.SetData(data)
-            result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+            self.OnDrag()
 
     def _should_drag(self, pos):
         if self.down_pos is not None:
@@ -610,6 +626,8 @@ class ParagraphBase(object):
         return False
 
     def _on_left_up(self, event):
+        if self.down_pos is not None:
+            self.OnClick()
         self.down_pos = None
 
 
