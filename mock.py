@@ -171,6 +171,50 @@ class MainFrame(wx.Frame):
         self.SetSizer(sizer)
 
 
+class DropPointDropTarget(wx.DropTarget):
+
+    """
+    A drop target that can work with windows that supports
+    FindClosestDropPoint.
+    """
+
+    def __init__(self, window, kind):
+        wx.DropTarget.__init__(self)
+        self.window = window
+        self.last_drop_point = None
+        self.rliterate_data = RliterateDataObject(kind)
+        self.DataObject = self.rliterate_data
+
+    def OnDragOver(self, x, y, defResult):
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
+        if drop_point is not None and defResult == wx.DragMove:
+            drop_point.Show()
+            self.last_drop_point = drop_point
+            return wx.DragMove
+        return wx.DragNone
+
+    def OnData(self, x, y, defResult):
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
+        if drop_point is not None and self.GetData():
+            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
+        return defResult
+
+    def OnLeave(self):
+        self._hide_last_drop_point()
+
+    def _find_closest_drop_point(self, x, y):
+        return self.window.FindClosestDropPoint(
+            self.window.ClientToScreen((x, y))
+        )
+
+    def _hide_last_drop_point(self):
+        if self.last_drop_point is not None:
+            self.last_drop_point.Hide()
+            self.last_drop_point = None
+
+
 class TableOfContents(wx.ScrolledWindow):
 
     def __init__(self, parent, workspace, document):
@@ -305,50 +349,6 @@ class RliterateDataObject(wx.CustomDataObject):
 
     def get_json(self):
         return json.loads(self.GetData())
-
-
-class DropPointDropTarget(wx.DropTarget):
-
-    """
-    A drop target that can work with windows that supports
-    FindClosestDropPoint.
-    """
-
-    def __init__(self, window, kind):
-        wx.DropTarget.__init__(self)
-        self.window = window
-        self.last_drop_point = None
-        self.rliterate_data = RliterateDataObject(kind)
-        self.DataObject = self.rliterate_data
-
-    def OnDragOver(self, x, y, defResult):
-        self._hide_last_drop_point()
-        drop_point = self._find_closest_drop_point(x, y)
-        if drop_point is not None and defResult == wx.DragMove:
-            drop_point.Show()
-            self.last_drop_point = drop_point
-            return wx.DragMove
-        return wx.DragNone
-
-    def OnData(self, x, y, defResult):
-        self._hide_last_drop_point()
-        drop_point = self._find_closest_drop_point(x, y)
-        if drop_point is not None and self.GetData():
-            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
-        return defResult
-
-    def OnLeave(self):
-        self._hide_last_drop_point()
-
-    def _find_closest_drop_point(self, x, y):
-        return self.window.FindClosestDropPoint(
-            self.window.ClientToScreen((x, y))
-        )
-
-    def _hide_last_drop_point(self):
-        if self.last_drop_point is not None:
-            self.last_drop_point.Hide()
-            self.last_drop_point = None
 
 
 class WorkspaceDropTarget(DropPointDropTarget):
