@@ -14,7 +14,6 @@ Problems:
 
 * Multiple editors can be opened (only last opened is saved)
 * Title texts animates to bigger when going to edit mode
-* TOC does not remember expandedness when re-rendering
 * Factory should drop right into edit mode
 
 Ideas:
