@@ -517,7 +517,7 @@ class Page(wx.Panel):
             flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
             border=PARAGRAPH_SPACE
         )
-        divider = Divider(self)
+        divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)
         self.sizer.Add(
             divider,
             flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
@@ -528,22 +528,28 @@ class Page(wx.Panel):
 
 class Divider(wx.Panel):
 
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent, size=(-1, PARAGRAPH_SPACE))
-        self.line = wx.Panel(self, size=(51, 3))
+    def __init__(self, parent, padding=0, height=1):
+        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
+        self.line = wx.Panel(self, size=(-1, height))
         self.line.SetBackgroundColour((255, 100, 0))
         self.line.Hide()
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.AddStretchSpacer(1)
-        self.sizer.Add(self.line, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.sizer.AddStretchSpacer(1)
-        self.SetSizer(self.sizer)
+        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.vsizer.AddStretchSpacer(1)
+        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.vsizer.AddStretchSpacer(1)
+        self.SetSizer(self.vsizer)
 
-    def Show(self):
+    def Show(self, left_space=0):
         self.line.Show()
+        self.hsizer.Clear(False)
+        self.hsizer.Add((left_space, 1))
+        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
+        self.Layout()
 
     def Hide(self):
         self.line.Hide()
+        self.Layout()
 
 
 class Editable(wx.Panel):
