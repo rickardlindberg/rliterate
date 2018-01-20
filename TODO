@@ -8,6 +8,9 @@ Next steps:
     * Move
     * Indent
     * Dedent
+* Paragraph operations
+    * Context menu with delete
+    * Context menu with add paragraph before/after
 * Normalize paragraph when saving
     * Split into multiple paragraphs on more than one newline
     * Remove single newlines
