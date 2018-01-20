@@ -231,8 +231,9 @@ class TableOfContentsDropTarget(DropPointDropTarget):
 
 class TableOfContentsDropPoint(object):
 
-    def __init__(self, divider, parent_page_id, before_paragraph_id):
+    def __init__(self, divider, indentation, parent_page_id, before_paragraph_id):
         self.divider = divider
+        self.indentation = indentation
         self.parent_page_id = parent_page_id
         self.before_paragraph_id = before_paragraph_id
 
@@ -240,7 +241,12 @@ class TableOfContentsDropPoint(object):
         return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
 
     def Show(self):
-        self.divider.Show()
+        self.divider.Show(sum([
+            TableOfContentsRow.BORDER,
+            TableOfContentsButton.SIZE,
+            1,
+            self.indentation*TableOfContentsRow.INDENTATION_SIZE,
+        ]))
 
     def Hide(self):
         self.divider.Hide()
@@ -312,6 +318,7 @@ class TableOfContents(wx.ScrolledWindow):
         )
         self.drop_points.append(TableOfContentsDropPoint(
             divider=divider,
+            indentation=1,
             parent_page_id=None,
             before_paragraph_id=None
         ))
@@ -323,11 +330,12 @@ class TableOfContents(wx.ScrolledWindow):
 class TableOfContentsRow(wx.Panel):
 
     BORDER = 2
+    INDENTATION_SIZE = 16
 
     def __init__(self, parent, indentation, page, is_collapsed):
         wx.Panel.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add((indentation*25, 1))
+        self.sizer.Add((indentation*self.INDENTATION_SIZE, 1))
         if page["children"]:
             button = TableOfContentsButton(self, page["id"], is_collapsed)
             self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
