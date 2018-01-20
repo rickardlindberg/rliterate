@@ -372,6 +372,7 @@ class MyDropTarget(wx.DropTarget):
         if data is not None:
             self.data = data
             self.data["window"].SetBackgroundColour((255, 100, 0))
+        return defResult
 
     def OnData(self, x, y, defResult):
         self._clear()
