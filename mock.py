@@ -127,13 +127,14 @@ class Document(object):
             self._pages[page_id]["paragraphs"].append(paragraph)
             self._paragraphs[paragraph["id"]] = paragraph
 
-    def move_paragraph(self, source_page, source_paragraph, target_page, target_paragraph):
+    def move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):
         with self.notify():
             if (source_page == target_page and
-                source_paragraph == target_paragraph):
+                source_paragraph == before_paragraph):
                 return
             paragraph = self._remove_paragraph(source_page, source_paragraph)
-            self._add_paragraph(target_page, paragraph, before_id=target_paragraph)
+            self._add_paragraph(target_page, paragraph,
+                    before_id=before_paragraph)
 
     def _remove_paragraph(self, page_id, paragraph_id):
         paragraphs = self._pages[page_id]["paragraphs"]
@@ -329,30 +330,30 @@ class PageWorkspaceDropTarget(wx.DropTarget):
         wx.DropTarget.__init__(self)
         self.workspace = workspace
         self.paragraph = None
-        self.data = None
+        self.drop_point = None
         self.rliterate_data = RliterateDataObject("paragraph")
         self.DataObject = self.rliterate_data
 
     def OnDragOver(self, x, y, defResult):
         self._clear()
-        data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
-        if data is not None and defResult == wx.DragMove:
-            self.data = data
-            self.data["window"].Show()
+        drop_point = self.workspace.FindClosestDropPoint(self.workspace.ClientToScreen((x, y)))
+        if drop_point is not None and defResult == wx.DragMove:
+            self.drop_point = drop_point
+            self.drop_point.Show()
             return wx.DragMove
         return wx.DragNone
 
     def OnData(self, x, y, defResult):
         self._clear()
-        data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
-        if data is not None:
+        drop_point = self.workspace.FindClosestDropPoint(self.workspace.ClientToScreen((x, y)))
+        if drop_point is not None:
             self.GetData()
             paragraph = self.rliterate_data.get_json()
             self.workspace.document.move_paragraph(
                 source_page=paragraph["page_id"],
                 source_paragraph=paragraph["paragraph_id"],
-                target_page=data["page_id"],
-                target_paragraph=data["paragraph_id"]
+                target_page=drop_point.page_id,
+                before_paragraph=drop_point.next_paragraph_id
             )
         return defResult
 
@@ -360,9 +361,9 @@ class PageWorkspaceDropTarget(wx.DropTarget):
         self._clear()
 
     def _clear(self):
-        if self.data is not None:
-            self.data["window"].Hide()
-            self.data = None
+        if self.drop_point is not None:
+            self.drop_point.Hide()
+            self.drop_point = None
 
 
 class PageWorkspace(wx.ScrolledWindow):
@@ -379,8 +380,11 @@ class PageWorkspace(wx.ScrolledWindow):
         self.SetDocument(document)
         self.SetDropTarget(PageWorkspaceDropTarget(self))
 
-    def FindParagraph(self, screen_pos):
-        return find_first(self.columns, lambda column: column.FindParagraph(screen_pos))
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.columns, lambda column:
+            column.FindClosestDropPoint(screen_pos)
+        )
 
     def SetDocument(self, document):
         while self.columns:
@@ -417,8 +421,11 @@ class Column(wx.Panel):
         self.document = document
         self.pages = []
 
-    def FindParagraph(self, screen_pos):
-        return find_first(self.pages, lambda page: page.FindParagraph(screen_pos))
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.pages,
+            lambda page: page.FindClosestDropPoint(screen_pos)
+        )
 
     def Render(self):
         for page in self.pages:
@@ -450,8 +457,8 @@ class PageContainer(wx.Panel):
         self.SetSizer(self.sizer)
         self.Render()
 
-    def FindParagraph(self, screen_pos):
-        return self.page_body.FindParagraph(screen_pos)
+    def FindClosestDropPoint(self, screen_pos):
+        return self.page_body.FindClosestDropPoint(screen_pos)
 
     def Render(self):
         self.page_body.Render()
@@ -467,30 +474,35 @@ class Page(wx.Panel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
 
-    def FindParagraph(self, screen_pos):
+    def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-            data = {"page_id": self.page_id}
-            for paragraph, divider in self.paragraphs:
-                if paragraph is not None:
-                    data["paragraph_id"] = paragraph.paragraph["id"]
-                    if client_y < (paragraph.Position.y + paragraph.Size[1] / 2):
-                        break
-                data["window"] = divider
-                data["paragraph_id"] = None
-            return data
+            return min(
+                self.drop_points,
+                key=lambda drop_point: drop_point.y_distance_to(client_y)
+            )
 
     def Render(self):
-        self.paragraphs = []
+        self.drop_points = []
         page = self.document.get_page(self.page_id)
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
-        self.AddParagraph(Title(self, self.document, page), True)
+        divider = self.AddParagraph(Title(self, self.document, page))
         for paragraph in page["paragraphs"]:
-            self.AddParagraph({
+            self.drop_points.append(PageDropPoint(
+                divider=divider,
+                page_id=self.page_id,
+                next_paragraph_id=paragraph["id"]
+            ))
+            divider = self.AddParagraph({
                 "text": Paragraph,
                 "factory": Factory,
             }[paragraph["type"]](self, self.document, self.page_id, paragraph))
+        self.drop_points.append(PageDropPoint(
+            divider=divider,
+            page_id=self.page_id,
+            next_paragraph_id=None
+        ))
         self.CreateMenu()
         self.GetTopLevelParent().Layout()
 
@@ -511,7 +523,7 @@ class Page(wx.Panel):
     def OnButton(self, event):
         self.document.add_paragraph(self.page_id)
 
-    def AddParagraph(self, paragraph, write_none=False):
+    def AddParagraph(self, paragraph):
         self.sizer.Add(
             paragraph,
             flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
@@ -523,7 +535,24 @@ class Page(wx.Panel):
             flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
             border=PARAGRAPH_SPACE
         )
-        self.paragraphs.append((paragraph if write_none is False else None, divider))
+        return divider
+
+
+class PageDropPoint(object):
+
+    def __init__(self, divider, page_id, next_paragraph_id):
+        self.divider = divider
+        self.page_id = page_id
+        self.next_paragraph_id = next_paragraph_id
+
+    def y_distance_to(self, y):
+        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
+
+    def Show(self):
+        self.divider.Show()
+
+    def Hide(self):
+        self.divider.Hide()
 
 
 class Divider(wx.Panel):
