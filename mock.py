@@ -166,22 +166,18 @@ class MainFrame(wx.Frame):
 
     def __init__(self):
         wx.Frame.__init__(self, None)
-
         document = Document.from_file("example.rliterate")
-
-        page_workspace = PageWorkspace(self, document)
-
-        toc = TableOfContents(self, page_workspace, document)
-
+        workspace = Workspace(self, document)
+        toc = TableOfContents(self, workspace, document)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
-        sizer.Add(page_workspace, flag=wx.EXPAND, proportion=1)
+        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
 
 
 class TableOfContents(wx.ScrolledWindow):
 
-    def __init__(self, parent, page_workspace, document):
+    def __init__(self, parent, workspace, document):
         wx.ScrolledWindow.__init__(self, parent, size=(200, -1))
         self.SetScrollRate(20, 20)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -190,7 +186,7 @@ class TableOfContents(wx.ScrolledWindow):
         self.SetDocument(document)
         self.SetBackgroundColour((255, 255, 255))
         self.collapsed = set()
-        self.page_workspace = page_workspace
+        self.workspace = workspace
         self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)
         self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)
         self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
@@ -203,13 +199,13 @@ class TableOfContents(wx.ScrolledWindow):
         self.Render()
 
     def OnTreeLeftClick(self, event):
-        self.page_workspace.OpenScratch([event.page_id])
+        self.workspace.OpenScratch([event.page_id])
 
     def OnTreeDoubleClick(self, event):
         page_ids = [event.page_id]
         for child in self.document.get_page(event.page_id)["children"]:
             page_ids.append(child["id"])
-        self.page_workspace.OpenScratch(page_ids)
+        self.workspace.OpenScratch(page_ids)
 
     def SetDocument(self, document):
         self.document = document
@@ -323,49 +319,66 @@ class RliterateDataObject(wx.CustomDataObject):
         return json.loads(self.GetData())
 
 
-class PageWorkspaceDropTarget(wx.DropTarget):
+class DropPointDropTarget(wx.DropTarget):
 
-    def __init__(self, workspace):
+    """
+    A drop target that can work with windows that supports
+    FindClosestDropPoint.
+    """
+
+    def __init__(self, window, kind):
         wx.DropTarget.__init__(self)
-        self.workspace = workspace
-        self.paragraph = None
-        self.drop_point = None
-        self.rliterate_data = RliterateDataObject("paragraph")
+        self.window = window
+        self.last_drop_point = None
+        self.rliterate_data = RliterateDataObject(kind)
         self.DataObject = self.rliterate_data
 
     def OnDragOver(self, x, y, defResult):
-        self._clear()
-        drop_point = self.workspace.FindClosestDropPoint(self.workspace.ClientToScreen((x, y)))
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
         if drop_point is not None and defResult == wx.DragMove:
-            self.drop_point = drop_point
-            self.drop_point.Show()
+            drop_point.Show()
+            self.last_drop_point = drop_point
             return wx.DragMove
         return wx.DragNone
 
     def OnData(self, x, y, defResult):
-        self._clear()
-        drop_point = self.workspace.FindClosestDropPoint(self.workspace.ClientToScreen((x, y)))
-        if drop_point is not None:
-            self.GetData()
-            paragraph = self.rliterate_data.get_json()
-            self.workspace.document.move_paragraph(
-                source_page=paragraph["page_id"],
-                source_paragraph=paragraph["paragraph_id"],
-                target_page=drop_point.page_id,
-                before_paragraph=drop_point.next_paragraph_id
-            )
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
+        if drop_point is not None and self.GetData():
+            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
         return defResult
 
     def OnLeave(self):
-        self._clear()
+        self._hide_last_drop_point()
 
-    def _clear(self):
-        if self.drop_point is not None:
-            self.drop_point.Hide()
-            self.drop_point = None
+    def _find_closest_drop_point(self, x, y):
+        return self.window.FindClosestDropPoint(
+            self.window.ClientToScreen((x, y))
+        )
+
+    def _hide_last_drop_point(self):
+        if self.last_drop_point is not None:
+            self.last_drop_point.Hide()
+            self.last_drop_point = None
 
 
-class PageWorkspace(wx.ScrolledWindow):
+class WorkspaceDropTarget(DropPointDropTarget):
+
+    def __init__(self, workspace):
+        DropPointDropTarget.__init__(self, workspace, "paragraph")
+        self.workspace = workspace
+
+    def OnDataDropped(self, dropped_paragraph, drop_point):
+        self.workspace.document.move_paragraph(
+            source_page=dropped_paragraph["page_id"],
+            source_paragraph=dropped_paragraph["paragraph_id"],
+            target_page=drop_point.page_id,
+            before_paragraph=drop_point.next_paragraph_id
+        )
+
+
+class Workspace(wx.ScrolledWindow):
 
     def __init__(self, parent, document):
         wx.ScrolledWindow.__init__(self, parent)
@@ -377,7 +390,7 @@ class PageWorkspace(wx.ScrolledWindow):
         self.listener = Listener(lambda: wx.CallAfter(self.Render))
         self.columns = []
         self.SetDocument(document)
-        self.SetDropTarget(PageWorkspaceDropTarget(self))
+        self.SetDropTarget(WorkspaceDropTarget(self))
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
