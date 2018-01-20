@@ -561,19 +561,15 @@ class Editable(wx.Panel):
             event.Skip()
 
 
-class Paragraph(Editable):
+class ParagraphBase(object):
 
-    def __init__(self, parent, document, page_id, paragraph):
+    def __init__(self, document, page_id, paragraph):
         self.document = document
         self.page_id = page_id
         self.paragraph = paragraph
-        Editable.__init__(self, parent)
 
-    def CreateView(self):
-        view = wx.StaticText(self, label=self.paragraph["text"])
-        view.Wrap(PAGE_BODY_WIDTH)
-        view.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        return view
+    def configure_drag(self, window):
+        window.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
     def OnLeftDown(self, event):
         my_data = wx.CustomDataObject("rliterate/paragraph")
@@ -584,6 +580,19 @@ class Paragraph(Editable):
         dragSource = wx.DropSource(self)
         dragSource.SetData(my_data)
         result = dragSource.DoDragDrop(True)
+
+
+class Paragraph(ParagraphBase, Editable):
+
+    def __init__(self, parent, document, page_id, paragraph):
+        ParagraphBase.__init__(self, document, page_id, paragraph)
+        Editable.__init__(self, parent)
+
+    def CreateView(self):
+        view = wx.StaticText(self, label=self.paragraph["text"])
+        view.Wrap(PAGE_BODY_WIDTH)
+        self.configure_drag(view)
+        return view
 
     def CreateEdit(self):
         edit = wx.TextCtrl(
@@ -601,13 +610,12 @@ class Paragraph(Editable):
         self.document.edit_paragraph(self.paragraph["id"], {"text": self.edit.Value})
 
 
-class Factory(wx.Panel):
+class Factory(ParagraphBase, wx.Panel):
 
     def __init__(self, parent, document, page_id, paragraph):
-        self.document = document
-        self.page_id = page_id
-        self.paragraph = paragraph
+        ParagraphBase.__init__(self, document, page_id, paragraph)
         wx.Panel.__init__(self, parent)
+        self.configure_drag(self)
         self.SetBackgroundColour((240, 240, 240))
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(
