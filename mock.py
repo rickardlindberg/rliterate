@@ -581,18 +581,37 @@ class ParagraphBase(object):
         self.document = document
         self.page_id = page_id
         self.paragraph = paragraph
+        self.down_pos = None
 
     def configure_drag(self, window):
-        window.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        window.Bind(wx.EVT_MOTION, self._on_motion)
+        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
 
-    def OnLeftDown(self, event):
-        data = RliterateDataObject({
-            "page_id": self.page_id,
-            "paragraph_id": self.paragraph["id"],
-        })
-        drag_source = wx.DropSource(self)
-        drag_source.SetData(data)
-        result = drag_source.DoDragDrop(True)
+    def _on_left_down(self, event):
+        self.down_pos = event.Position
+
+    def _on_motion(self, event):
+        if self._should_drag(event.Position):
+            data = RliterateDataObject({
+                "page_id": self.page_id,
+                "paragraph_id": self.paragraph["id"],
+            })
+            drag_source = wx.DropSource(self)
+            drag_source.SetData(data)
+            result = drag_source.DoDragDrop(True)
+
+    def _should_drag(self, pos):
+        if self.down_pos is not None:
+            diff = self.down_pos - pos
+            if abs(diff.x) > 2:
+                return True
+            if abs(diff.y) > 2:
+                return True
+        return False
+
+    def _on_left_up(self, event):
+        self.down_pos = None
 
 
 class Paragraph(ParagraphBase, Editable):
