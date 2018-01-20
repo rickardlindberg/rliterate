@@ -1,7 +1,5 @@
 Next steps:
 
-* Fix drag and drop
-    * Divider is ugly
 * Read/Write document to disk instead of the in-memory test data
 * TOC operations
     * Add (as child, before, after)

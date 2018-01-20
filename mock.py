@@ -371,7 +371,7 @@ class PageWorkspaceDropTarget(wx.DropTarget):
         data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
         if data is not None and defResult == wx.DragMove:
             self.data = data
-            self.data["window"].SetBackgroundColour((255, 100, 0))
+            self.data["window"].Show()
             return wx.DragMove
         return wx.DragNone
 
@@ -394,7 +394,7 @@ class PageWorkspaceDropTarget(wx.DropTarget):
 
     def _clear(self):
         if self.data is not None:
-            self.data["window"].SetBackgroundColour((255, 255, 255))
+            self.data["window"].Hide()
             self.data = None
 
 
@@ -550,13 +550,33 @@ class Page(wx.Panel):
             flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
             border=PARAGRAPH_SPACE
         )
-        divider = wx.Panel(self, size=(-1, PARAGRAPH_SPACE))
+        divider = Divider(self)
         self.sizer.Add(
             divider,
             flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
             border=PARAGRAPH_SPACE
         )
         self.paragraphs.append((paragraph if write_none is False else None, divider))
+
+
+class Divider(wx.Panel):
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent, size=(-1, PARAGRAPH_SPACE))
+        self.line = wx.Panel(self, size=(51, 3))
+        self.line.SetBackgroundColour((255, 100, 0))
+        self.line.Hide()
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.AddStretchSpacer(1)
+        self.sizer.Add(self.line, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.sizer.AddStretchSpacer(1)
+        self.SetSizer(self.sizer)
+
+    def Show(self):
+        self.line.Show()
+
+    def Hide(self):
+        self.line.Hide()
 
 
 class Editable(wx.Panel):
