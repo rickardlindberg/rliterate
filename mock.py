@@ -133,8 +133,7 @@ class Document(object):
                 source_paragraph == before_paragraph):
                 return
             paragraph = self._remove_paragraph(source_page, source_paragraph)
-            self._add_paragraph(target_page, paragraph,
-                    before_id=before_paragraph)
+            self._add_paragraph(target_page, paragraph, before_id=before_paragraph)
 
     def _remove_paragraph(self, page_id, paragraph_id):
         paragraphs = self._pages[page_id]["paragraphs"]
