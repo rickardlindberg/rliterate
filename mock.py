@@ -369,10 +369,11 @@ class PageWorkspaceDropTarget(wx.DropTarget):
     def OnDragOver(self, x, y, defResult):
         self._clear()
         data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
-        if data is not None:
+        if data is not None and defResult == wx.DragMove:
             self.data = data
             self.data["window"].SetBackgroundColour((255, 100, 0))
-        return defResult
+            return wx.DragMove
+        return wx.DragNone
 
     def OnData(self, x, y, defResult):
         self._clear()
