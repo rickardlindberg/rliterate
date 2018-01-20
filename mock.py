@@ -3,12 +3,18 @@ import json
 import uuid
 
 import wx
+import wx.lib.newevent
 
 
 PAGE_BODY_WIDTH = 500
 PAGE_PADDING = 12
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
+
+
+TreeToggle, EVT_TREE_TOGGLE = wx.lib.newevent.NewCommandEvent()
+TreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()
+TreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()
 
 
 def genid():
@@ -88,19 +94,7 @@ class Document(object):
         return page_toc(self.py_obj)
 
     def get_page(self, page_id):
-        def find_page(page):
-            if page["id"] == page_id:
-                return {
-                    "id": page["id"],
-                    "title": page["title"],
-                    "paragraphs": page["paragraphs"],
-                }
-            for child in page["children"]:
-                x = find_page(child)
-                if x is not None:
-                    return x
-            return None
-        return find_page(self.py_obj)
+        return self._pages[page_id]
 
     # Page operations
 
@@ -185,67 +179,126 @@ class MainFrame(wx.Frame):
         self.SetSizer(sizer)
 
 
-class TableOfContents(wx.TreeCtrl):
+class TableOfContents(wx.ScrolledWindow):
 
     def __init__(self, parent, page_workspace, document):
-        wx.TreeCtrl.__init__(
-            self,
-            parent,
-            size=(200, -1),
-            style=wx.TR_DEFAULT_STYLE|wx.TR_SINGLE
-        )
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeSelChanged)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated)
-        self.page_workspace = page_workspace
+        wx.ScrolledWindow.__init__(self, parent, size=(200, -1))
+        self.SetScrollRate(20, 20)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
         self.listener = Listener(lambda: wx.CallAfter(self.Render))
         self.SetDocument(document)
-        self.allow_selection_events = True
+        self.SetBackgroundColour((255, 255, 255))
+        self.collapsed = set()
+        self.page_workspace = page_workspace
+        self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)
+        self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)
+        self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
+
+    def OnTreeToggle(self, event):
+        if event.page_id in self.collapsed:
+            self.collapsed.remove(event.page_id)
+        else:
+            self.collapsed.add(event.page_id)
+        self.Render()
+
+    def OnTreeLeftClick(self, event):
+        self.page_workspace.OpenScratch([event.page_id])
+
+    def OnTreeDoubleClick(self, event):
+        page_ids = [event.page_id]
+        for child in self.document.get_page(event.page_id)["children"]:
+            page_ids.append(child["id"])
+        self.page_workspace.OpenScratch(page_ids)
 
     def SetDocument(self, document):
         self.document = document
         self.listener.set_observable(self.document)
 
     def Render(self):
+        self.Freeze()
+        self.sizer.Clear(True)
+        self.add_page(self.document.get_toc())
+        self.Layout()
+        self.Thaw()
 
-        def add_child(parent, child):
-            tree_id = self.AppendItem(parent, child["title"], data=wx.TreeItemData(child["id"]))
-            for x in child["children"]:
-                add_child(tree_id, x)
-            postprocess(tree_id, child["id"])
+    def add_page(self, page, indentation=0):
+        is_collapsed = page["id"] in self.collapsed
+        self.sizer.Add(
+            TableOfContentsRow(self, indentation, page, is_collapsed),
+            flag=wx.EXPAND
+        )
+        if not is_collapsed:
+            for child in page["children"]:
+                self.add_page(child, indentation+1)
 
-        def postprocess(tree_id, item_id):
-            self.Expand(tree_id)
-            if item_id == selected_id:
-                self.allow_selection_events = False
-                self.SelectItem(tree_id)
-                self.allow_selection_events = True
 
-        selected_id = None
-        if self.GetSelection().IsOk():
-            selected_id = self.GetItemData(self.GetSelection()).GetData()
+class TableOfContentsRow(wx.Panel):
 
-        self.DeleteAllItems()
-        toc = self.document.get_toc()
-        parent = self.AddRoot(toc["title"], data=wx.TreeItemData(toc["id"]))
-        for child in toc["children"]:
-            add_child(parent, child)
-        postprocess(parent, toc["id"])
-        if selected_id is None:
-            self.page_workspace.OpenScratch([self.GetItemData(self.GetSelection()).GetData()])
+    BORDER = 3
 
-    def OnTreeSelChanged(self, event):
-        if self.allow_selection_events:
-            self.page_workspace.OpenScratch([self.GetItemData(event.GetItem()).GetData()])
+    def __init__(self, parent, indentation, page, is_collapsed):
+        wx.Panel.__init__(self, parent)
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer.Add((indentation*25, 1))
+        if page["children"]:
+            button = TableOfContentsButton(self, page["id"], is_collapsed)
+            self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
+        else:
+            self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
+        text = wx.StaticText(self, label=page["title"])
+        self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
+        self.SetSizer(self.sizer)
+        self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
+        text.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        text.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
+        self.original_colour = self.Parent.GetBackgroundColour()
+        self.page_id = page["id"]
 
-    def OnTreeItemActivated(self, event):
-        root = event.GetItem()
-        page_ids = []
-        page_ids.append(self.GetItemData(root).GetData())
-        (x, cookie) = self.GetFirstChild(root)
-        while x.IsOk():
-            page_ids.append(self.GetItemData(x).GetData())
-            x = self.GetNextSibling(x)
-        self.page_workspace.OpenScratch(page_ids)
+    def OnLeftDown(self, event):
+        wx.PostEvent(self, TreeLeftClick(0, page_id=self.page_id))
+
+    def OnLeftDclick(self, event):
+        wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page_id))
+
+    def OnEnterWindow(self, event):
+        self.SetBackgroundColour((240, 240, 240))
+
+    def OnLeaveWindow(self, event):
+        self.SetBackgroundColour(self.original_colour)
+
+
+class TableOfContentsButton(wx.Panel):
+
+    SIZE = 16
+
+    def __init__(self, parent, page_id, is_collapsed):
+        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        self.page_id = page_id
+        self.is_hovered = False
+        self.is_collapsed = is_collapsed
+        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+
+    def OnLeftDown(self, event):
+        wx.PostEvent(self, TreeToggle(0, page_id=self.page_id))
+
+    def OnPaint(self, event):
+        dc = wx.GCDC(wx.PaintDC(self))
+        dc.SetBrush(wx.BLACK_BRUSH)
+        render = wx.RendererNative.Get()
+        (w, h) = self.Size
+        render.DrawTreeItemButton(
+            self,
+            dc,
+            (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
+            flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED
+        )
 
 
 def find_first(items, action):
