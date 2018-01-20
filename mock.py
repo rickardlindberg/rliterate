@@ -341,6 +341,18 @@ def find_first(items, action):
     return None
 
 
+class RliterateDataObject(wx.CustomDataObject):
+
+    def __init__(self):
+        wx.CustomDataObject.__init__(self, "rliterate")
+
+    def set_json(self, data):
+        self.SetData(json.dumps(data))
+
+    def get_json(self):
+        return json.loads(self.GetData())
+
+
 class PageWorkspace(wx.ScrolledWindow):
 
     def __init__(self, parent, document):
@@ -359,7 +371,7 @@ class PageWorkspace(wx.ScrolledWindow):
                 self.workspace = workspace
                 self.paragraph = None
                 self.data = None
-                self.custom_do = wx.CustomDataObject("rliterate/paragraph")
+                self.custom_do = RliterateDataObject()
                 self.DataObject = self.custom_do
             def OnDragOver(self, x, y, defResult):
                 self._clear()
@@ -372,7 +384,7 @@ class PageWorkspace(wx.ScrolledWindow):
                 data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
                 if data is not None:
                     self.GetData()
-                    paragraph = json.loads(self.custom_do.GetData())
+                    paragraph = self.custom_do.get_json()
                     self.workspace.document.move_paragraph(
                         source_page=paragraph["page_id"],
                         source_paragraph=paragraph["paragraph_id"],
@@ -572,11 +584,11 @@ class ParagraphBase(object):
         window.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
     def OnLeftDown(self, event):
-        my_data = wx.CustomDataObject("rliterate/paragraph")
-        my_data.SetData(json.dumps({
+        my_data = RliterateDataObject()
+        my_data.set_json({
             "page_id": self.page_id,
             "paragraph_id": self.paragraph["id"],
-        }))
+        })
         dragSource = wx.DropSource(self)
         dragSource.SetData(my_data)
         result = dragSource.DoDragDrop(True)
