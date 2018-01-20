@@ -1,5 +1,10 @@
 Next steps:
 
+* Fix drag and drop
+    * Application does not exit cleanly
+    * Double click to edit is broken
+    * Divider is ugly
+    * Factories can not be dragged
 * Read/Write document to disk instead of the in-memory test data
 * TOC operations
     * Add (as child, before, after)
