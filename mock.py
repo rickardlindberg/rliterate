@@ -356,7 +356,7 @@ class RliterateDataObject(wx.CustomDataObject):
         return json.loads(self.GetData())
 
 
-class MyDropTarget(wx.DropTarget):
+class PageWorkspaceDropTarget(wx.DropTarget):
 
     def __init__(self, workspace):
         wx.DropTarget.__init__(self)
@@ -409,7 +409,7 @@ class PageWorkspace(wx.ScrolledWindow):
         self.listener = Listener(lambda: wx.CallAfter(self.Render))
         self.columns = []
         self.SetDocument(document)
-        self.SetDropTarget(MyDropTarget(self))
+        self.SetDropTarget(PageWorkspaceDropTarget(self))
 
     def FindParagraph(self, screen_pos):
         return find_first(self.columns, lambda column: column.FindParagraph(screen_pos))
