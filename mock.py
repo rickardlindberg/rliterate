@@ -102,9 +102,9 @@ class Document(object):
         with self.notify():
             pass
 
-    def move_page(self, page_id, target_spec):
+    def move_page(self, source_page, parent_page_id, before_paragraph_id):
         with self.notify():
-            pass
+            print(("move page", source_page, parent_page_id, before_paragraph_id))
 
     def edit_page(self, page_id, data):
         with self.notify():
@@ -215,6 +215,37 @@ class DropPointDropTarget(wx.DropTarget):
             self.last_drop_point = None
 
 
+class TableOfContentsDropTarget(DropPointDropTarget):
+
+    def __init__(self, toc):
+        DropPointDropTarget.__init__(self, toc, "page")
+        self.toc = toc
+
+    def OnDataDropped(self, dropped_page, drop_point):
+        self.toc.document.move_page(
+            source_page=dropped_page["page_id"],
+            parent_page_id=drop_point.parent_page_id,
+            before_paragraph_id=drop_point.before_paragraph_id
+        )
+
+
+class TableOfContentsDropPoint(object):
+
+    def __init__(self, divider, parent_page_id, before_paragraph_id):
+        self.divider = divider
+        self.parent_page_id = parent_page_id
+        self.before_paragraph_id = before_paragraph_id
+
+    def y_distance_to(self, y):
+        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
+
+    def Show(self):
+        self.divider.Show()
+
+    def Hide(self):
+        self.divider.Hide()
+
+
 class TableOfContents(wx.ScrolledWindow):
 
     def __init__(self, parent, workspace, document):
@@ -230,6 +261,15 @@ class TableOfContents(wx.ScrolledWindow):
         self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)
         self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)
         self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
+        self.SetDropTarget(TableOfContentsDropTarget(self))
+
+    def FindClosestDropPoint(self, screen_pos):
+        client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
+        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
+            return min_or_none(
+                self.drop_points,
+                key=lambda drop_point: drop_point.y_distance_to(client_y)
+            )
 
     def OnTreeToggle(self, event):
         if event.page_id in self.collapsed:
@@ -253,6 +293,7 @@ class TableOfContents(wx.ScrolledWindow):
 
     def Render(self):
         self.Freeze()
+        self.drop_points = []
         self.sizer.Clear(True)
         self.add_page(self.document.get_toc())
         self.Layout()
@@ -264,6 +305,16 @@ class TableOfContents(wx.ScrolledWindow):
             TableOfContentsRow(self, indentation, page, is_collapsed),
             flag=wx.EXPAND
         )
+        divider = Divider(self, padding=0, height=2)
+        self.sizer.Add(
+            divider,
+            flag=wx.EXPAND
+        )
+        self.drop_points.append(TableOfContentsDropPoint(
+            divider=divider,
+            parent_page_id=None,
+            before_paragraph_id=None
+        ))
         if not is_collapsed:
             for child in page["children"]:
                 self.add_page(child, indentation+1)
@@ -271,7 +322,7 @@ class TableOfContents(wx.ScrolledWindow):
 
 class TableOfContentsRow(wx.Panel):
 
-    BORDER = 3
+    BORDER = 2
 
     def __init__(self, parent, indentation, page, is_collapsed):
         wx.Panel.__init__(self, parent)
@@ -287,19 +338,26 @@ class TableOfContentsRow(wx.Panel):
         self.SetSizer(self.sizer)
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
-        self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
-        text.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        text.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
+        for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
+            helper.OnClick = self.OnClick
+            helper.OnDrag = self.OnDrag
+            helper.OnDoubleClick = self.OnDoubleClick
         self.original_colour = self.Parent.GetBackgroundColour()
         self.page_id = page["id"]
 
-    def OnLeftDown(self, event):
+    def OnClick(self):
         wx.PostEvent(self, TreeLeftClick(0, page_id=self.page_id))
 
-    def OnLeftDclick(self, event):
+    def OnDoubleClick(self):
         wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page_id))
+
+    def OnDrag(self):
+        data = RliterateDataObject("page", {
+            "page_id": self.page_id,
+        })
+        drag_source = wx.DropSource(self)
+        drag_source.SetData(data)
+        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
     def OnEnterWindow(self, event):
         self.SetBackgroundColour((240, 240, 240))
@@ -636,11 +694,15 @@ class MouseEventHelper(object):
         window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         window.Bind(wx.EVT_MOTION, self._on_motion)
         window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
 
     def OnDrag(self):
         pass
 
     def OnClick(self):
+        pass
+
+    def OnDoubleClick(self):
         pass
 
     def _on_left_down(self, event):
@@ -664,6 +726,9 @@ class MouseEventHelper(object):
         if self.down_pos is not None:
             self.OnClick()
         self.down_pos = None
+
+    def _on_left_dclick(self, event):
+        self.OnDoubleClick()
 
 
 class Paragraph(ParagraphBase, Editable):

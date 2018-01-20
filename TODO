@@ -1,5 +1,8 @@
 Next steps:
 
+* TOC drag and drop
+    * Implement creation of TableOfContentsDropPoint
+    * Implement TableOfContents.FindClosestDropPoint
 * TOC operations
     * Add (as child, before, after)
     * Move
