@@ -343,8 +343,10 @@ def find_first(items, action):
 
 class RliterateDataObject(wx.CustomDataObject):
 
-    def __init__(self):
+    def __init__(self, json=None):
         wx.CustomDataObject.__init__(self, "rliterate")
+        if json is not None:
+            self.set_json(json)
 
     def set_json(self, data):
         self.SetData(json.dumps(data))
@@ -584,14 +586,13 @@ class ParagraphBase(object):
         window.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
     def OnLeftDown(self, event):
-        my_data = RliterateDataObject()
-        my_data.set_json({
+        data = RliterateDataObject({
             "page_id": self.page_id,
             "paragraph_id": self.paragraph["id"],
         })
-        dragSource = wx.DropSource(self)
-        dragSource.SetData(my_data)
-        result = dragSource.DoDragDrop(True)
+        drag_source = wx.DropSource(self)
+        drag_source.SetData(data)
+        result = drag_source.DoDragDrop(True)
 
 
 class Paragraph(ParagraphBase, Editable):
