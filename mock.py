@@ -599,7 +599,7 @@ class ParagraphBase(object):
             })
             drag_source = wx.DropSource(self)
             drag_source.SetData(data)
-            result = drag_source.DoDragDrop(True)
+            result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
     def _should_drag(self, pos):
         if self.down_pos is not None:
