@@ -603,6 +603,7 @@ class ParagraphBase(object):
 
     def _on_motion(self, event):
         if self._should_drag(event.Position):
+            self.down_pos = None
             data = RliterateDataObject({
                 "page_id": self.page_id,
                 "paragraph_id": self.paragraph["id"],
