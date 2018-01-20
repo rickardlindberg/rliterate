@@ -1,13 +1,11 @@
 Next steps:
 
-* TOC drag and drop
-    * Implement creation of TableOfContentsDropPoint
-    * Implement TableOfContents.FindClosestDropPoint
 * TOC operations
+    * Move (drag and drop)
+        * Implement creation of TableOfContentsDropPoint
+        * Implement TableOfContents.FindClosestDropPoint
     * Add (as child, before, after)
-    * Move
-    * Indent
-    * Dedent
+    * Delete
 * Paragraph operations
     * Context menu with delete
     * Context menu with add paragraph before/after
