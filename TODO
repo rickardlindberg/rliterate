@@ -1,6 +1,5 @@
 Next steps:
 
-* Read/Write document to disk instead of the in-memory test data
 * TOC operations
     * Add (as child, before, after)
     * Move

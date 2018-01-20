@@ -15,102 +15,6 @@ def genid():
     return uuid.uuid4().hex
 
 
-EXAMPLE_DOCUMENT = {
-    "id": genid(),
-    "title": "Test document",
-    "paragraphs": [
-        {
-            "id": genid(),
-            "type": "text",
-            "text": "This is just a test document.",
-        },
-        {
-            "id": genid(),
-            "type": "text",
-            "text": "... some more text ...",
-        },
-    ],
-    "children": [
-        {
-            "id": genid(),
-            "title": "Child 1",
-            "paragraphs": [
-                {
-                    "id": genid(),
-                    "type": "text",
-                    "text": "I am the first child.",
-                },
-                {
-                    "id": genid(),
-                    "type": "text",
-                    "text": "... some more text ... but this time with really a lot of text so that breaking the paragraph is necessary",
-                },
-            ],
-            "children": [],
-        },
-        {
-            "id": genid(),
-            "title": "Child 2",
-            "paragraphs": [
-                {
-                    "id": genid(),
-                    "type": "text",
-                    "text": "I am the second child.",
-                },
-                {
-                    "id": genid(),
-                    "type": "text",
-                    "text": "... some more text ...",
-                },
-            ],
-            "children": [
-                {
-                    "id": genid(),
-                    "title": "Child 2 2",
-                    "paragraphs": [
-                        {
-                            "id": genid(),
-                            "type": "text",
-                            "text": "I am the second grandchild.",
-                        },
-                        {
-                            "id": genid(),
-                            "type": "text",
-                            "text": "... some more text ...",
-                        },
-                    ],
-                    "children": [],
-                },
-            ],
-        },
-        {
-            "id": genid(),
-            "title": "Child 3",
-            "paragraphs": [],
-            "children": [],
-        },
-        {
-            "id": genid(),
-            "title": "Child 4",
-            "paragraphs": [],
-            "children": [],
-        },
-        {
-            "id": genid(),
-            "title": "Child 5",
-            "paragraphs": [],
-            "children": [],
-        },
-        {
-            "id": genid(),
-            "title": "Child 6",
-            "paragraphs": [],
-            "children": [],
-        },
-    ],
-}
-
-
 class Listener(object):
 
     def __init__(self, fn):
@@ -128,12 +32,13 @@ class Listener(object):
 class Document(object):
 
     @classmethod
-    def from_py_obj(cls, py_obj):
-        return cls(py_obj)
+    def from_file(cls, path):
+        return cls(path)
 
-    def __init__(self, py_obj):
-        self.py_obj = py_obj
+    def __init__(self, path):
+        self.path = path
         self.listeners = []
+        self._load()
         self._cache()
 
     def _cache(self):
@@ -148,6 +53,14 @@ class Document(object):
         for child in page["children"]:
             self._cache_page(child)
 
+    def _save(self):
+        with open(self.path, "w") as f:
+            json.dump(self.py_obj, f)
+
+    def _load(self):
+        with open(self.path, "r") as f:
+            self.py_obj = json.load(f)
+
     # PUB/SUB
 
     def listen(self, fn):
@@ -161,6 +74,7 @@ class Document(object):
         yield
         for fn in self.listeners:
             fn()
+        self._save()
 
     # Queries
 
@@ -259,7 +173,7 @@ class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None)
 
-        document = Document.from_py_obj(EXAMPLE_DOCUMENT)
+        document = Document.from_file("example.rliterate")
 
         page_workspace = PageWorkspace(self, document)
 
