@@ -355,6 +355,46 @@ class RliterateDataObject(wx.CustomDataObject):
         return json.loads(self.GetData())
 
 
+class MyDropTarget(wx.DropTarget):
+
+    def __init__(self, workspace):
+        wx.DropTarget.__init__(self)
+        self.workspace = workspace
+        self.paragraph = None
+        self.data = None
+        self.rliterate_data = RliterateDataObject()
+        self.DataObject = self.rliterate_data
+
+    def OnDragOver(self, x, y, defResult):
+        self._clear()
+        data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
+        if data is not None:
+            self.data = data
+            self.data["window"].SetBackgroundColour((255, 100, 0))
+
+    def OnData(self, x, y, defResult):
+        self._clear()
+        data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
+        if data is not None:
+            self.GetData()
+            paragraph = self.rliterate_data.get_json()
+            self.workspace.document.move_paragraph(
+                source_page=paragraph["page_id"],
+                source_paragraph=paragraph["paragraph_id"],
+                target_page=data["page_id"],
+                target_paragraph=data["paragraph_id"]
+            )
+        return defResult
+
+    def OnLeave(self):
+        self._clear()
+
+    def _clear(self):
+        if self.data is not None:
+            self.data["window"].SetBackgroundColour((255, 255, 255))
+            self.data = None
+
+
 class PageWorkspace(wx.ScrolledWindow):
 
     def __init__(self, parent, document):
@@ -367,38 +407,6 @@ class PageWorkspace(wx.ScrolledWindow):
         self.listener = Listener(self.Render)
         self.columns = []
         self.SetDocument(document)
-        class MyDropTarget(wx.DropTarget):
-            def __init__(self, workspace):
-                wx.DropTarget.__init__(self)
-                self.workspace = workspace
-                self.paragraph = None
-                self.data = None
-                self.custom_do = RliterateDataObject()
-                self.DataObject = self.custom_do
-            def OnDragOver(self, x, y, defResult):
-                self._clear()
-                data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
-                if data is not None:
-                    self.data = data
-                    self.data["window"].SetBackgroundColour((255, 100, 0))
-            def OnData(self, x, y, sdfa):
-                self._clear()
-                data = self.workspace.FindParagraph(self.workspace.ClientToScreen((x, y)))
-                if data is not None:
-                    self.GetData()
-                    paragraph = self.custom_do.get_json()
-                    self.workspace.document.move_paragraph(
-                        source_page=paragraph["page_id"],
-                        source_paragraph=paragraph["paragraph_id"],
-                        target_page=data["page_id"],
-                        target_paragraph=data["paragraph_id"]
-                    )
-            def OnLeave(self):
-                self._clear()
-            def _clear(self):
-                if self.data is not None:
-                    self.data["window"].SetBackgroundColour((255, 255, 255))
-                    self.data = None
         self.SetDropTarget(MyDropTarget(self))
 
     def FindParagraph(self, screen_pos):
