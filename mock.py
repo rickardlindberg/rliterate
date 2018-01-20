@@ -311,8 +311,8 @@ def find_first(items, action):
 
 class RliterateDataObject(wx.CustomDataObject):
 
-    def __init__(self, json=None):
-        wx.CustomDataObject.__init__(self, "rliterate")
+    def __init__(self, kind, json=None):
+        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
         if json is not None:
             self.set_json(json)
 
@@ -330,7 +330,7 @@ class PageWorkspaceDropTarget(wx.DropTarget):
         self.workspace = workspace
         self.paragraph = None
         self.data = None
-        self.rliterate_data = RliterateDataObject()
+        self.rliterate_data = RliterateDataObject("paragraph")
         self.DataObject = self.rliterate_data
 
     def OnDragOver(self, x, y, defResult):
@@ -585,7 +585,7 @@ class ParagraphBase(object):
         self.mouse_event_helper.OnDrag = self._on_drag
 
     def _on_drag(self):
-        data = RliterateDataObject({
+        data = RliterateDataObject("paragraph", {
             "page_id": self.page_id,
             "paragraph_id": self.paragraph["id"],
         })
