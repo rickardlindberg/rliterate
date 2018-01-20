@@ -17,10 +17,6 @@ TreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()
 TreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()
 
 
-def genid():
-    return uuid.uuid4().hex
-
-
 class Listener(object):
 
     def __init__(self, fn):
@@ -297,14 +293,6 @@ class TableOfContentsButton(wx.Panel):
         )
 
 
-def find_first(items, action):
-    for item in items:
-        result = action(item)
-        if result is not None:
-            return result
-    return None
-
-
 class RliterateDataObject(wx.CustomDataObject):
 
     def __init__(self, kind, json=None):
@@ -394,8 +382,8 @@ class Workspace(wx.ScrolledWindow):
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            self.columns, lambda column:
-            column.FindClosestDropPoint(screen_pos)
+            self.columns,
+            lambda column: column.FindClosestDropPoint(screen_pos)
         )
 
     def SetDocument(self, document):
@@ -771,6 +759,18 @@ def increase_font(control):
     old_height = control.Size[1]
     control.Font = control.Font.Larger().Larger()
     control.MinSize = (-1, old_height + (control.GetCharHeight() - old_char_height))
+
+
+def genid():
+    return uuid.uuid4().hex
+
+
+def find_first(items, action):
+    for item in items:
+        result = action(item)
+        if result is not None:
+            return result
+    return None
 
 
 if __name__ == "__main__":
