@@ -10,7 +10,7 @@ import wx
 import wx.lib.newevent
 
 
-PAGE_BODY_WIDTH = 500
+PAGE_BODY_WIDTH = 800
 PAGE_PADDING = 12
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
