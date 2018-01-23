@@ -2,8 +2,7 @@ Next steps:
 
 * TOC operations
     * Move (drag and drop)
-        * Implement creation of TableOfContentsDropPoint
-        * Implement TableOfContents.FindClosestDropPoint
+        * Prevent circular
     * Add (as child, before, after)
     * Delete
 * Paragraph operations

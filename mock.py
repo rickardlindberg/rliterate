@@ -1,6 +1,7 @@
 import contextlib
 import json
 import uuid
+from collections import defaultdict
 
 import wx
 import wx.lib.newevent
@@ -45,15 +46,17 @@ class Document(object):
 
     def _cache(self):
         self._pages = {}
+        self._parent_pages = {}
         self._paragraphs = {}
         self._cache_page(self.py_obj)
 
-    def _cache_page(self, page):
+    def _cache_page(self, page, parent_page=None):
         self._pages[page["id"]] = page
+        self._parent_pages[page["id"]] = parent_page
         for paragraph in page["paragraphs"]:
             self._paragraphs[paragraph["id"]] = paragraph
         for child in page["children"]:
-            self._cache_page(child)
+            self._cache_page(child, page)
 
     def _save(self):
         with open(self.path, "w") as f:
@@ -102,13 +105,28 @@ class Document(object):
         with self.notify():
             pass
 
-    def move_page(self, source_page, parent_page_id, before_paragraph_id):
+    def move_page(self, page_id, parent_page_id, before_page_id):
         with self.notify():
-            print(("move page", source_page, parent_page_id, before_paragraph_id))
+            parent = self._parent_pages[page_id]
+            page = parent["children"].pop(self._child_index(parent, page_id))
+            new_parent = self._pages[parent_page_id]
+            self._parent_pages[page_id] = new_parent
+            if before_page_id is None:
+                new_parent["children"].append(page)
+            else:
+                new_parent["children"].insert(
+                    self._child_index(new_parent, before_page_id),
+                    page
+                )
 
     def edit_page(self, page_id, data):
         with self.notify():
             self._pages[page_id].update(data)
+
+    def _child_index(self, page, child_id):
+        for index, child in enumerate(page["children"]):
+            if child["id"] == child_id:
+                return index
 
     # Paragraph operations
 
@@ -223,19 +241,24 @@ class TableOfContentsDropTarget(DropPointDropTarget):
 
     def OnDataDropped(self, dropped_page, drop_point):
         self.toc.document.move_page(
-            source_page=dropped_page["page_id"],
+            page_id=dropped_page["page_id"],
             parent_page_id=drop_point.parent_page_id,
-            before_paragraph_id=drop_point.before_paragraph_id
+            before_page_id=drop_point.before_page_id
         )
 
 
 class TableOfContentsDropPoint(object):
 
-    def __init__(self, divider, indentation, parent_page_id, before_paragraph_id):
+    def __init__(self, divider, indentation, parent_page_id, before_page_id):
         self.divider = divider
         self.indentation = indentation
         self.parent_page_id = parent_page_id
-        self.before_paragraph_id = before_paragraph_id
+        self.before_page_id = before_page_id
+
+    def x_distance_to(self, x):
+        left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
+        span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * self.indentation + 0.5
+        return abs(span_x_center - x)
 
     def y_distance_to(self, y):
         return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
@@ -270,12 +293,17 @@ class TableOfContents(wx.ScrolledWindow):
         self.SetDropTarget(TableOfContentsDropTarget(self))
 
     def FindClosestDropPoint(self, screen_pos):
-        client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
+        client_pos = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-            return min_or_none(
-                self.drop_points,
-                key=lambda drop_point: drop_point.y_distance_to(client_y)
-            )
+            scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)
+            y_distances = defaultdict(list)
+            for drop_point in self.drop_points:
+                y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)
+            if y_distances:
+                return min(
+                    y_distances[min(y_distances.keys())],
+                    key=lambda drop_point: drop_point.x_distance_to(scroll_x)
+                )
 
     def OnTreeToggle(self, event):
         if event.page_id in self.collapsed:
@@ -316,15 +344,26 @@ class TableOfContents(wx.ScrolledWindow):
             divider,
             flag=wx.EXPAND
         )
+        if is_collapsed or len(page["children"]) == 0:
+            before_page_id = None
+        else:
+            before_page_id = page["children"][0]["id"]
         self.drop_points.append(TableOfContentsDropPoint(
             divider=divider,
-            indentation=1,
-            parent_page_id=None,
-            before_paragraph_id=None
+            indentation=indentation+1,
+            parent_page_id=page["id"],
+            before_page_id=before_page_id
         ))
         if not is_collapsed:
-            for child in page["children"]:
-                self.add_page(child, indentation+1)
+            for child, next_child in pairs(page["children"]):
+                divider = self.add_page(child, indentation+1)
+                self.drop_points.append(TableOfContentsDropPoint(
+                    divider=divider,
+                    indentation=indentation+1,
+                    parent_page_id=page["id"],
+                    before_page_id=None if next_child is None else next_child["id"]
+                ))
+        return divider
 
 
 class TableOfContentsRow(wx.Panel):
@@ -844,6 +883,10 @@ def find_first(items, action):
         if result is not None:
             return result
     return None
+
+
+def pairs(items):
+    return zip(items, items[1:]+[None])
 
 
 def min_or_none(items, key):
