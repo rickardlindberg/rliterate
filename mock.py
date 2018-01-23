@@ -119,6 +119,11 @@ class Document(object):
         with self.notify():
             if page_id == before_page_id:
                 return
+            parent = self._pages[parent_page_id]
+            while parent is not None:
+                if parent["id"] == page_id:
+                    return
+                parent = self._parent_pages[parent["id"]]
             parent = self._parent_pages[page_id]
             page = parent["children"].pop(self._child_index(parent, page_id))
             new_parent = self._pages[parent_page_id]

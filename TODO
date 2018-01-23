@@ -1,8 +1,6 @@
 Next steps:
 
 * TOC operations
-    * Move (drag and drop)
-        * Prevent circular
     * Add (before, after)
     * Delete
 * Paragraph operations
