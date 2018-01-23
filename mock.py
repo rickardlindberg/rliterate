@@ -49,7 +49,7 @@ class Document(object):
         self._pages = {}
         self._parent_pages = {}
         self._paragraphs = {}
-        self._cache_page(self.py_obj)
+        self._cache_page(self.root_page)
 
     def _cache_page(self, page, parent_page=None):
         self._pages[page["id"]] = page
@@ -61,11 +61,11 @@ class Document(object):
 
     def _save(self):
         with open(self.path, "w") as f:
-            json.dump(self.py_obj, f)
+            json.dump(self.root_page, f)
 
     def _load(self):
         with open(self.path, "r") as f:
-            self.py_obj = json.load(f)
+            self.root_page = json.load(f)
 
     # PUB/SUB
 
@@ -84,16 +84,9 @@ class Document(object):
 
     # Queries
 
-    def get_toc(self):
-        def page_toc(page):
-            return {
-                "id": page["id"],
-                "title": page["title"],
-                "children": [page_toc(child) for child in page["children"]],
-            }
-        return page_toc(self.py_obj)
-
-    def get_page(self, page_id):
+    def get_page(self, page_id=None):
+        if page_id is None:
+            page_id = self.root_page["id"]
         return self._pages[page_id]
 
     # Page operations
@@ -360,7 +353,7 @@ class TableOfContents(wx.ScrolledWindow):
         self.Freeze()
         self.drop_points = []
         self.sizer.Clear(True)
-        self.add_page(self.document.get_toc())
+        self.add_page(self.document.get_page())
         self.Layout()
         self.Thaw()
 
