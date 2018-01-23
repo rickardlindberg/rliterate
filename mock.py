@@ -4,6 +4,7 @@ import uuid
 from collections import defaultdict
 import os
 import re
+import sys
 
 import wx
 import wx.lib.newevent
@@ -291,9 +292,9 @@ class FileGenerator(object):
 
 class MainFrame(wx.Frame):
 
-    def __init__(self):
+    def __init__(self, filepath):
         wx.Frame.__init__(self, None)
-        document = Document.from_file("example.rliterate")
+        document = Document.from_file(filepath)
         FileGenerator().set_document(document)
         workspace = Workspace(self, document)
         toc = TableOfContents(self, workspace, document)
@@ -1239,6 +1240,6 @@ def index_with_id(items, item_id):
 
 if __name__ == "__main__":
     app = wx.App()
-    main_frame = MainFrame()
+    main_frame = MainFrame(filepath=sys.argv[1])
     main_frame.Show()
     app.MainLoop()
