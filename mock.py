@@ -236,7 +236,7 @@ class DictParagraph(object):
 
     @property
     def path(self):
-        return self._paragraph_dict["path"]
+        return list(self._paragraph_dict["path"])
 
 
 class MainFrame(wx.Frame):
