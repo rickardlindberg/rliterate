@@ -775,9 +775,9 @@ class Editable(wx.Panel):
 
     def OnChar(self, event):
         if event.KeyCode == wx.WXK_CONTROL_S:
-            self.OnParagraphEditEnd()
+            self.OnParagraphEditEnd(None)
         elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
-            self.OnParagraphEditEnd()
+            self.OnParagraphEditEnd(None)
         else:
             event.Skip()
 
@@ -789,12 +789,7 @@ class ParagraphBase(object):
         self.page_id = page_id
         self.paragraph = paragraph
 
-    def configure_drag(self, window):
-        self.mouse_event_helper = MouseEventHelper(window)
-        self.mouse_event_helper.OnDrag = self._on_drag
-        self.mouse_event_helper.OnRightClick = self._on_right_click
-
-    def _on_drag(self):
+    def DoDragDrop(self):
         data = RliterateDataObject("paragraph", {
             "page_id": self.page_id,
             "paragraph_id": self.paragraph["id"],
@@ -803,7 +798,7 @@ class ParagraphBase(object):
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
-    def _on_right_click(self):
+    def ShowContextMenu(self):
         menu = ParagraphContextMenu(
             self.document, self.page_id, self.paragraph["id"]
         )
@@ -885,7 +880,11 @@ class Paragraph(ParagraphBase, Editable):
     def CreateView(self):
         view = wx.StaticText(self, label=self.paragraph["text"])
         view.Wrap(PAGE_BODY_WIDTH)
-        self.configure_drag(view)
+        MouseEventHelper.bind(
+            [view],
+            drag=self.DoDragDrop,
+            right_click=self.ShowContextMenu
+        )
         return view
 
     def CreateEdit(self):
@@ -957,7 +956,12 @@ class CodeView(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
-        MouseEventHelper.bind([panel, text], click=self._post_paragraph_edit_start)
+        MouseEventHelper.bind(
+            [panel, text],
+            click=self._post_paragraph_edit_start,
+            drag=self.Parent.DoDragDrop,
+            right_click=self.Parent.ShowContextMenu
+        )
         return panel
 
     def _create_code(self, code_paragraph):
@@ -967,7 +971,12 @@ class CodeView(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
-        MouseEventHelper.bind([panel, text], click=self._post_paragraph_edit_start)
+        MouseEventHelper.bind(
+            [panel, text],
+            click=self._post_paragraph_edit_start,
+            drag=self.Parent.DoDragDrop,
+            right_click=self.Parent.ShowContextMenu
+        )
         return panel
 
     def _post_paragraph_edit_start(self):
@@ -1033,7 +1042,11 @@ class Factory(ParagraphBase, wx.Panel):
     def __init__(self, parent, document, page_id, paragraph):
         ParagraphBase.__init__(self, document, page_id, paragraph)
         wx.Panel.__init__(self, parent)
-        self.configure_drag(self)
+        MouseEventHelper.bind(
+            [self],
+            drag=self.DoDragDrop,
+            right_click=self.ShowContextMenu
+        )
         self.SetBackgroundColour((240, 240, 240))
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
