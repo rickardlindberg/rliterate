@@ -240,8 +240,6 @@ class DictParagraph(object):
     @property
     def path(self):
         return tuple(self._paragraph_dict["path"])
-
-
 class FileGenerator(object):
 
     def __init__(self):
