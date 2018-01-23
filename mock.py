@@ -277,8 +277,9 @@ class FileGenerator(object):
             if match:
                 self._render(f, key + (match.group(2),), prefix=match.group(1))
             else:
-                f.write(prefix)
-                f.write(line)
+                if len(line) > 0:
+                    f.write(prefix)
+                    f.write(line)
                 f.write("\n")
 
     def _get_filepath(self, key):
