@@ -13,9 +13,12 @@ Problems:
 * Missing paragraph operations
     * Context menu with add paragraph before/after
 * Deleted pages are not removed from workspace
+* Syntax highlight code with pygments
+* File generator writes empty filename
 
 Ideas:
 
+* Highlight object being dragged somehow
 * Only expose custom classes from Document (Page, Paragraph, ...)
 * Make each column scrollable (like Tweetdeck)
 * Save when clicking outside text field (how to do this?)
