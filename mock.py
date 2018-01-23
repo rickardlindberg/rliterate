@@ -93,7 +93,7 @@ class Document(object):
     def get_page(self, page_id=None):
         if page_id is None:
             page_id = self.root_page["id"]
-        return self._pages[page_id]
+        return DictPage(self._pages[page_id])
 
     # Page operations
 
@@ -185,6 +185,58 @@ class Document(object):
     def edit_paragraph(self, paragraph_id, data):
         with self.notify():
             self._paragraphs[paragraph_id].update(data)
+
+
+class DictPage(object):
+
+    def __init__(self, page_dict):
+        self._page_dict = page_dict
+
+    @property
+    def id(self):
+        return self._page_dict["id"]
+
+    @property
+    def title(self):
+        return self._page_dict["title"]
+
+    @property
+    def paragraphs(self):
+        return [
+            DictParagraph(paragraph_dict)
+            for paragraph_dict
+            in self._page_dict["paragraphs"]
+        ]
+
+    @property
+    def children(self):
+        return [
+            DictPage(child_dict)
+            for child_dict
+            in self._page_dict["children"]
+        ]
+
+
+class DictParagraph(object):
+
+    def __init__(self, paragraph_dict):
+        self._paragraph_dict = paragraph_dict
+
+    @property
+    def id(self):
+        return self._paragraph_dict["id"]
+
+    @property
+    def type(self):
+        return self._paragraph_dict["type"]
+
+    @property
+    def text(self):
+        return self._paragraph_dict["text"]
+
+    @property
+    def path(self):
+        return self._paragraph_dict["path"]
 
 
 class MainFrame(wx.Frame):
@@ -334,8 +386,8 @@ class TableOfContents(wx.ScrolledWindow):
 
     def OnTreeDoubleClick(self, event):
         page_ids = [event.page_id]
-        for child in self.document.get_page(event.page_id)["children"]:
-            page_ids.append(child["id"])
+        for child in self.document.get_page(event.page_id).children:
+            page_ids.append(child.id)
         self.workspace.OpenScratch(page_ids)
 
     def SetDocument(self, document):
@@ -351,7 +403,7 @@ class TableOfContents(wx.ScrolledWindow):
         self.Thaw()
 
     def add_page(self, page, indentation=0):
-        is_collapsed = page["id"] in self.collapsed
+        is_collapsed = page.id in self.collapsed
         self.sizer.Add(
             TableOfContentsRow(self, indentation, page, is_collapsed),
             flag=wx.EXPAND
@@ -361,24 +413,24 @@ class TableOfContents(wx.ScrolledWindow):
             divider,
             flag=wx.EXPAND
         )
-        if is_collapsed or len(page["children"]) == 0:
+        if is_collapsed or len(page.children) == 0:
             before_page_id = None
         else:
-            before_page_id = page["children"][0]["id"]
+            before_page_id = page.children[0].id
         self.drop_points.append(TableOfContentsDropPoint(
             divider=divider,
             indentation=indentation+1,
-            parent_page_id=page["id"],
+            parent_page_id=page.id,
             before_page_id=before_page_id
         ))
         if not is_collapsed:
-            for child, next_child in pairs(page["children"]):
+            for child, next_child in pairs(page.children):
                 divider = self.add_page(child, indentation+1)
                 self.drop_points.append(TableOfContentsDropPoint(
                     divider=divider,
                     indentation=indentation+1,
-                    parent_page_id=page["id"],
-                    before_page_id=None if next_child is None else next_child["id"]
+                    parent_page_id=page.id,
+                    before_page_id=None if next_child is None else next_child.id
                 ))
         return divider
 
@@ -434,12 +486,12 @@ class TableOfContentsRow(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.Add((indentation*self.INDENTATION_SIZE, 1))
-        if page["children"]:
-            button = TableOfContentsButton(self, page["id"], is_collapsed)
+        if page.children:
+            button = TableOfContentsButton(self, page.id, is_collapsed)
             self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
         else:
             self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
-        text = wx.StaticText(self, label=page["title"])
+        text = wx.StaticText(self, label=page.title)
         self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
         self.SetSizer(self.sizer)
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
@@ -450,7 +502,7 @@ class TableOfContentsRow(wx.Panel):
             helper.OnDrag = self.OnDrag
             helper.OnDoubleClick = self.OnDoubleClick
         self.original_colour = self.Parent.GetBackgroundColour()
-        self.page_id = page["id"]
+        self.page_id = page.id
 
     def OnClick(self):
         wx.PostEvent(self, TreeLeftClick(0, page_id=self.page_id))
@@ -656,17 +708,17 @@ class Page(wx.Panel):
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
         divider = self.AddParagraph(Title(self, self.document, page))
-        for paragraph in page["paragraphs"]:
+        for paragraph in page.paragraphs:
             self.drop_points.append(PageDropPoint(
                 divider=divider,
                 page_id=self.page_id,
-                next_paragraph_id=paragraph["id"]
+                next_paragraph_id=paragraph.id
             ))
             divider = self.AddParagraph({
                 "text": Paragraph,
                 "code": Code,
                 "factory": Factory,
-            }[paragraph["type"]](self, self.document, self.page_id, paragraph))
+            }[paragraph.type](self, self.document, self.page_id, paragraph))
         self.drop_points.append(PageDropPoint(
             divider=divider,
             page_id=self.page_id,
@@ -792,7 +844,7 @@ class ParagraphBase(object):
     def DoDragDrop(self):
         data = RliterateDataObject("paragraph", {
             "page_id": self.page_id,
-            "paragraph_id": self.paragraph["id"],
+            "paragraph_id": self.paragraph.id,
         })
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
@@ -800,7 +852,7 @@ class ParagraphBase(object):
 
     def ShowContextMenu(self):
         menu = ParagraphContextMenu(
-            self.document, self.page_id, self.paragraph["id"]
+            self.document, self.page_id, self.paragraph.id
         )
         self.PopupMenu(menu)
         menu.Destroy()
@@ -878,7 +930,7 @@ class Paragraph(ParagraphBase, Editable):
         Editable.__init__(self, parent)
 
     def CreateView(self):
-        view = wx.StaticText(self, label=self.paragraph["text"])
+        view = wx.StaticText(self, label=self.paragraph.text)
         view.Wrap(PAGE_BODY_WIDTH)
         MouseEventHelper.bind(
             [view],
@@ -891,7 +943,7 @@ class Paragraph(ParagraphBase, Editable):
         edit = wx.TextCtrl(
             self,
             style=wx.TE_MULTILINE,
-            value=self.paragraph["text"]
+            value=self.paragraph.text
         )
         # Error is printed if height is too small:
         # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
@@ -900,7 +952,7 @@ class Paragraph(ParagraphBase, Editable):
         return edit
 
     def EndEdit(self):
-        self.document.edit_paragraph(self.paragraph["id"], {"text": self.edit.Value})
+        self.document.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
 
 
 class Code(ParagraphBase, Editable):
@@ -916,7 +968,7 @@ class Code(ParagraphBase, Editable):
         return CodeEditor(self, self.view, self.paragraph)
 
     def EndEdit(self):
-        self.document.edit_paragraph(self.paragraph["id"], {
+        self.document.edit_paragraph(self.paragraph.id, {
             "path": self.edit.path.Value.split(" / "),
             "text": self.edit.text.Value,
         })
@@ -951,7 +1003,7 @@ class CodeView(wx.Panel):
     def _create_path(self, code_paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((248, 241, 223))
-        text = wx.StaticText(panel, label=" / ".join(code_paragraph["path"]))
+        text = wx.StaticText(panel, label=" / ".join(code_paragraph.path))
         text.Font = text.Font.Bold()
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
@@ -967,7 +1019,7 @@ class CodeView(wx.Panel):
     def _create_code(self, code_paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
-        text = wx.StaticText(panel, label=code_paragraph["text"])
+        text = wx.StaticText(panel, label=code_paragraph.text)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
@@ -1009,7 +1061,7 @@ class CodeEditor(wx.Panel):
     def _create_path(self, code_paragraph):
         self.path = wx.TextCtrl(
             self,
-            value=" / ".join(code_paragraph["path"])
+            value=" / ".join(code_paragraph.path)
         )
         return self.path
 
@@ -1017,7 +1069,7 @@ class CodeEditor(wx.Panel):
         self.text = wx.TextCtrl(
             self,
             style=wx.TE_MULTILINE,
-            value=code_paragraph["text"]
+            value=code_paragraph.text
         )
         # Error is printed if height is too small:
         # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
@@ -1070,10 +1122,10 @@ class Factory(ParagraphBase, wx.Panel):
         self.SetSizer(self.vsizer)
 
     def OnTextButton(self, event):
-        self.document.edit_paragraph(self.paragraph["id"], {"type": "text", "text": "Enter text here..."})
+        self.document.edit_paragraph(self.paragraph.id, {"type": "text", "text": "Enter text here..."})
 
     def OnCodeButton(self, event):
-        self.document.edit_paragraph(self.paragraph["id"], {"type": "code", "path": [], "text": "Enter code here..."})
+        self.document.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
 
 
 class Title(Editable):
@@ -1086,21 +1138,21 @@ class Title(Editable):
     def CreateView(self):
         view = wx.StaticText(
             self,
-            label=self.page["title"],
+            label=self.page.title,
             style=wx.ST_ELLIPSIZE_END
         )
-        view.SetToolTip(wx.ToolTip(self.page["title"]))
+        view.SetToolTip(wx.ToolTip(self.page.title))
         increase_font(view)
         return view
 
     def CreateEdit(self):
-        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page["title"])
+        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
         edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
         increase_font(edit)
         return edit
 
     def EndEdit(self):
-        self.document.edit_page(self.page["id"], {"title": self.edit.Value})
+        self.document.edit_page(self.page.id, {"title": self.edit.Value})
 
 
 def increase_font(control):
