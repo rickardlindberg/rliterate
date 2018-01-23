@@ -107,6 +107,8 @@ class Document(object):
 
     def move_page(self, page_id, parent_page_id, before_page_id):
         with self.notify():
+            if page_id == before_page_id:
+                return
             parent = self._parent_pages[page_id]
             page = parent["children"].pop(self._child_index(parent, page_id))
             new_parent = self._pages[parent_page_id]
