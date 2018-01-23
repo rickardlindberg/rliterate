@@ -17,6 +17,8 @@ TreeToggle, EVT_TREE_TOGGLE = wx.lib.newevent.NewCommandEvent()
 TreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()
 TreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()
 TreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()
+ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
+ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
 
 
 class Listener(object):
@@ -662,6 +664,7 @@ class Page(wx.Panel):
             ))
             divider = self.AddParagraph({
                 "text": Paragraph,
+                "code": Code,
                 "factory": Factory,
             }[paragraph["type"]](self, self.document, self.page_id, paragraph))
         self.drop_points.append(PageDropPoint(
@@ -755,21 +758,26 @@ class Editable(wx.Panel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
         self.SetSizer(self.sizer)
-        self.view.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
+        self.view.Bind(wx.EVT_LEFT_DCLICK, self.OnParagraphEditStart)
+        self.view.Bind(EVT_PARAGRAPH_EDIT_START, self.OnParagraphEditStart)
 
-    def OnLeftDclick(self, event):
+    def OnParagraphEditStart(self, event):
         self.edit = self.CreateEdit()
         self.edit.SetFocus()
         self.edit.Bind(wx.EVT_CHAR, self.OnChar)
+        self.edit.Bind(EVT_PARAGRAPH_EDIT_END, self.OnParagraphEditEnd)
         self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
         self.sizer.Hide(self.view)
         self.GetTopLevelParent().Layout()
 
+    def OnParagraphEditEnd(self, event):
+        self.EndEdit()
+
     def OnChar(self, event):
         if event.KeyCode == wx.WXK_CONTROL_S:
-            self.EndEdit()
+            self.OnParagraphEditEnd()
         elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
-            self.EndEdit()
+            self.OnParagraphEditEnd()
         else:
             event.Skip()
 
@@ -804,6 +812,20 @@ class ParagraphBase(object):
 
 
 class MouseEventHelper(object):
+
+    @classmethod
+    def bind(cls, windows, drag=None, click=None, right_click=None,
+             double_click=None):
+        for window in windows:
+            mouse_event_helper = cls(window)
+            if drag is not None:
+                mouse_event_helper.OnDrag = drag
+            if click is not None:
+                mouse_event_helper.OnClick = click
+            if right_click is not None:
+                mouse_event_helper.OnRightClick = right_click
+            if double_click is not None:
+                mouse_event_helper.OnDoubleClick = double_click
 
     def __init__(self, window):
         self.down_pos = None
@@ -882,6 +904,130 @@ class Paragraph(ParagraphBase, Editable):
         self.document.edit_paragraph(self.paragraph["id"], {"text": self.edit.Value})
 
 
+class Code(ParagraphBase, Editable):
+
+    def __init__(self, parent, document, page_id, paragraph):
+        ParagraphBase.__init__(self, document, page_id, paragraph)
+        Editable.__init__(self, parent)
+
+    def CreateView(self):
+        return CodeView(self, self.paragraph)
+
+    def CreateEdit(self):
+        return CodeEditor(self, self.view, self.paragraph)
+
+    def EndEdit(self):
+        self.document.edit_paragraph(self.paragraph["id"], {
+            "path": self.edit.path.Value.split(" / "),
+            "text": self.edit.text.Value,
+        })
+
+
+class CodeView(wx.Panel):
+
+    BORDER = 1
+    PADDING = 5
+
+    def __init__(self, parent, code_paragraph):
+        wx.Panel.__init__(self, parent)
+        self.Font = wx.Font(
+            10,
+            wx.FONTFAMILY_TELETYPE,
+            wx.FONTSTYLE_NORMAL,
+            wx.FONTWEIGHT_NORMAL,
+            False
+        )
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.vsizer.Add(
+            self._create_path(code_paragraph),
+            flag=wx.ALL|wx.EXPAND, border=self.BORDER
+        )
+        self.vsizer.Add(
+            self._create_code(code_paragraph),
+            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
+        )
+        self.SetSizer(self.vsizer)
+        self.SetBackgroundColour((243, 236, 219))
+
+    def _create_path(self, code_paragraph):
+        panel = wx.Panel(self)
+        panel.SetBackgroundColour((248, 241, 223))
+        text = wx.StaticText(panel, label=" / ".join(code_paragraph["path"]))
+        text.Font = text.Font.Bold()
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
+        panel.SetSizer(sizer)
+        MouseEventHelper.bind([panel, text], click=self._post_paragraph_edit_start)
+        return panel
+
+    def _create_code(self, code_paragraph):
+        panel = wx.Panel(self)
+        panel.SetBackgroundColour((253, 246, 227))
+        text = wx.StaticText(panel, label=code_paragraph["text"])
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
+        panel.SetSizer(sizer)
+        MouseEventHelper.bind([panel, text], click=self._post_paragraph_edit_start)
+        return panel
+
+    def _post_paragraph_edit_start(self):
+        wx.PostEvent(self, ParagraphEditStart(0))
+
+
+class CodeEditor(wx.Panel):
+
+    BORDER = 1
+    PADDING = 3
+
+    def __init__(self, parent, view, code_paragraph):
+        wx.Panel.__init__(self, parent)
+        self.view = view
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.vsizer.Add(
+            self._create_path(code_paragraph),
+            flag=wx.ALL|wx.EXPAND, border=self.BORDER
+        )
+        self.vsizer.Add(
+            self._create_code(code_paragraph),
+            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
+        )
+        self.vsizer.Add(
+            self._create_save(),
+            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
+        )
+        self.SetSizer(self.vsizer)
+
+    def _create_path(self, code_paragraph):
+        self.path = wx.TextCtrl(
+            self,
+            value=" / ".join(code_paragraph["path"])
+        )
+        return self.path
+
+    def _create_code(self, code_paragraph):
+        self.text = wx.TextCtrl(
+            self,
+            style=wx.TE_MULTILINE,
+            value=code_paragraph["text"]
+        )
+        # Error is printed if height is too small:
+        # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
+        # Solution: Make it at least 50 heigh.
+        self.text.MinSize = (-1, max(50, self.view.Size[1]))
+        return self.text
+
+    def _create_save(self):
+        button = wx.Button(
+            self,
+            label="Save"
+        )
+        self.Bind(wx.EVT_BUTTON, lambda event: self._post_paragraph_edit_end())
+        return button
+
+    def _post_paragraph_edit_end(self):
+        wx.PostEvent(self, ParagraphEditEnd(0))
+
+
 class Factory(ParagraphBase, wx.Panel):
 
     def __init__(self, parent, document, page_id, paragraph):
@@ -889,28 +1035,32 @@ class Factory(ParagraphBase, wx.Panel):
         wx.Panel.__init__(self, parent)
         self.configure_drag(self)
         self.SetBackgroundColour((240, 240, 240))
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.vsizer.Add(
             wx.StaticText(self, label="Factory"),
             flag=wx.TOP|wx.ALIGN_CENTER,
             border=PARAGRAPH_SPACE
         )
-        text_button = wx.Button(
-            self,
-            label="Text",
-            style=wx.NO_BORDER
-        )
-        text_button.Bind(wx.EVT_BUTTON, self.OnTextButton)
-        self.sizer.Add(
-            text_button,
+        self.vsizer.Add(
+            self.hsizer,
             flag=wx.TOP|wx.ALIGN_CENTER,
             border=PARAGRAPH_SPACE
         )
-        self.sizer.AddSpacer(PARAGRAPH_SPACE)
-        self.SetSizer(self.sizer)
+        text_button = wx.Button(self, label="Text")
+        text_button.Bind(wx.EVT_BUTTON, self.OnTextButton)
+        self.hsizer.Add(text_button, flag=wx.ALL, border=2)
+        code_button = wx.Button(self, label="Code")
+        code_button.Bind(wx.EVT_BUTTON, self.OnCodeButton)
+        self.hsizer.Add(code_button, flag=wx.ALL, border=2)
+        self.vsizer.AddSpacer(PARAGRAPH_SPACE)
+        self.SetSizer(self.vsizer)
 
     def OnTextButton(self, event):
         self.document.edit_paragraph(self.paragraph["id"], {"type": "text", "text": "Enter text here..."})
+
+    def OnCodeButton(self, event):
+        self.document.edit_paragraph(self.paragraph["id"], {"type": "code", "path": [], "text": "Enter code here..."})
 
 
 class Title(Editable):
@@ -941,11 +1091,15 @@ class Title(Editable):
 
 
 def increase_font(control):
+    change_font(control, control.Font.Larger().Larger())
+
+
+def change_font(control, new_font):
     # The space for this control is not calculated correctly when changing
     # the font. Setting min height explicitly seems to work.
     old_char_height = control.GetCharHeight()
     old_height = control.Size[1]
-    control.Font = control.Font.Larger().Larger()
+    control.Font = new_font
     control.MinSize = (-1, old_height + (control.GetCharHeight() - old_char_height))
 
 
