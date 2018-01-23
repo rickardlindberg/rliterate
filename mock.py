@@ -42,6 +42,7 @@ class Document(object):
     def __init__(self, path):
         self.path = path
         self.listeners = []
+        self._notify_count = 0
         self._load()
         self._cache()
 
@@ -77,10 +78,13 @@ class Document(object):
 
     @contextlib.contextmanager
     def notify(self):
+        self._notify_count += 1
         yield
-        for fn in self.listeners:
-            fn()
-        self._save()
+        self._notify_count -= 1
+        if self._notify_count == 0:
+            for fn in self.listeners:
+                fn()
+            self._save()
 
     # Queries
 
@@ -108,7 +112,7 @@ class Document(object):
         with self.notify():
             page = self._pages[page_id]
             parent_page = self._parent_pages[page_id]
-            index = self._child_index(parent_page, page_id)
+            index = index_with_id(parent_page["children"], page_id)
             parent_page["children"].pop(index)
             self._pages.pop(page_id)
             self._parent_pages.pop(page_id)
@@ -126,25 +130,20 @@ class Document(object):
                     return
                 parent = self._parent_pages[parent["id"]]
             parent = self._parent_pages[page_id]
-            page = parent["children"].pop(self._child_index(parent, page_id))
+            page = parent["children"].pop(index_with_id(parent["children"], page_id))
             new_parent = self._pages[parent_page_id]
             self._parent_pages[page_id] = new_parent
             if before_page_id is None:
                 new_parent["children"].append(page)
             else:
                 new_parent["children"].insert(
-                    self._child_index(new_parent, before_page_id),
+                    index_with_id(new_parent["children"], before_page_id),
                     page
                 )
 
     def edit_page(self, page_id, data):
         with self.notify():
             self._pages[page_id].update(data)
-
-    def _child_index(self, page, child_id):
-        for index, child in enumerate(page["children"]):
-            if child["id"] == child_id:
-                return index
 
     # Paragraph operations
 
@@ -164,30 +163,22 @@ class Document(object):
             if (source_page == target_page and
                 source_paragraph == before_paragraph):
                 return
-            paragraph = self._remove_paragraph(source_page, source_paragraph)
+            paragraph = self.delete_paragraph(source_page, source_paragraph)
             self._add_paragraph(target_page, paragraph, before_id=before_paragraph)
-
-    def _remove_paragraph(self, page_id, paragraph_id):
-        paragraphs = self._pages[page_id]["paragraphs"]
-        paragraphs.pop(self._p_index(paragraphs, paragraph_id))
-        return self._paragraphs.pop(paragraph_id)
 
     def _add_paragraph(self, page_id, paragraph, before_id):
         paragraphs = self._pages[page_id]["paragraphs"]
         if before_id is None:
             paragraphs.append(paragraph)
         else:
-            paragraphs.insert(self._p_index(paragraphs, before_id), paragraph)
+            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)
         self._paragraphs[paragraph["id"]] = paragraph
-
-    def _p_index(self, paragraphs, paragraph_id):
-        for index, p in enumerate(paragraphs):
-            if p["id"] == paragraph_id:
-                return index
 
     def delete_paragraph(self, page_id, paragraph_id):
         with self.notify():
-            self._remove_paragraph(page_id, paragraph_id)
+            paragraphs = self._pages[page_id]["paragraphs"]
+            paragraphs.pop(index_with_id(paragraphs, paragraph_id))
+            return self._paragraphs.pop(paragraph_id)
 
     def edit_paragraph(self, paragraph_id, data):
         with self.notify():
@@ -978,6 +969,12 @@ def min_or_none(items, key):
     if not items:
         return None
     return min(items, key=key)
+
+
+def index_with_id(items, item_id):
+    for index, item in enumerate(items):
+        if item["id"] == item_id:
+            return index
 
 
 if __name__ == "__main__":
