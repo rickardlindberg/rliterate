@@ -185,9 +185,9 @@ class Document(object):
             if p["id"] == paragraph_id:
                 return index
 
-    def remove_paragraph(self, page_id, paragraph_id):
+    def delete_paragraph(self, page_id, paragraph_id):
         with self.notify():
-            pass
+            self._remove_paragraph(page_id, paragraph_id)
 
     def edit_paragraph(self, paragraph_id, data):
         with self.notify():
@@ -408,6 +408,26 @@ class PageContextMenu(wx.Menu):
         self.Bind(
             wx.EVT_MENU,
             lambda event: self.document.delete_page(page_id=self.page_id),
+            self.Append(wx.NewId(), "Delete")
+        )
+
+
+class ParagraphContextMenu(wx.Menu):
+
+    def __init__(self, document, page_id, paragraph_id):
+        wx.Menu.__init__(self)
+        self.document = document
+        self.page_id = page_id
+        self.paragraph_id = paragraph_id
+        self._create_menu()
+
+    def _create_menu(self):
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.delete_paragraph(
+                page_id=self.page_id,
+                paragraph_id=self.paragraph_id
+            ),
             self.Append(wx.NewId(), "Delete")
         )
 
@@ -773,6 +793,7 @@ class ParagraphBase(object):
     def configure_drag(self, window):
         self.mouse_event_helper = MouseEventHelper(window)
         self.mouse_event_helper.OnDrag = self._on_drag
+        self.mouse_event_helper.OnRightClick = self._on_right_click
 
     def _on_drag(self):
         data = RliterateDataObject("paragraph", {
@@ -782,6 +803,13 @@ class ParagraphBase(object):
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+
+    def _on_right_click(self):
+        menu = ParagraphContextMenu(
+            self.document, self.page_id, self.paragraph["id"]
+        )
+        self.PopupMenu(menu)
+        menu.Destroy()
 
 
 class MouseEventHelper(object):

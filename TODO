@@ -12,7 +12,6 @@ Problems:
 * Missing page operations
     * Add (before, after)
 * Missing paragraph operations
-    * Context menu with delete
     * Context menu with add paragraph before/after
 * Deleted pages are not removed from workspace
 
