@@ -15,6 +15,7 @@ PARAGRAPH_SPACE = 15
 
 TreeToggle, EVT_TREE_TOGGLE = wx.lib.newevent.NewCommandEvent()
 TreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()
+TreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()
 TreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()
 
 
@@ -99,7 +100,16 @@ class Document(object):
 
     def add_page(self, title="New page", parent_id=None):
         with self.notify():
-            pass
+            page = {
+                "id": genid(),
+                "title": "New page...",
+                "children": [],
+                "paragraphs": [],
+            }
+            parent_page = self._pages[parent_id]
+            parent_page["children"].append(page)
+            self._pages[page["id"]] = page
+            self._parent_pages[page["id"]] = parent_page
 
     def remove_page(self, page_id):
         with self.notify():
@@ -291,6 +301,7 @@ class TableOfContents(wx.ScrolledWindow):
         self.workspace = workspace
         self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)
         self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)
+        self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)
         self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
         self.SetDropTarget(TableOfContentsDropTarget(self))
 
@@ -316,6 +327,9 @@ class TableOfContents(wx.ScrolledWindow):
 
     def OnTreeLeftClick(self, event):
         self.workspace.OpenScratch([event.page_id])
+
+    def OnTreeRightClick(self, event):
+        self.document.add_page(parent_id=event.page_id)
 
     def OnTreeDoubleClick(self, event):
         page_ids = [event.page_id]
@@ -387,6 +401,7 @@ class TableOfContentsRow(wx.Panel):
         self.SetSizer(self.sizer)
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
+        self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
             helper.OnClick = self.OnClick
             helper.OnDrag = self.OnDrag
@@ -396,6 +411,9 @@ class TableOfContentsRow(wx.Panel):
 
     def OnClick(self):
         wx.PostEvent(self, TreeLeftClick(0, page_id=self.page_id))
+
+    def OnRightUp(self, event):
+        wx.PostEvent(self, TreeRightClick(0, page_id=self.page_id))
 
     def OnDoubleClick(self):
         wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page_id))
