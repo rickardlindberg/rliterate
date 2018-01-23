@@ -10,7 +10,6 @@ Problems:
     * Remove single newlines
     * Remove paragraph if text is empty
 * Missing page operations
-    * Delete
     * Add (before, after)
 * Missing paragraph operations
     * Context menu with delete

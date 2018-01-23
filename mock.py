@@ -111,9 +111,17 @@ class Document(object):
             self._pages[page["id"]] = page
             self._parent_pages[page["id"]] = parent_page
 
-    def remove_page(self, page_id):
+    def delete_page(self, page_id):
         with self.notify():
-            pass
+            page = self._pages[page_id]
+            parent_page = self._parent_pages[page_id]
+            index = self._child_index(parent_page, page_id)
+            parent_page["children"].pop(index)
+            self._pages.pop(page_id)
+            self._parent_pages.pop(page_id)
+            for child in reversed(page["children"]):
+                parent_page["children"].insert(index, child)
+                self._parent_pages[child["id"]] = parent_page
 
     def move_page(self, page_id, parent_page_id, before_page_id):
         with self.notify():
@@ -402,6 +410,12 @@ class PageContextMenu(wx.Menu):
             wx.EVT_MENU,
             lambda event: self.document.add_page(parent_id=self.page_id),
             self.Append(wx.NewId(), "Add child")
+        )
+        self.AppendSeparator()
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.delete_page(page_id=self.page_id),
+            self.Append(wx.NewId(), "Delete")
         )
 
 
