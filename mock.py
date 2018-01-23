@@ -2,6 +2,8 @@ import contextlib
 import json
 import uuid
 from collections import defaultdict
+import os
+import re
 
 import wx
 import wx.lib.newevent
@@ -236,7 +238,55 @@ class DictParagraph(object):
 
     @property
     def path(self):
-        return list(self._paragraph_dict["path"])
+        return tuple(self._paragraph_dict["path"])
+
+
+class FileGenerator(object):
+
+    def __init__(self):
+        self.listener = Listener(self._generate)
+
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
+
+    def _generate(self):
+        self._parts = defaultdict(list)
+        self._collect_parts(self.document.get_page())
+        self._generate_files()
+
+    def _collect_parts(self, page):
+        for paragraph in page.paragraphs:
+            if paragraph.type == "code":
+                for line in paragraph.text.splitlines():
+                    self._parts[paragraph.path].append(line)
+        for child in page.children:
+            self._collect_parts(child)
+
+    def _generate_files(self):
+        for key in self._parts.keys():
+            filepath = self._get_filepath(key)
+            if filepath is not None:
+                with open(filepath, "w") as f:
+                    self._render(f, key)
+
+    def _render(self, f, key, prefix=""):
+        for line in self._parts[key]:
+            match = re.match(r"^(\s*)(<<.*>>)\s*$", line)
+            if match:
+                self._render(f, key + (match.group(2),), prefix=match.group(1))
+            else:
+                f.write(prefix)
+                f.write(line)
+                f.write("\n")
+
+    def _get_filepath(self, key):
+        if len(key) == 0:
+            return None
+        for part in key:
+            if part.startswith("<<") and part.endswith(">>"):
+                return None
+        return os.path.join(*key)
 
 
 class MainFrame(wx.Frame):
@@ -244,6 +294,7 @@ class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None)
         document = Document.from_file("example.rliterate")
+        FileGenerator().set_document(document)
         workspace = Workspace(self, document)
         toc = TableOfContents(self, workspace, document)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
