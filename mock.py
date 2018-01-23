@@ -259,7 +259,7 @@ class TableOfContentsDropPoint(object):
 
     def x_distance_to(self, x):
         left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
-        span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * self.indentation + 0.5
+        span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * (self.indentation + 1.5)
         return abs(span_x_center - x)
 
     def y_distance_to(self, y):
