@@ -334,7 +334,9 @@ class TableOfContents(wx.ScrolledWindow):
         self.workspace.OpenScratch([event.page_id])
 
     def OnTreeRightClick(self, event):
-        self.document.add_page(parent_id=event.page_id)
+        menu = PageContextMenu(self.document, event.page_id)
+        self.PopupMenu(menu)
+        menu.Destroy()
 
     def OnTreeDoubleClick(self, event):
         page_ids = [event.page_id]
@@ -385,6 +387,22 @@ class TableOfContents(wx.ScrolledWindow):
                     before_page_id=None if next_child is None else next_child["id"]
                 ))
         return divider
+
+
+class PageContextMenu(wx.Menu):
+
+    def __init__(self, document, page_id):
+        wx.Menu.__init__(self)
+        self.document = document
+        self.page_id = page_id
+        self._create_menu()
+
+    def _create_menu(self):
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.add_page(parent_id=self.page_id),
+            self.Append(wx.NewId(), "Add child")
+        )
 
 
 class TableOfContentsRow(wx.Panel):
