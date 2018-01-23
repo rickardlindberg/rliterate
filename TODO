@@ -14,7 +14,6 @@ Problems:
 * Missing paragraph operations
     * Context menu with delete
     * Context menu with add paragraph before/after
-* Click does not work in TOC label
 * Deleted pages are not removed from workspace
 
 Ideas:

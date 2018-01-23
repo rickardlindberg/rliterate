@@ -438,9 +438,9 @@ class TableOfContentsRow(wx.Panel):
         self.SetSizer(self.sizer)
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
-        self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
             helper.OnClick = self.OnClick
+            helper.OnRightClick = self.OnRightClick
             helper.OnDrag = self.OnDrag
             helper.OnDoubleClick = self.OnDoubleClick
         self.original_colour = self.Parent.GetBackgroundColour()
@@ -449,7 +449,7 @@ class TableOfContentsRow(wx.Panel):
     def OnClick(self):
         wx.PostEvent(self, TreeLeftClick(0, page_id=self.page_id))
 
-    def OnRightUp(self, event):
+    def OnRightClick(self):
         wx.PostEvent(self, TreeRightClick(0, page_id=self.page_id))
 
     def OnDoubleClick(self):
@@ -799,11 +799,15 @@ class MouseEventHelper(object):
         window.Bind(wx.EVT_MOTION, self._on_motion)
         window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
         window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
+        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
 
     def OnDrag(self):
         pass
 
     def OnClick(self):
+        pass
+
+    def OnRightClick(self):
         pass
 
     def OnDoubleClick(self):
@@ -833,6 +837,9 @@ class MouseEventHelper(object):
 
     def _on_left_dclick(self, event):
         self.OnDoubleClick()
+
+    def _on_right_up(self, event):
+        self.OnRightClick()
 
 
 class Paragraph(ParagraphBase, Editable):
