@@ -1,7 +1,6 @@
 Problems:
 
 * Multiple editors can be opened (only last opened is saved)
-* Title texts animates to bigger when going to edit mode
 * Factory should drop right into edit mode
 * Highlighting of toc rows is not always up to date
 * Invalid drop targets are still shown

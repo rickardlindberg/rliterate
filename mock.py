@@ -981,13 +981,7 @@ class CodeView(wx.Panel):
 
     def __init__(self, parent, code_paragraph):
         wx.Panel.__init__(self, parent)
-        self.Font = wx.Font(
-            10,
-            wx.FONTFAMILY_TELETYPE,
-            wx.FONTSTYLE_NORMAL,
-            wx.FONTWEIGHT_NORMAL,
-            False
-        )
+        self.Font = create_font(monospace=True)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.vsizer.Add(
             self._create_path(code_paragraph),
@@ -1136,40 +1130,36 @@ class Title(Editable):
         Editable.__init__(self, parent)
 
     def CreateView(self):
+        self.Font = create_font(size=16)
         view = wx.StaticText(
             self,
             label=self.page.title,
             style=wx.ST_ELLIPSIZE_END
         )
         view.SetToolTip(wx.ToolTip(self.page.title))
-        increase_font(view)
         return view
 
     def CreateEdit(self):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
         edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
-        increase_font(edit)
         return edit
 
     def EndEdit(self):
         self.document.edit_page(self.page.id, {"title": self.edit.Value})
 
 
-def increase_font(control):
-    change_font(control, control.Font.Larger().Larger())
-
-
-def change_font(control, new_font):
-    # The space for this control is not calculated correctly when changing
-    # the font. Setting min height explicitly seems to work.
-    old_char_height = control.GetCharHeight()
-    old_height = control.Size[1]
-    control.Font = new_font
-    control.MinSize = (-1, old_height + (control.GetCharHeight() - old_char_height))
-
-
 def genid():
     return uuid.uuid4().hex
+
+
+def create_font(monospace=False, size=10, bold=False):
+    return wx.Font(
+        size,
+        wx.FONTFAMILY_TELETYPE if monospace else wx.FONTFAMILY_DEFAULT,
+        wx.FONTSTYLE_NORMAL,
+        wx.FONTWEIGHT_BOLD if bold else wx.FONTWEIGHT_NORMAL,
+        False
+    )
 
 
 def find_first(items, action):
