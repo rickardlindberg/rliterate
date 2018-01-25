@@ -228,6 +228,19 @@ This is a tool for literal programming.
         @property
         def path(self):
             return tuple(self._paragraph_dict["path"])
+    
+        @property
+        def filename(self):
+            last_part = ""
+            for part in self.path:
+                if part.startswith("<<"):
+                    break
+                last_part = part
+            return last_part
+    
+        @property
+        def highlighted_code(self):
+            return pygments.lexers.get_lexer_for_filename(self.filename).get_tokens(self.text)
 
 
 ### Generating output
@@ -1451,6 +1464,8 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     
     import wx
     import wx.lib.newevent
+    import pygments.lexers
+    import pygments.token
     
     
     <<constants>>
