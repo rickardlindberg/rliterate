@@ -358,7 +358,7 @@ class FileGenerator(object):
         for line in self._parts[key]:
             match = re.match(r"^(\s*)(<<.*>>)\s*$", line)
             if match:
-                self._render(f, key + (match.group(2),), prefix=match.group(1))
+                self._render(f, key + (match.group(2),), prefix=prefix+match.group(1))
             else:
                 if len(line) > 0:
                     f.write(prefix)
