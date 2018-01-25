@@ -332,44 +332,6 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class TableOfContentsDropTarget(DropPointDropTarget):
-
-    def __init__(self, toc):
-        DropPointDropTarget.__init__(self, toc, "page")
-        self.toc = toc
-
-    def OnDataDropped(self, dropped_page, drop_point):
-        self.toc.document.move_page(
-            page_id=dropped_page["page_id"],
-            parent_page_id=drop_point.parent_page_id,
-            before_page_id=drop_point.before_page_id
-        )
-class TableOfContentsDropPoint(object):
-
-    def __init__(self, divider, indentation, parent_page_id, before_page_id):
-        self.divider = divider
-        self.indentation = indentation
-        self.parent_page_id = parent_page_id
-        self.before_page_id = before_page_id
-
-    def x_distance_to(self, x):
-        left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
-        span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * (self.indentation + 1.5)
-        return abs(span_x_center - x)
-
-    def y_distance_to(self, y):
-        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
-
-    def Show(self):
-        self.divider.Show(sum([
-            TableOfContentsRow.BORDER,
-            TableOfContentsButton.SIZE,
-            1,
-            self.indentation*TableOfContentsRow.INDENTATION_SIZE,
-        ]))
-
-    def Hide(self):
-        self.divider.Hide()
 class TableOfContents(wx.ScrolledWindow):
 
     def __init__(self, parent, workspace, document):
@@ -465,44 +427,6 @@ class TableOfContents(wx.ScrolledWindow):
                     before_page_id=None if next_child is None else next_child.id
                 ))
         return divider
-class PageContextMenu(wx.Menu):
-
-    def __init__(self, document, page_id):
-        wx.Menu.__init__(self)
-        self.document = document
-        self.page_id = page_id
-        self._create_menu()
-
-    def _create_menu(self):
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: self.document.add_page(parent_id=self.page_id),
-            self.Append(wx.NewId(), "Add child")
-        )
-        self.AppendSeparator()
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: self.document.delete_page(page_id=self.page_id),
-            self.Append(wx.NewId(), "Delete")
-        )
-class ParagraphContextMenu(wx.Menu):
-
-    def __init__(self, document, page_id, paragraph_id):
-        wx.Menu.__init__(self)
-        self.document = document
-        self.page_id = page_id
-        self.paragraph_id = paragraph_id
-        self._create_menu()
-
-    def _create_menu(self):
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: self.document.delete_paragraph(
-                page_id=self.page_id,
-                paragraph_id=self.paragraph_id
-            ),
-            self.Append(wx.NewId(), "Delete")
-        )
 class TableOfContentsRow(wx.Panel):
 
     BORDER = 2
@@ -578,6 +502,82 @@ class TableOfContentsButton(wx.Panel):
             dc,
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
             flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED
+        )
+class TableOfContentsDropPoint(object):
+
+    def __init__(self, divider, indentation, parent_page_id, before_page_id):
+        self.divider = divider
+        self.indentation = indentation
+        self.parent_page_id = parent_page_id
+        self.before_page_id = before_page_id
+
+    def x_distance_to(self, x):
+        left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
+        span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * (self.indentation + 1.5)
+        return abs(span_x_center - x)
+
+    def y_distance_to(self, y):
+        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
+
+    def Show(self):
+        self.divider.Show(sum([
+            TableOfContentsRow.BORDER,
+            TableOfContentsButton.SIZE,
+            1,
+            self.indentation*TableOfContentsRow.INDENTATION_SIZE,
+        ]))
+
+    def Hide(self):
+        self.divider.Hide()
+class TableOfContentsDropTarget(DropPointDropTarget):
+
+    def __init__(self, toc):
+        DropPointDropTarget.__init__(self, toc, "page")
+        self.toc = toc
+
+    def OnDataDropped(self, dropped_page, drop_point):
+        self.toc.document.move_page(
+            page_id=dropped_page["page_id"],
+            parent_page_id=drop_point.parent_page_id,
+            before_page_id=drop_point.before_page_id
+        )
+class PageContextMenu(wx.Menu):
+
+    def __init__(self, document, page_id):
+        wx.Menu.__init__(self)
+        self.document = document
+        self.page_id = page_id
+        self._create_menu()
+
+    def _create_menu(self):
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.add_page(parent_id=self.page_id),
+            self.Append(wx.NewId(), "Add child")
+        )
+        self.AppendSeparator()
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.delete_page(page_id=self.page_id),
+            self.Append(wx.NewId(), "Delete")
+        )
+class ParagraphContextMenu(wx.Menu):
+
+    def __init__(self, document, page_id, paragraph_id):
+        wx.Menu.__init__(self)
+        self.document = document
+        self.page_id = page_id
+        self.paragraph_id = paragraph_id
+        self._create_menu()
+
+    def _create_menu(self):
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.delete_paragraph(
+                page_id=self.page_id,
+                paragraph_id=self.paragraph_id
+            ),
+            self.Append(wx.NewId(), "Delete")
         )
 class RliterateDataObject(wx.CustomDataObject):
 
