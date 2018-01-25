@@ -613,7 +613,6 @@ class PageContextMenu(wx.Menu):
             self.Append(wx.NewId(), "Delete")
         )
 class Workspace(wx.ScrolledWindow):
-
     def __init__(self, parent, document):
         wx.ScrolledWindow.__init__(self, parent)
         self.SetScrollRate(20, 20)
@@ -1036,6 +1035,42 @@ class ParagraphContextMenu(wx.Menu):
             ),
             self.Append(wx.NewId(), "Delete")
         )
+class RliterateDataObject(wx.CustomDataObject):
+
+    def __init__(self, kind, json=None):
+        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
+        if json is not None:
+            self.set_json(json)
+
+    def set_json(self, data):
+        self.SetData(json.dumps(data))
+
+    def get_json(self):
+        return json.loads(self.GetData())
+class Divider(wx.Panel):
+
+    def __init__(self, parent, padding=0, height=1):
+        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
+        self.line = wx.Panel(self, size=(-1, height))
+        self.line.SetBackgroundColour((255, 100, 0))
+        self.line.Hide()
+        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.vsizer.AddStretchSpacer(1)
+        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.vsizer.AddStretchSpacer(1)
+        self.SetSizer(self.vsizer)
+
+    def Show(self, left_space=0):
+        self.line.Show()
+        self.hsizer.Clear(False)
+        self.hsizer.Add((left_space, 1))
+        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
+        self.Layout()
+
+    def Hide(self):
+        self.line.Hide()
+        self.Layout()
 class MouseEventHelper(object):
 
     @classmethod
@@ -1099,42 +1134,6 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
-class RliterateDataObject(wx.CustomDataObject):
-
-    def __init__(self, kind, json=None):
-        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
-        if json is not None:
-            self.set_json(json)
-
-    def set_json(self, data):
-        self.SetData(json.dumps(data))
-
-    def get_json(self):
-        return json.loads(self.GetData())
-class Divider(wx.Panel):
-
-    def __init__(self, parent, padding=0, height=1):
-        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
-        self.line = wx.Panel(self, size=(-1, height))
-        self.line.SetBackgroundColour((255, 100, 0))
-        self.line.Hide()
-        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.vsizer.AddStretchSpacer(1)
-        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.vsizer.AddStretchSpacer(1)
-        self.SetSizer(self.vsizer)
-
-    def Show(self, left_space=0):
-        self.line.Show()
-        self.hsizer.Clear(False)
-        self.hsizer.Add((left_space, 1))
-        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
-        self.Layout()
-
-    def Hide(self):
-        self.line.Hide()
-        self.Layout()
 def genid():
     return uuid.uuid4().hex
 
