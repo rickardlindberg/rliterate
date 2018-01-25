@@ -372,12 +372,48 @@ class FileGenerator(object):
             if part.startswith("<<") and part.endswith(">>"):
                 return None
         return os.path.join(*key)
+class MarkdownGenerator(object):
+
+    def __init__(self, path):
+        self.listener = Listener(self._generate)
+        self.path = path
+
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
+
+    def _generate(self):
+        with open(self.path, "w") as f:
+            self._render_page(f, self.document.get_page())
+
+    def _render_page(self, f, page, level=1):
+        f.write("#"*level+" "+page.title+"\n\n")
+        for paragraph in page.paragraphs:
+            {
+                "text": self._render_text,
+                "code": self._render_code,
+            }.get(paragraph.type, self._render_unknown)(f, paragraph)
+        for child in page.children:
+            self._render_page(f, child, level+1)
+
+    def _render_text(self, f, text):
+        f.write(text.text+"\n\n")
+
+    def _render_code(self, f, code):
+        f.write("`"+" / ".join(code.path)+"`:\n\n")
+        for line in code.text.splitlines():
+            f.write("    "+line+"\n")
+        f.write("\n\n")
+
+    def _render_unknown(self, f, paragraph):
+        f.write("Unknown type = "+paragraph.type+"\n\n")
 class MainFrame(wx.Frame):
 
     def __init__(self, filepath):
         wx.Frame.__init__(self, None)
         document = Document.from_file(filepath)
         FileGenerator().set_document(document)
+        MarkdownGenerator(filepath+".markdown").set_document(document)
         workspace = Workspace(self, document)
         toc = TableOfContents(self, workspace, document)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
