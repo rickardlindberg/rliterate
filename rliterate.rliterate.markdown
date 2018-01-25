@@ -1030,6 +1030,7 @@ A workspace is a container for editable content. Most commonly pages.
     
         def __init__(self, parent, view, code_paragraph):
             wx.Panel.__init__(self, parent)
+            self.Font = create_font(monospace=True)
             self.view = view
             self.vsizer = wx.BoxSizer(wx.VERTICAL)
             self.vsizer.Add(
