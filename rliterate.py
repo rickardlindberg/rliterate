@@ -5,6 +5,8 @@ from collections import defaultdict
 import os
 import re
 import sys
+import tempfile
+import subprocess
 
 import wx
 import wx.lib.newevent
@@ -42,7 +44,7 @@ class ParagraphBase(object):
 
     def ShowContextMenu(self):
         menu = ParagraphContextMenu(
-            self.document, self.page_id, self.paragraph.id
+            self.document, self.page_id, self.paragraph
         )
         self.PopupMenu(menu)
         menu.Destroy()
@@ -1071,11 +1073,11 @@ class Factory(ParagraphBase, wx.Panel):
         self.document.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
 class ParagraphContextMenu(wx.Menu):
 
-    def __init__(self, document, page_id, paragraph_id):
+    def __init__(self, document, page_id, paragraph):
         wx.Menu.__init__(self)
         self.document = document
         self.page_id = page_id
-        self.paragraph_id = paragraph_id
+        self.paragraph = paragraph
         self._create_menu()
 
     def _create_menu(self):
@@ -1083,9 +1085,17 @@ class ParagraphContextMenu(wx.Menu):
             wx.EVT_MENU,
             lambda event: self.document.delete_paragraph(
                 page_id=self.page_id,
-                paragraph_id=self.paragraph_id
+                paragraph_id=self.paragraph.id
             ),
             self.Append(wx.NewId(), "Delete")
+        )
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.edit_paragraph(
+                self.paragraph.id,
+                {"text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)}
+            ),
+            self.Append(wx.NewId(), "Edit in gvim")
         )
 class RliterateDataObject(wx.CustomDataObject):
 
@@ -1222,6 +1232,13 @@ def index_with_id(items, item_id):
     for index, item in enumerate(items):
         if item["id"] == item_id:
             return index
+def edit_in_gvim(text, filename):
+    with tempfile.NamedTemporaryFile(suffix=filename) as f:
+        f.write(text)
+        f.flush()
+        subprocess.call(["gvim", "--nofork", f.name])
+        f.seek(0)
+        return f.read()
 
 
 if __name__ == "__main__":
