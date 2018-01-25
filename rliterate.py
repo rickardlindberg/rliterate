@@ -22,6 +22,95 @@ TreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()
 TreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()
 ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
 ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
+class ParagraphBase(object):
+
+    def __init__(self, document, page_id, paragraph):
+        self.document = document
+        self.page_id = page_id
+        self.paragraph = paragraph
+
+    def DoDragDrop(self):
+        data = RliterateDataObject("paragraph", {
+            "page_id": self.page_id,
+            "paragraph_id": self.paragraph.id,
+        })
+        drag_source = wx.DropSource(self)
+        drag_source.SetData(data)
+        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+
+    def ShowContextMenu(self):
+        menu = ParagraphContextMenu(
+            self.document, self.page_id, self.paragraph.id
+        )
+        self.PopupMenu(menu)
+        menu.Destroy()
+class Editable(wx.Panel):
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.view = self.CreateView()
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
+        self.SetSizer(self.sizer)
+        self.view.Bind(wx.EVT_LEFT_DCLICK, self.OnParagraphEditStart)
+        self.view.Bind(EVT_PARAGRAPH_EDIT_START, self.OnParagraphEditStart)
+
+    def OnParagraphEditStart(self, event):
+        self.edit = self.CreateEdit()
+        self.edit.SetFocus()
+        self.edit.Bind(wx.EVT_CHAR, self.OnChar)
+        self.edit.Bind(EVT_PARAGRAPH_EDIT_END, self.OnParagraphEditEnd)
+        self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
+        self.sizer.Hide(self.view)
+        self.GetTopLevelParent().Layout()
+
+    def OnParagraphEditEnd(self, event):
+        self.EndEdit()
+
+    def OnChar(self, event):
+        if event.KeyCode == wx.WXK_CONTROL_S:
+            self.OnParagraphEditEnd(None)
+        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
+            self.OnParagraphEditEnd(None)
+        else:
+            event.Skip()
+class DropPointDropTarget(wx.DropTarget):
+
+    def __init__(self, window, kind):
+        wx.DropTarget.__init__(self)
+        self.window = window
+        self.last_drop_point = None
+        self.rliterate_data = RliterateDataObject(kind)
+        self.DataObject = self.rliterate_data
+
+    def OnDragOver(self, x, y, defResult):
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
+        if drop_point is not None and defResult == wx.DragMove:
+            drop_point.Show()
+            self.last_drop_point = drop_point
+            return wx.DragMove
+        return wx.DragNone
+
+    def OnData(self, x, y, defResult):
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
+        if drop_point is not None and self.GetData():
+            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
+        return defResult
+
+    def OnLeave(self):
+        self._hide_last_drop_point()
+
+    def _find_closest_drop_point(self, x, y):
+        return self.window.FindClosestDropPoint(
+            self.window.ClientToScreen((x, y))
+        )
+
+    def _hide_last_drop_point(self):
+        if self.last_drop_point is not None:
+            self.last_drop_point.Hide()
+            self.last_drop_point = None
 class Listener(object):
 
     def __init__(self, fn):
@@ -295,47 +384,10 @@ class MainFrame(wx.Frame):
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
-class DropPointDropTarget(wx.DropTarget):
-
-    def __init__(self, window, kind):
-        wx.DropTarget.__init__(self)
-        self.window = window
-        self.last_drop_point = None
-        self.rliterate_data = RliterateDataObject(kind)
-        self.DataObject = self.rliterate_data
-
-    def OnDragOver(self, x, y, defResult):
-        self._hide_last_drop_point()
-        drop_point = self._find_closest_drop_point(x, y)
-        if drop_point is not None and defResult == wx.DragMove:
-            drop_point.Show()
-            self.last_drop_point = drop_point
-            return wx.DragMove
-        return wx.DragNone
-
-    def OnData(self, x, y, defResult):
-        self._hide_last_drop_point()
-        drop_point = self._find_closest_drop_point(x, y)
-        if drop_point is not None and self.GetData():
-            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
-        return defResult
-
-    def OnLeave(self):
-        self._hide_last_drop_point()
-
-    def _find_closest_drop_point(self, x, y):
-        return self.window.FindClosestDropPoint(
-            self.window.ClientToScreen((x, y))
-        )
-
-    def _hide_last_drop_point(self):
-        if self.last_drop_point is not None:
-            self.last_drop_point.Hide()
-            self.last_drop_point = None
 class TableOfContents(wx.ScrolledWindow):
 
     def __init__(self, parent, workspace, document):
-        wx.ScrolledWindow.__init__(self, parent, size=(200, -1))
+        wx.ScrolledWindow.__init__(self, parent, size=(300, -1))
         self.SetScrollRate(20, 20)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
@@ -561,49 +613,6 @@ class PageContextMenu(wx.Menu):
             lambda event: self.document.delete_page(page_id=self.page_id),
             self.Append(wx.NewId(), "Delete")
         )
-class ParagraphContextMenu(wx.Menu):
-
-    def __init__(self, document, page_id, paragraph_id):
-        wx.Menu.__init__(self)
-        self.document = document
-        self.page_id = page_id
-        self.paragraph_id = paragraph_id
-        self._create_menu()
-
-    def _create_menu(self):
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: self.document.delete_paragraph(
-                page_id=self.page_id,
-                paragraph_id=self.paragraph_id
-            ),
-            self.Append(wx.NewId(), "Delete")
-        )
-class RliterateDataObject(wx.CustomDataObject):
-
-    def __init__(self, kind, json=None):
-        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
-        if json is not None:
-            self.set_json(json)
-
-    def set_json(self, data):
-        self.SetData(json.dumps(data))
-
-    def get_json(self):
-        return json.loads(self.GetData())
-class WorkspaceDropTarget(DropPointDropTarget):
-
-    def __init__(self, workspace):
-        DropPointDropTarget.__init__(self, workspace, "paragraph")
-        self.workspace = workspace
-
-    def OnDataDropped(self, dropped_paragraph, drop_point):
-        self.workspace.document.move_paragraph(
-            source_page=dropped_paragraph["page_id"],
-            source_paragraph=dropped_paragraph["paragraph_id"],
-            target_page=drop_point.page_id,
-            before_paragraph=drop_point.next_paragraph_id
-        )
 class Workspace(wx.ScrolledWindow):
 
     def __init__(self, parent, document):
@@ -680,6 +689,19 @@ class Column(wx.Panel):
         self.pages.append(page)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
+class WorkspaceDropTarget(DropPointDropTarget):
+
+    def __init__(self, workspace):
+        DropPointDropTarget.__init__(self, workspace, "paragraph")
+        self.workspace = workspace
+
+    def OnDataDropped(self, dropped_paragraph, drop_point):
+        self.workspace.document.move_paragraph(
+            source_page=dropped_paragraph["page_id"],
+            source_paragraph=dropped_paragraph["paragraph_id"],
+            target_page=drop_point.page_id,
+            before_paragraph=drop_point.next_paragraph_id
+        )
 class PageContainer(wx.Panel):
 
     def __init__(self, parent, document, page_id):
@@ -769,6 +791,30 @@ class Page(wx.Panel):
             border=PARAGRAPH_SPACE
         )
         return divider
+class Title(Editable):
+
+    def __init__(self, parent, document, page):
+        self.document = document
+        self.page = page
+        Editable.__init__(self, parent)
+
+    def CreateView(self):
+        self.Font = create_font(size=16)
+        view = wx.StaticText(
+            self,
+            label=self.page.title,
+            style=wx.ST_ELLIPSIZE_END
+        )
+        view.SetToolTip(wx.ToolTip(self.page.title))
+        return view
+
+    def CreateEdit(self):
+        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
+        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
+        return edit
+
+    def EndEdit(self):
+        self.document.edit_page(self.page.id, {"title": self.edit.Value})
 class PageDropPoint(object):
 
     def __init__(self, divider, page_id, next_paragraph_id):
@@ -784,145 +830,6 @@ class PageDropPoint(object):
 
     def Hide(self):
         self.divider.Hide()
-class Divider(wx.Panel):
-
-    def __init__(self, parent, padding=0, height=1):
-        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
-        self.line = wx.Panel(self, size=(-1, height))
-        self.line.SetBackgroundColour((255, 100, 0))
-        self.line.Hide()
-        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.vsizer.AddStretchSpacer(1)
-        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.vsizer.AddStretchSpacer(1)
-        self.SetSizer(self.vsizer)
-
-    def Show(self, left_space=0):
-        self.line.Show()
-        self.hsizer.Clear(False)
-        self.hsizer.Add((left_space, 1))
-        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
-        self.Layout()
-
-    def Hide(self):
-        self.line.Hide()
-        self.Layout()
-class Editable(wx.Panel):
-
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        self.view = self.CreateView()
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
-        self.SetSizer(self.sizer)
-        self.view.Bind(wx.EVT_LEFT_DCLICK, self.OnParagraphEditStart)
-        self.view.Bind(EVT_PARAGRAPH_EDIT_START, self.OnParagraphEditStart)
-
-    def OnParagraphEditStart(self, event):
-        self.edit = self.CreateEdit()
-        self.edit.SetFocus()
-        self.edit.Bind(wx.EVT_CHAR, self.OnChar)
-        self.edit.Bind(EVT_PARAGRAPH_EDIT_END, self.OnParagraphEditEnd)
-        self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
-        self.sizer.Hide(self.view)
-        self.GetTopLevelParent().Layout()
-
-    def OnParagraphEditEnd(self, event):
-        self.EndEdit()
-
-    def OnChar(self, event):
-        if event.KeyCode == wx.WXK_CONTROL_S:
-            self.OnParagraphEditEnd(None)
-        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
-            self.OnParagraphEditEnd(None)
-        else:
-            event.Skip()
-class ParagraphBase(object):
-
-    def __init__(self, document, page_id, paragraph):
-        self.document = document
-        self.page_id = page_id
-        self.paragraph = paragraph
-
-    def DoDragDrop(self):
-        data = RliterateDataObject("paragraph", {
-            "page_id": self.page_id,
-            "paragraph_id": self.paragraph.id,
-        })
-        drag_source = wx.DropSource(self)
-        drag_source.SetData(data)
-        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
-
-    def ShowContextMenu(self):
-        menu = ParagraphContextMenu(
-            self.document, self.page_id, self.paragraph.id
-        )
-        self.PopupMenu(menu)
-        menu.Destroy()
-class MouseEventHelper(object):
-
-    @classmethod
-    def bind(cls, windows, drag=None, click=None, right_click=None,
-             double_click=None):
-        for window in windows:
-            mouse_event_helper = cls(window)
-            if drag is not None:
-                mouse_event_helper.OnDrag = drag
-            if click is not None:
-                mouse_event_helper.OnClick = click
-            if right_click is not None:
-                mouse_event_helper.OnRightClick = right_click
-            if double_click is not None:
-                mouse_event_helper.OnDoubleClick = double_click
-
-    def __init__(self, window):
-        self.down_pos = None
-        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
-        window.Bind(wx.EVT_MOTION, self._on_motion)
-        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
-        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
-        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
-
-    def OnDrag(self):
-        pass
-
-    def OnClick(self):
-        pass
-
-    def OnRightClick(self):
-        pass
-
-    def OnDoubleClick(self):
-        pass
-
-    def _on_left_down(self, event):
-        self.down_pos = event.Position
-
-    def _on_motion(self, event):
-        if self._should_drag(event.Position):
-            self.down_pos = None
-            self.OnDrag()
-
-    def _should_drag(self, pos):
-        if self.down_pos is not None:
-            diff = self.down_pos - pos
-            if abs(diff.x) > 2:
-                return True
-            if abs(diff.y) > 2:
-                return True
-        return False
-
-    def _on_left_up(self, event):
-        if self.down_pos is not None:
-            self.OnClick()
-        self.down_pos = None
-
-    def _on_left_dclick(self, event):
-        self.OnDoubleClick()
-
-    def _on_right_up(self, event):
-        self.OnRightClick()
 class Paragraph(ParagraphBase, Editable):
 
     def __init__(self, parent, document, page_id, paragraph):
@@ -1112,30 +1019,123 @@ class Factory(ParagraphBase, wx.Panel):
 
     def OnCodeButton(self, event):
         self.document.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
-class Title(Editable):
+class ParagraphContextMenu(wx.Menu):
 
-    def __init__(self, parent, document, page):
+    def __init__(self, document, page_id, paragraph_id):
+        wx.Menu.__init__(self)
         self.document = document
-        self.page = page
-        Editable.__init__(self, parent)
+        self.page_id = page_id
+        self.paragraph_id = paragraph_id
+        self._create_menu()
 
-    def CreateView(self):
-        self.Font = create_font(size=16)
-        view = wx.StaticText(
-            self,
-            label=self.page.title,
-            style=wx.ST_ELLIPSIZE_END
+    def _create_menu(self):
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.document.delete_paragraph(
+                page_id=self.page_id,
+                paragraph_id=self.paragraph_id
+            ),
+            self.Append(wx.NewId(), "Delete")
         )
-        view.SetToolTip(wx.ToolTip(self.page.title))
-        return view
+class MouseEventHelper(object):
 
-    def CreateEdit(self):
-        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
-        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
-        return edit
+    @classmethod
+    def bind(cls, windows, drag=None, click=None, right_click=None,
+             double_click=None):
+        for window in windows:
+            mouse_event_helper = cls(window)
+            if drag is not None:
+                mouse_event_helper.OnDrag = drag
+            if click is not None:
+                mouse_event_helper.OnClick = click
+            if right_click is not None:
+                mouse_event_helper.OnRightClick = right_click
+            if double_click is not None:
+                mouse_event_helper.OnDoubleClick = double_click
 
-    def EndEdit(self):
-        self.document.edit_page(self.page.id, {"title": self.edit.Value})
+    def __init__(self, window):
+        self.down_pos = None
+        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        window.Bind(wx.EVT_MOTION, self._on_motion)
+        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
+        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
+
+    def OnDrag(self):
+        pass
+
+    def OnClick(self):
+        pass
+
+    def OnRightClick(self):
+        pass
+
+    def OnDoubleClick(self):
+        pass
+
+    def _on_left_down(self, event):
+        self.down_pos = event.Position
+
+    def _on_motion(self, event):
+        if self._should_drag(event.Position):
+            self.down_pos = None
+            self.OnDrag()
+
+    def _should_drag(self, pos):
+        if self.down_pos is not None:
+            diff = self.down_pos - pos
+            if abs(diff.x) > 2:
+                return True
+            if abs(diff.y) > 2:
+                return True
+        return False
+
+    def _on_left_up(self, event):
+        if self.down_pos is not None:
+            self.OnClick()
+        self.down_pos = None
+
+    def _on_left_dclick(self, event):
+        self.OnDoubleClick()
+
+    def _on_right_up(self, event):
+        self.OnRightClick()
+class RliterateDataObject(wx.CustomDataObject):
+
+    def __init__(self, kind, json=None):
+        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
+        if json is not None:
+            self.set_json(json)
+
+    def set_json(self, data):
+        self.SetData(json.dumps(data))
+
+    def get_json(self):
+        return json.loads(self.GetData())
+class Divider(wx.Panel):
+
+    def __init__(self, parent, padding=0, height=1):
+        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
+        self.line = wx.Panel(self, size=(-1, height))
+        self.line.SetBackgroundColour((255, 100, 0))
+        self.line.Hide()
+        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.vsizer.AddStretchSpacer(1)
+        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.vsizer.AddStretchSpacer(1)
+        self.SetSizer(self.vsizer)
+
+    def Show(self, left_space=0):
+        self.line.Show()
+        self.hsizer.Clear(False)
+        self.hsizer.Add((left_space, 1))
+        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
+        self.Layout()
+
+    def Hide(self):
+        self.line.Hide()
+        self.Layout()
 def genid():
     return uuid.uuid4().hex
 
