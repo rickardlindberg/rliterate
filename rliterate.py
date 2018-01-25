@@ -385,7 +385,6 @@ class MainFrame(wx.Frame):
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
 class TableOfContents(wx.ScrolledWindow):
-
     def __init__(self, parent, workspace, document):
         wx.ScrolledWindow.__init__(self, parent, size=(300, -1))
         self.SetScrollRate(20, 20)
