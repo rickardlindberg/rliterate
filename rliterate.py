@@ -22,8 +22,6 @@ TreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()
 TreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()
 ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
 ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
-
-
 class Listener(object):
 
     def __init__(self, fn):
@@ -36,8 +34,6 @@ class Listener(object):
         self.observable = observable
         self.observable.listen(self.fn)
         self.fn()
-
-
 class Document(object):
 
     @classmethod
@@ -287,8 +283,6 @@ class FileGenerator(object):
             if part.startswith("<<") and part.endswith(">>"):
                 return None
         return os.path.join(*key)
-
-
 class MainFrame(wx.Frame):
 
     def __init__(self, filepath):
@@ -301,14 +295,7 @@ class MainFrame(wx.Frame):
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
-
-
 class DropPointDropTarget(wx.DropTarget):
-
-    """
-    A drop target that can work with windows that supports
-    FindClosestDropPoint.
-    """
 
     def __init__(self, window, kind):
         wx.DropTarget.__init__(self)
@@ -345,8 +332,6 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-
-
 class TableOfContentsDropTarget(DropPointDropTarget):
 
     def __init__(self, toc):
@@ -359,8 +344,6 @@ class TableOfContentsDropTarget(DropPointDropTarget):
             parent_page_id=drop_point.parent_page_id,
             before_page_id=drop_point.before_page_id
         )
-
-
 class TableOfContentsDropPoint(object):
 
     def __init__(self, divider, indentation, parent_page_id, before_page_id):
@@ -387,8 +370,6 @@ class TableOfContentsDropPoint(object):
 
     def Hide(self):
         self.divider.Hide()
-
-
 class TableOfContents(wx.ScrolledWindow):
 
     def __init__(self, parent, workspace, document):
@@ -484,8 +465,6 @@ class TableOfContents(wx.ScrolledWindow):
                     before_page_id=None if next_child is None else next_child.id
                 ))
         return divider
-
-
 class PageContextMenu(wx.Menu):
 
     def __init__(self, document, page_id):
@@ -506,8 +485,6 @@ class PageContextMenu(wx.Menu):
             lambda event: self.document.delete_page(page_id=self.page_id),
             self.Append(wx.NewId(), "Delete")
         )
-
-
 class ParagraphContextMenu(wx.Menu):
 
     def __init__(self, document, page_id, paragraph_id):
@@ -526,8 +503,6 @@ class ParagraphContextMenu(wx.Menu):
             ),
             self.Append(wx.NewId(), "Delete")
         )
-
-
 class TableOfContentsRow(wx.Panel):
 
     BORDER = 2
@@ -577,8 +552,6 @@ class TableOfContentsRow(wx.Panel):
 
     def OnLeaveWindow(self, event):
         self.SetBackgroundColour(self.original_colour)
-
-
 class TableOfContentsButton(wx.Panel):
 
     SIZE = 16
@@ -606,8 +579,6 @@ class TableOfContentsButton(wx.Panel):
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
             flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED
         )
-
-
 class RliterateDataObject(wx.CustomDataObject):
 
     def __init__(self, kind, json=None):
@@ -620,8 +591,6 @@ class RliterateDataObject(wx.CustomDataObject):
 
     def get_json(self):
         return json.loads(self.GetData())
-
-
 class WorkspaceDropTarget(DropPointDropTarget):
 
     def __init__(self, workspace):
@@ -635,8 +604,6 @@ class WorkspaceDropTarget(DropPointDropTarget):
             target_page=drop_point.page_id,
             before_paragraph=drop_point.next_paragraph_id
         )
-
-
 class Workspace(wx.ScrolledWindow):
 
     def __init__(self, parent, document):
@@ -680,8 +647,6 @@ class Workspace(wx.ScrolledWindow):
         self.columns.append(column)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
-
-
 class Column(wx.Panel):
 
     def __init__(self, parent, document):
@@ -715,8 +680,6 @@ class Column(wx.Panel):
         self.pages.append(page)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
-
-
 class PageContainer(wx.Panel):
 
     def __init__(self, parent, document, page_id):
@@ -733,8 +696,6 @@ class PageContainer(wx.Panel):
 
     def Render(self):
         self.page_body.Render()
-
-
 class Page(wx.Panel):
 
     def __init__(self, parent, document, page_id):
@@ -808,8 +769,6 @@ class Page(wx.Panel):
             border=PARAGRAPH_SPACE
         )
         return divider
-
-
 class PageDropPoint(object):
 
     def __init__(self, divider, page_id, next_paragraph_id):
@@ -825,8 +784,6 @@ class PageDropPoint(object):
 
     def Hide(self):
         self.divider.Hide()
-
-
 class Divider(wx.Panel):
 
     def __init__(self, parent, padding=0, height=1):
@@ -851,8 +808,6 @@ class Divider(wx.Panel):
     def Hide(self):
         self.line.Hide()
         self.Layout()
-
-
 class Editable(wx.Panel):
 
     def __init__(self, parent):
@@ -883,8 +838,6 @@ class Editable(wx.Panel):
             self.OnParagraphEditEnd(None)
         else:
             event.Skip()
-
-
 class ParagraphBase(object):
 
     def __init__(self, document, page_id, paragraph):
@@ -907,8 +860,6 @@ class ParagraphBase(object):
         )
         self.PopupMenu(menu)
         menu.Destroy()
-
-
 class MouseEventHelper(object):
 
     @classmethod
@@ -972,8 +923,6 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
-
-
 class Paragraph(ParagraphBase, Editable):
 
     def __init__(self, parent, document, page_id, paragraph):
@@ -1004,8 +953,6 @@ class Paragraph(ParagraphBase, Editable):
 
     def EndEdit(self):
         self.document.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
-
-
 class Code(ParagraphBase, Editable):
 
     def __init__(self, parent, document, page_id, paragraph):
@@ -1023,8 +970,6 @@ class Code(ParagraphBase, Editable):
             "path": self.edit.path.Value.split(" / "),
             "text": self.edit.text.Value,
         })
-
-
 class CodeView(wx.Panel):
 
     BORDER = 1
@@ -1078,8 +1023,6 @@ class CodeView(wx.Panel):
 
     def _post_paragraph_edit_start(self):
         wx.PostEvent(self, ParagraphEditStart(0))
-
-
 class CodeEditor(wx.Panel):
 
     BORDER = 1
@@ -1132,8 +1075,6 @@ class CodeEditor(wx.Panel):
 
     def _post_paragraph_edit_end(self):
         wx.PostEvent(self, ParagraphEditEnd(0))
-
-
 class Factory(ParagraphBase, wx.Panel):
 
     def __init__(self, parent, document, page_id, paragraph):
@@ -1171,8 +1112,6 @@ class Factory(ParagraphBase, wx.Panel):
 
     def OnCodeButton(self, event):
         self.document.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
-
-
 class Title(Editable):
 
     def __init__(self, parent, document, page):
@@ -1197,8 +1136,6 @@ class Title(Editable):
 
     def EndEdit(self):
         self.document.edit_page(self.page.id, {"title": self.edit.Value})
-
-
 def genid():
     return uuid.uuid4().hex
 
