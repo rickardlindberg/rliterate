@@ -1523,7 +1523,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
 * ProjecturED
   http://projectured.org/
 
-### This I learned
+### Things I learned
 
 DoDragDrop must be called from within an event handler.
 
