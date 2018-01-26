@@ -1573,7 +1573,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
 
 `rliterate.py / <<constants>>`:
 
-    PAGE_BODY_WIDTH = 800
+    PAGE_BODY_WIDTH = 600
     PAGE_PADDING = 12
     SHADOW_SIZE = 2
     PARAGRAPH_SPACE = 15

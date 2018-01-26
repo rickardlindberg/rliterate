@@ -737,7 +737,7 @@
 "rliterate.py",
 "<<constants>>"
 ],
-"text":"PAGE_BODY_WIDTH = 800\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\n\n\nTreeToggle, EVT_TREE_TOGGLE = wx.lib.newevent.NewCommandEvent()\nTreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()\nTreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()\nTreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()",
+"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\n\n\nTreeToggle, EVT_TREE_TOGGLE = wx.lib.newevent.NewCommandEvent()\nTreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()\nTreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()\nTreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()",
 "type":"code"
 }
 ],
