@@ -1648,6 +1648,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     2. Write narrative
     3. Ensure generated files are not changed
 * Highlight active page in TOC
+* FancyText might be an option for the code view
 
 ### Inspiration
 
