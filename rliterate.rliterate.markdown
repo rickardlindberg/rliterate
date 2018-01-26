@@ -1561,10 +1561,13 @@ A drop target that can work with windows that supports FindClosestDropPoint.
 `rliterate.py / <<functions>>`:
 
     def edit_in_gvim(text, filename):
-        with tempfile.NamedTemporaryFile(suffix=filename) as f:
+        with tempfile.NamedTemporaryFile(suffix="-rliterate-external-"+filename) as f:
             f.write(text)
             f.flush()
-            subprocess.call(["gvim", "--nofork", f.name])
+            p = subprocess.Popen(["gvim", "--nofork", f.name])
+            while p.poll() is None:
+                wx.Yield()
+                time.sleep(0.1)
             f.seek(0)
             return f.read()
 
@@ -1583,6 +1586,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     import tempfile
     import subprocess
     import xml.sax.saxutils
+    import time
     
     import wx
     import wx.lib.newevent
