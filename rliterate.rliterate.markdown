@@ -57,7 +57,10 @@ This is a tool for literal programming.
     
         def _save(self):
             with open(self.path, "w") as f:
-                json.dump(self.root_page, f)
+                json.dump(
+                    self.root_page, f,
+                    sort_keys=True, indent=0, separators=(',', ':')
+                )
     
         def _load(self):
             with open(self.path, "r") as f:
