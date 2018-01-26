@@ -1672,6 +1672,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     * Save button is very far down if there is lots of code and only top is edited
     * Can't focus in on specific subtree of toc (hoist, unhoist?)
 * Scrolling a page does not work if mouse is over a code paragraph
+* Not possible to go to a page with Ctrl+T
 
 ### Ideas
 
