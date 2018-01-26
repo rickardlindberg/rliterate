@@ -284,7 +284,32 @@ Views provide a read only interface to a document. It is the only way to query a
                 )
             except:
                 lexer = pygments.lexers.TextLexer(stripnl=False)
-            return lexer.get_tokens(self.text)
+            return self._split_tokens(lexer.get_tokens(self.text))
+    
+        def _split_tokens(self, tokens):
+            lines = []
+            line = []
+            for token_type, text in tokens:
+                parts = text.split("\n")
+                line.append(Part(token_type=token_type, text=parts.pop(0)))
+                while parts:
+                    lines.append(line)
+                    line = []
+                    line.append(Part(token_type=token_type, text=parts.pop(0)))
+            if line:
+                lines.append(line)
+            if lines and lines[-1] and len(lines[-1]) == 1 and len(lines[-1][0].text) == 0:
+                lines.pop(-1)
+            return lines
+
+
+`rliterate.py / <<classes>>`:
+
+    class Part(object):
+    
+        def __init__(self, token_type, text):
+            self.token_type = token_type
+            self.text = text
 
 
 ### Generating output
@@ -394,7 +419,8 @@ Views provide a read only interface to a document. It is the only way to query a
             document = Document.from_file(filepath)
             FileGenerator().set_document(document)
             MarkdownGenerator(filepath+".markdown").set_document(document)
-            workspace = Workspace(self, document)
+            theme = SolarizedTheme()
+            workspace = Workspace(self, theme, document)
             toc = TableOfContents(self, workspace, document)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(toc, flag=wx.EXPAND, proportion=0)
@@ -692,8 +718,9 @@ A workspace is a container for editable content. Most commonly pages.
 
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
-    def __init__(self, parent, document):
+    def __init__(self, parent, theme, document):
         wx.ScrolledWindow.__init__(self, parent)
+        self.theme = theme
         self.SetScrollRate(20, 20)
         self.SetBackgroundColour((200, 200, 200))
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -729,7 +756,7 @@ A workspace is a container for editable content. Most commonly pages.
         self.GetTopLevelParent().Layout()
     
     def AddColumn(self):
-        column = Column(self, self.document)
+        column = Column(self, self.theme, self.document)
         self.columns.append(column)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
@@ -741,8 +768,9 @@ A workspace is a container for editable content. Most commonly pages.
 
     class Column(wx.Panel):
     
-        def __init__(self, parent, document):
+        def __init__(self, parent, theme, document):
             wx.Panel.__init__(self, parent, size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1))
+            self.theme = theme
             self.sizer = wx.BoxSizer(wx.VERTICAL)
             self.sizer.AddSpacer(PAGE_PADDING)
             self.SetSizer(self.sizer)
@@ -768,7 +796,7 @@ A workspace is a container for editable content. Most commonly pages.
                 self.AddPage(page_id)
     
         def AddPage(self, page_id):
-            page = PageContainer(self, self.document, page_id)
+            page = PageContainer(self, self.theme, self.document, page_id)
             self.pages.append(page)
             self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
             return page
@@ -806,9 +834,9 @@ A workspace is a container for editable content. Most commonly pages.
 
     class PageContainer(wx.Panel):
     
-        def __init__(self, parent, document, page_id):
+        def __init__(self, parent, theme, document, page_id):
             wx.Panel.__init__(self, parent)
-            self.page_body = Page(self, document, page_id)
+            self.page_body = Page(self, theme, document, page_id)
             self.SetBackgroundColour((150, 150, 150))
             self.sizer = wx.BoxSizer(wx.VERTICAL)
             self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
@@ -828,8 +856,9 @@ A workspace is a container for editable content. Most commonly pages.
 
     class Page(wx.Panel):
     
-        def __init__(self, parent, document, page_id):
+        def __init__(self, parent, theme, document, page_id):
             wx.Panel.__init__(self, parent)
+            self.theme = theme
             self.document = document
             self.page_id = page_id
             self.SetBackgroundColour(wx.WHITE)
@@ -860,7 +889,7 @@ A workspace is a container for editable content. Most commonly pages.
                     "text": Paragraph,
                     "code": Code,
                     "factory": Factory,
-                }[paragraph.type](self, self.document, self.page_id, paragraph))
+                }[paragraph.type](self, self.theme, self.document, self.page_id, paragraph))
             self.drop_points.append(PageDropPoint(
                 divider=divider,
                 page_id=self.page_id,
@@ -962,7 +991,7 @@ A workspace is a container for editable content. Most commonly pages.
 
     class Paragraph(ParagraphBase, Editable):
     
-        def __init__(self, parent, document, page_id, paragraph):
+        def __init__(self, parent, theme, document, page_id, paragraph):
             ParagraphBase.__init__(self, document, page_id, paragraph)
             Editable.__init__(self, parent)
     
@@ -1000,12 +1029,13 @@ A workspace is a container for editable content. Most commonly pages.
 
     class Code(ParagraphBase, Editable):
     
-        def __init__(self, parent, document, page_id, paragraph):
+        def __init__(self, parent, theme, document, page_id, paragraph):
+            self.theme = theme
             ParagraphBase.__init__(self, document, page_id, paragraph)
             Editable.__init__(self, parent)
     
         def CreateView(self):
-            return CodeView(self, self.paragraph)
+            return CodeView(self, self.theme, self.paragraph)
     
         def CreateEdit(self):
             return CodeEditor(self, self.view, self.paragraph)
@@ -1026,8 +1056,9 @@ A workspace is a container for editable content. Most commonly pages.
         BORDER = 1
         PADDING = 5
     
-        def __init__(self, parent, code_paragraph):
+        def __init__(self, parent, theme, code_paragraph):
             wx.Panel.__init__(self, parent)
+            self.theme = theme
             self.Font = create_font(monospace=True)
             self.vsizer = wx.BoxSizer(wx.VERTICAL)
             self.vsizer.Add(
@@ -1060,7 +1091,7 @@ A workspace is a container for editable content. Most commonly pages.
         def _create_code(self, code_paragraph):
             panel = wx.Panel(self)
             panel.SetBackgroundColour((253, 246, 227))
-            body = CodeBody(panel, code_paragraph)
+            body = CodeBody(panel, self.theme, code_paragraph)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
             panel.SetSizer(sizer)
@@ -1074,12 +1105,15 @@ A workspace is a container for editable content. Most commonly pages.
     
         def _post_paragraph_edit_start(self):
             wx.PostEvent(self, ParagraphEditStart(0))
-    
-    
+
+
+`rliterate.py / <<classes>>`:
+
     class CodeBody(wx.ScrolledWindow):
     
-        def __init__(self, parent, paragraph):
+        def __init__(self, parent, theme, paragraph):
             wx.ScrolledWindow.__init__(self, parent)
+            self.theme = theme
             self.children = []
             sizer = wx.BoxSizer(wx.VERTICAL)
             self._add_lines(sizer, paragraph)
@@ -1088,85 +1122,20 @@ A workspace is a container for editable content. Most commonly pages.
             self.SetScrollRate(20, 20)
     
         def _add_lines(self, sizer, paragraph):
-            for markup in self._split(paragraph):
+            for line in paragraph.highlighted_code:
                 text = wx.StaticText(self, label="")
-                text.SetLabelMarkup(markup)
+                text.SetLabelMarkup(self._line_to_markup(line))
                 sizer.Add(text)
                 self.children.append(text)
     
-        def _split(self, paragraph):
-            markup_lines = []
-            for line in self._split_tokens(paragraph):
-                markup_lines.append("".join([
-                    "<span color='{}'>{}</span>".format(
-                        self._color(token_type),
-                        xml.sax.saxutils.escape(text)
-                    )
-                    for token_type, text in line
-                ]))
-            return markup_lines
-    
-        def _split_tokens(self, paragraph):
-            lines = []
-            line = []
-            for token_type, text in paragraph.highlighted_code:
-                parts = text.split("\n")
-                line.append((token_type, parts.pop(0)))
-                while parts:
-                    lines.append(line)
-                    line = []
-                    line.append((token_type, parts.pop(0)))
-            if line:
-                lines.append(line)
-            if lines and lines[-1] and len(lines[-1]) == 1 and len(lines[-1][0][1]) == 0:
-                lines.pop(-1)
-            return lines
-    
-        def _color(self, token_type):
-            # Parts stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py
-            base00  = '#657b83'
-            base01  = '#586e75'
-            base0   = '#839496'
-            base1   = '#93a1a1'
-            yellow  = '#b58900'
-            orange  = '#cb4b16'
-            red     = '#dc322f'
-            violet  = '#6c71c4'
-            blue    = '#268bd2'
-            cyan    = '#2aa198'
-            green   = '#859900'
-            if token_type is pygments.token.Keyword:
-                return green
-            elif token_type is pygments.token.Keyword.Constant:
-                return cyan
-            elif token_type is pygments.token.Keyword.Declaration:
-                return blue
-            elif token_type is pygments.token.Keyword.Namespace:
-                return orange
-            elif token_type is pygments.token.Name.Builtin:
-                return red
-            elif token_type is pygments.token.Name.Builtin.Pseudo:
-                return blue
-            elif token_type is pygments.token.Name.Class:
-                return blue
-            elif token_type is pygments.token.Name.Decorator:
-                return blue
-            elif token_type is pygments.token.Name.Entity:
-                return violet
-            elif token_type is pygments.token.Name.Exception:
-                return yellow
-            elif token_type is pygments.token.Name.Function:
-                return blue
-            elif token_type is pygments.token.String:
-                return cyan
-            elif token_type is pygments.token.Number:
-                return cyan
-            elif token_type is pygments.token.Operator.Word:
-                return green
-            elif token_type is pygments.token.Comment:
-                return base01
-            else:
-                return base00
+        def _line_to_markup(self, line):
+            return "".join([
+                "<span color='{}'>{}</span>".format(
+                    self.theme.get_style(part.token_type).color,
+                    xml.sax.saxutils.escape(part.text)
+                )
+                for part in line
+            ])
 
 
 ##### Editor widget
@@ -1234,7 +1203,7 @@ A workspace is a container for editable content. Most commonly pages.
 
     class Factory(ParagraphBase, wx.Panel):
     
-        def __init__(self, parent, document, page_id, paragraph):
+        def __init__(self, parent, theme, document, page_id, paragraph):
             ParagraphBase.__init__(self, document, page_id, paragraph)
             wx.Panel.__init__(self, parent)
             MouseEventHelper.bind(
@@ -1367,6 +1336,71 @@ A workspace is a container for editable content. Most commonly pages.
                 self.OnParagraphEditEnd(None)
             else:
                 event.Skip()
+
+
+### Themes
+
+Some parts of the application can be themed. Token types from pygments denote different things that can be styled.
+
+`rliterate.py / <<classes>>`:
+
+    class BaseTheme(object):
+    
+        def get_style(self, token_type):
+            if token_type in self.styles:
+                return self.styles[token_type]
+            return self.get_style(token_type.parent)
+
+
+`rliterate.py / <<base classes>>`:
+
+    class Style(object):
+    
+        def __init__(self, color):
+            self.color = color
+
+
+`rliterate.py / <<classes>>`:
+
+    class SolarizedTheme(BaseTheme):
+    
+        # Stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py
+    
+        base03  =  '#002b36'
+        base02  =  '#073642'
+        base01  =  '#586e75'
+        base00  =  '#657b83'
+        base0   =  '#839496'
+        base1   =  '#93a1a1'
+        base2   =  '#eee8d5'
+        base3   =  '#fdf6e3'
+        yellow  =  '#b58900'
+        orange  =  '#cb4b16'
+        red     =  '#dc322f'
+        magenta =  '#d33682'
+        violet  =  '#6c71c4'
+        blue    =  '#268bd2'
+        cyan    =  '#2aa198'
+        green   =  '#859900'
+    
+        styles = {
+            pygments.token.Token:               Style(color=base00),
+            pygments.token.Keyword:             Style(color=green),
+            pygments.token.Keyword.Constant:    Style(color=cyan),
+            pygments.token.Keyword.Declaration: Style(color=blue),
+            pygments.token.Keyword.Namespace:   Style(color=orange),
+            pygments.token.Name.Builtin:        Style(color=red),
+            pygments.token.Name.Builtin.Pseudo: Style(color=blue),
+            pygments.token.Name.Class:          Style(color=blue),
+            pygments.token.Name.Decorator:      Style(color=blue),
+            pygments.token.Name.Entity:         Style(color=violet),
+            pygments.token.Name.Exception:      Style(color=yellow),
+            pygments.token.Name.Function:       Style(color=blue),
+            pygments.token.String:              Style(color=cyan),
+            pygments.token.Number:              Style(color=cyan),
+            pygments.token.Operator.Word:       Style(color=green),
+            pygments.token.Comment:             Style(color=base1),
+        }
 
 
 ### Generic drag & drop
