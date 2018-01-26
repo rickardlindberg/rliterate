@@ -121,18 +121,6 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class Listener(object):
-
-    def __init__(self, fn):
-        self.fn = fn
-        self.observable = None
-
-    def set_observable(self, observable):
-        if self.observable is not None:
-            self.observable.unlisten(self.fn)
-        self.observable = observable
-        self.observable.listen(self.fn)
-        self.fn()
 class Document(object):
 
     @classmethod
@@ -1182,8 +1170,6 @@ class BaseTheme(object):
         return self.get_style(token_type.parent)
 class SolarizedTheme(BaseTheme):
 
-    # Stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py
-
     base03  =  '#002b36'
     base02  =  '#073642'
     base01  =  '#586e75'
@@ -1318,6 +1304,18 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
+class Listener(object):
+
+    def __init__(self, fn):
+        self.fn = fn
+        self.observable = None
+
+    def set_observable(self, observable):
+        if self.observable is not None:
+            self.observable.unlisten(self.fn)
+        self.observable = observable
+        self.observable.listen(self.fn)
+        self.fn()
 def genid():
     return uuid.uuid4().hex
 

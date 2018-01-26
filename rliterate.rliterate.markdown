@@ -4,24 +4,6 @@ This is a tool for literal programming.
 
 ## Implementation
 
-### Listener
-
-`rliterate.py / <<classes>>`:
-
-    class Listener(object):
-    
-        def __init__(self, fn):
-            self.fn = fn
-            self.observable = None
-    
-        def set_observable(self, observable):
-            if self.observable is not None:
-                self.observable.unlisten(self.fn)
-            self.observable = observable
-            self.observable.listen(self.fn)
-            self.fn()
-
-
 ### Document model
 
 #### Document
@@ -1360,11 +1342,11 @@ Some parts of the application can be themed. Token types from pygments denote di
             self.color = color
 
 
+Here is a theme based on solarized. Mostly stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py.
+
 `rliterate.py / <<classes>>`:
 
     class SolarizedTheme(BaseTheme):
-    
-        # Stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py
     
         base03  =  '#002b36'
         base02  =  '#073642'
@@ -1403,7 +1385,7 @@ Some parts of the application can be themed. Token types from pygments denote di
         }
 
 
-### Generic drag & drop
+### Drag & drop
 
 #### RLiterate data object
 
@@ -1567,6 +1549,24 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     
         def _on_right_up(self, event):
             self.OnRightClick()
+
+
+### Publish subscribe mechanisms
+
+`rliterate.py / <<classes>>`:
+
+    class Listener(object):
+    
+        def __init__(self, fn):
+            self.fn = fn
+            self.observable = None
+    
+        def set_observable(self, observable):
+            if self.observable is not None:
+                self.observable.unlisten(self.fn)
+            self.observable = observable
+            self.observable.listen(self.fn)
+            self.fn()
 
 
 ### Constants

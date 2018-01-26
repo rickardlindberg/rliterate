@@ -3,22 +3,6 @@
 {
 "children":[
 {
-"children":[],
-"id":"01aa28a581e84f088104c6cd600d9c1d",
-"paragraphs":[
-{
-"id":"bc097616885847ec889aa3b44a2af116",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class Listener(object):\n\n    def __init__(self, fn):\n        self.fn = fn\n        self.observable = None\n\n    def set_observable(self, observable):\n        if self.observable is not None:\n            self.observable.unlisten(self.fn)\n        self.observable = observable\n        self.observable.listen(self.fn)\n        self.fn()",
-"type":"code"
-}
-],
-"title":"Listener"
-},
-{
 "children":[
 {
 "children":[],
@@ -633,12 +617,17 @@
 "type":"code"
 },
 {
+"id":"ba6b0fa60e1042d9a1a7c90b02be31a8",
+"text":"Here is a theme based on solarized. Mostly stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py.",
+"type":"text"
+},
+{
 "id":"0f2a7a8d1dad436c826c16d47073d1dd",
 "path":[
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class SolarizedTheme(BaseTheme):\n\n    # Stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py\n\n    base03  =  '#002b36'\n    base02  =  '#073642'\n    base01  =  '#586e75'\n    base00  =  '#657b83'\n    base0   =  '#839496'\n    base1   =  '#93a1a1'\n    base2   =  '#eee8d5'\n    base3   =  '#fdf6e3'\n    yellow  =  '#b58900'\n    orange  =  '#cb4b16'\n    red     =  '#dc322f'\n    magenta =  '#d33682'\n    violet  =  '#6c71c4'\n    blue    =  '#268bd2'\n    cyan    =  '#2aa198'\n    green   =  '#859900'\n\n    styles = {\n        pygments.token.Token:               Style(color=base00),\n        pygments.token.Keyword:             Style(color=green),\n        pygments.token.Keyword.Constant:    Style(color=cyan),\n        pygments.token.Keyword.Declaration: Style(color=blue),\n        pygments.token.Keyword.Namespace:   Style(color=orange),\n        pygments.token.Name.Builtin:        Style(color=red),\n        pygments.token.Name.Builtin.Pseudo: Style(color=blue),\n        pygments.token.Name.Class:          Style(color=blue),\n        pygments.token.Name.Decorator:      Style(color=blue),\n        pygments.token.Name.Entity:         Style(color=violet),\n        pygments.token.Name.Exception:      Style(color=yellow),\n        pygments.token.Name.Function:       Style(color=blue),\n        pygments.token.String:              Style(color=cyan),\n        pygments.token.Number:              Style(color=cyan),\n        pygments.token.Operator.Word:       Style(color=green),\n        pygments.token.Comment:             Style(color=base1),\n    }\n",
+"text":"class SolarizedTheme(BaseTheme):\n\n    base03  =  '#002b36'\n    base02  =  '#073642'\n    base01  =  '#586e75'\n    base00  =  '#657b83'\n    base0   =  '#839496'\n    base1   =  '#93a1a1'\n    base2   =  '#eee8d5'\n    base3   =  '#fdf6e3'\n    yellow  =  '#b58900'\n    orange  =  '#cb4b16'\n    red     =  '#dc322f'\n    magenta =  '#d33682'\n    violet  =  '#6c71c4'\n    blue    =  '#268bd2'\n    cyan    =  '#2aa198'\n    green   =  '#859900'\n\n    styles = {\n        pygments.token.Token:               Style(color=base00),\n        pygments.token.Keyword:             Style(color=green),\n        pygments.token.Keyword.Constant:    Style(color=cyan),\n        pygments.token.Keyword.Declaration: Style(color=blue),\n        pygments.token.Keyword.Namespace:   Style(color=orange),\n        pygments.token.Name.Builtin:        Style(color=red),\n        pygments.token.Name.Builtin.Pseudo: Style(color=blue),\n        pygments.token.Name.Class:          Style(color=blue),\n        pygments.token.Name.Decorator:      Style(color=blue),\n        pygments.token.Name.Entity:         Style(color=violet),\n        pygments.token.Name.Exception:      Style(color=yellow),\n        pygments.token.Name.Function:       Style(color=blue),\n        pygments.token.String:              Style(color=cyan),\n        pygments.token.Number:              Style(color=cyan),\n        pygments.token.Operator.Word:       Style(color=green),\n        pygments.token.Comment:             Style(color=base1),\n    }\n",
 "type":"code"
 }
 ],
@@ -702,7 +691,7 @@
 ],
 "id":"a6e8ca0aa83d4829b15c0424be259022",
 "paragraphs":[],
-"title":"Generic drag & drop"
+"title":"Drag & drop"
 },
 {
 "children":[
@@ -726,6 +715,22 @@
 "id":"5c3647a616b8495f8bebd268be84377d",
 "paragraphs":[],
 "title":"wxPython utilities"
+},
+{
+"children":[],
+"id":"01aa28a581e84f088104c6cd600d9c1d",
+"paragraphs":[
+{
+"id":"bc097616885847ec889aa3b44a2af116",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Listener(object):\n\n    def __init__(self, fn):\n        self.fn = fn\n        self.observable = None\n\n    def set_observable(self, observable):\n        if self.observable is not None:\n            self.observable.unlisten(self.fn)\n        self.observable = observable\n        self.observable.listen(self.fn)\n        self.fn()",
+"type":"code"
+}
+],
+"title":"Publish subscribe mechanisms"
 },
 {
 "children":[],
