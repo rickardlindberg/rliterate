@@ -240,7 +240,14 @@ This is a tool for literal programming.
     
         @property
         def highlighted_code(self):
-            return pygments.lexers.get_lexer_for_filename(self.filename).get_tokens(self.text)
+            try:
+                lexer = pygments.lexers.get_lexer_for_filename(
+                    self.filename,
+                    stripnl=False
+                )
+            except:
+                lexer = pygments.lexers.TextLexer(stripnl=False)
+            return lexer.get_tokens(self.text)
 
 
 ### Generating output
@@ -950,7 +957,7 @@ A workspace is a container for editable content. Most commonly pages.
 
 #### Code
 
-##### Code
+##### Container widget
 
 `rliterate.py / <<classes>>`:
 
@@ -973,7 +980,7 @@ A workspace is a container for editable content. Most commonly pages.
             })
 
 
-##### Code view
+##### View widget
 
 `rliterate.py / <<classes>>`:
 
@@ -1016,12 +1023,12 @@ A workspace is a container for editable content. Most commonly pages.
         def _create_code(self, code_paragraph):
             panel = wx.Panel(self)
             panel.SetBackgroundColour((253, 246, 227))
-            text = wx.StaticText(panel, label=code_paragraph.text)
+            body = CodeBody(panel, code_paragraph)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
-            sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
+            sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
             panel.SetSizer(sizer)
             MouseEventHelper.bind(
-                [panel, text],
+                [panel, body]+body.children,
                 click=self._post_paragraph_edit_start,
                 drag=self.Parent.DoDragDrop,
                 right_click=self.Parent.ShowContextMenu
@@ -1030,9 +1037,102 @@ A workspace is a container for editable content. Most commonly pages.
     
         def _post_paragraph_edit_start(self):
             wx.PostEvent(self, ParagraphEditStart(0))
+    
+    
+    class CodeBody(wx.ScrolledWindow):
+    
+        def __init__(self, parent, paragraph):
+            wx.ScrolledWindow.__init__(self, parent)
+            self.children = []
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            self._add_lines(sizer, paragraph)
+            self.SetSizer(sizer)
+            self.SetMinSize((-1, sizer.GetMinSize()[1]))
+            self.SetScrollRate(20, 20)
+    
+        def _add_lines(self, sizer, paragraph):
+            for markup in self._split(paragraph):
+                text = wx.StaticText(self, label="")
+                text.SetLabelMarkup(markup)
+                sizer.Add(text)
+                self.children.append(text)
+    
+        def _split(self, paragraph):
+            markup_lines = []
+            for line in self._split_tokens(paragraph):
+                markup_lines.append("".join([
+                    "<span color='{}'>{}</span>".format(
+                        self._color(token_type),
+                        xml.sax.saxutils.escape(text)
+                    )
+                    for token_type, text in line
+                ]))
+            return markup_lines
+    
+        def _split_tokens(self, paragraph):
+            lines = []
+            line = []
+            for token_type, text in paragraph.highlighted_code:
+                parts = text.split("\n")
+                line.append((token_type, parts.pop(0)))
+                while parts:
+                    lines.append(line)
+                    line = []
+                    line.append((token_type, parts.pop(0)))
+            if line:
+                lines.append(line)
+            if lines and lines[-1] and len(lines[-1]) == 1 and len(lines[-1][0][1]) == 0:
+                lines.pop(-1)
+            return lines
+    
+        def _color(self, token_type):
+            # Parts stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py
+            base00  = '#657b83'
+            base01  = '#586e75'
+            base0   = '#839496'
+            base1   = '#93a1a1'
+            yellow  = '#b58900'
+            orange  = '#cb4b16'
+            red     = '#dc322f'
+            violet  = '#6c71c4'
+            blue    = '#268bd2'
+            cyan    = '#2aa198'
+            green   = '#859900'
+            if token_type is pygments.token.Keyword:
+                return green
+            elif token_type is pygments.token.Keyword.Constant:
+                return cyan
+            elif token_type is pygments.token.Keyword.Declaration:
+                return blue
+            elif token_type is pygments.token.Keyword.Namespace:
+                return orange
+            elif token_type is pygments.token.Name.Builtin:
+                return red
+            elif token_type is pygments.token.Name.Builtin.Pseudo:
+                return blue
+            elif token_type is pygments.token.Name.Class:
+                return blue
+            elif token_type is pygments.token.Name.Decorator:
+                return blue
+            elif token_type is pygments.token.Name.Entity:
+                return violet
+            elif token_type is pygments.token.Name.Exception:
+                return yellow
+            elif token_type is pygments.token.Name.Function:
+                return blue
+            elif token_type is pygments.token.String:
+                return cyan
+            elif token_type is pygments.token.Number:
+                return cyan
+            elif token_type is pygments.token.Operator.Word:
+                return green
+            elif token_type is pygments.token.Comment:
+                return base01
+            else:
+                return base00
 
 
-##### Code editor
+##### Editor widget
 
 `rliterate.py / <<classes>>`:
 
@@ -1482,6 +1582,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     import sys
     import tempfile
     import subprocess
+    import xml.sax.saxutils
     
     import wx
     import wx.lib.newevent
