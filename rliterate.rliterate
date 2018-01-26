@@ -813,7 +813,7 @@
 "paragraphs":[
 {
 "id":"334a278ca527447482c3059353cfed4f",
-"text":"* Highlight object being dragged somehow\n* Only expose custom classes from Document (Page, Paragraph, ...)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view",
+"text":"* Highlight object being dragged somehow\n* Only expose custom classes from Document (Page, Paragraph, ...)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific with\n    * Otherwise put inside ScrolledWindow",
 "type":"text"
 }
 ],

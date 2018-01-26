@@ -1723,6 +1723,10 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     3. Ensure generated files are not changed
 * Highlight active page in TOC
 * FancyText might be an option for the code view
+* Create a wx widget that can display a list of themed parts
+    * Can be used for both code / paragraps / title
+    * Should have an option to wrap lines at specific with
+    * Otherwise put inside ScrolledWindow
 
 ### Inspiration
 
