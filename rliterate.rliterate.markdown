@@ -1707,6 +1707,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
     * Can't focus in on specific subtree of toc (hoist, unhoist?)
 * Scrolling a page does not work if mouse is over a code paragraph
 * Not possible to go to a page with Ctrl+T
+* Ampersands (&) in titles (and paragraph text) are not rendered
 
 ### Ideas
 
