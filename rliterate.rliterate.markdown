@@ -1576,22 +1576,22 @@ A drop target that can work with windows that supports FindClosestDropPoint.
 
 `rliterate.py`:
 
+    from collections import defaultdict
     import contextlib
     import json
-    import uuid
-    from collections import defaultdict
     import os
     import re
+    import subprocess
     import sys
     import tempfile
-    import subprocess
-    import xml.sax.saxutils
     import time
+    import uuid
+    import xml.sax.saxutils
     
-    import wx
-    import wx.lib.newevent
     import pygments.lexers
     import pygments.token
+    import wx
+    import wx.lib.newevent
     
     
     <<constants>>
