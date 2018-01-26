@@ -22,7 +22,9 @@ This is a tool for literal programming.
             self.fn()
 
 
-### Document
+### Document model
+
+#### Document
 
 `rliterate.py / <<classes>>`:
 
@@ -79,12 +81,7 @@ This is a tool for literal programming.
                     fn()
                 self._save()
     
-        # Queries
-    
-        def get_page(self, page_id=None):
-            if page_id is None:
-                page_id = self.root_page["id"]
-            return DictPage(self._pages[page_id])
+        <<Document>>
     
         # Page operations
     
@@ -176,8 +173,22 @@ This is a tool for literal programming.
         def edit_paragraph(self, paragraph_id, data):
             with self.notify():
                 self._paragraphs[paragraph_id].update(data)
-    
-    
+
+
+#### Views
+
+Views provide a read only interface to a document. It is the only way to query a document.
+
+`rliterate.py / <<classes>> / <<Document>>`:
+
+    def get_page(self, page_id=None):
+        if page_id is None:
+            page_id = self.root_page["id"]
+        return DictPage(self._pages[page_id])
+
+
+`rliterate.py / <<classes>>`:
+
     class DictPage(object):
     
         def __init__(self, page_dict):
@@ -194,7 +205,7 @@ This is a tool for literal programming.
         @property
         def paragraphs(self):
             return [
-                DictParagraph(paragraph_dict)
+                DictParagraph.create(paragraph_dict)
                 for paragraph_dict
                 in self._page_dict["paragraphs"]
             ]
@@ -206,9 +217,18 @@ This is a tool for literal programming.
                 for child_dict
                 in self._page_dict["children"]
             ]
-    
-    
+
+
+`rliterate.py / <<classes>>`:
+
     class DictParagraph(object):
+    
+        @staticmethod
+        def create(paragraph_dict):
+            return {
+                "text": DictTextParagraph,
+                "code": DictCodeParagraph,
+            }.get(paragraph_dict["type"], DictParagraph)(paragraph_dict)
     
         def __init__(self, paragraph_dict):
             self._paragraph_dict = paragraph_dict
@@ -220,6 +240,20 @@ This is a tool for literal programming.
         @property
         def type(self):
             return self._paragraph_dict["type"]
+
+
+`rliterate.py / <<classes>>`:
+
+    class DictTextParagraph(DictParagraph):
+    
+        @property
+        def text(self):
+            return self._paragraph_dict["text"]
+
+
+`rliterate.py / <<classes>>`:
+
+    class DictCodeParagraph(DictParagraph):
     
         @property
         def text(self):
@@ -1634,6 +1668,7 @@ A drop target that can work with windows that supports FindClosestDropPoint.
 * During conversion
     * Save button is very far down if there is lots of code and only top is edited
     * Can't focus in on specific subtree of toc (hoist, unhoist?)
+* Scrolling a page does not work if mouse is over a code paragraph
 
 ### Ideas
 

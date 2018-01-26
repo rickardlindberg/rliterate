@@ -182,8 +182,6 @@ class Document(object):
                 fn()
             self._save()
 
-    # Queries
-
     def get_page(self, page_id=None):
         if page_id is None:
             page_id = self.root_page["id"]
@@ -279,8 +277,6 @@ class Document(object):
     def edit_paragraph(self, paragraph_id, data):
         with self.notify():
             self._paragraphs[paragraph_id].update(data)
-
-
 class DictPage(object):
 
     def __init__(self, page_dict):
@@ -297,7 +293,7 @@ class DictPage(object):
     @property
     def paragraphs(self):
         return [
-            DictParagraph(paragraph_dict)
+            DictParagraph.create(paragraph_dict)
             for paragraph_dict
             in self._page_dict["paragraphs"]
         ]
@@ -309,9 +305,14 @@ class DictPage(object):
             for child_dict
             in self._page_dict["children"]
         ]
-
-
 class DictParagraph(object):
+
+    @staticmethod
+    def create(paragraph_dict):
+        return {
+            "text": DictTextParagraph,
+            "code": DictCodeParagraph,
+        }.get(paragraph_dict["type"], DictParagraph)(paragraph_dict)
 
     def __init__(self, paragraph_dict):
         self._paragraph_dict = paragraph_dict
@@ -323,6 +324,12 @@ class DictParagraph(object):
     @property
     def type(self):
         return self._paragraph_dict["type"]
+class DictTextParagraph(DictParagraph):
+
+    @property
+    def text(self):
+        return self._paragraph_dict["text"]
+class DictCodeParagraph(DictParagraph):
 
     @property
     def text(self):
