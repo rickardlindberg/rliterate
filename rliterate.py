@@ -966,7 +966,7 @@ class CodeView(wx.Panel):
         panel.SetSizer(sizer)
         MouseEventHelper.bind(
             [panel, text],
-            click=self._post_paragraph_edit_start,
+            double_click=self._post_paragraph_edit_start,
             drag=self.Parent.DoDragDrop,
             right_click=self.Parent.ShowContextMenu
         )
@@ -981,7 +981,7 @@ class CodeView(wx.Panel):
         panel.SetSizer(sizer)
         MouseEventHelper.bind(
             [panel, body]+body.children,
-            click=self._post_paragraph_edit_start,
+            double_click=self._post_paragraph_edit_start,
             drag=self.Parent.DoDragDrop,
             right_click=self.Parent.ShowContextMenu
         )
