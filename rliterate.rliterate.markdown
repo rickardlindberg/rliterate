@@ -10,18 +10,18 @@ This is a tool for literal programming.
 
 `rliterate.py / <<classes>>`:
 
-    class Document(object):
+    class Document(Observable):
     
         @classmethod
         def from_file(cls, path):
             return cls(path)
     
         def __init__(self, path):
+            Observable.__init__(self)
             self.path = path
-            self.listeners = []
-            self._notify_count = 0
             self._load()
             self._cache()
+            self.listen(self._save)
     
         def _cache(self):
             self._pages = {}
@@ -47,24 +47,6 @@ This is a tool for literal programming.
         def _load(self):
             with open(self.path, "r") as f:
                 self.root_page = json.load(f)
-    
-        # PUB/SUB
-    
-        def listen(self, fn):
-            self.listeners.append(fn)
-    
-        def unlisten(self, fn):
-            self.listeners.remove(fn)
-    
-        @contextlib.contextmanager
-        def notify(self):
-            self._notify_count += 1
-            yield
-            self._notify_count -= 1
-            if self._notify_count == 0:
-                for fn in self.listeners:
-                    fn()
-                self._save()
     
         <<Document>>
     
@@ -1552,6 +1534,32 @@ A drop target that can work with windows that supports FindClosestDropPoint.
 
 
 ### Publish subscribe mechanisms
+
+`rliterate.py / <<base classes>>`:
+
+    class Observable(object):
+    
+        def __init__(self):
+            self._notify_count = 0
+            self._listeners = []
+    
+        def listen(self, fn):
+            self._listeners.append(fn)
+    
+        def unlisten(self, fn):
+            self._listeners.remove(fn)
+    
+        @contextlib.contextmanager
+        def notify(self):
+            self._notify_count += 1
+            try:
+                yield
+            finally:
+                self._notify_count -= 1
+                if self._notify_count == 0:
+                    for fn in self._listeners:
+                        fn()
+
 
 `rliterate.py / <<classes>>`:
 
