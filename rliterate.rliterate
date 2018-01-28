@@ -1,6 +1,23 @@
 {
 "children":[
 {
+"children":[],
+"id":"95150c4f0d92428bbeef4ae5a865398d",
+"paragraphs":[
+{
+"id":"21773d691a994ceb96d58cb6741ba07f",
+"text":"The following things were inspiration for rliterate.",
+"type":"text"
+},
+{
+"id":"ead08e336d8749f79b82f0093feeeb94",
+"text":"* Donald Knuth's literate programming.\n\n* https://www.youtube.com/watch?v=Av0PQDVTP4A\n  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)\n  Change the mindset from wring a program to writing a book\n\n* https://www.youtube.com/watch?v=5V1ynVyud4M\n  \"Eve\" by Chris Granger\n\n* http://eve-lang.com/deepdives/literate.html\n\n* Add factory button is stolen from fedrated wiki\n\n* ProjecturED\n  http://projectured.org/",
+"type":"text"
+}
+],
+"title":"Inspiration"
+},
+{
 "children":[
 {
 "children":[
@@ -1013,46 +1030,14 @@
 }
 ],
 "id":"4d689acb540d40ecb8b828701bb5bf74",
-"paragraphs":[],
+"paragraphs":[
+{
+"id":"658e04c3d7394bca90f06344f85dfd24",
+"text":"RLiterate is implemented in Python. This chapter gives a complete description of all the code.",
+"type":"text"
+}
+],
 "title":"Implementation"
-},
-{
-"children":[
-{
-"children":[],
-"id":"90b765caec7342d89aacb54b253220f2",
-"paragraphs":[
-{
-"id":"6aed2b5ebf7b42a1a9b5fafb91cfb38f",
-"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Tab indents with tab: should indent 4 spaces?\n* Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* Deleted pages are not removed from workspace\n* Syntax highlight code with pygments\n* File generator writes empty filename\n* There is no way to control empy lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n    * Can't focus in on specific subtree of toc (hoist, unhoist?)\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Ampersands (&) in titles (and paragraph text) are not rendered",
-"type":"text"
-}
-],
-"title":"Problems"
-},
-{
-"children":[],
-"id":"0a165f3042ee4350b9bebb61213b44c5",
-"paragraphs":[
-{
-"id":"334a278ca527447482c3059353cfed4f",
-"text":"* Highlight object being dragged somehow\n* Only expose custom classes from Document (Page, Paragraph, ...)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific with\n    * Otherwise put inside ScrolledWindow",
-"type":"text"
-}
-],
-"title":"Ideas"
-},
-{
-"children":[],
-"id":"95150c4f0d92428bbeef4ae5a865398d",
-"paragraphs":[
-{
-"id":"ead08e336d8749f79b82f0093feeeb94",
-"text":"* https://www.youtube.com/watch?v=Av0PQDVTP4A\n  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)\n  Change the mindset from wring a program to writing a book\n\n* https://www.youtube.com/watch?v=5V1ynVyud4M\n  \"Eve\" by Chris Granger\n\n* http://eve-lang.com/deepdives/literate.html\n\n* Add factory button is stolen from fedrated wiki\n\n* ProjecturED\n  http://projectured.org/",
-"type":"text"
-}
-],
-"title":"Inspiration"
 },
 {
 "children":[],
@@ -1070,11 +1055,23 @@
 }
 ],
 "title":"Things I learned"
+},
+{
+"children":[],
+"id":"0a165f3042ee4350b9bebb61213b44c5",
+"paragraphs":[
+{
+"id":"de3589c301134bd88a37a3836dfd330e",
+"text":"Random notes of what I might want to work on in the future.",
+"type":"text"
+},
+{
+"id":"334a278ca527447482c3059353cfed4f",
+"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Tab indents with tab: should indent 4 spaces?\n* Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* Deleted pages are not removed from workspace\n* Syntax highlight code with pygments\n* File generator writes empty filename\n* There is no way to control empy lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n    * Can't focus in on specific subtree of toc (hoist, unhoist?)\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Ampersands (&) in titles (and paragraph text) are not rendered\n* Highlight object being dragged somehow (screenshot?)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect (or other program) using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific width\n    * Otherwise put inside ScrolledWindow\n* Right click should only be generated on up if first down\n* Deleted pages should not be rendered",
+"type":"text"
 }
 ],
-"id":"99cd2ba1520840b8b4e14b9d8ea13701",
-"paragraphs":[],
-"title":"Notes"
+"title":"TODO"
 }
 ],
 "id":"956ae4613f144e3581d420995a7ef046",

@@ -2,7 +2,29 @@
 
 This is a tool for literal programming.
 
+## Inspiration
+
+The following things were inspiration for rliterate.
+
+* Donald Knuth's literate programming.
+
+* https://www.youtube.com/watch?v=Av0PQDVTP4A
+  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)
+  Change the mindset from wring a program to writing a book
+
+* https://www.youtube.com/watch?v=5V1ynVyud4M
+  "Eve" by Chris Granger
+
+* http://eve-lang.com/deepdives/literate.html
+
+* Add factory button is stolen from fedrated wiki
+
+* ProjecturED
+  http://projectured.org/
+
 ## Implementation
+
+RLiterate is implemented in Python. This chapter gives a complete description of all the code.
 
 ### Document model
 
@@ -1832,9 +1854,15 @@ This functions tries to write safely to a file. The file will either be complete
         app.MainLoop()
 
 
-## Notes
+## Things I learned
 
-### Problems
+DoDragDrop must be called from within an event handler.
+
+Font must be assigned before setting a label, otherwise size calculations will be wrong? Must investigate further.
+
+## TODO
+
+Random notes of what I might want to work on in the future.
 
 * Multiple editors can be opened (only last opened is saved)
 * Factory should drop right into edit mode
@@ -1862,16 +1890,12 @@ This functions tries to write safely to a file. The file will either be complete
 * Scrolling a page does not work if mouse is over a code paragraph
 * Not possible to go to a page with Ctrl+T
 * Ampersands (&) in titles (and paragraph text) are not rendered
-
-### Ideas
-
-* Highlight object being dragged somehow
-* Only expose custom classes from Document (Page, Paragraph, ...)
+* Highlight object being dragged somehow (screenshot?)
 * Make each column scrollable (like Tweetdeck)
 * Save when clicking outside text field (how to do this?)
 * This is really a writing tool
     * Spell checking
-* Final test: rewrite rlselect using rliterate
+* Final test: rewrite rlselect (or other program) using rliterate
     1. Import all source code as is
     2. Write narrative
     3. Ensure generated files are not changed
@@ -1879,28 +1903,8 @@ This functions tries to write safely to a file. The file will either be complete
 * FancyText might be an option for the code view
 * Create a wx widget that can display a list of themed parts
     * Can be used for both code / paragraps / title
-    * Should have an option to wrap lines at specific with
+    * Should have an option to wrap lines at specific width
     * Otherwise put inside ScrolledWindow
-
-### Inspiration
-
-* https://www.youtube.com/watch?v=Av0PQDVTP4A
-  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)
-  Change the mindset from wring a program to writing a book
-
-* https://www.youtube.com/watch?v=5V1ynVyud4M
-  "Eve" by Chris Granger
-
-* http://eve-lang.com/deepdives/literate.html
-
-* Add factory button is stolen from fedrated wiki
-
-* ProjecturED
-  http://projectured.org/
-
-### Things I learned
-
-DoDragDrop must be called from within an event handler.
-
-Font must be assigned before setting a label, otherwise size calculations will be wrong? Must investigate further.
+* Right click should only be generated on up if first down
+* Deleted pages should not be rendered
 
