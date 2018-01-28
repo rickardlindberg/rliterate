@@ -38,15 +38,10 @@ This is a tool for literal programming.
                 self._cache_page(child, page)
     
         def _save(self):
-            with open(self.path, "w") as f:
-                json.dump(
-                    self.root_page, f,
-                    sort_keys=True, indent=0, separators=(',', ':')
-                )
+            write_json_to_file(self.path, self.root_page)
     
         def _load(self):
-            with open(self.path, "r") as f:
-                self.root_page = json.load(f)
+            self.root_page = load_json_from_file(self.path)
     
         <<Document>>
     
@@ -1575,6 +1570,40 @@ A drop target that can work with windows that supports FindClosestDropPoint.
             self.observable = observable
             self.observable.listen(self.fn)
             self.fn()
+
+
+### JSON serialization mechanisms
+
+`rliterate.py / <<functions>>`:
+
+    def load_json_from_file(path):
+        with open(path, "r") as f:
+            return json.load(f)
+
+
+`rliterate.py / <<functions>>`:
+
+    def write_json_to_file(path, data):
+        with safely_write_file(path) as f:
+            json.dump(
+                data, f,
+                sort_keys=True, indent=0, separators=(',', ':')
+            )
+
+
+This functions tries to write safely to a file. The file will either be completely written or not modified at all. It is achieved by first writing to a temporary file and then performing a rename.
+
+`rliterate.py / <<functions>>`:
+
+    @contextlib.contextmanager
+    def safely_write_file(path):
+        with tempfile.NamedTemporaryFile(
+            dir=os.path.dirname(path),
+            prefix=os.path.basename(path) + ".tmp",
+            delete=False
+        ) as tmp:
+            yield tmp
+        os.rename(tmp.name, path)
 
 
 ### Constants

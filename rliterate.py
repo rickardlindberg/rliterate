@@ -171,15 +171,10 @@ class Document(Observable):
             self._cache_page(child, page)
 
     def _save(self):
-        with open(self.path, "w") as f:
-            json.dump(
-                self.root_page, f,
-                sort_keys=True, indent=0, separators=(',', ':')
-            )
+        write_json_to_file(self.path, self.root_page)
 
     def _load(self):
-        with open(self.path, "r") as f:
-            self.root_page = json.load(f)
+        self.root_page = load_json_from_file(self.path)
 
     def get_page(self, page_id=None):
         if page_id is None:
@@ -1320,6 +1315,24 @@ class Listener(object):
         self.observable = observable
         self.observable.listen(self.fn)
         self.fn()
+def load_json_from_file(path):
+    with open(path, "r") as f:
+        return json.load(f)
+def write_json_to_file(path, data):
+    with safely_write_file(path) as f:
+        json.dump(
+            data, f,
+            sort_keys=True, indent=0, separators=(',', ':')
+        )
+@contextlib.contextmanager
+def safely_write_file(path):
+    with tempfile.NamedTemporaryFile(
+        dir=os.path.dirname(path),
+        prefix=os.path.basename(path) + ".tmp",
+        delete=False
+    ) as tmp:
+        yield tmp
+    os.rename(tmp.name, path)
 def genid():
     return uuid.uuid4().hex
 
