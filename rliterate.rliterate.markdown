@@ -1908,4 +1908,5 @@ Random notes of what I might want to work on in the future.
     * Should have an option to wrap lines at specific width
     * Otherwise put inside ScrolledWindow
 * Right click should only be generated on up if first down
+* Workspace should not be wider that a column, that creates an unnecessary scrollbar
 
