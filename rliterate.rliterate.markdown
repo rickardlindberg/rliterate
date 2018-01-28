@@ -1879,8 +1879,6 @@ Random notes of what I might want to work on in the future.
     * Add (before, after)
 * Missing paragraph operations
     * Context menu with add paragraph before/after
-* Deleted pages are not removed from workspace
-* Syntax highlight code with pygments
 * File generator writes empty filename
 * There is no way to control empy lines from placeholders
 * There is no list paragraph type
