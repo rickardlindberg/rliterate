@@ -375,12 +375,13 @@ Views provide a read only interface to a document. It is the only way to query a
     
         def __init__(self, filepath):
             wx.Frame.__init__(self, None)
+            layout = Layout(".{}.layout".format(filepath))
             document = Document.from_file(filepath)
             FileGenerator().set_document(document)
             MarkdownGenerator(filepath+".markdown").set_document(document)
             theme = SolarizedTheme()
-            workspace = Workspace(self, theme, document)
-            toc = TableOfContents(self, workspace, document)
+            workspace = Workspace(self, theme, layout, document)
+            toc = TableOfContents(self, layout, document)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(toc, flag=wx.EXPAND, proportion=0)
             sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
@@ -399,16 +400,16 @@ Views provide a read only interface to a document. It is the only way to query a
 
 `rliterate.py / <<classes>> / <<TableOfContents>>`:
 
-    def __init__(self, parent, workspace, document):
+    def __init__(self, parent, layout, document):
         wx.ScrolledWindow.__init__(self, parent, size=(300, -1))
         self.SetScrollRate(20, 20)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
-        self.listener = Listener(lambda: wx.CallAfter(self.Render))
+        self.layout_listener = Listener(lambda: wx.CallAfter(self.Render), "toc")
+        self.document_listener = Listener(lambda: wx.CallAfter(self.Render))
+        self.SetLayout(layout)
         self.SetDocument(document)
         self.SetBackgroundColour((255, 255, 255))
-        self.collapsed = set()
-        self.workspace = workspace
         self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)
         self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)
         self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)
@@ -429,14 +430,10 @@ Views provide a read only interface to a document. It is the only way to query a
                 )
     
     def OnTreeToggle(self, event):
-        if event.page_id in self.collapsed:
-            self.collapsed.remove(event.page_id)
-        else:
-            self.collapsed.add(event.page_id)
-        self.Render()
+        self.layout.toggle_collapsed(event.page_id)
     
     def OnTreeLeftClick(self, event):
-        self.workspace.OpenScratch([event.page_id])
+        self.layout.set_scratch_pages([event.page_id])
     
     def OnTreeRightClick(self, event):
         menu = PageContextMenu(self.document, event.page_id)
@@ -447,11 +444,15 @@ Views provide a read only interface to a document. It is the only way to query a
         page_ids = [event.page_id]
         for child in self.document.get_page(event.page_id).children:
             page_ids.append(child.id)
-        self.workspace.OpenScratch(page_ids)
+        self.layout.set_scratch_pages(page_ids)
+    
+    def SetLayout(self, layout):
+        self.layout = layout
+        self.layout_listener.set_observable(self.layout)
     
     def SetDocument(self, document):
         self.document = document
-        self.listener.set_observable(self.document)
+        self.document_listener.set_observable(self.document)
     
     def Render(self):
         self.Freeze()
@@ -462,7 +463,7 @@ Views provide a read only interface to a document. It is the only way to query a
         self.Thaw()
     
     def add_page(self, page, indentation=0):
-        is_collapsed = page.id in self.collapsed
+        is_collapsed = self.layout.is_collapsed(page.id)
         self.sizer.Add(
             TableOfContentsRow(self, indentation, page, is_collapsed),
             flag=wx.EXPAND
@@ -677,7 +678,7 @@ A workspace is a container for editable content. Most commonly pages.
 
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
-    def __init__(self, parent, theme, document):
+    def __init__(self, parent, theme, layout, document):
         wx.ScrolledWindow.__init__(self, parent)
         self.theme = theme
         self.SetScrollRate(20, 20)
@@ -685,9 +686,11 @@ A workspace is a container for editable content. Most commonly pages.
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
-        self.listener = Listener(lambda: wx.CallAfter(self.Render))
+        self.layout_listener = Listener(lambda: wx.CallAfter(self.SetupLayout))
+        self.document_listener = Listener(lambda: wx.CallAfter(self.Render))
         self.columns = []
         self.SetDocument(document)
+        self.SetLayout(layout)
         <<__init__>>
     
     def FindClosestDropPoint(self, screen_pos):
@@ -696,23 +699,26 @@ A workspace is a container for editable content. Most commonly pages.
             lambda column: column.FindClosestDropPoint(screen_pos)
         )
     
+    def SetLayout(self, layout):
+        self.layout = layout
+        self.layout_listener.set_observable(self.layout)
+    
     def SetDocument(self, document):
+        self.document = document
+        self.document_listener.set_observable(self.document)
+    
+    def SetupLayout(self):
         while self.columns:
             column = self.columns.pop()
             self.sizer.Detach(column)
             column.Destroy()
-        self.document = document
-        self.scratch_column = self.AddColumn()
-        self.listener.set_observable(self.document)
+        scratch_column = self.AddColumn()
+        scratch_column.SetPages(self.layout.get_scratch_pages())
         self.GetTopLevelParent().Layout()
     
     def Render(self):
         for column in self.columns:
             column.Render()
-    
-    def OpenScratch(self, page_ids):
-        self.scratch_column.SetPages(page_ids)
-        self.GetTopLevelParent().Layout()
     
     def AddColumn(self):
         column = Column(self, self.theme, self.document)
@@ -938,6 +944,50 @@ A workspace is a container for editable content. Most commonly pages.
     
         def Hide(self):
             self.divider.Hide()
+
+
+### Layout
+
+`rliterate.py / <<classes>>`:
+
+    class Layout(Observable):
+    
+        def __init__(self, path):
+            Observable.__init__(self)
+            self.listen(lambda: write_json_to_file(path, self.data))
+            if os.path.exists(path):
+                self.data = load_json_from_file(path)
+            else:
+                self.data = {}
+            self._ensure_defaults()
+    
+        def _ensure_defaults(self):
+            toc = self._ensure_key(self.data, "toc", {})
+            self._toc_collapsed = self._ensure_key(toc, "collapsed", [])
+            workspace = self._ensure_key(self.data, "workspace", {})
+            self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
+    
+        def _ensure_key(self, a_dict, key, default):
+            if key not in a_dict:
+                a_dict[key] = default
+            return a_dict[key]
+    
+        def is_collapsed(self, page_id):
+            return page_id in self._toc_collapsed
+    
+        def toggle_collapsed(self, page_id):
+            with self.notify("toc"):
+                if page_id in self._toc_collapsed:
+                    self._toc_collapsed.remove(page_id)
+                else:
+                    self._toc_collapsed.append(page_id)
+    
+        def get_scratch_pages(self):
+            return self._workspace_scratch[:]
+    
+        def set_scratch_pages(self, page_ids):
+            with self.notify("workspace"):
+                self._workspace_scratch[:] = page_ids
 
 
 ### Paragraphs
@@ -1538,37 +1588,39 @@ A drop target that can work with windows that supports FindClosestDropPoint.
             self._notify_count = 0
             self._listeners = []
     
-        def listen(self, fn):
-            self._listeners.append(fn)
+        def listen(self, fn, event=None):
+            self._listeners.append((fn, event))
     
-        def unlisten(self, fn):
-            self._listeners.remove(fn)
+        def unlisten(self, fn, event=None):
+            self._listeners.remove((fn, event))
     
         @contextlib.contextmanager
-        def notify(self):
+        def notify(self, event=None):
             self._notify_count += 1
             try:
                 yield
             finally:
                 self._notify_count -= 1
                 if self._notify_count == 0:
-                    for fn in self._listeners:
-                        fn()
+                    for fn, fn_event in self._listeners:
+                        if fn_event is None or event == fn_event:
+                            fn()
 
 
 `rliterate.py / <<classes>>`:
 
     class Listener(object):
     
-        def __init__(self, fn):
+        def __init__(self, fn, event=None):
             self.fn = fn
+            self.event = event
             self.observable = None
     
         def set_observable(self, observable):
             if self.observable is not None:
-                self.observable.unlisten(self.fn)
+                self.observable.unlisten(self.fn, self.event)
             self.observable = observable
-            self.observable.listen(self.fn)
+            self.observable.listen(self.fn, self.event)
             self.fn()
 
 
