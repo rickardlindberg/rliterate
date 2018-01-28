@@ -385,7 +385,7 @@ Views provide a read only interface to a document. It is the only way to query a
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(toc, flag=wx.EXPAND, proportion=0)
             sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
-            self.SetSizer(sizer)
+            self.SetSizerAndFit(sizer)
 
 
 ### Table of contents
@@ -401,12 +401,12 @@ Views provide a read only interface to a document. It is the only way to query a
 `rliterate.py / <<classes>> / <<TableOfContents>>`:
 
     def __init__(self, parent, layout, document):
-        wx.ScrolledWindow.__init__(self, parent, size=(300, -1))
+        wx.ScrolledWindow.__init__(self, parent, size=(250, -1))
         self.SetScrollRate(20, 20)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
-        self.layout_listener = Listener(lambda: wx.CallAfter(self.Render), "toc")
-        self.document_listener = Listener(lambda: wx.CallAfter(self.Render))
+        self.layout_listener = Listener(lambda: wx.CallAfter(self._render), "toc")
+        self.document_listener = Listener(lambda: wx.CallAfter(self._render))
         self.SetLayout(layout)
         self.SetDocument(document)
         self.SetBackgroundColour((255, 255, 255))
@@ -415,6 +415,7 @@ Views provide a read only interface to a document. It is the only way to query a
         self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)
         self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
         <<__init__>>
+        self._render()
     
     def FindClosestDropPoint(self, screen_pos):
         client_pos = self.ScreenToClient(screen_pos)
@@ -454,15 +455,13 @@ Views provide a read only interface to a document. It is the only way to query a
         self.document = document
         self.document_listener.set_observable(self.document)
     
-    def Render(self):
-        self.Freeze()
+    def _render(self):
         self.drop_points = []
         self.sizer.Clear(True)
-        self.add_page(self.document.get_page())
+        self._render_page(self.document.get_page())
         self.Layout()
-        self.Thaw()
     
-    def add_page(self, page, indentation=0):
+    def _render_page(self, page, indentation=0):
         is_collapsed = self.layout.is_collapsed(page.id)
         self.sizer.Add(
             TableOfContentsRow(self, indentation, page, is_collapsed),
@@ -485,7 +484,7 @@ Views provide a read only interface to a document. It is the only way to query a
         ))
         if not is_collapsed:
             for child, next_child in pairs(page.children):
-                divider = self.add_page(child, indentation+1)
+                divider = self._render_page(child, indentation+1)
                 self.drop_points.append(TableOfContentsDropPoint(
                     divider=divider,
                     indentation=indentation+1,
@@ -666,9 +665,11 @@ Views provide a read only interface to a document. It is the only way to query a
 
 ### Workspace
 
-A workspace is a container for editable content. Most commonly pages.
+A workspace is a container for editable content. Only pages at the moment.
 
 #### Main widget
+
+The main workspace widget is a scrolling container containing column widgets.
 
 `rliterate.py / <<classes>>`:
 
@@ -679,25 +680,14 @@ A workspace is a container for editable content. Most commonly pages.
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
     def __init__(self, parent, theme, layout, document):
-        wx.ScrolledWindow.__init__(self, parent)
+        wx.ScrolledWindow.__init__(self, parent, size=(int(PAGE_BODY_WIDTH*1.2), 300))
         self.theme = theme
-        self.SetScrollRate(20, 20)
-        self.SetBackgroundColour((200, 200, 200))
-        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.AddSpacer(PAGE_PADDING)
-        self.SetSizer(self.sizer)
-        self.layout_listener = Listener(lambda: wx.CallAfter(self.SetupLayout))
-        self.document_listener = Listener(lambda: wx.CallAfter(self.Render))
-        self.columns = []
-        self.SetDocument(document)
+        self.layout_listener = Listener(self._re_render_from_event)
+        self.document_listener = Listener(self._re_render_from_event)
         self.SetLayout(layout)
+        self.SetDocument(document)
         <<__init__>>
-    
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            self.columns,
-            lambda column: column.FindClosestDropPoint(screen_pos)
-        )
+        self._render()
     
     def SetLayout(self, layout):
         self.layout = layout
@@ -706,25 +696,46 @@ A workspace is a container for editable content. Most commonly pages.
     def SetDocument(self, document):
         self.document = document
         self.document_listener.set_observable(self.document)
+
+
+Rendering (wx.CallAfter seems to be needed to correctly update scrollbars. Resizing the window also works):
+
+`rliterate.py / <<classes>> / <<Workspace>>`:
+
+    def _render(self):
+        self.SetScrollRate(20, 20)
+        self.SetBackgroundColour((200, 200, 200))
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(self.sizer)
+        self._re_render()
     
-    def SetupLayout(self):
-        while self.columns:
-            column = self.columns.pop()
-            self.sizer.Detach(column)
-            column.Destroy()
-        scratch_column = self.AddColumn()
-        scratch_column.SetPages(self.layout.get_scratch_pages())
-        self.GetTopLevelParent().Layout()
+    def _re_render_from_event(self):
+        wx.CallAfter(self._re_render)
     
-    def Render(self):
-        for column in self.columns:
-            column.Render()
+    def _re_render(self):
+        self.sizer.Clear(True)
+        self.columns = []
+        self.sizer.AddSpacer(PAGE_PADDING)
+        if self.layout is not None and self.document is not None:
+            self._render_column(self.layout.get_scratch_pages())
+        self.Parent.Layout()
     
-    def AddColumn(self):
-        column = Column(self, self.theme, self.document)
+    def _render_column(self, page_ids):
+        column = Column(self, self.theme, self.document, page_ids)
         self.columns.append(column)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
+
+
+Implementation for drag and drop:
+
+`rliterate.py / <<classes>> / <<Workspace>>`:
+
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.columns,
+            lambda column: column.FindClosestDropPoint(screen_pos)
+        )
 
 
 #### Column widget
@@ -733,65 +744,48 @@ A workspace is a container for editable content. Most commonly pages.
 
     class Column(wx.Panel):
     
-        def __init__(self, parent, theme, document):
-            wx.Panel.__init__(self, parent, size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1))
+        def __init__(self, parent, theme, document, page_ids):
+            wx.Panel.__init__(
+                self,
+                parent,
+                size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1)
+            )
             self.theme = theme
-            self.sizer = wx.BoxSizer(wx.VERTICAL)
-            self.sizer.AddSpacer(PAGE_PADDING)
-            self.SetSizer(self.sizer)
             self.document = document
-            self.pages = []
+            self.page_ids = page_ids
+            self._render()
     
-        def FindClosestDropPoint(self, screen_pos):
-            return find_first(
-                self.pages,
-                lambda page: page.FindClosestDropPoint(screen_pos)
-            )
+        <<Column>>
+
+
+`rliterate.py / <<classes>> / <<Column>>`:
+
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.pages,
+            lambda page: page.FindClosestDropPoint(screen_pos)
+        )
+
+
+Rendering:
+
+`rliterate.py / <<classes>> / <<Column>>`:
+
+    def _render(self):
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.AddSpacer(PAGE_PADDING)
+        self.pages = [
+            self._render_page(page_id)
+            for page_id in
+            self.page_ids
+        ]
+        self.SetSizer(self.sizer)
     
-        def Render(self):
-            for page in self.pages:
-                page.Render()
-    
-        def SetPages(self, page_ids):
-            while self.pages:
-                page = self.pages.pop()
-                self.sizer.Detach(page)
-                page.Destroy()
-            for page_id in page_ids:
-                self.AddPage(page_id)
-    
-        def AddPage(self, page_id):
-            page = PageContainer(self, self.theme, self.document, page_id)
-            self.pages.append(page)
-            self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
-            return page
+    def _render_page(self, page_id):
+        page = PageContainer(self, self.theme, self.document, page_id)
+        self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
+        return page
 
-
-#### Drop target
-
-`rliterate.py / <<classes>>`:
-
-    class WorkspaceDropTarget(DropPointDropTarget):
-    
-        def __init__(self, workspace):
-            DropPointDropTarget.__init__(self, workspace, "paragraph")
-            self.workspace = workspace
-    
-        def OnDataDropped(self, dropped_paragraph, drop_point):
-            self.workspace.document.move_paragraph(
-                source_page=dropped_paragraph["page_id"],
-                source_paragraph=dropped_paragraph["paragraph_id"],
-                target_page=drop_point.page_id,
-                before_paragraph=drop_point.next_paragraph_id
-            )
-
-
-`rliterate.py / <<classes>> / <<Workspace>> / <<__init__>>`:
-
-    self.SetDropTarget(WorkspaceDropTarget(self))
-
-
-### Pages
 
 #### Page container
 
@@ -801,18 +795,36 @@ A workspace is a container for editable content. Most commonly pages.
     
         def __init__(self, parent, theme, document, page_id):
             wx.Panel.__init__(self, parent)
-            self.page_body = Page(self, theme, document, page_id)
-            self.SetBackgroundColour((150, 150, 150))
-            self.sizer = wx.BoxSizer(wx.VERTICAL)
-            self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
-            self.SetSizer(self.sizer)
-            self.Render()
+            self.theme = theme
+            self.document = document
+            self.page_id = page_id
+            self._render()
     
-        def FindClosestDropPoint(self, screen_pos):
-            return self.page_body.FindClosestDropPoint(screen_pos)
-    
-        def Render(self):
-            self.page_body.Render()
+        <<PageContainer>>
+
+
+Rendering:
+
+`rliterate.py / <<classes>> / <<PageContainer>>`:
+
+    def _render(self):
+        self.SetBackgroundColour((150, 150, 150))
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.page_body = Page(self, self.theme, self.document, self.page_id)
+        self.sizer.Add(
+            self.page_body,
+            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
+            border=SHADOW_SIZE
+        )
+        self.SetSizer(self.sizer)
+
+
+Drag and drop:
+
+`rliterate.py / <<classes>> / <<PageContainer>>`:
+
+    def FindClosestDropPoint(self, screen_pos):
+        return self.page_body.FindClosestDropPoint(screen_pos)
 
 
 #### Page
@@ -826,73 +838,87 @@ A workspace is a container for editable content. Most commonly pages.
             self.theme = theme
             self.document = document
             self.page_id = page_id
-            self.SetBackgroundColour(wx.WHITE)
-            self.sizer = wx.BoxSizer(wx.VERTICAL)
-            self.SetSizer(self.sizer)
+            self._render()
     
-        def FindClosestDropPoint(self, screen_pos):
-            client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
-            if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-                return min_or_none(
-                    self.drop_points,
-                    key=lambda drop_point: drop_point.y_distance_to(client_y)
-                )
-    
-        def Render(self):
-            self.drop_points = []
-            page = self.document.get_page(self.page_id)
-            self.sizer.Clear(True)
-            self.sizer.AddSpacer(PARAGRAPH_SPACE)
-            divider = self.AddParagraph(Title(self, self.document, page))
-            for paragraph in page.paragraphs:
-                self.drop_points.append(PageDropPoint(
-                    divider=divider,
-                    page_id=self.page_id,
-                    next_paragraph_id=paragraph.id
-                ))
-                divider = self.AddParagraph({
-                    "text": Paragraph,
-                    "code": Code,
-                    "factory": Factory,
-                }[paragraph.type](self, self.theme, self.document, self.page_id, paragraph))
+        <<Page>>
+
+
+Rendering:
+
+`rliterate.py / <<classes>> / <<Page>>`:
+
+    def _render(self):
+        self.SetBackgroundColour(wx.WHITE)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
+        self.drop_points = []
+        page = self.document.get_page(self.page_id)
+        self.sizer.AddSpacer(PARAGRAPH_SPACE)
+        divider = self._render_paragraph(Title(self, self.document, page))
+        for paragraph in page.paragraphs:
             self.drop_points.append(PageDropPoint(
                 divider=divider,
                 page_id=self.page_id,
-                next_paragraph_id=None
+                next_paragraph_id=paragraph.id
             ))
-            self.CreateMenu()
-            self.GetTopLevelParent().Layout()
+            divider = self._render_paragraph({
+                "text": Paragraph,
+                "code": Code,
+                "factory": Factory,
+            }[paragraph.type](self, self.theme, self.document, self.page_id, paragraph))
+        self.drop_points.append(PageDropPoint(
+            divider=divider,
+            page_id=self.page_id,
+            next_paragraph_id=None
+        ))
+        self._render_add_button()
     
-        def CreateMenu(self):
-            add_button = wx.BitmapButton(
-                self,
-                bitmap=wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK,
-                wx.ART_BUTTON, (16, 16)),
-                style=wx.NO_BORDER
-            )
-            add_button.Bind(wx.EVT_BUTTON, self.OnButton)
-            self.sizer.Add(
-                add_button,
-                flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,
-                border=PARAGRAPH_SPACE
-            )
+    def _render_paragraph(self, paragraph):
+        self.sizer.Add(
+            paragraph,
+            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
+            border=PARAGRAPH_SPACE
+        )
+        divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)
+        self.sizer.Add(
+            divider,
+            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
+            border=PARAGRAPH_SPACE
+        )
+        return divider
     
-        def OnButton(self, event):
-            self.document.add_paragraph(self.page_id)
+    def _render_add_button(self):
+        add_button = wx.BitmapButton(
+            self,
+            bitmap=wx.ArtProvider.GetBitmap(
+                wx.ART_ADD_BOOKMARK,
+                wx.ART_BUTTON,
+                (16, 16)
+            ),
+            style=wx.NO_BORDER
+        )
+        add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
+        self.sizer.Add(
+            add_button,
+            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,
+            border=PARAGRAPH_SPACE
+        )
     
-        def AddParagraph(self, paragraph):
-            self.sizer.Add(
-                paragraph,
-                flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
-                border=PARAGRAPH_SPACE
+    def _on_add_button(self, event):
+        self.document.add_paragraph(self.page_id)
+
+
+Drag and drop:
+
+`rliterate.py / <<classes>> / <<Page>>`:
+
+    def FindClosestDropPoint(self, screen_pos):
+        client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
+        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
+            return min_or_none(
+                self.drop_points,
+                key=lambda drop_point: drop_point.y_distance_to(client_y)
             )
-            divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)
-            self.sizer.Add(
-                divider,
-                flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
-                border=PARAGRAPH_SPACE
-            )
-            return divider
 
 
 #### Title
@@ -944,6 +970,30 @@ A workspace is a container for editable content. Most commonly pages.
     
         def Hide(self):
             self.divider.Hide()
+
+
+#### Drop target
+
+`rliterate.py / <<classes>>`:
+
+    class WorkspaceDropTarget(DropPointDropTarget):
+    
+        def __init__(self, workspace):
+            DropPointDropTarget.__init__(self, workspace, "paragraph")
+            self.workspace = workspace
+    
+        def OnDataDropped(self, dropped_paragraph, drop_point):
+            self.workspace.document.move_paragraph(
+                source_page=dropped_paragraph["page_id"],
+                source_paragraph=dropped_paragraph["paragraph_id"],
+                target_page=drop_point.page_id,
+                before_paragraph=drop_point.next_paragraph_id
+            )
+
+
+`rliterate.py / <<classes>> / <<Workspace>> / <<__init__>>`:
+
+    self.SetDropTarget(WorkspaceDropTarget(self))
 
 
 ### Layout

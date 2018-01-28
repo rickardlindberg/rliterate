@@ -470,15 +470,15 @@ class MainFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
-        self.SetSizer(sizer)
+        self.SetSizerAndFit(sizer)
 class TableOfContents(wx.ScrolledWindow):
     def __init__(self, parent, layout, document):
-        wx.ScrolledWindow.__init__(self, parent, size=(300, -1))
+        wx.ScrolledWindow.__init__(self, parent, size=(250, -1))
         self.SetScrollRate(20, 20)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
-        self.layout_listener = Listener(lambda: wx.CallAfter(self.Render), "toc")
-        self.document_listener = Listener(lambda: wx.CallAfter(self.Render))
+        self.layout_listener = Listener(lambda: wx.CallAfter(self._render), "toc")
+        self.document_listener = Listener(lambda: wx.CallAfter(self._render))
         self.SetLayout(layout)
         self.SetDocument(document)
         self.SetBackgroundColour((255, 255, 255))
@@ -487,6 +487,7 @@ class TableOfContents(wx.ScrolledWindow):
         self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)
         self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
         self.SetDropTarget(TableOfContentsDropTarget(self))
+        self._render()
 
     def FindClosestDropPoint(self, screen_pos):
         client_pos = self.ScreenToClient(screen_pos)
@@ -526,15 +527,13 @@ class TableOfContents(wx.ScrolledWindow):
         self.document = document
         self.document_listener.set_observable(self.document)
 
-    def Render(self):
-        self.Freeze()
+    def _render(self):
         self.drop_points = []
         self.sizer.Clear(True)
-        self.add_page(self.document.get_page())
+        self._render_page(self.document.get_page())
         self.Layout()
-        self.Thaw()
 
-    def add_page(self, page, indentation=0):
+    def _render_page(self, page, indentation=0):
         is_collapsed = self.layout.is_collapsed(page.id)
         self.sizer.Add(
             TableOfContentsRow(self, indentation, page, is_collapsed),
@@ -557,7 +556,7 @@ class TableOfContents(wx.ScrolledWindow):
         ))
         if not is_collapsed:
             for child, next_child in pairs(page.children):
-                divider = self.add_page(child, indentation+1)
+                divider = self._render_page(child, indentation+1)
                 self.drop_points.append(TableOfContentsDropPoint(
                     divider=divider,
                     indentation=indentation+1,
@@ -701,25 +700,14 @@ class PageContextMenu(wx.Menu):
         )
 class Workspace(wx.ScrolledWindow):
     def __init__(self, parent, theme, layout, document):
-        wx.ScrolledWindow.__init__(self, parent)
+        wx.ScrolledWindow.__init__(self, parent, size=(int(PAGE_BODY_WIDTH*1.2), 300))
         self.theme = theme
-        self.SetScrollRate(20, 20)
-        self.SetBackgroundColour((200, 200, 200))
-        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.AddSpacer(PAGE_PADDING)
-        self.SetSizer(self.sizer)
-        self.layout_listener = Listener(lambda: wx.CallAfter(self.SetupLayout))
-        self.document_listener = Listener(lambda: wx.CallAfter(self.Render))
-        self.columns = []
-        self.SetDocument(document)
+        self.layout_listener = Listener(self._re_render_from_event)
+        self.document_listener = Listener(self._re_render_from_event)
         self.SetLayout(layout)
+        self.SetDocument(document)
         self.SetDropTarget(WorkspaceDropTarget(self))
-
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            self.columns,
-            lambda column: column.FindClosestDropPoint(screen_pos)
-        )
+        self._render()
 
     def SetLayout(self, layout):
         self.layout = layout
@@ -728,88 +716,87 @@ class Workspace(wx.ScrolledWindow):
     def SetDocument(self, document):
         self.document = document
         self.document_listener.set_observable(self.document)
+    def _render(self):
+        self.SetScrollRate(20, 20)
+        self.SetBackgroundColour((200, 200, 200))
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(self.sizer)
+        self._re_render()
 
-    def SetupLayout(self):
-        while self.columns:
-            column = self.columns.pop()
-            self.sizer.Detach(column)
-            column.Destroy()
-        scratch_column = self.AddColumn()
-        scratch_column.SetPages(self.layout.get_scratch_pages())
-        self.GetTopLevelParent().Layout()
+    def _re_render_from_event(self):
+        wx.CallAfter(self._re_render)
 
-    def Render(self):
-        for column in self.columns:
-            column.Render()
+    def _re_render(self):
+        self.sizer.Clear(True)
+        self.columns = []
+        self.sizer.AddSpacer(PAGE_PADDING)
+        if self.layout is not None and self.document is not None:
+            self._render_column(self.layout.get_scratch_pages())
+        self.Parent.Layout()
 
-    def AddColumn(self):
-        column = Column(self, self.theme, self.document)
+    def _render_column(self, page_ids):
+        column = Column(self, self.theme, self.document, page_ids)
         self.columns.append(column)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.columns,
+            lambda column: column.FindClosestDropPoint(screen_pos)
+        )
 class Column(wx.Panel):
 
-    def __init__(self, parent, theme, document):
-        wx.Panel.__init__(self, parent, size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1))
+    def __init__(self, parent, theme, document, page_ids):
+        wx.Panel.__init__(
+            self,
+            parent,
+            size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1)
+        )
         self.theme = theme
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.AddSpacer(PAGE_PADDING)
-        self.SetSizer(self.sizer)
         self.document = document
-        self.pages = []
+        self.page_ids = page_ids
+        self._render()
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
             self.pages,
             lambda page: page.FindClosestDropPoint(screen_pos)
         )
+    def _render(self):
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.AddSpacer(PAGE_PADDING)
+        self.pages = [
+            self._render_page(page_id)
+            for page_id in
+            self.page_ids
+        ]
+        self.SetSizer(self.sizer)
 
-    def Render(self):
-        for page in self.pages:
-            page.Render()
-
-    def SetPages(self, page_ids):
-        while self.pages:
-            page = self.pages.pop()
-            self.sizer.Detach(page)
-            page.Destroy()
-        for page_id in page_ids:
-            self.AddPage(page_id)
-
-    def AddPage(self, page_id):
+    def _render_page(self, page_id):
         page = PageContainer(self, self.theme, self.document, page_id)
-        self.pages.append(page)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
-class WorkspaceDropTarget(DropPointDropTarget):
-
-    def __init__(self, workspace):
-        DropPointDropTarget.__init__(self, workspace, "paragraph")
-        self.workspace = workspace
-
-    def OnDataDropped(self, dropped_paragraph, drop_point):
-        self.workspace.document.move_paragraph(
-            source_page=dropped_paragraph["page_id"],
-            source_paragraph=dropped_paragraph["paragraph_id"],
-            target_page=drop_point.page_id,
-            before_paragraph=drop_point.next_paragraph_id
-        )
 class PageContainer(wx.Panel):
 
     def __init__(self, parent, theme, document, page_id):
         wx.Panel.__init__(self, parent)
-        self.page_body = Page(self, theme, document, page_id)
+        self.theme = theme
+        self.document = document
+        self.page_id = page_id
+        self._render()
+
+    def _render(self):
         self.SetBackgroundColour((150, 150, 150))
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)
+        self.page_body = Page(self, self.theme, self.document, self.page_id)
+        self.sizer.Add(
+            self.page_body,
+            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
+            border=SHADOW_SIZE
+        )
         self.SetSizer(self.sizer)
-        self.Render()
-
     def FindClosestDropPoint(self, screen_pos):
         return self.page_body.FindClosestDropPoint(screen_pos)
-
-    def Render(self):
-        self.page_body.Render()
 class Page(wx.Panel):
 
     def __init__(self, parent, theme, document, page_id):
@@ -817,31 +804,23 @@ class Page(wx.Panel):
         self.theme = theme
         self.document = document
         self.page_id = page_id
+        self._render()
+
+    def _render(self):
         self.SetBackgroundColour(wx.WHITE)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
-
-    def FindClosestDropPoint(self, screen_pos):
-        client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
-        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-            return min_or_none(
-                self.drop_points,
-                key=lambda drop_point: drop_point.y_distance_to(client_y)
-            )
-
-    def Render(self):
         self.drop_points = []
         page = self.document.get_page(self.page_id)
-        self.sizer.Clear(True)
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
-        divider = self.AddParagraph(Title(self, self.document, page))
+        divider = self._render_paragraph(Title(self, self.document, page))
         for paragraph in page.paragraphs:
             self.drop_points.append(PageDropPoint(
                 divider=divider,
                 page_id=self.page_id,
                 next_paragraph_id=paragraph.id
             ))
-            divider = self.AddParagraph({
+            divider = self._render_paragraph({
                 "text": Paragraph,
                 "code": Code,
                 "factory": Factory,
@@ -851,27 +830,9 @@ class Page(wx.Panel):
             page_id=self.page_id,
             next_paragraph_id=None
         ))
-        self.CreateMenu()
-        self.GetTopLevelParent().Layout()
+        self._render_add_button()
 
-    def CreateMenu(self):
-        add_button = wx.BitmapButton(
-            self,
-            bitmap=wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK,
-            wx.ART_BUTTON, (16, 16)),
-            style=wx.NO_BORDER
-        )
-        add_button.Bind(wx.EVT_BUTTON, self.OnButton)
-        self.sizer.Add(
-            add_button,
-            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,
-            border=PARAGRAPH_SPACE
-        )
-
-    def OnButton(self, event):
-        self.document.add_paragraph(self.page_id)
-
-    def AddParagraph(self, paragraph):
+    def _render_paragraph(self, paragraph):
         self.sizer.Add(
             paragraph,
             flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
@@ -884,6 +845,33 @@ class Page(wx.Panel):
             border=PARAGRAPH_SPACE
         )
         return divider
+
+    def _render_add_button(self):
+        add_button = wx.BitmapButton(
+            self,
+            bitmap=wx.ArtProvider.GetBitmap(
+                wx.ART_ADD_BOOKMARK,
+                wx.ART_BUTTON,
+                (16, 16)
+            ),
+            style=wx.NO_BORDER
+        )
+        add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
+        self.sizer.Add(
+            add_button,
+            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,
+            border=PARAGRAPH_SPACE
+        )
+
+    def _on_add_button(self, event):
+        self.document.add_paragraph(self.page_id)
+    def FindClosestDropPoint(self, screen_pos):
+        client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
+        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
+            return min_or_none(
+                self.drop_points,
+                key=lambda drop_point: drop_point.y_distance_to(client_y)
+            )
 class Title(Editable):
 
     def __init__(self, parent, document, page):
@@ -923,6 +911,19 @@ class PageDropPoint(object):
 
     def Hide(self):
         self.divider.Hide()
+class WorkspaceDropTarget(DropPointDropTarget):
+
+    def __init__(self, workspace):
+        DropPointDropTarget.__init__(self, workspace, "paragraph")
+        self.workspace = workspace
+
+    def OnDataDropped(self, dropped_paragraph, drop_point):
+        self.workspace.document.move_paragraph(
+            source_page=dropped_paragraph["page_id"],
+            source_paragraph=dropped_paragraph["paragraph_id"],
+            target_page=drop_point.page_id,
+            before_paragraph=drop_point.next_paragraph_id
+        )
 class Layout(Observable):
 
     def __init__(self, path):

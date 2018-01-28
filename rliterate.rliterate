@@ -141,7 +141,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None)\n        layout = Layout(\".{}.layout\".format(filepath))\n        document = Document.from_file(filepath)\n        FileGenerator().set_document(document)\n        MarkdownGenerator(filepath+\".markdown\").set_document(document)\n        theme = SolarizedTheme()\n        workspace = Workspace(self, theme, layout, document)\n        toc = TableOfContents(self, layout, document)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n",
+"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None)\n        layout = Layout(\".{}.layout\".format(filepath))\n        document = Document.from_file(filepath)\n        FileGenerator().set_document(document)\n        MarkdownGenerator(filepath+\".markdown\").set_document(document)\n        theme = SolarizedTheme()\n        workspace = Workspace(self, theme, layout, document)\n        toc = TableOfContents(self, layout, document)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self.SetSizerAndFit(sizer)\n",
 "type":"code"
 }
 ],
@@ -169,7 +169,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def __init__(self, parent, layout, document):\n    wx.ScrolledWindow.__init__(self, parent, size=(300, -1))\n    self.SetScrollRate(20, 20)\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.layout_listener = Listener(lambda: wx.CallAfter(self.Render), \"toc\")\n    self.document_listener = Listener(lambda: wx.CallAfter(self.Render))\n    self.SetLayout(layout)\n    self.SetDocument(document)\n    self.SetBackgroundColour((255, 255, 255))\n    self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)\n    self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)\n    self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)\n    self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)\n    <<__init__>>\n\ndef FindClosestDropPoint(self, screen_pos):\n    client_pos = self.ScreenToClient(screen_pos)\n    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(scroll_x)\n            )\n\ndef OnTreeToggle(self, event):\n    self.layout.toggle_collapsed(event.page_id)\n\ndef OnTreeLeftClick(self, event):\n    self.layout.set_scratch_pages([event.page_id])\n\ndef OnTreeRightClick(self, event):\n    menu = PageContextMenu(self.document, event.page_id)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef OnTreeDoubleClick(self, event):\n    page_ids = [event.page_id]\n    for child in self.document.get_page(event.page_id).children:\n        page_ids.append(child.id)\n    self.layout.set_scratch_pages(page_ids)\n\ndef SetLayout(self, layout):\n    self.layout = layout\n    self.layout_listener.set_observable(self.layout)\n\ndef SetDocument(self, document):\n    self.document = document\n    self.document_listener.set_observable(self.document)\n\ndef Render(self):\n    self.Freeze()\n    self.drop_points = []\n    self.sizer.Clear(True)\n    self.add_page(self.document.get_page())\n    self.Layout()\n    self.Thaw()\n\ndef add_page(self, page, indentation=0):\n    is_collapsed = self.layout.is_collapsed(page.id)\n    self.sizer.Add(\n        TableOfContentsRow(self, indentation, page, is_collapsed),\n        flag=wx.EXPAND\n    )\n    divider = Divider(self, padding=0, height=2)\n    self.sizer.Add(\n        divider,\n        flag=wx.EXPAND\n    )\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in pairs(page.children):\n            divider = self.add_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n",
+"text":"def __init__(self, parent, layout, document):\n    wx.ScrolledWindow.__init__(self, parent, size=(250, -1))\n    self.SetScrollRate(20, 20)\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.layout_listener = Listener(lambda: wx.CallAfter(self._render), \"toc\")\n    self.document_listener = Listener(lambda: wx.CallAfter(self._render))\n    self.SetLayout(layout)\n    self.SetDocument(document)\n    self.SetBackgroundColour((255, 255, 255))\n    self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)\n    self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)\n    self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)\n    self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)\n    <<__init__>>\n    self._render()\n\ndef FindClosestDropPoint(self, screen_pos):\n    client_pos = self.ScreenToClient(screen_pos)\n    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(scroll_x)\n            )\n\ndef OnTreeToggle(self, event):\n    self.layout.toggle_collapsed(event.page_id)\n\ndef OnTreeLeftClick(self, event):\n    self.layout.set_scratch_pages([event.page_id])\n\ndef OnTreeRightClick(self, event):\n    menu = PageContextMenu(self.document, event.page_id)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef OnTreeDoubleClick(self, event):\n    page_ids = [event.page_id]\n    for child in self.document.get_page(event.page_id).children:\n        page_ids.append(child.id)\n    self.layout.set_scratch_pages(page_ids)\n\ndef SetLayout(self, layout):\n    self.layout = layout\n    self.layout_listener.set_observable(self.layout)\n\ndef SetDocument(self, document):\n    self.document = document\n    self.document_listener.set_observable(self.document)\n\ndef _render(self):\n    self.drop_points = []\n    self.sizer.Clear(True)\n    self._render_page(self.document.get_page())\n    self.Layout()\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.layout.is_collapsed(page.id)\n    self.sizer.Add(\n        TableOfContentsRow(self, indentation, page, is_collapsed),\n        flag=wx.EXPAND\n    )\n    divider = Divider(self, padding=0, height=2)\n    self.sizer.Add(\n        divider,\n        flag=wx.EXPAND\n    )\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in pairs(page.children):\n            divider = self._render_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n",
 "type":"code"
 }
 ],
@@ -278,22 +278,57 @@
 "id":"e2de7fc557e542a7ac8fde91b7651736",
 "paragraphs":[
 {
+"id":"6a9ac9606ee5499694f3236ccabf1127",
+"text":"The main workspace widget is a scrolling container containing column widgets.",
+"type":"text"
+},
+{
 "id":"a9f5b20c21c244d583d9b4f808ac8753",
 "path":[
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Workspace(wx.ScrolledWindow):\n    <<Workspace>>",
+"text":"class Workspace(wx.ScrolledWindow):\n    <<Workspace>>\n",
 "type":"code"
 },
 {
-"id":"22e6b4a6492b42a1ab53e444d326a2cd",
+"id":"0af9efe473c140fd93a87c18050ab77e",
 "path":[
 "rliterate.py",
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def __init__(self, parent, theme, layout, document):\n    wx.ScrolledWindow.__init__(self, parent)\n    self.theme = theme\n    self.SetScrollRate(20, 20)\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.SetSizer(self.sizer)\n    self.layout_listener = Listener(lambda: wx.CallAfter(self.SetupLayout))\n    self.document_listener = Listener(lambda: wx.CallAfter(self.Render))\n    self.columns = []\n    self.SetDocument(document)\n    self.SetLayout(layout)\n    <<__init__>>\n\ndef FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.columns,\n        lambda column: column.FindClosestDropPoint(screen_pos)\n    )\n\ndef SetLayout(self, layout):\n    self.layout = layout\n    self.layout_listener.set_observable(self.layout)\n\ndef SetDocument(self, document):\n    self.document = document\n    self.document_listener.set_observable(self.document)\n\ndef SetupLayout(self):\n    while self.columns:\n        column = self.columns.pop()\n        self.sizer.Detach(column)\n        column.Destroy()\n    scratch_column = self.AddColumn()\n    scratch_column.SetPages(self.layout.get_scratch_pages())\n    self.GetTopLevelParent().Layout()\n\ndef Render(self):\n    for column in self.columns:\n        column.Render()\n\ndef AddColumn(self):\n    column = Column(self, self.theme, self.document)\n    self.columns.append(column)\n    self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)\n    return column\n",
+"text":"def __init__(self, parent, theme, layout, document):\n    wx.ScrolledWindow.__init__(self, parent, size=(int(PAGE_BODY_WIDTH*1.2), 300))\n    self.theme = theme\n    self.layout_listener = Listener(self._re_render_from_event)\n    self.document_listener = Listener(self._re_render_from_event)\n    self.SetLayout(layout)\n    self.SetDocument(document)\n    <<__init__>>\n    self._render()\n\ndef SetLayout(self, layout):\n    self.layout = layout\n    self.layout_listener.set_observable(self.layout)\n\ndef SetDocument(self, document):\n    self.document = document\n    self.document_listener.set_observable(self.document)\n",
+"type":"code"
+},
+{
+"id":"fe799c6fd8484a9095d88a7f3faaf4bd",
+"text":"Rendering (wx.CallAfter seems to be needed to correctly update scrollbars. Resizing the window also works):",
+"type":"text"
+},
+{
+"id":"d5dd19fb0dac4111b42932071e6a0c2f",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Workspace>>"
+],
+"text":"def _render(self):\n    self.SetScrollRate(20, 20)\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.SetSizer(self.sizer)\n    self._re_render()\n\ndef _re_render_from_event(self):\n    wx.CallAfter(self._re_render)\n\ndef _re_render(self):\n    self.sizer.Clear(True)\n    self.columns = []\n    self.sizer.AddSpacer(PAGE_PADDING)\n    if self.layout is not None and self.document is not None:\n        self._render_column(self.layout.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _render_column(self, page_ids):\n    column = Column(self, self.theme, self.document, page_ids)\n    self.columns.append(column)\n    self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)\n    return column\n",
+"type":"code"
+},
+{
+"id":"d2978e80fbed46b39953e9da553df438",
+"text":"Implementation for drag and drop:",
+"type":"text"
+},
+{
+"id":"9c426c9c3e10484ba02da8bf2b2ff94d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Workspace>>"
+],
+"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.columns,\n        lambda column: column.FindClosestDropPoint(screen_pos)\n    )",
 "type":"code"
 }
 ],
@@ -309,52 +344,37 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Column(wx.Panel):\n\n    def __init__(self, parent, theme, document):\n        wx.Panel.__init__(self, parent, size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1))\n        self.theme = theme\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n        self.document = document\n        self.pages = []\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.pages,\n            lambda page: page.FindClosestDropPoint(screen_pos)\n        )\n\n    def Render(self):\n        for page in self.pages:\n            page.Render()\n\n    def SetPages(self, page_ids):\n        while self.pages:\n            page = self.pages.pop()\n            self.sizer.Detach(page)\n            page.Destroy()\n        for page_id in page_ids:\n            self.AddPage(page_id)\n\n    def AddPage(self, page_id):\n        page = PageContainer(self, self.theme, self.document, page_id)\n        self.pages.append(page)\n        self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)\n        return page",
+"text":"class Column(wx.Panel):\n\n    def __init__(self, parent, theme, document, page_ids):\n        wx.Panel.__init__(\n            self,\n            parent,\n            size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1)\n        )\n        self.theme = theme\n        self.document = document\n        self.page_ids = page_ids\n        self._render()\n\n    <<Column>>\n",
+"type":"code"
+},
+{
+"id":"807cfa1da4a64089a8280ad76b44cd8c",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Column>>"
+],
+"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.pages,\n        lambda page: page.FindClosestDropPoint(screen_pos)\n    )\n",
+"type":"code"
+},
+{
+"id":"c0c9b3b18c554858ac20ccd48a64d04f",
+"text":"Rendering:",
+"type":"text"
+},
+{
+"id":"39591191e5cf4dd587b637a44959c91d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Column>>"
+],
+"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.pages = [\n        self._render_page(page_id)\n        for page_id in\n        self.page_ids\n    ]\n    self.SetSizer(self.sizer)\n\ndef _render_page(self, page_id):\n    page = PageContainer(self, self.theme, self.document, page_id)\n    self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)\n    return page\n",
 "type":"code"
 }
 ],
 "title":"Column widget"
 },
-{
-"children":[],
-"id":"e056bc29d02647a0a67d03693ddc4c7d",
-"paragraphs":[
-{
-"id":"79f48335418c42c1a622c691514415ab",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.workspace = workspace\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.workspace.document.move_paragraph(\n            source_page=dropped_paragraph[\"page_id\"],\n            source_paragraph=dropped_paragraph[\"paragraph_id\"],\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )",
-"type":"code"
-},
-{
-"id":"e05a55e327d042329bfce331b38762b6",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Workspace>>",
-"<<__init__>>"
-],
-"text":"self.SetDropTarget(WorkspaceDropTarget(self))",
-"type":"code"
-}
-],
-"title":"Drop target"
-}
-],
-"id":"4dd60465575c4297a25813f0478f15f9",
-"paragraphs":[
-{
-"id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
-"text":"A workspace is a container for editable content. Most commonly pages.",
-"type":"text"
-}
-],
-"title":"Workspace"
-},
-{
-"children":[
 {
 "children":[],
 "id":"1164b94ba82c476897ce18fc1b70a5b8",
@@ -365,7 +385,37 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class PageContainer(wx.Panel):\n\n    def __init__(self, parent, theme, document, page_id):\n        wx.Panel.__init__(self, parent)\n        self.page_body = Page(self, theme, document, page_id)\n        self.SetBackgroundColour((150, 150, 150))\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.page_body, flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM, border=SHADOW_SIZE)\n        self.SetSizer(self.sizer)\n        self.Render()\n\n    def FindClosestDropPoint(self, screen_pos):\n        return self.page_body.FindClosestDropPoint(screen_pos)\n\n    def Render(self):\n        self.page_body.Render()",
+"text":"class PageContainer(wx.Panel):\n\n    def __init__(self, parent, theme, document, page_id):\n        wx.Panel.__init__(self, parent)\n        self.theme = theme\n        self.document = document\n        self.page_id = page_id\n        self._render()\n\n    <<PageContainer>>\n",
+"type":"code"
+},
+{
+"id":"8f132dbbbf5d43cc81523cd192118c93",
+"text":"Rendering:",
+"type":"text"
+},
+{
+"id":"e300caaff4ed44199bb7db013a910ef7",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<PageContainer>>"
+],
+"text":"def _render(self):\n    self.SetBackgroundColour((150, 150, 150))\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.page_body = Page(self, self.theme, self.document, self.page_id)\n    self.sizer.Add(\n        self.page_body,\n        flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n        border=SHADOW_SIZE\n    )\n    self.SetSizer(self.sizer)\n",
+"type":"code"
+},
+{
+"id":"d29dee71792a448fa78b885f7170caba",
+"text":"Drag and drop:",
+"type":"text"
+},
+{
+"id":"bbc55d4aa6874c048669deb66d9a80b7",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<PageContainer>>"
+],
+"text":"def FindClosestDropPoint(self, screen_pos):\n    return self.page_body.FindClosestDropPoint(screen_pos)\n",
 "type":"code"
 }
 ],
@@ -381,7 +431,37 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Page(wx.Panel):\n\n    def __init__(self, parent, theme, document, page_id):\n        wx.Panel.__init__(self, parent)\n        self.theme = theme\n        self.document = document\n        self.page_id = page_id\n        self.SetBackgroundColour(wx.WHITE)\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def FindClosestDropPoint(self, screen_pos):\n        client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)\n        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n            return min_or_none(\n                self.drop_points,\n                key=lambda drop_point: drop_point.y_distance_to(client_y)\n            )\n\n    def Render(self):\n        self.drop_points = []\n        page = self.document.get_page(self.page_id)\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PARAGRAPH_SPACE)\n        divider = self.AddParagraph(Title(self, self.document, page))\n        for paragraph in page.paragraphs:\n            self.drop_points.append(PageDropPoint(\n                divider=divider,\n                page_id=self.page_id,\n                next_paragraph_id=paragraph.id\n            ))\n            divider = self.AddParagraph({\n                \"text\": Paragraph,\n                \"code\": Code,\n                \"factory\": Factory,\n            }[paragraph.type](self, self.theme, self.document, self.page_id, paragraph))\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=None\n        ))\n        self.CreateMenu()\n        self.GetTopLevelParent().Layout()\n\n    def CreateMenu(self):\n        add_button = wx.BitmapButton(\n            self,\n            bitmap=wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON, (16, 16)),\n            style=wx.NO_BORDER\n        )\n        add_button.Bind(wx.EVT_BUTTON, self.OnButton)\n        self.sizer.Add(\n            add_button,\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,\n            border=PARAGRAPH_SPACE\n        )\n\n    def OnButton(self, event):\n        self.document.add_paragraph(self.page_id)\n\n    def AddParagraph(self, paragraph):\n        self.sizer.Add(\n            paragraph,\n            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,\n            border=PARAGRAPH_SPACE\n        )\n        divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)\n        self.sizer.Add(\n            divider,\n            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,\n            border=PARAGRAPH_SPACE\n        )\n        return divider",
+"text":"class Page(wx.Panel):\n\n    def __init__(self, parent, theme, document, page_id):\n        wx.Panel.__init__(self, parent)\n        self.theme = theme\n        self.document = document\n        self.page_id = page_id\n        self._render()\n\n    <<Page>>\n",
+"type":"code"
+},
+{
+"id":"d5137649a7a4449b86434a72ef67ccaf",
+"text":"Rendering:",
+"type":"text"
+},
+{
+"id":"0d23868db06847a1800d8ef8659887f3",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Page>>"
+],
+"text":"def _render(self):\n    self.SetBackgroundColour(wx.WHITE)\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.drop_points = []\n    page = self.document.get_page(self.page_id)\n    self.sizer.AddSpacer(PARAGRAPH_SPACE)\n    divider = self._render_paragraph(Title(self, self.document, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Paragraph,\n            \"code\": Code,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.theme, self.document, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.sizer.Add(\n        paragraph,\n        flag=wx.LEFT|wx.RIGHT|wx.EXPAND,\n        border=PARAGRAPH_SPACE\n    )\n    divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)\n    self.sizer.Add(\n        divider,\n        flag=wx.LEFT|wx.RIGHT|wx.EXPAND,\n        border=PARAGRAPH_SPACE\n    )\n    return divider\n\ndef _render_add_button(self):\n    add_button = wx.BitmapButton(\n        self,\n        bitmap=wx.ArtProvider.GetBitmap(\n            wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON,\n            (16, 16)\n        ),\n        style=wx.NO_BORDER\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n    self.sizer.Add(\n        add_button,\n        flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,\n        border=PARAGRAPH_SPACE\n    )\n\ndef _on_add_button(self, event):\n    self.document.add_paragraph(self.page_id)\n",
+"type":"code"
+},
+{
+"id":"8b2df2d8df074ea7a0c5b69ec832ce6c",
+"text":"Drag and drop:",
+"type":"text"
+},
+{
+"id":"92c41fd20a1d4511ad864bbfd315aa88",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Page>>"
+],
+"text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)\n    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        return min_or_none(\n            self.drop_points,\n            key=lambda drop_point: drop_point.y_distance_to(client_y)\n        )\n",
 "type":"code"
 }
 ],
@@ -418,11 +498,44 @@
 }
 ],
 "title":"Page drop point"
+},
+{
+"children":[],
+"id":"e056bc29d02647a0a67d03693ddc4c7d",
+"paragraphs":[
+{
+"id":"79f48335418c42c1a622c691514415ab",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.workspace = workspace\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.workspace.document.move_paragraph(\n            source_page=dropped_paragraph[\"page_id\"],\n            source_paragraph=dropped_paragraph[\"paragraph_id\"],\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )",
+"type":"code"
+},
+{
+"id":"e05a55e327d042329bfce331b38762b6",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Workspace>>",
+"<<__init__>>"
+],
+"text":"self.SetDropTarget(WorkspaceDropTarget(self))",
+"type":"code"
 }
 ],
-"id":"645bc269dc94484d85391097acec1727",
-"paragraphs":[],
-"title":"Pages"
+"title":"Drop target"
+}
+],
+"id":"4dd60465575c4297a25813f0478f15f9",
+"paragraphs":[
+{
+"id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
+"text":"A workspace is a container for editable content. Only pages at the moment.",
+"type":"text"
+}
+],
+"title":"Workspace"
 },
 {
 "children":[],
@@ -751,7 +864,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Listener(object):\n\n    def __init__(self, fn, event=None):\n        self.fn = fn\n        self.event = event\n        self.observable = None\n\n    def set_observable(self, observable):\n        if self.observable is not None:\n            self.observable.unlisten(self.fn, self.event)\n        self.observable = observable\n        self.observable.listen(self.fn, self.event)\n        self.fn()\n",
+"text":"class Listener(object):\n\n    def __init__(self, fn, event=None):\n        self.fn = fn\n        self.event = event\n        self.observable = None\n\n    def set_observable(self, observable):\n        if self.observable is not None:\n            self.observable.unlisten(self.fn, self.event)\n        self.observable = observable\n        self.observable.listen(self.fn, self.event)\n        self.fn()",
 "type":"code"
 }
 ],
