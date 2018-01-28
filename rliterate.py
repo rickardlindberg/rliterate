@@ -180,7 +180,10 @@ class Document(Observable):
     def get_page(self, page_id=None):
         if page_id is None:
             page_id = self.root_page["id"]
-        return DictPage(self._pages[page_id])
+        page_dict = self._pages.get(page_id, None)
+        if page_dict is None:
+            return None
+        return DictPage(page_dict)
 
     # Page operations
 
@@ -774,8 +777,9 @@ class Column(wx.Panel):
         self.sizer.AddSpacer(PAGE_PADDING)
         self.pages = [
             self._render_page(page_id)
-            for page_id in
-            self.page_ids
+            for page_id
+            in self.page_ids
+            if self.document.get_page(page_id) is not None
         ]
         self.SetSizer(self.sizer)
 

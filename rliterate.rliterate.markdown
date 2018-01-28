@@ -168,7 +168,10 @@ Views provide a read only interface to a document. It is the only way to query a
     def get_page(self, page_id=None):
         if page_id is None:
             page_id = self.root_page["id"]
-        return DictPage(self._pages[page_id])
+        page_dict = self._pages.get(page_id, None)
+        if page_dict is None:
+            return None
+        return DictPage(page_dict)
 
 
 `rliterate.py / <<classes>>`:
@@ -826,8 +829,9 @@ Rendering means laying out a set of pages vertically.
         self.sizer.AddSpacer(PAGE_PADDING)
         self.pages = [
             self._render_page(page_id)
-            for page_id in
-            self.page_ids
+            for page_id
+            in self.page_ids
+            if self.document.get_page(page_id) is not None
         ]
         self.SetSizer(self.sizer)
     
@@ -1904,5 +1908,4 @@ Random notes of what I might want to work on in the future.
     * Should have an option to wrap lines at specific width
     * Otherwise put inside ScrolledWindow
 * Right click should only be generated on up if first down
-* Deleted pages should not be rendered
 

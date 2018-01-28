@@ -53,7 +53,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def get_page(self, page_id=None):\n    if page_id is None:\n        page_id = self.root_page[\"id\"]\n    return DictPage(self._pages[page_id])\n",
+"text":"def get_page(self, page_id=None):\n    if page_id is None:\n        page_id = self.root_page[\"id\"]\n    page_dict = self._pages.get(page_id, None)\n    if page_dict is None:\n        return None\n    return DictPage(page_dict)\n",
 "type":"code"
 },
 {
@@ -441,7 +441,7 @@
 "<<classes>>",
 "<<Column>>"
 ],
-"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.pages = [\n        self._render_page(page_id)\n        for page_id in\n        self.page_ids\n    ]\n    self.SetSizer(self.sizer)\n\ndef _render_page(self, page_id):\n    page = PageContainer(self, self.theme, self.document, page_id)\n    self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)\n    return page\n",
+"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.pages = [\n        self._render_page(page_id)\n        for page_id\n        in self.page_ids\n        if self.document.get_page(page_id) is not None\n    ]\n    self.SetSizer(self.sizer)\n\ndef _render_page(self, page_id):\n    page = PageContainer(self, self.theme, self.document, page_id)\n    self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)\n    return page\n",
 "type":"code"
 },
 {
@@ -1067,7 +1067,7 @@
 },
 {
 "id":"334a278ca527447482c3059353cfed4f",
-"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Tab indents with tab: should indent 4 spaces?\n* Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* File generator writes empty filename\n* There is no way to control empy lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n    * Can't focus in on specific subtree of toc (hoist, unhoist?)\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Ampersands (&) in titles (and paragraph text) are not rendered\n* Highlight object being dragged somehow (screenshot?)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect (or other program) using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific width\n    * Otherwise put inside ScrolledWindow\n* Right click should only be generated on up if first down\n* Deleted pages should not be rendered",
+"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Tab indents with tab: should indent 4 spaces?\n* Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* File generator writes empty filename\n* There is no way to control empy lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n    * Can't focus in on specific subtree of toc (hoist, unhoist?)\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Ampersands (&) in titles (and paragraph text) are not rendered\n* Highlight object being dragged somehow (screenshot?)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect (or other program) using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific width\n    * Otherwise put inside ScrolledWindow\n* Right click should only be generated on up if first down",
 "type":"text"
 }
 ],
