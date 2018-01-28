@@ -665,7 +665,7 @@ Views provide a read only interface to a document. It is the only way to query a
 
 ### Workspace
 
-A workspace is a container for editable content. Only pages at the moment.
+A workspace is a container for pages. Pages are ordered in columns. Currently only one column is supported.
 
 #### Main widget
 
@@ -698,7 +698,11 @@ The main workspace widget is a scrolling container containing column widgets.
         self.document_listener.set_observable(self.document)
 
 
-Rendering (wx.CallAfter seems to be needed to correctly update scrollbars. Resizing the window also works):
+##### Rendering
+
+Rendering a workspace means laying out a set of column widgets horizontally. Currently only one column, the scratch column, is supported.
+
+Layout has to be called on the parent. Otherwise scrollbars don't update appropriately.
 
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
@@ -708,9 +712,6 @@ Rendering (wx.CallAfter seems to be needed to correctly update scrollbars. Resiz
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(self.sizer)
         self._re_render()
-    
-    def _re_render_from_event(self):
-        wx.CallAfter(self._re_render)
     
     def _re_render(self):
         self.sizer.Clear(True)
@@ -727,7 +728,41 @@ Rendering (wx.CallAfter seems to be needed to correctly update scrollbars. Resiz
         return column
 
 
-Implementation for drag and drop:
+wx.CallAfter seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.
+
+`rliterate.py / <<classes>> / <<Workspace>>`:
+
+    def _re_render_from_event(self):
+        wx.CallAfter(self._re_render)
+
+
+##### Dropping paragraphs
+
+Inside a workspace, paragraphs can be dragged and dropped. The drag is handled in the paragraph widget, but the drop is handled in the workspace widget.
+
+`rliterate.py / <<classes>> / <<Workspace>> / <<__init__>>`:
+
+    self.SetDropTarget(WorkspaceDropTarget(self))
+
+
+`rliterate.py / <<classes>>`:
+
+    class WorkspaceDropTarget(DropPointDropTarget):
+    
+        def __init__(self, workspace):
+            DropPointDropTarget.__init__(self, workspace, "paragraph")
+            self.workspace = workspace
+    
+        def OnDataDropped(self, dropped_paragraph, drop_point):
+            self.workspace.document.move_paragraph(
+                source_page=dropped_paragraph["page_id"],
+                source_paragraph=dropped_paragraph["paragraph_id"],
+                target_page=drop_point.page_id,
+                before_paragraph=drop_point.next_paragraph_id
+            )
+
+
+The DropPointDropTarget requires FindClosestDropPoint to be defined on the target object. Here it is:
 
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
@@ -739,6 +774,8 @@ Implementation for drag and drop:
 
 
 #### Column widget
+
+The column widget is a panel containing a set of pages.
 
 `rliterate.py / <<classes>>`:
 
@@ -758,16 +795,7 @@ Implementation for drag and drop:
         <<Column>>
 
 
-`rliterate.py / <<classes>> / <<Column>>`:
-
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            self.pages,
-            lambda page: page.FindClosestDropPoint(screen_pos)
-        )
-
-
-Rendering:
+Rendering means laying out a set of pages vertically.
 
 `rliterate.py / <<classes>> / <<Column>>`:
 
@@ -785,6 +813,17 @@ Rendering:
         page = PageContainer(self, self.theme, self.document, page_id)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
+
+
+Dropping stuff:
+
+`rliterate.py / <<classes>> / <<Column>>`:
+
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.pages,
+            lambda page: page.FindClosestDropPoint(screen_pos)
+        )
 
 
 #### Page container
@@ -843,7 +882,7 @@ Drag and drop:
         <<Page>>
 
 
-Rendering:
+##### Rendering
 
 `rliterate.py / <<classes>> / <<Page>>`:
 
@@ -908,7 +947,26 @@ Rendering:
         self.document.add_paragraph(self.page_id)
 
 
-Drag and drop:
+`rliterate.py / <<classes>>`:
+
+    class PageDropPoint(object):
+    
+        def __init__(self, divider, page_id, next_paragraph_id):
+            self.divider = divider
+            self.page_id = page_id
+            self.next_paragraph_id = next_paragraph_id
+    
+        def y_distance_to(self, y):
+            return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
+    
+        def Show(self):
+            self.divider.Show()
+    
+        def Hide(self):
+            self.divider.Hide()
+
+
+##### Dropping paragraphs
 
 `rliterate.py / <<classes>> / <<Page>>`:
 
@@ -951,100 +1009,11 @@ Drag and drop:
             self.document.edit_page(self.page.id, {"title": self.edit.Value})
 
 
-#### Page drop point
+#### Paragraphs
 
-`rliterate.py / <<classes>>`:
+##### Text
 
-    class PageDropPoint(object):
-    
-        def __init__(self, divider, page_id, next_paragraph_id):
-            self.divider = divider
-            self.page_id = page_id
-            self.next_paragraph_id = next_paragraph_id
-    
-        def y_distance_to(self, y):
-            return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
-    
-        def Show(self):
-            self.divider.Show()
-    
-        def Hide(self):
-            self.divider.Hide()
-
-
-#### Drop target
-
-`rliterate.py / <<classes>>`:
-
-    class WorkspaceDropTarget(DropPointDropTarget):
-    
-        def __init__(self, workspace):
-            DropPointDropTarget.__init__(self, workspace, "paragraph")
-            self.workspace = workspace
-    
-        def OnDataDropped(self, dropped_paragraph, drop_point):
-            self.workspace.document.move_paragraph(
-                source_page=dropped_paragraph["page_id"],
-                source_paragraph=dropped_paragraph["paragraph_id"],
-                target_page=drop_point.page_id,
-                before_paragraph=drop_point.next_paragraph_id
-            )
-
-
-`rliterate.py / <<classes>> / <<Workspace>> / <<__init__>>`:
-
-    self.SetDropTarget(WorkspaceDropTarget(self))
-
-
-### Layout
-
-`rliterate.py / <<classes>>`:
-
-    class Layout(Observable):
-    
-        def __init__(self, path):
-            Observable.__init__(self)
-            self.listen(lambda: write_json_to_file(path, self.data))
-            if os.path.exists(path):
-                self.data = load_json_from_file(path)
-            else:
-                self.data = {}
-            self._ensure_defaults()
-    
-        def _ensure_defaults(self):
-            toc = self._ensure_key(self.data, "toc", {})
-            self._toc_collapsed = self._ensure_key(toc, "collapsed", [])
-            workspace = self._ensure_key(self.data, "workspace", {})
-            self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
-    
-        def _ensure_key(self, a_dict, key, default):
-            if key not in a_dict:
-                a_dict[key] = default
-            return a_dict[key]
-    
-        def is_collapsed(self, page_id):
-            return page_id in self._toc_collapsed
-    
-        def toggle_collapsed(self, page_id):
-            with self.notify("toc"):
-                if page_id in self._toc_collapsed:
-                    self._toc_collapsed.remove(page_id)
-                else:
-                    self._toc_collapsed.append(page_id)
-    
-        def get_scratch_pages(self):
-            return self._workspace_scratch[:]
-    
-        def set_scratch_pages(self, page_ids):
-            with self.notify("workspace"):
-                self._workspace_scratch[:] = page_ids
-
-
-### Paragraphs
-
-#### Text
-
-##### Paragraph
+###### Paragraph
 
 `rliterate.py / <<classes>>`:
 
@@ -1080,9 +1049,9 @@ Drag and drop:
             self.document.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
 
 
-#### Code
+##### Code
 
-##### Container widget
+###### Container widget
 
 `rliterate.py / <<classes>>`:
 
@@ -1106,7 +1075,7 @@ Drag and drop:
             })
 
 
-##### View widget
+###### View widget
 
 `rliterate.py / <<classes>>`:
 
@@ -1197,7 +1166,7 @@ Drag and drop:
             ])
 
 
-##### Editor widget
+###### Editor widget
 
 `rliterate.py / <<classes>>`:
 
@@ -1256,7 +1225,7 @@ Drag and drop:
             wx.PostEvent(self, ParagraphEditEnd(0))
 
 
-#### Factory
+##### Factory
 
 `rliterate.py / <<classes>>`:
 
@@ -1299,9 +1268,9 @@ Drag and drop:
             self.document.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
 
 
-#### Common
+##### Common
 
-##### Paragraph base
+###### Paragraph base
 
 `rliterate.py / <<base classes>>`:
 
@@ -1329,7 +1298,7 @@ Drag and drop:
             menu.Destroy()
 
 
-##### Paragraph context menu
+###### Paragraph context menu
 
 `rliterate.py / <<classes>>`:
 
@@ -1361,7 +1330,7 @@ Drag and drop:
             )
 
 
-##### Editable
+###### Editable
 
 `rliterate.py / <<base classes>>`:
 
@@ -1395,6 +1364,52 @@ Drag and drop:
                 self.OnParagraphEditEnd(None)
             else:
                 event.Skip()
+
+
+### Layouts
+
+A layout records the visual state of the program. It records what pages are expanded/collapsed in the table of contents and what pages are open in the workspace.
+
+`rliterate.py / <<classes>>`:
+
+    class Layout(Observable):
+    
+        def __init__(self, path):
+            Observable.__init__(self)
+            self.listen(lambda: write_json_to_file(path, self.data))
+            if os.path.exists(path):
+                self.data = load_json_from_file(path)
+            else:
+                self.data = {}
+            self._ensure_defaults()
+    
+        def _ensure_defaults(self):
+            toc = self._ensure_key(self.data, "toc", {})
+            self._toc_collapsed = self._ensure_key(toc, "collapsed", [])
+            workspace = self._ensure_key(self.data, "workspace", {})
+            self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
+    
+        def _ensure_key(self, a_dict, key, default):
+            if key not in a_dict:
+                a_dict[key] = default
+            return a_dict[key]
+    
+        def is_collapsed(self, page_id):
+            return page_id in self._toc_collapsed
+    
+        def toggle_collapsed(self, page_id):
+            with self.notify("toc"):
+                if page_id in self._toc_collapsed:
+                    self._toc_collapsed.remove(page_id)
+                else:
+                    self._toc_collapsed.append(page_id)
+    
+        def get_scratch_pages(self):
+            return self._workspace_scratch[:]
+    
+        def set_scratch_pages(self, page_ids):
+            with self.notify("workspace"):
+                self._workspace_scratch[:] = page_ids
 
 
 ### Themes

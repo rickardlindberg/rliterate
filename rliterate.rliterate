@@ -274,7 +274,97 @@
 {
 "children":[
 {
+"children":[
+{
 "children":[],
+"id":"3f0fc44a9eba4a5cbcae5da3ee5d8925",
+"paragraphs":[
+{
+"id":"246a23a170164f1c91e73f877b824930",
+"text":"Rendering a workspace means laying out a set of column widgets horizontally. Currently only one column, the scratch column, is supported.",
+"type":"text"
+},
+{
+"id":"db2d5c4540ff42baa0cc1232134f310b",
+"text":"Layout has to be called on the parent. Otherwise scrollbars don't update appropriately.",
+"type":"text"
+},
+{
+"id":"d5dd19fb0dac4111b42932071e6a0c2f",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Workspace>>"
+],
+"text":"def _render(self):\n    self.SetScrollRate(20, 20)\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.SetSizer(self.sizer)\n    self._re_render()\n\ndef _re_render(self):\n    self.sizer.Clear(True)\n    self.columns = []\n    self.sizer.AddSpacer(PAGE_PADDING)\n    if self.layout is not None and self.document is not None:\n        self._render_column(self.layout.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _render_column(self, page_ids):\n    column = Column(self, self.theme, self.document, page_ids)\n    self.columns.append(column)\n    self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)\n    return column\n",
+"type":"code"
+},
+{
+"id":"fe799c6fd8484a9095d88a7f3faaf4bd",
+"text":"wx.CallAfter seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.",
+"type":"text"
+},
+{
+"id":"8e4e54c3a9fe453cbb9e6298c51a700e",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Workspace>>"
+],
+"text":"def _re_render_from_event(self):\n    wx.CallAfter(self._re_render)",
+"type":"code"
+}
+],
+"title":"Rendering"
+},
+{
+"children":[],
+"id":"e056bc29d02647a0a67d03693ddc4c7d",
+"paragraphs":[
+{
+"id":"d983d5dcddcd4e67a5c68f77b22dff83",
+"text":"Inside a workspace, paragraphs can be dragged and dropped. The drag is handled in the paragraph widget, but the drop is handled in the workspace widget.",
+"type":"text"
+},
+{
+"id":"e05a55e327d042329bfce331b38762b6",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Workspace>>",
+"<<__init__>>"
+],
+"text":"self.SetDropTarget(WorkspaceDropTarget(self))",
+"type":"code"
+},
+{
+"id":"79f48335418c42c1a622c691514415ab",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.workspace = workspace\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.workspace.document.move_paragraph(\n            source_page=dropped_paragraph[\"page_id\"],\n            source_paragraph=dropped_paragraph[\"paragraph_id\"],\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )",
+"type":"code"
+},
+{
+"id":"bd195234d44049b6b0073b835bce34ba",
+"text":"The DropPointDropTarget requires FindClosestDropPoint to be defined on the target object. Here it is:",
+"type":"text"
+},
+{
+"id":"9c426c9c3e10484ba02da8bf2b2ff94d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Workspace>>"
+],
+"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.columns,\n        lambda column: column.FindClosestDropPoint(screen_pos)\n    )",
+"type":"code"
+}
+],
+"title":"Dropping paragraphs"
+}
+],
 "id":"e2de7fc557e542a7ac8fde91b7651736",
 "paragraphs":[
 {
@@ -300,36 +390,6 @@
 ],
 "text":"def __init__(self, parent, theme, layout, document):\n    wx.ScrolledWindow.__init__(self, parent, size=(int(PAGE_BODY_WIDTH*1.2), 300))\n    self.theme = theme\n    self.layout_listener = Listener(self._re_render_from_event)\n    self.document_listener = Listener(self._re_render_from_event)\n    self.SetLayout(layout)\n    self.SetDocument(document)\n    <<__init__>>\n    self._render()\n\ndef SetLayout(self, layout):\n    self.layout = layout\n    self.layout_listener.set_observable(self.layout)\n\ndef SetDocument(self, document):\n    self.document = document\n    self.document_listener.set_observable(self.document)\n",
 "type":"code"
-},
-{
-"id":"fe799c6fd8484a9095d88a7f3faaf4bd",
-"text":"Rendering (wx.CallAfter seems to be needed to correctly update scrollbars. Resizing the window also works):",
-"type":"text"
-},
-{
-"id":"d5dd19fb0dac4111b42932071e6a0c2f",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Workspace>>"
-],
-"text":"def _render(self):\n    self.SetScrollRate(20, 20)\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.SetSizer(self.sizer)\n    self._re_render()\n\ndef _re_render_from_event(self):\n    wx.CallAfter(self._re_render)\n\ndef _re_render(self):\n    self.sizer.Clear(True)\n    self.columns = []\n    self.sizer.AddSpacer(PAGE_PADDING)\n    if self.layout is not None and self.document is not None:\n        self._render_column(self.layout.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _render_column(self, page_ids):\n    column = Column(self, self.theme, self.document, page_ids)\n    self.columns.append(column)\n    self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)\n    return column\n",
-"type":"code"
-},
-{
-"id":"d2978e80fbed46b39953e9da553df438",
-"text":"Implementation for drag and drop:",
-"type":"text"
-},
-{
-"id":"9c426c9c3e10484ba02da8bf2b2ff94d",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Workspace>>"
-],
-"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.columns,\n        lambda column: column.FindClosestDropPoint(screen_pos)\n    )",
-"type":"code"
 }
 ],
 "title":"Main widget"
@@ -338,6 +398,11 @@
 "children":[],
 "id":"b5ccbbfc0b6445a3a19a5c3dc39daa81",
 "paragraphs":[
+{
+"id":"5d9d79b33aa44d6ca21b8a760fd09dc3",
+"text":"The column widget is a panel containing a set of pages.",
+"type":"text"
+},
 {
 "id":"cb982a3129f940f18cd4bc9237d4c8f8",
 "path":[
@@ -348,18 +413,8 @@
 "type":"code"
 },
 {
-"id":"807cfa1da4a64089a8280ad76b44cd8c",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Column>>"
-],
-"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.pages,\n        lambda page: page.FindClosestDropPoint(screen_pos)\n    )\n",
-"type":"code"
-},
-{
 "id":"c0c9b3b18c554858ac20ccd48a64d04f",
-"text":"Rendering:",
+"text":"Rendering means laying out a set of pages vertically.",
 "type":"text"
 },
 {
@@ -370,6 +425,21 @@
 "<<Column>>"
 ],
 "text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.pages = [\n        self._render_page(page_id)\n        for page_id in\n        self.page_ids\n    ]\n    self.SetSizer(self.sizer)\n\ndef _render_page(self, page_id):\n    page = PageContainer(self, self.theme, self.document, page_id)\n    self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)\n    return page\n",
+"type":"code"
+},
+{
+"id":"55b0def000b0493eb185748bfb38877d",
+"text":"Dropping stuff:",
+"type":"text"
+},
+{
+"id":"807cfa1da4a64089a8280ad76b44cd8c",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Column>>"
+],
+"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.pages,\n        lambda page: page.FindClosestDropPoint(screen_pos)\n    )\n",
 "type":"code"
 }
 ],
@@ -422,23 +492,11 @@
 "title":"Page container"
 },
 {
+"children":[
+{
 "children":[],
-"id":"eb6360eff66245daa2fe09b04bbbc120",
+"id":"553a9a3715bc4c18b143572352fc922e",
 "paragraphs":[
-{
-"id":"1994c9452817497c92e1d51cf6a050bc",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class Page(wx.Panel):\n\n    def __init__(self, parent, theme, document, page_id):\n        wx.Panel.__init__(self, parent)\n        self.theme = theme\n        self.document = document\n        self.page_id = page_id\n        self._render()\n\n    <<Page>>\n",
-"type":"code"
-},
-{
-"id":"d5137649a7a4449b86434a72ef67ccaf",
-"text":"Rendering:",
-"type":"text"
-},
 {
 "id":"0d23868db06847a1800d8ef8659887f3",
 "path":[
@@ -450,10 +508,21 @@
 "type":"code"
 },
 {
-"id":"8b2df2d8df074ea7a0c5b69ec832ce6c",
-"text":"Drag and drop:",
-"type":"text"
+"id":"ceac79cd0d6f400ba9d4be19e8e79672",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class PageDropPoint(object):\n\n    def __init__(self, divider, page_id, next_paragraph_id):\n        self.divider = divider\n        self.page_id = page_id\n        self.next_paragraph_id = next_paragraph_id\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show()\n\n    def Hide(self):\n        self.divider.Hide()",
+"type":"code"
+}
+],
+"title":"Rendering"
 },
+{
+"children":[],
+"id":"9d0b1c1dc456410180edbb1a45fb56cb",
+"paragraphs":[
 {
 "id":"92c41fd20a1d4511ad864bbfd315aa88",
 "path":[
@@ -462,6 +531,21 @@
 "<<Page>>"
 ],
 "text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)\n    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        return min_or_none(\n            self.drop_points,\n            key=lambda drop_point: drop_point.y_distance_to(client_y)\n        )\n",
+"type":"code"
+}
+],
+"title":"Dropping paragraphs"
+}
+],
+"id":"eb6360eff66245daa2fe09b04bbbc120",
+"paragraphs":[
+{
+"id":"1994c9452817497c92e1d51cf6a050bc",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Page(wx.Panel):\n\n    def __init__(self, parent, theme, document, page_id):\n        wx.Panel.__init__(self, parent)\n        self.theme = theme\n        self.document = document\n        self.page_id = page_id\n        self._render()\n\n    <<Page>>\n",
 "type":"code"
 }
 ],
@@ -482,76 +566,6 @@
 }
 ],
 "title":"Title"
-},
-{
-"children":[],
-"id":"f8d77cfd699f4d98a5ea9788e4868ef9",
-"paragraphs":[
-{
-"id":"ceac79cd0d6f400ba9d4be19e8e79672",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class PageDropPoint(object):\n\n    def __init__(self, divider, page_id, next_paragraph_id):\n        self.divider = divider\n        self.page_id = page_id\n        self.next_paragraph_id = next_paragraph_id\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show()\n\n    def Hide(self):\n        self.divider.Hide()",
-"type":"code"
-}
-],
-"title":"Page drop point"
-},
-{
-"children":[],
-"id":"e056bc29d02647a0a67d03693ddc4c7d",
-"paragraphs":[
-{
-"id":"79f48335418c42c1a622c691514415ab",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.workspace = workspace\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.workspace.document.move_paragraph(\n            source_page=dropped_paragraph[\"page_id\"],\n            source_paragraph=dropped_paragraph[\"paragraph_id\"],\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )",
-"type":"code"
-},
-{
-"id":"e05a55e327d042329bfce331b38762b6",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Workspace>>",
-"<<__init__>>"
-],
-"text":"self.SetDropTarget(WorkspaceDropTarget(self))",
-"type":"code"
-}
-],
-"title":"Drop target"
-}
-],
-"id":"4dd60465575c4297a25813f0478f15f9",
-"paragraphs":[
-{
-"id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
-"text":"A workspace is a container for editable content. Only pages at the moment.",
-"type":"text"
-}
-],
-"title":"Workspace"
-},
-{
-"children":[],
-"id":"f7f16199492c4bad80567c3a960b8bc9",
-"paragraphs":[
-{
-"id":"e50b267f475a48d78b5ea92de3351960",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class Layout(Observable):\n\n    def __init__(self, path):\n        Observable.__init__(self)\n        self.listen(lambda: write_json_to_file(path, self.data))\n        if os.path.exists(path):\n            self.data = load_json_from_file(path)\n        else:\n            self.data = {}\n        self._ensure_defaults()\n\n    def _ensure_defaults(self):\n        toc = self._ensure_key(self.data, \"toc\", {})\n        self._toc_collapsed = self._ensure_key(toc, \"collapsed\", [])\n        workspace = self._ensure_key(self.data, \"workspace\", {})\n        self._workspace_scratch = self._ensure_key(workspace, \"scratch\", [])\n\n    def _ensure_key(self, a_dict, key, default):\n        if key not in a_dict:\n            a_dict[key] = default\n        return a_dict[key]\n\n    def is_collapsed(self, page_id):\n        return page_id in self._toc_collapsed\n\n    def toggle_collapsed(self, page_id):\n        with self.notify(\"toc\"):\n            if page_id in self._toc_collapsed:\n                self._toc_collapsed.remove(page_id)\n            else:\n                self._toc_collapsed.append(page_id)\n\n    def get_scratch_pages(self):\n        return self._workspace_scratch[:]\n\n    def set_scratch_pages(self, page_ids):\n        with self.notify(\"workspace\"):\n            self._workspace_scratch[:] = page_ids\n",
-"type":"code"
-}
-],
-"title":"Layout"
 },
 {
 "children":[
@@ -717,6 +731,38 @@
 "id":"2280405b81c741cfa73d2629f1ef4b4b",
 "paragraphs":[],
 "title":"Paragraphs"
+}
+],
+"id":"4dd60465575c4297a25813f0478f15f9",
+"paragraphs":[
+{
+"id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
+"text":"A workspace is a container for pages. Pages are ordered in columns. Currently only one column is supported.",
+"type":"text"
+}
+],
+"title":"Workspace"
+},
+{
+"children":[],
+"id":"f7f16199492c4bad80567c3a960b8bc9",
+"paragraphs":[
+{
+"id":"9a3a290dceb54196a4d1b107d7634ce6",
+"text":"A layout records the visual state of the program. It records what pages are expanded/collapsed in the table of contents and what pages are open in the workspace.",
+"type":"text"
+},
+{
+"id":"e50b267f475a48d78b5ea92de3351960",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Layout(Observable):\n\n    def __init__(self, path):\n        Observable.__init__(self)\n        self.listen(lambda: write_json_to_file(path, self.data))\n        if os.path.exists(path):\n            self.data = load_json_from_file(path)\n        else:\n            self.data = {}\n        self._ensure_defaults()\n\n    def _ensure_defaults(self):\n        toc = self._ensure_key(self.data, \"toc\", {})\n        self._toc_collapsed = self._ensure_key(toc, \"collapsed\", [])\n        workspace = self._ensure_key(self.data, \"workspace\", {})\n        self._workspace_scratch = self._ensure_key(workspace, \"scratch\", [])\n\n    def _ensure_key(self, a_dict, key, default):\n        if key not in a_dict:\n            a_dict[key] = default\n        return a_dict[key]\n\n    def is_collapsed(self, page_id):\n        return page_id in self._toc_collapsed\n\n    def toggle_collapsed(self, page_id):\n        with self.notify(\"toc\"):\n            if page_id in self._toc_collapsed:\n                self._toc_collapsed.remove(page_id)\n            else:\n                self._toc_collapsed.append(page_id)\n\n    def get_scratch_pages(self):\n        return self._workspace_scratch[:]\n\n    def set_scratch_pages(self, page_ids):\n        with self.notify(\"workspace\"):\n            self._workspace_scratch[:] = page_ids\n",
+"type":"code"
+}
+],
+"title":"Layouts"
 },
 {
 "children":[],

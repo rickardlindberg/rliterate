@@ -723,9 +723,6 @@ class Workspace(wx.ScrolledWindow):
         self.SetSizer(self.sizer)
         self._re_render()
 
-    def _re_render_from_event(self):
-        wx.CallAfter(self._re_render)
-
     def _re_render(self):
         self.sizer.Clear(True)
         self.columns = []
@@ -739,10 +736,25 @@ class Workspace(wx.ScrolledWindow):
         self.columns.append(column)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
+    def _re_render_from_event(self):
+        wx.CallAfter(self._re_render)
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
             self.columns,
             lambda column: column.FindClosestDropPoint(screen_pos)
+        )
+class WorkspaceDropTarget(DropPointDropTarget):
+
+    def __init__(self, workspace):
+        DropPointDropTarget.__init__(self, workspace, "paragraph")
+        self.workspace = workspace
+
+    def OnDataDropped(self, dropped_paragraph, drop_point):
+        self.workspace.document.move_paragraph(
+            source_page=dropped_paragraph["page_id"],
+            source_paragraph=dropped_paragraph["paragraph_id"],
+            target_page=drop_point.page_id,
+            before_paragraph=drop_point.next_paragraph_id
         )
 class Column(wx.Panel):
 
@@ -757,11 +769,6 @@ class Column(wx.Panel):
         self.page_ids = page_ids
         self._render()
 
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            self.pages,
-            lambda page: page.FindClosestDropPoint(screen_pos)
-        )
     def _render(self):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.AddSpacer(PAGE_PADDING)
@@ -776,6 +783,11 @@ class Column(wx.Panel):
         page = PageContainer(self, self.theme, self.document, page_id)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.pages,
+            lambda page: page.FindClosestDropPoint(screen_pos)
+        )
 class PageContainer(wx.Panel):
 
     def __init__(self, parent, theme, document, page_id):
@@ -872,6 +884,21 @@ class Page(wx.Panel):
                 self.drop_points,
                 key=lambda drop_point: drop_point.y_distance_to(client_y)
             )
+class PageDropPoint(object):
+
+    def __init__(self, divider, page_id, next_paragraph_id):
+        self.divider = divider
+        self.page_id = page_id
+        self.next_paragraph_id = next_paragraph_id
+
+    def y_distance_to(self, y):
+        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
+
+    def Show(self):
+        self.divider.Show()
+
+    def Hide(self):
+        self.divider.Hide()
 class Title(Editable):
 
     def __init__(self, parent, document, page):
@@ -896,72 +923,6 @@ class Title(Editable):
 
     def EndEdit(self):
         self.document.edit_page(self.page.id, {"title": self.edit.Value})
-class PageDropPoint(object):
-
-    def __init__(self, divider, page_id, next_paragraph_id):
-        self.divider = divider
-        self.page_id = page_id
-        self.next_paragraph_id = next_paragraph_id
-
-    def y_distance_to(self, y):
-        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
-
-    def Show(self):
-        self.divider.Show()
-
-    def Hide(self):
-        self.divider.Hide()
-class WorkspaceDropTarget(DropPointDropTarget):
-
-    def __init__(self, workspace):
-        DropPointDropTarget.__init__(self, workspace, "paragraph")
-        self.workspace = workspace
-
-    def OnDataDropped(self, dropped_paragraph, drop_point):
-        self.workspace.document.move_paragraph(
-            source_page=dropped_paragraph["page_id"],
-            source_paragraph=dropped_paragraph["paragraph_id"],
-            target_page=drop_point.page_id,
-            before_paragraph=drop_point.next_paragraph_id
-        )
-class Layout(Observable):
-
-    def __init__(self, path):
-        Observable.__init__(self)
-        self.listen(lambda: write_json_to_file(path, self.data))
-        if os.path.exists(path):
-            self.data = load_json_from_file(path)
-        else:
-            self.data = {}
-        self._ensure_defaults()
-
-    def _ensure_defaults(self):
-        toc = self._ensure_key(self.data, "toc", {})
-        self._toc_collapsed = self._ensure_key(toc, "collapsed", [])
-        workspace = self._ensure_key(self.data, "workspace", {})
-        self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
-
-    def _ensure_key(self, a_dict, key, default):
-        if key not in a_dict:
-            a_dict[key] = default
-        return a_dict[key]
-
-    def is_collapsed(self, page_id):
-        return page_id in self._toc_collapsed
-
-    def toggle_collapsed(self, page_id):
-        with self.notify("toc"):
-            if page_id in self._toc_collapsed:
-                self._toc_collapsed.remove(page_id)
-            else:
-                self._toc_collapsed.append(page_id)
-
-    def get_scratch_pages(self):
-        return self._workspace_scratch[:]
-
-    def set_scratch_pages(self, page_ids):
-        with self.notify("workspace"):
-            self._workspace_scratch[:] = page_ids
 class Paragraph(ParagraphBase, Editable):
 
     def __init__(self, parent, theme, document, page_id, paragraph):
@@ -1207,6 +1168,44 @@ class ParagraphContextMenu(wx.Menu):
             ),
             self.Append(wx.NewId(), "Edit in gvim")
         )
+class Layout(Observable):
+
+    def __init__(self, path):
+        Observable.__init__(self)
+        self.listen(lambda: write_json_to_file(path, self.data))
+        if os.path.exists(path):
+            self.data = load_json_from_file(path)
+        else:
+            self.data = {}
+        self._ensure_defaults()
+
+    def _ensure_defaults(self):
+        toc = self._ensure_key(self.data, "toc", {})
+        self._toc_collapsed = self._ensure_key(toc, "collapsed", [])
+        workspace = self._ensure_key(self.data, "workspace", {})
+        self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
+
+    def _ensure_key(self, a_dict, key, default):
+        if key not in a_dict:
+            a_dict[key] = default
+        return a_dict[key]
+
+    def is_collapsed(self, page_id):
+        return page_id in self._toc_collapsed
+
+    def toggle_collapsed(self, page_id):
+        with self.notify("toc"):
+            if page_id in self._toc_collapsed:
+                self._toc_collapsed.remove(page_id)
+            else:
+                self._toc_collapsed.append(page_id)
+
+    def get_scratch_pages(self):
+        return self._workspace_scratch[:]
+
+    def set_scratch_pages(self, page_ids):
+        with self.notify("workspace"):
+            self._workspace_scratch[:] = page_ids
 class BaseTheme(object):
 
     def get_style(self, token_type):
