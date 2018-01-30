@@ -11,6 +11,7 @@ The following things were inspiration for rliterate.
 * https://www.youtube.com/watch?v=Av0PQDVTP4A
   Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)
   Change the mindset from wring a program to writing a book
+  http://axiom-developer.org/axiom-website/litprog.html
 
 * https://www.youtube.com/watch?v=5V1ynVyud4M
   "Eve" by Chris Granger
