@@ -1920,4 +1920,5 @@ Random notes of what I might want to work on in the future.
         * Read breath first
 * Literate programming treats any target programming language as an assembly language
 * Can't edit text paragraphs in vim
+* TOC should only expand first 3(?) levels when opening a file for the first time
 
