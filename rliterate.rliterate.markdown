@@ -1910,4 +1910,9 @@ Random notes of what I might want to work on in the future.
     * Otherwise put inside ScrolledWindow
 * Right click should only be generated on up if first down
 * Workspace should not be wider that a column, that creates an unnecessary scrollbar
+* This is a thinking tool
+    * Hoist/Unhoist
+        * Read with focus
+    * Open all immediate children
+        * Read breath first
 
