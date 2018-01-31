@@ -23,6 +23,10 @@ The following things were inspiration for rliterate.
 * ProjecturED
   http://projectured.org/
 
+* leo
+
+* smallest federated wiki
+
 ## Implementation
 
 RLiterate is implemented in Python. This chapter gives a complete description of all the code.
@@ -1889,7 +1893,6 @@ Random notes of what I might want to work on in the future.
 * There is no list paragraph type
 * During conversion
     * Save button is very far down if there is lots of code and only top is edited
-    * Can't focus in on specific subtree of toc (hoist, unhoist?)
 * Scrolling a page does not work if mouse is over a code paragraph
 * Not possible to go to a page with Ctrl+T
 * Ampersands (&) in titles (and paragraph text) are not rendered
@@ -1915,4 +1918,6 @@ Random notes of what I might want to work on in the future.
         * Read with focus
     * Open all immediate children
         * Read breath first
+* Literate programming treats any target programming language as an assembly language
+* Can't edit text paragraphs in vim
 
