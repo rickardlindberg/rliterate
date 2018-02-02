@@ -446,7 +446,8 @@ class TableOfContentsRow(wx.Panel):
             self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
         else:
             self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
-        text = wx.StaticText(self, label=self.page.title)
+        text = wx.StaticText(self)
+        text.SetLabelText(self.page.title)
         self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
         self.SetSizer(self.sizer)
         self.Bind(wx.EVT_ENTER_WINDOW, self.on_enter_window)
@@ -727,11 +728,8 @@ class Title(Editable):
 
     def CreateView(self):
         self.Font = create_font(size=16)
-        view = wx.StaticText(
-            self,
-            label=self.page.title,
-            style=wx.ST_ELLIPSIZE_END
-        )
+        view = wx.StaticText(self, style=wx.ST_ELLIPSIZE_END)
+        view.SetLabelText(self.page.title)
         view.SetToolTip(wx.ToolTip(self.page.title))
         return view
 
@@ -749,7 +747,8 @@ class Paragraph(ParagraphBase, Editable):
         Editable.__init__(self, parent)
 
     def CreateView(self):
-        view = wx.StaticText(self, label=self.paragraph.text)
+        view = wx.StaticText(self)
+        view.SetLabelText(self.paragraph.text)
         view.Wrap(PAGE_BODY_WIDTH)
         MouseEventHelper.bind(
             [view],
