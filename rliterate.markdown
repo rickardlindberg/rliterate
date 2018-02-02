@@ -127,6 +127,58 @@ RLiterate is implemented in Python. This chapter gives a complete description of
             f.write("Unknown type = "+paragraph.type+"\n\n")
 
 
+#### Textual diffing
+
+This generates a file that is suitable for textual diffing.
+
+`rliterate.py / <<classes>>`:
+
+    class TextDiff(object):
+    
+        def __init__(self, path):
+            self.listener = Listener(lambda event: self._generate())
+            self.path = path
+    
+        def set_document(self, document):
+            self.document = document
+            self.listener.set_observable(self.document)
+    
+        def _generate(self):
+            with open(self.path, "w") as f:
+                self.pages = []
+                self._collect_pages(self.document.get_page())
+                self._render_pages(f)
+    
+        def _collect_pages(self, page):
+            self.pages.append(page)
+            for child in page.children:
+                self._collect_pages(child)
+    
+        def _render_pages(self, f):
+            for page in sorted(self.pages, key=lambda page: page.id):
+                f.write(page.id)
+                f.write(": ")
+                f.write(page.title)
+                f.write("\n\n")
+                for paragraph in page.paragraphs:
+                    {
+                        "text": self._render_text,
+                        "code": self._render_code,
+                    }.get(paragraph.type, self._render_unknown)(f, paragraph)
+    
+        def _render_text(self, f, text):
+            f.write(text.text+"\n\n")
+    
+        def _render_code(self, f, code):
+            f.write("`"+" / ".join(code.path)+"`:\n\n")
+            for line in code.text.splitlines():
+                f.write("    "+line+"\n")
+            f.write("\n\n")
+    
+        def _render_unknown(self, f, paragraph):
+            f.write("Unknown type = "+paragraph.type+"\n\n")
+
+
 ### Main frame
 
 `rliterate.py / <<classes>>`:
@@ -1162,6 +1214,7 @@ A project is a container for a few other objects:
             self.layout.listen(self.notify_forwarder("layout"))
             FileGenerator().set_document(self.document)
             MarkdownGenerator(os.path.splitext(filepath)[0]+".markdown").set_document(self.document)
+            TextDiff(os.path.splitext(filepath)[0]+".textdiff").set_document(self.document)
     
         <<Project>>
 

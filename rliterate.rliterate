@@ -52,6 +52,27 @@
 }
 ],
 "title":"Markdown book"
+},
+{
+"children":[],
+"id":"427cb0d170a04b9898b5b744cd15b263",
+"paragraphs":[
+{
+"id":"324a5ebb37a44ec49c685670205356a5",
+"text":"This generates a file that is suitable for textual diffing.",
+"type":"text"
+},
+{
+"id":"7c76089d9db94d88b845c160fe2d249c",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class TextDiff(object):\n\n    def __init__(self, path):\n        self.listener = Listener(lambda event: self._generate())\n        self.path = path\n\n    def set_document(self, document):\n        self.document = document\n        self.listener.set_observable(self.document)\n\n    def _generate(self):\n        with open(self.path, \"w\") as f:\n            self.pages = []\n            self._collect_pages(self.document.get_page())\n            self._render_pages(f)\n\n    def _collect_pages(self, page):\n        self.pages.append(page)\n        for child in page.children:\n            self._collect_pages(child)\n\n    def _render_pages(self, f):\n        for page in sorted(self.pages, key=lambda page: page.id):\n            f.write(page.id)\n            f.write(\": \")\n            f.write(page.title)\n            f.write(\"\\n\\n\")\n            for paragraph in page.paragraphs:\n                {\n                    \"text\": self._render_text,\n                    \"code\": self._render_code,\n                }.get(paragraph.type, self._render_unknown)(f, paragraph)\n\n    def _render_text(self, f, text):\n        f.write(text.text+\"\\n\\n\")\n\n    def _render_code(self, f, code):\n        f.write(\"`\"+\" / \".join(code.path)+\"`:\\n\\n\")\n        for line in code.text.splitlines():\n            f.write(\"    \"+line+\"\\n\")\n        f.write(\"\\n\\n\")\n\n    def _render_unknown(self, f, paragraph):\n        f.write(\"Unknown type = \"+paragraph.type+\"\\n\\n\")\n",
+"type":"code"
+}
+],
+"title":"Textual diffing"
 }
 ],
 "id":"63ff2f7abea44406922c78b7683e2dd3",
@@ -922,7 +943,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n        MarkdownGenerator(os.path.splitext(filepath)[0]+\".markdown\").set_document(self.document)\n\n    <<Project>>\n",
+"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n        MarkdownGenerator(os.path.splitext(filepath)[0]+\".markdown\").set_document(self.document)\n        TextDiff(os.path.splitext(filepath)[0]+\".textdiff\").set_document(self.document)\n\n    <<Project>>\n",
 "type":"code"
 },
 {
