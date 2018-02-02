@@ -2,6 +2,12 @@
 
 This is a tool for literal programming.
 
+## About
+
+* This is a thinking tool
+    * Hoist/Unhoist
+        * Read with focus
+
 ## Inspiration
 
 The following things were inspiration for rliterate.
@@ -2208,10 +2214,4 @@ Random notes of what I might want to work on in the future.
         * Read breath first
 * Literate programming treats any target programming language as an assembly language
 * TOC should only expand first 3(?) levels when opening a file for the first time
-
-## About
-
-* This is a thinking tool
-    * Hoist/Unhoist
-        * Read with focus
 

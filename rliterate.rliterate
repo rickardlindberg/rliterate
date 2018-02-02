@@ -2,6 +2,18 @@
 "children":[
 {
 "children":[],
+"id":"600aa145cf474a6aa732a4c4edb5f44b",
+"paragraphs":[
+{
+"id":"394402716d9b45e195298f16a6d4c8d5",
+"text":"* This is a thinking tool\n    * Hoist/Unhoist\n        * Read with focus",
+"type":"text"
+}
+],
+"title":"About"
+},
+{
+"children":[],
 "id":"95150c4f0d92428bbeef4ae5a865398d",
 "paragraphs":[
 {
@@ -1250,18 +1262,6 @@
 }
 ],
 "title":"TODO"
-},
-{
-"children":[],
-"id":"600aa145cf474a6aa732a4c4edb5f44b",
-"paragraphs":[
-{
-"id":"394402716d9b45e195298f16a6d4c8d5",
-"text":"* This is a thinking tool\n    * Hoist/Unhoist\n        * Read with focus",
-"type":"text"
-}
-],
-"title":"About"
 }
 ],
 "id":"956ae4613f144e3581d420995a7ef046",
