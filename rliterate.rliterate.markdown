@@ -422,6 +422,8 @@ Views provide a read only interface to a document. It is the only way to query a
 
 #### Main widget
 
+The main table of contents widget is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.
+
 `rliterate.py / <<classes>>`:
 
     class TableOfContents(wx.ScrolledWindow):
@@ -432,50 +434,12 @@ Views provide a read only interface to a document. It is the only way to query a
 
     def __init__(self, parent, layout, document):
         wx.ScrolledWindow.__init__(self, parent, size=(250, -1))
-        self.SetScrollRate(20, 20)
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.sizer)
-        self.layout_listener = Listener(lambda: wx.CallAfter(self._render), "toc")
-        self.document_listener = Listener(lambda: wx.CallAfter(self._render))
+        self.layout_listener = Listener(self._re_render_from_event, "toc")
+        self.document_listener = Listener(self._re_render_from_event)
         self.SetLayout(layout)
         self.SetDocument(document)
-        self.SetBackgroundColour((255, 255, 255))
-        self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)
-        self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)
-        self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)
-        self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
         <<__init__>>
         self._render()
-    
-    def FindClosestDropPoint(self, screen_pos):
-        client_pos = self.ScreenToClient(screen_pos)
-        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-            scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)
-            y_distances = defaultdict(list)
-            for drop_point in self.drop_points:
-                y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)
-            if y_distances:
-                return min(
-                    y_distances[min(y_distances.keys())],
-                    key=lambda drop_point: drop_point.x_distance_to(scroll_x)
-                )
-    
-    def OnTreeToggle(self, event):
-        self.layout.toggle_collapsed(event.page_id)
-    
-    def OnTreeLeftClick(self, event):
-        self.layout.set_scratch_pages([event.page_id])
-    
-    def OnTreeRightClick(self, event):
-        menu = PageContextMenu(self.document, event.page_id)
-        self.PopupMenu(menu)
-        menu.Destroy()
-    
-    def OnTreeDoubleClick(self, event):
-        page_ids = [event.page_id]
-        for child in self.document.get_page(event.page_id).children:
-            page_ids.append(child.id)
-        self.layout.set_scratch_pages(page_ids)
     
     def SetLayout(self, layout):
         self.layout = layout
@@ -484,8 +448,46 @@ Views provide a read only interface to a document. It is the only way to query a
     def SetDocument(self, document):
         self.document = document
         self.document_listener.set_observable(self.document)
-    
+
+
+##### Rendering
+
+`rliterate.py / <<classes>> / <<TableOfContents>>`:
+
     def _render(self):
+        self.SetScrollRate(20, 20)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
+        self.SetBackgroundColour((255, 255, 255))
+        self.Bind(EVT_TREE_TOGGLE, self._on_tree_toggle)
+        self.Bind(EVT_TREE_LEFT_CLICK, self._on_tree_left_click)
+        self.Bind(EVT_TREE_RIGHT_CLICK, self._on_tree_right_click)
+        self.Bind(EVT_TREE_DOUBLE_CLICK, self._on_tree_double_click)
+        self._re_render()
+    
+    def _on_tree_toggle(self, event):
+        self.layout.toggle_collapsed(event.page_id)
+    
+    def _on_tree_left_click(self, event):
+        self.layout.set_scratch_pages([event.page_id])
+    
+    def _on_tree_right_click(self, event):
+        menu = PageContextMenu(self.document, event.page_id)
+        self.PopupMenu(menu)
+        menu.Destroy()
+    
+    def _on_tree_double_click(self, event):
+        page_ids = [event.page_id]
+        for child in self.document.get_page(event.page_id).children:
+            page_ids.append(child.id)
+        self.layout.set_scratch_pages(page_ids)
+
+
+The table of contents widget is re-rendered when the document or layout changes:
+
+`rliterate.py / <<classes>> / <<TableOfContents>>`:
+
+    def _re_render(self):
         self.drop_points = []
         self.sizer.Clear(True)
         self._render_page(self.document.get_page())
@@ -524,59 +526,152 @@ Views provide a read only interface to a document. It is the only way to query a
         return divider
 
 
+`rliterate.py / <<classes>>`:
+
+    class TableOfContentsDropPoint(object):
+    
+        def __init__(self, divider, indentation, parent_page_id, before_page_id):
+            self.divider = divider
+            self.indentation = indentation
+            self.parent_page_id = parent_page_id
+            self.before_page_id = before_page_id
+    
+        def x_distance_to(self, x):
+            left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
+            span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * (self.indentation + 1.5)
+            return abs(span_x_center - x)
+    
+        def y_distance_to(self, y):
+            return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
+    
+        def Show(self):
+            self.divider.Show(sum([
+                TableOfContentsRow.BORDER,
+                TableOfContentsButton.SIZE,
+                1,
+                self.indentation*TableOfContentsRow.INDENTATION_SIZE,
+            ]))
+    
+        def Hide(self):
+            self.divider.Hide()
+
+
+This seems to be needed for some reason:
+
+`rliterate.py / <<classes>> / <<TableOfContents>>`:
+
+    def _re_render_from_event(self):
+        wx.CallAfter(self._re_render)
+
+
+##### Dropping pages
+
+Inside the table of contents, pages can be dragged and drop. The drag is initiated in the row widget and handled in the table of contents widget.
+
+`rliterate.py / <<classes>> / <<TableOfContents>> / <<__init__>>`:
+
+    self.SetDropTarget(TableOfContentsDropTarget(self))
+
+
+`rliterate.py / <<classes>>`:
+
+    class TableOfContentsDropTarget(DropPointDropTarget):
+    
+        def __init__(self, toc):
+            DropPointDropTarget.__init__(self, toc, "page")
+            self.toc = toc
+    
+        def OnDataDropped(self, dropped_page, drop_point):
+            self.toc.document.move_page(
+                page_id=dropped_page["page_id"],
+                parent_page_id=drop_point.parent_page_id,
+                before_page_id=drop_point.before_page_id
+            )
+
+
+The DropPointDropTarget requires FindClosestDropPoint to be defined on the target object. Here it is:
+
+`rliterate.py / <<classes>> / <<TableOfContents>>`:
+
+    def FindClosestDropPoint(self, screen_pos):
+        client_pos = self.ScreenToClient(screen_pos)
+        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
+            scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)
+            y_distances = defaultdict(list)
+            for drop_point in self.drop_points:
+                y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)
+            if y_distances:
+                return min(
+                    y_distances[min(y_distances.keys())],
+                    key=lambda drop_point: drop_point.x_distance_to(scroll_x)
+                )
+
+
 #### Row widget
+
+The row widget renders the page title at the appropriate indentation. If the page has children, an expand/collapse widget is also rendered. Events for a page are handled here, but forwarded upwards via wx.PostEvent.
 
 `rliterate.py / <<classes>>`:
 
     class TableOfContentsRow(wx.Panel):
     
-        BORDER = 2
-        INDENTATION_SIZE = 16
-    
         def __init__(self, parent, indentation, page, is_collapsed):
             wx.Panel.__init__(self, parent)
-            self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-            self.sizer.Add((indentation*self.INDENTATION_SIZE, 1))
-            if page.children:
-                button = TableOfContentsButton(self, page.id, is_collapsed)
-                self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
-            else:
-                self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
-            text = wx.StaticText(self, label=page.title)
-            self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
-            self.SetSizer(self.sizer)
-            self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
-            self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
-            for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
-                helper.OnClick = self.OnClick
-                helper.OnRightClick = self.OnRightClick
-                helper.OnDrag = self.OnDrag
-                helper.OnDoubleClick = self.OnDoubleClick
-            self.original_colour = self.Parent.GetBackgroundColour()
-            self.page_id = page.id
+            self.indentation = indentation
+            self.page = page
+            self.is_collapsed = is_collapsed
+            self._render()
     
-        def OnClick(self):
-            wx.PostEvent(self, TreeLeftClick(0, page_id=self.page_id))
+        <<TableOfContentsRow>>
+
+
+`rliterate.py / <<classes>> / <<TableOfContentsRow>>`:
+
+    BORDER = 2
+    INDENTATION_SIZE = 16
     
-        def OnRightClick(self):
-            wx.PostEvent(self, TreeRightClick(0, page_id=self.page_id))
+    def _render(self):
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer.Add((self.indentation*self.INDENTATION_SIZE, 1))
+        if self.page.children:
+            button = TableOfContentsButton(self, self.page.id, self.is_collapsed)
+            self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
+        else:
+            self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
+        text = wx.StaticText(self, label=self.page.title)
+        self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
+        self.SetSizer(self.sizer)
+        self.Bind(wx.EVT_ENTER_WINDOW, self.on_enter_window)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self.on_leave_window)
+        for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
+            helper.OnClick = self._on_click
+            helper.OnRightClick = self._on_right_click
+            helper.OnDrag = self.on_drag
+            helper.OnDoubleClick = self.on_double_click
+        self.original_colour = self.Parent.GetBackgroundColour()
     
-        def OnDoubleClick(self):
-            wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page_id))
+    def _on_click(self):
+        wx.PostEvent(self, TreeLeftClick(0, page_id=self.page.id))
     
-        def OnDrag(self):
-            data = RliterateDataObject("page", {
-                "page_id": self.page_id,
-            })
-            drag_source = wx.DropSource(self)
-            drag_source.SetData(data)
-            result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+    def _on_right_click(self):
+        wx.PostEvent(self, TreeRightClick(0, page_id=self.page.id))
     
-        def OnEnterWindow(self, event):
-            self.SetBackgroundColour((240, 240, 240))
+    def on_double_click(self):
+        wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page.id))
     
-        def OnLeaveWindow(self, event):
-            self.SetBackgroundColour(self.original_colour)
+    def on_drag(self):
+        data = RliterateDataObject("page", {
+            "page_id": self.page.id,
+        })
+        drag_source = wx.DropSource(self)
+        drag_source.SetData(data)
+        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+    
+    def on_enter_window(self, event):
+        self.SetBackgroundColour((240, 240, 240))
+    
+    def on_leave_window(self, event):
+        self.SetBackgroundColour(self.original_colour)
 
 
 #### Expand/Collapse widget
@@ -610,61 +705,6 @@ Views provide a read only interface to a document. It is the only way to query a
                 (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
                 flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED
             )
-
-
-#### Drop point
-
-`rliterate.py / <<classes>>`:
-
-    class TableOfContentsDropPoint(object):
-    
-        def __init__(self, divider, indentation, parent_page_id, before_page_id):
-            self.divider = divider
-            self.indentation = indentation
-            self.parent_page_id = parent_page_id
-            self.before_page_id = before_page_id
-    
-        def x_distance_to(self, x):
-            left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
-            span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * (self.indentation + 1.5)
-            return abs(span_x_center - x)
-    
-        def y_distance_to(self, y):
-            return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
-    
-        def Show(self):
-            self.divider.Show(sum([
-                TableOfContentsRow.BORDER,
-                TableOfContentsButton.SIZE,
-                1,
-                self.indentation*TableOfContentsRow.INDENTATION_SIZE,
-            ]))
-    
-        def Hide(self):
-            self.divider.Hide()
-
-
-#### Drop target
-
-`rliterate.py / <<classes>>`:
-
-    class TableOfContentsDropTarget(DropPointDropTarget):
-    
-        def __init__(self, toc):
-            DropPointDropTarget.__init__(self, toc, "page")
-            self.toc = toc
-    
-        def OnDataDropped(self, dropped_page, drop_point):
-            self.toc.document.move_page(
-                page_id=dropped_page["page_id"],
-                parent_page_id=drop_point.parent_page_id,
-                before_page_id=drop_point.before_page_id
-            )
-
-
-`rliterate.py / <<classes>> / <<TableOfContents>> / <<__init__>>`:
-
-    self.SetDropTarget(TableOfContentsDropTarget(self))
 
 
 #### Page context menu
@@ -1921,4 +1961,5 @@ Random notes of what I might want to work on in the future.
 * Literate programming treats any target programming language as an assembly language
 * Can't edit text paragraphs in vim
 * TOC should only expand first 3(?) levels when opening a file for the first time
+* Can we group layout and document? What do we call it? Project?
 

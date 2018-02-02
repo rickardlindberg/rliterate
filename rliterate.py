@@ -477,50 +477,12 @@ class MainFrame(wx.Frame):
 class TableOfContents(wx.ScrolledWindow):
     def __init__(self, parent, layout, document):
         wx.ScrolledWindow.__init__(self, parent, size=(250, -1))
-        self.SetScrollRate(20, 20)
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.sizer)
-        self.layout_listener = Listener(lambda: wx.CallAfter(self._render), "toc")
-        self.document_listener = Listener(lambda: wx.CallAfter(self._render))
+        self.layout_listener = Listener(self._re_render_from_event, "toc")
+        self.document_listener = Listener(self._re_render_from_event)
         self.SetLayout(layout)
         self.SetDocument(document)
-        self.SetBackgroundColour((255, 255, 255))
-        self.Bind(EVT_TREE_TOGGLE, self.OnTreeToggle)
-        self.Bind(EVT_TREE_LEFT_CLICK, self.OnTreeLeftClick)
-        self.Bind(EVT_TREE_RIGHT_CLICK, self.OnTreeRightClick)
-        self.Bind(EVT_TREE_DOUBLE_CLICK, self.OnTreeDoubleClick)
         self.SetDropTarget(TableOfContentsDropTarget(self))
         self._render()
-
-    def FindClosestDropPoint(self, screen_pos):
-        client_pos = self.ScreenToClient(screen_pos)
-        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-            scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)
-            y_distances = defaultdict(list)
-            for drop_point in self.drop_points:
-                y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)
-            if y_distances:
-                return min(
-                    y_distances[min(y_distances.keys())],
-                    key=lambda drop_point: drop_point.x_distance_to(scroll_x)
-                )
-
-    def OnTreeToggle(self, event):
-        self.layout.toggle_collapsed(event.page_id)
-
-    def OnTreeLeftClick(self, event):
-        self.layout.set_scratch_pages([event.page_id])
-
-    def OnTreeRightClick(self, event):
-        menu = PageContextMenu(self.document, event.page_id)
-        self.PopupMenu(menu)
-        menu.Destroy()
-
-    def OnTreeDoubleClick(self, event):
-        page_ids = [event.page_id]
-        for child in self.document.get_page(event.page_id).children:
-            page_ids.append(child.id)
-        self.layout.set_scratch_pages(page_ids)
 
     def SetLayout(self, layout):
         self.layout = layout
@@ -529,8 +491,34 @@ class TableOfContents(wx.ScrolledWindow):
     def SetDocument(self, document):
         self.document = document
         self.document_listener.set_observable(self.document)
-
     def _render(self):
+        self.SetScrollRate(20, 20)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
+        self.SetBackgroundColour((255, 255, 255))
+        self.Bind(EVT_TREE_TOGGLE, self._on_tree_toggle)
+        self.Bind(EVT_TREE_LEFT_CLICK, self._on_tree_left_click)
+        self.Bind(EVT_TREE_RIGHT_CLICK, self._on_tree_right_click)
+        self.Bind(EVT_TREE_DOUBLE_CLICK, self._on_tree_double_click)
+        self._re_render()
+
+    def _on_tree_toggle(self, event):
+        self.layout.toggle_collapsed(event.page_id)
+
+    def _on_tree_left_click(self, event):
+        self.layout.set_scratch_pages([event.page_id])
+
+    def _on_tree_right_click(self, event):
+        menu = PageContextMenu(self.document, event.page_id)
+        self.PopupMenu(menu)
+        menu.Destroy()
+
+    def _on_tree_double_click(self, event):
+        page_ids = [event.page_id]
+        for child in self.document.get_page(event.page_id).children:
+            page_ids.append(child.id)
+        self.layout.set_scratch_pages(page_ids)
+    def _re_render(self):
         self.drop_points = []
         self.sizer.Clear(True)
         self._render_page(self.document.get_page())
@@ -567,82 +555,20 @@ class TableOfContents(wx.ScrolledWindow):
                     before_page_id=None if next_child is None else next_child.id
                 ))
         return divider
-class TableOfContentsRow(wx.Panel):
-
-    BORDER = 2
-    INDENTATION_SIZE = 16
-
-    def __init__(self, parent, indentation, page, is_collapsed):
-        wx.Panel.__init__(self, parent)
-        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add((indentation*self.INDENTATION_SIZE, 1))
-        if page.children:
-            button = TableOfContentsButton(self, page.id, is_collapsed)
-            self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
-        else:
-            self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
-        text = wx.StaticText(self, label=page.title)
-        self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
-        self.SetSizer(self.sizer)
-        self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
-        self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
-        for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
-            helper.OnClick = self.OnClick
-            helper.OnRightClick = self.OnRightClick
-            helper.OnDrag = self.OnDrag
-            helper.OnDoubleClick = self.OnDoubleClick
-        self.original_colour = self.Parent.GetBackgroundColour()
-        self.page_id = page.id
-
-    def OnClick(self):
-        wx.PostEvent(self, TreeLeftClick(0, page_id=self.page_id))
-
-    def OnRightClick(self):
-        wx.PostEvent(self, TreeRightClick(0, page_id=self.page_id))
-
-    def OnDoubleClick(self):
-        wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page_id))
-
-    def OnDrag(self):
-        data = RliterateDataObject("page", {
-            "page_id": self.page_id,
-        })
-        drag_source = wx.DropSource(self)
-        drag_source.SetData(data)
-        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
-
-    def OnEnterWindow(self, event):
-        self.SetBackgroundColour((240, 240, 240))
-
-    def OnLeaveWindow(self, event):
-        self.SetBackgroundColour(self.original_colour)
-class TableOfContentsButton(wx.Panel):
-
-    SIZE = 16
-
-    def __init__(self, parent, page_id, is_collapsed):
-        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.page_id = page_id
-        self.is_hovered = False
-        self.is_collapsed = is_collapsed
-        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-
-    def OnLeftDown(self, event):
-        wx.PostEvent(self, TreeToggle(0, page_id=self.page_id))
-
-    def OnPaint(self, event):
-        dc = wx.GCDC(wx.PaintDC(self))
-        dc.SetBrush(wx.BLACK_BRUSH)
-        render = wx.RendererNative.Get()
-        (w, h) = self.Size
-        render.DrawTreeItemButton(
-            self,
-            dc,
-            (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
-            flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED
-        )
+    def _re_render_from_event(self):
+        wx.CallAfter(self._re_render)
+    def FindClosestDropPoint(self, screen_pos):
+        client_pos = self.ScreenToClient(screen_pos)
+        if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
+            scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)
+            y_distances = defaultdict(list)
+            for drop_point in self.drop_points:
+                y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)
+            if y_distances:
+                return min(
+                    y_distances[min(y_distances.keys())],
+                    key=lambda drop_point: drop_point.x_distance_to(scroll_x)
+                )
 class TableOfContentsDropPoint(object):
 
     def __init__(self, divider, indentation, parent_page_id, before_page_id):
@@ -680,6 +606,87 @@ class TableOfContentsDropTarget(DropPointDropTarget):
             page_id=dropped_page["page_id"],
             parent_page_id=drop_point.parent_page_id,
             before_page_id=drop_point.before_page_id
+        )
+class TableOfContentsRow(wx.Panel):
+
+    def __init__(self, parent, indentation, page, is_collapsed):
+        wx.Panel.__init__(self, parent)
+        self.indentation = indentation
+        self.page = page
+        self.is_collapsed = is_collapsed
+        self._render()
+
+    BORDER = 2
+    INDENTATION_SIZE = 16
+
+    def _render(self):
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer.Add((self.indentation*self.INDENTATION_SIZE, 1))
+        if self.page.children:
+            button = TableOfContentsButton(self, self.page.id, self.is_collapsed)
+            self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
+        else:
+            self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
+        text = wx.StaticText(self, label=self.page.title)
+        self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
+        self.SetSizer(self.sizer)
+        self.Bind(wx.EVT_ENTER_WINDOW, self.on_enter_window)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self.on_leave_window)
+        for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
+            helper.OnClick = self._on_click
+            helper.OnRightClick = self._on_right_click
+            helper.OnDrag = self.on_drag
+            helper.OnDoubleClick = self.on_double_click
+        self.original_colour = self.Parent.GetBackgroundColour()
+
+    def _on_click(self):
+        wx.PostEvent(self, TreeLeftClick(0, page_id=self.page.id))
+
+    def _on_right_click(self):
+        wx.PostEvent(self, TreeRightClick(0, page_id=self.page.id))
+
+    def on_double_click(self):
+        wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page.id))
+
+    def on_drag(self):
+        data = RliterateDataObject("page", {
+            "page_id": self.page.id,
+        })
+        drag_source = wx.DropSource(self)
+        drag_source.SetData(data)
+        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+
+    def on_enter_window(self, event):
+        self.SetBackgroundColour((240, 240, 240))
+
+    def on_leave_window(self, event):
+        self.SetBackgroundColour(self.original_colour)
+class TableOfContentsButton(wx.Panel):
+
+    SIZE = 16
+
+    def __init__(self, parent, page_id, is_collapsed):
+        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        self.page_id = page_id
+        self.is_hovered = False
+        self.is_collapsed = is_collapsed
+        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+
+    def OnLeftDown(self, event):
+        wx.PostEvent(self, TreeToggle(0, page_id=self.page_id))
+
+    def OnPaint(self, event):
+        dc = wx.GCDC(wx.PaintDC(self))
+        dc.SetBrush(wx.BLACK_BRUSH)
+        render = wx.RendererNative.Get()
+        (w, h) = self.Size
+        render.DrawTreeItemButton(
+            self,
+            dc,
+            (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
+            flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED
         )
 class PageContextMenu(wx.Menu):
 
