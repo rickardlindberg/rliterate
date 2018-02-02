@@ -236,9 +236,11 @@ class MarkdownGenerator(object):
 
     def _render_code(self, f, code):
         f.write("`"+" / ".join(code.path)+"`:\n\n")
+        f.write("```"+code.language+"\n")
         for line in code.text.splitlines():
-            f.write("    "+line+"\n")
-        f.write("\n\n")
+            f.write(line+"\n")
+        f.write("```"+"\n")
+        f.write("\n")
 
     def _render_unknown(self, f, paragraph):
         f.write("Unknown type = "+paragraph.type+"\n\n")
@@ -1239,15 +1241,25 @@ class DictCodeParagraph(DictParagraph):
         return last_part
 
     @property
+    def language(self):
+        try:
+            return "".join(self._get_lexer().aliases[:1])
+        except:
+            return ""
+
+    @property
     def highlighted_code(self):
         try:
-            lexer = pygments.lexers.get_lexer_for_filename(
-                self.filename,
-                stripnl=False
-            )
+            lexer = self._get_lexer()
         except:
             lexer = pygments.lexers.TextLexer(stripnl=False)
         return self._split_tokens(lexer.get_tokens(self.text))
+
+    def _get_lexer(self):
+        return pygments.lexers.get_lexer_for_filename(
+            self.filename,
+            stripnl=False
+        )
 
     def _split_tokens(self, tokens):
         lines = []
