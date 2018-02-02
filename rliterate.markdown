@@ -27,6 +27,8 @@ The following things were inspiration for rliterate.
 
 * smallest federated wiki
 
+* https://software-carpentry.org/blog/2011/03/literate-programming.html
+
 ## Implementation
 
 RLiterate is implemented in Python. This chapter gives a complete description of all the code.
@@ -2138,8 +2140,9 @@ Random notes of what I might want to work on in the future.
 * Highlighting of toc rows is not always up to date
 * Invalid drop targets are still shown
     * Hide dragged item?
-* Tab indents with tab: should indent 4 spaces?
-* Shift+Tab deletes: should dedent
+* Code editor
+    * Tab indents with tab: should indent 4 spaces?
+    * Shift+Tab deletes: should dedent
 * Normalize paragraph when saving
     * Split into multiple paragraphs on more than one newline
     * Remove single newlines
@@ -2149,7 +2152,7 @@ Random notes of what I might want to work on in the future.
 * Missing paragraph operations
     * Context menu with add paragraph before/after
 * File generator writes empty filename
-* There is no way to control empy lines from placeholders
+* There is no way to control empty lines from placeholders
 * There is no list paragraph type
 * During conversion
     * Save button is very far down if there is lots of code and only top is edited
@@ -2179,7 +2182,5 @@ Random notes of what I might want to work on in the future.
     * Open all immediate children
         * Read breath first
 * Literate programming treats any target programming language as an assembly language
-* Can't edit text paragraphs in vim
 * TOC should only expand first 3(?) levels when opening a file for the first time
-* Can we group layout and document? What do we call it? Project?
 
