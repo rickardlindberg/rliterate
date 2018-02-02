@@ -1161,7 +1161,7 @@ A project is a container for a few other objects:
             self.layout = Layout(".{}.layout".format(filepath))
             self.layout.listen(self.notify_forwarder("layout"))
             FileGenerator().set_document(self.document)
-            MarkdownGenerator(filepath+".markdown").set_document(self.document)
+            MarkdownGenerator(os.path.splitext(filepath)[0]+".markdown").set_document(self.document)
     
         <<Project>>
 
