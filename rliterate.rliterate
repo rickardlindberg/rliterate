@@ -569,7 +569,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.project = project\n        self.page = page\n        Editable.__init__(self, parent)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = wx.StaticText(\n            self,\n            label=self.page.title,\n            style=wx.ST_ELLIPSIZE_END\n        )\n        view.SetToolTip(wx.ToolTip(self.page.title))\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())\n        return edit\n\n    def EndEdit(self):\n        self.projrect.edit_page(self.page.id, {\"title\": self.edit.Value})\n",
+"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.project = project\n        self.page = page\n        Editable.__init__(self, parent)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = wx.StaticText(\n            self,\n            label=self.page.title,\n            style=wx.ST_ELLIPSIZE_END\n        )\n        view.SetToolTip(wx.ToolTip(self.page.title))\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())\n        return edit\n\n    def EndEdit(self):\n        self.project.edit_page(self.page.id, {\"title\": self.edit.Value})\n",
 "type":"code"
 }
 ],

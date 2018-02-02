@@ -786,7 +786,7 @@ Drag and drop:
             return edit
     
         def EndEdit(self):
-            self.projrect.edit_page(self.page.id, {"title": self.edit.Value})
+            self.project.edit_page(self.page.id, {"title": self.edit.Value})
 
 
 #### Paragraphs

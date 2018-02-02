@@ -695,7 +695,7 @@ class Title(Editable):
         return edit
 
     def EndEdit(self):
-        self.projrect.edit_page(self.page.id, {"title": self.edit.Value})
+        self.project.edit_page(self.page.id, {"title": self.edit.Value})
 class Paragraph(ParagraphBase, Editable):
 
     def __init__(self, parent, project, page_id, paragraph):
