@@ -31,276 +31,6 @@ The following things were inspiration for rliterate.
 
 RLiterate is implemented in Python. This chapter gives a complete description of all the code.
 
-### Document model
-
-#### Document
-
-`rliterate.py / <<classes>>`:
-
-    class Document(Observable):
-    
-        @classmethod
-        def from_file(cls, path):
-            return cls(path)
-    
-        def __init__(self, path):
-            Observable.__init__(self)
-            self.path = path
-            self._load()
-            self._cache()
-            self.listen(self._save)
-    
-        def _cache(self):
-            self._pages = {}
-            self._parent_pages = {}
-            self._paragraphs = {}
-            self._cache_page(self.root_page)
-    
-        def _cache_page(self, page, parent_page=None):
-            self._pages[page["id"]] = page
-            self._parent_pages[page["id"]] = parent_page
-            for paragraph in page["paragraphs"]:
-                self._paragraphs[paragraph["id"]] = paragraph
-            for child in page["children"]:
-                self._cache_page(child, page)
-    
-        def _save(self):
-            write_json_to_file(self.path, self.root_page)
-    
-        def _load(self):
-            self.root_page = load_json_from_file(self.path)
-    
-        <<Document>>
-    
-        # Page operations
-    
-        def add_page(self, title="New page", parent_id=None):
-            with self.notify():
-                page = {
-                    "id": genid(),
-                    "title": "New page...",
-                    "children": [],
-                    "paragraphs": [],
-                }
-                parent_page = self._pages[parent_id]
-                parent_page["children"].append(page)
-                self._pages[page["id"]] = page
-                self._parent_pages[page["id"]] = parent_page
-    
-        def delete_page(self, page_id):
-            with self.notify():
-                page = self._pages[page_id]
-                parent_page = self._parent_pages[page_id]
-                index = index_with_id(parent_page["children"], page_id)
-                parent_page["children"].pop(index)
-                self._pages.pop(page_id)
-                self._parent_pages.pop(page_id)
-                for child in reversed(page["children"]):
-                    parent_page["children"].insert(index, child)
-                    self._parent_pages[child["id"]] = parent_page
-    
-        def move_page(self, page_id, parent_page_id, before_page_id):
-            with self.notify():
-                if page_id == before_page_id:
-                    return
-                parent = self._pages[parent_page_id]
-                while parent is not None:
-                    if parent["id"] == page_id:
-                        return
-                    parent = self._parent_pages[parent["id"]]
-                parent = self._parent_pages[page_id]
-                page = parent["children"].pop(index_with_id(parent["children"], page_id))
-                new_parent = self._pages[parent_page_id]
-                self._parent_pages[page_id] = new_parent
-                if before_page_id is None:
-                    new_parent["children"].append(page)
-                else:
-                    new_parent["children"].insert(
-                        index_with_id(new_parent["children"], before_page_id),
-                        page
-                    )
-    
-        def edit_page(self, page_id, data):
-            with self.notify():
-                self._pages[page_id].update(data)
-    
-        # Paragraph operations
-    
-        def add_paragraph(self, page_id, before_id=None):
-            with self.notify():
-                paragraph = {
-                    "id": genid(),
-                    "type": "factory",
-                    "text":
-                    "factory",
-                }
-                self._pages[page_id]["paragraphs"].append(paragraph)
-                self._paragraphs[paragraph["id"]] = paragraph
-    
-        def move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):
-            with self.notify():
-                if (source_page == target_page and
-                    source_paragraph == before_paragraph):
-                    return
-                paragraph = self.delete_paragraph(source_page, source_paragraph)
-                self._add_paragraph(target_page, paragraph, before_id=before_paragraph)
-    
-        def _add_paragraph(self, page_id, paragraph, before_id):
-            paragraphs = self._pages[page_id]["paragraphs"]
-            if before_id is None:
-                paragraphs.append(paragraph)
-            else:
-                paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)
-            self._paragraphs[paragraph["id"]] = paragraph
-    
-        def delete_paragraph(self, page_id, paragraph_id):
-            with self.notify():
-                paragraphs = self._pages[page_id]["paragraphs"]
-                paragraphs.pop(index_with_id(paragraphs, paragraph_id))
-                return self._paragraphs.pop(paragraph_id)
-    
-        def edit_paragraph(self, paragraph_id, data):
-            with self.notify():
-                self._paragraphs[paragraph_id].update(data)
-
-
-#### Views
-
-Views provide a read only interface to a document. It is the only way to query a document.
-
-`rliterate.py / <<classes>> / <<Document>>`:
-
-    def get_page(self, page_id=None):
-        if page_id is None:
-            page_id = self.root_page["id"]
-        page_dict = self._pages.get(page_id, None)
-        if page_dict is None:
-            return None
-        return DictPage(page_dict)
-
-
-`rliterate.py / <<classes>>`:
-
-    class DictPage(object):
-    
-        def __init__(self, page_dict):
-            self._page_dict = page_dict
-    
-        @property
-        def id(self):
-            return self._page_dict["id"]
-    
-        @property
-        def title(self):
-            return self._page_dict["title"]
-    
-        @property
-        def paragraphs(self):
-            return [
-                DictParagraph.create(paragraph_dict)
-                for paragraph_dict
-                in self._page_dict["paragraphs"]
-            ]
-    
-        @property
-        def children(self):
-            return [
-                DictPage(child_dict)
-                for child_dict
-                in self._page_dict["children"]
-            ]
-
-
-`rliterate.py / <<classes>>`:
-
-    class DictParagraph(object):
-    
-        @staticmethod
-        def create(paragraph_dict):
-            return {
-                "text": DictTextParagraph,
-                "code": DictCodeParagraph,
-            }.get(paragraph_dict["type"], DictParagraph)(paragraph_dict)
-    
-        def __init__(self, paragraph_dict):
-            self._paragraph_dict = paragraph_dict
-    
-        @property
-        def id(self):
-            return self._paragraph_dict["id"]
-    
-        @property
-        def type(self):
-            return self._paragraph_dict["type"]
-
-
-`rliterate.py / <<classes>>`:
-
-    class DictTextParagraph(DictParagraph):
-    
-        @property
-        def text(self):
-            return self._paragraph_dict["text"]
-
-
-`rliterate.py / <<classes>>`:
-
-    class DictCodeParagraph(DictParagraph):
-    
-        @property
-        def text(self):
-            return self._paragraph_dict["text"]
-    
-        @property
-        def path(self):
-            return tuple(self._paragraph_dict["path"])
-    
-        @property
-        def filename(self):
-            last_part = ""
-            for part in self.path:
-                if part.startswith("<<"):
-                    break
-                last_part = part
-            return last_part
-    
-        @property
-        def highlighted_code(self):
-            try:
-                lexer = pygments.lexers.get_lexer_for_filename(
-                    self.filename,
-                    stripnl=False
-                )
-            except:
-                lexer = pygments.lexers.TextLexer(stripnl=False)
-            return self._split_tokens(lexer.get_tokens(self.text))
-    
-        def _split_tokens(self, tokens):
-            lines = []
-            line = []
-            for token_type, text in tokens:
-                parts = text.split("\n")
-                line.append(Part(token_type=token_type, text=parts.pop(0)))
-                while parts:
-                    lines.append(line)
-                    line = []
-                    line.append(Part(token_type=token_type, text=parts.pop(0)))
-            if line:
-                lines.append(line)
-            if lines and lines[-1] and len(lines[-1]) == 1 and len(lines[-1][0].text) == 0:
-                lines.pop(-1)
-            return lines
-
-
-`rliterate.py / <<classes>>`:
-
-    class Part(object):
-    
-        def __init__(self, token_type, text):
-            self.token_type = token_type
-            self.text = text
-
-
 ### Generating output
 
 #### Code files
@@ -310,7 +40,7 @@ Views provide a read only interface to a document. It is the only way to query a
     class FileGenerator(object):
     
         def __init__(self):
-            self.listener = Listener(self._generate)
+            self.listener = Listener(lambda event: self._generate)
     
         def set_document(self, document):
             self.document = document
@@ -363,7 +93,7 @@ Views provide a read only interface to a document. It is the only way to query a
     class MarkdownGenerator(object):
     
         def __init__(self, path):
-            self.listener = Listener(self._generate)
+            self.listener = Listener(lambda event: self._generate)
             self.path = path
     
         def set_document(self, document):
@@ -405,13 +135,9 @@ Views provide a read only interface to a document. It is the only way to query a
     
         def __init__(self, filepath):
             wx.Frame.__init__(self, None)
-            layout = Layout(".{}.layout".format(filepath))
-            document = Document.from_file(filepath)
-            FileGenerator().set_document(document)
-            MarkdownGenerator(filepath+".markdown").set_document(document)
-            theme = SolarizedTheme()
-            workspace = Workspace(self, theme, layout, document)
-            toc = TableOfContents(self, layout, document)
+            project = Project(filepath)
+            workspace = Workspace(self, project)
+            toc = TableOfContents(self, project)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(toc, flag=wx.EXPAND, proportion=0)
             sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
@@ -432,22 +158,16 @@ The main table of contents widget is a scrolling container that contains a set o
 
 `rliterate.py / <<classes>> / <<TableOfContents>>`:
 
-    def __init__(self, parent, layout, document):
+    def __init__(self, parent, project):
         wx.ScrolledWindow.__init__(self, parent, size=(250, -1))
-        self.layout_listener = Listener(self._re_render_from_event, "toc")
-        self.document_listener = Listener(self._re_render_from_event)
-        self.SetLayout(layout)
-        self.SetDocument(document)
+        self.project_listener = Listener(self._re_render_from_event, "document", "layout.toc")
+        self.SetProject(project)
         <<__init__>>
         self._render()
     
-    def SetLayout(self, layout):
-        self.layout = layout
-        self.layout_listener.set_observable(self.layout)
-    
-    def SetDocument(self, document):
-        self.document = document
-        self.document_listener.set_observable(self.document)
+    def SetProject(self, project):
+        self.project = project
+        self.project_listener.set_observable(self.project)
 
 
 ##### Rendering
@@ -466,21 +186,21 @@ The main table of contents widget is a scrolling container that contains a set o
         self._re_render()
     
     def _on_tree_toggle(self, event):
-        self.layout.toggle_collapsed(event.page_id)
+        self.project.toggle_collapsed(event.page_id)
     
     def _on_tree_left_click(self, event):
-        self.layout.set_scratch_pages([event.page_id])
+        self.project.set_scratch_pages([event.page_id])
     
     def _on_tree_right_click(self, event):
-        menu = PageContextMenu(self.document, event.page_id)
+        menu = PageContextMenu(self.project, event.page_id)
         self.PopupMenu(menu)
         menu.Destroy()
     
     def _on_tree_double_click(self, event):
         page_ids = [event.page_id]
-        for child in self.document.get_page(event.page_id).children:
+        for child in self.project.get_page(event.page_id).children:
             page_ids.append(child.id)
-        self.layout.set_scratch_pages(page_ids)
+        self.project.set_scratch_pages(page_ids)
 
 
 The table of contents widget is re-rendered when the document or layout changes:
@@ -490,11 +210,11 @@ The table of contents widget is re-rendered when the document or layout changes:
     def _re_render(self):
         self.drop_points = []
         self.sizer.Clear(True)
-        self._render_page(self.document.get_page())
+        self._render_page(self.project.get_page())
         self.Layout()
     
     def _render_page(self, page, indentation=0):
-        is_collapsed = self.layout.is_collapsed(page.id)
+        is_collapsed = self.project.is_collapsed(page.id)
         self.sizer.Add(
             TableOfContentsRow(self, indentation, page, is_collapsed),
             flag=wx.EXPAND
@@ -560,7 +280,7 @@ This seems to be needed for some reason:
 
 `rliterate.py / <<classes>> / <<TableOfContents>>`:
 
-    def _re_render_from_event(self):
+    def _re_render_from_event(self, event):
         wx.CallAfter(self._re_render)
 
 
@@ -713,22 +433,22 @@ The row widget renders the page title at the appropriate indentation. If the pag
 
     class PageContextMenu(wx.Menu):
     
-        def __init__(self, document, page_id):
+        def __init__(self, project, page_id):
             wx.Menu.__init__(self)
-            self.document = document
+            self.project = project
             self.page_id = page_id
             self._create_menu()
     
         def _create_menu(self):
             self.Bind(
                 wx.EVT_MENU,
-                lambda event: self.document.add_page(parent_id=self.page_id),
+                lambda event: self.project.add_page(parent_id=self.page_id),
                 self.Append(wx.NewId(), "Add child")
             )
             self.AppendSeparator()
             self.Bind(
                 wx.EVT_MENU,
-                lambda event: self.document.delete_page(page_id=self.page_id),
+                lambda event: self.project.delete_page(page_id=self.page_id),
                 self.Append(wx.NewId(), "Delete")
             )
 
@@ -749,23 +469,16 @@ The main workspace widget is a scrolling container containing column widgets.
 
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
-    def __init__(self, parent, theme, layout, document):
+    def __init__(self, parent, project):
         wx.ScrolledWindow.__init__(self, parent, size=(int(PAGE_BODY_WIDTH*1.2), 300))
-        self.theme = theme
-        self.layout_listener = Listener(self._re_render_from_event)
-        self.document_listener = Listener(self._re_render_from_event)
-        self.SetLayout(layout)
-        self.SetDocument(document)
+        self.project_listener = Listener(self._re_render_from_event, "document", "layout.workspace")
+        self.SetProject(project)
         <<__init__>>
         self._render()
     
-    def SetLayout(self, layout):
-        self.layout = layout
-        self.layout_listener.set_observable(self.layout)
-    
-    def SetDocument(self, document):
-        self.document = document
-        self.document_listener.set_observable(self.document)
+    def SetProject(self, project):
+        self.project = project
+        self.project_listener.set_observable(self.project)
 
 
 ##### Rendering
@@ -787,12 +500,11 @@ Layout has to be called on the parent. Otherwise scrollbars don't update appropr
         self.sizer.Clear(True)
         self.columns = []
         self.sizer.AddSpacer(PAGE_PADDING)
-        if self.layout is not None and self.document is not None:
-            self._render_column(self.layout.get_scratch_pages())
+        self._render_column(self.project.get_scratch_pages())
         self.Parent.Layout()
     
     def _render_column(self, page_ids):
-        column = Column(self, self.theme, self.document, page_ids)
+        column = Column(self, self.project, page_ids)
         self.columns.append(column)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
@@ -802,7 +514,7 @@ wx.CallAfter seems to be needed to correctly update scrollbars on an event notif
 
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
-    def _re_render_from_event(self):
+    def _re_render_from_event(self, event):
         wx.CallAfter(self._re_render)
 
 
@@ -851,14 +563,13 @@ The column widget is a panel containing a set of pages.
 
     class Column(wx.Panel):
     
-        def __init__(self, parent, theme, document, page_ids):
+        def __init__(self, parent, project, page_ids):
             wx.Panel.__init__(
                 self,
                 parent,
                 size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1)
             )
-            self.theme = theme
-            self.document = document
+            self.project = project
             self.page_ids = page_ids
             self._render()
     
@@ -876,12 +587,12 @@ Rendering means laying out a set of pages vertically.
             self._render_page(page_id)
             for page_id
             in self.page_ids
-            if self.document.get_page(page_id) is not None
+            if self.project.get_page(page_id) is not None
         ]
         self.SetSizer(self.sizer)
     
     def _render_page(self, page_id):
-        page = PageContainer(self, self.theme, self.document, page_id)
+        page = PageContainer(self, self.project, page_id)
         self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
         return page
 
@@ -903,10 +614,9 @@ Dropping stuff:
 
     class PageContainer(wx.Panel):
     
-        def __init__(self, parent, theme, document, page_id):
+        def __init__(self, parent, project, page_id):
             wx.Panel.__init__(self, parent)
-            self.theme = theme
-            self.document = document
+            self.project = project
             self.page_id = page_id
             self._render()
     
@@ -920,7 +630,7 @@ Rendering:
     def _render(self):
         self.SetBackgroundColour((150, 150, 150))
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.page_body = Page(self, self.theme, self.document, self.page_id)
+        self.page_body = Page(self, self.project, self.page_id)
         self.sizer.Add(
             self.page_body,
             flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
@@ -943,10 +653,9 @@ Drag and drop:
 
     class Page(wx.Panel):
     
-        def __init__(self, parent, theme, document, page_id):
+        def __init__(self, parent, project, page_id):
             wx.Panel.__init__(self, parent)
-            self.theme = theme
-            self.document = document
+            self.project = project
             self.page_id = page_id
             self._render()
     
@@ -962,9 +671,9 @@ Drag and drop:
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         self.drop_points = []
-        page = self.document.get_page(self.page_id)
+        page = self.project.get_page(self.page_id)
         self.sizer.AddSpacer(PARAGRAPH_SPACE)
-        divider = self._render_paragraph(Title(self, self.document, page))
+        divider = self._render_paragraph(Title(self, self.project, page))
         for paragraph in page.paragraphs:
             self.drop_points.append(PageDropPoint(
                 divider=divider,
@@ -975,7 +684,7 @@ Drag and drop:
                 "text": Paragraph,
                 "code": Code,
                 "factory": Factory,
-            }[paragraph.type](self, self.theme, self.document, self.page_id, paragraph))
+            }[paragraph.type](self, self.project, self.page_id, paragraph))
         self.drop_points.append(PageDropPoint(
             divider=divider,
             page_id=self.page_id,
@@ -1015,7 +724,7 @@ Drag and drop:
         )
     
     def _on_add_button(self, event):
-        self.document.add_paragraph(self.page_id)
+        self.project.add_paragraph(self.page_id)
 
 
 `rliterate.py / <<classes>>`:
@@ -1056,8 +765,8 @@ Drag and drop:
 
     class Title(Editable):
     
-        def __init__(self, parent, document, page):
-            self.document = document
+        def __init__(self, parent, project, page):
+            self.project = project
             self.page = page
             Editable.__init__(self, parent)
     
@@ -1077,7 +786,7 @@ Drag and drop:
             return edit
     
         def EndEdit(self):
-            self.document.edit_page(self.page.id, {"title": self.edit.Value})
+            self.projrect.edit_page(self.page.id, {"title": self.edit.Value})
 
 
 #### Paragraphs
@@ -1090,8 +799,8 @@ Drag and drop:
 
     class Paragraph(ParagraphBase, Editable):
     
-        def __init__(self, parent, theme, document, page_id, paragraph):
-            ParagraphBase.__init__(self, document, page_id, paragraph)
+        def __init__(self, parent, project, page_id, paragraph):
+            ParagraphBase.__init__(self, project, page_id, paragraph)
             Editable.__init__(self, parent)
     
         def CreateView(self):
@@ -1117,7 +826,7 @@ Drag and drop:
             return edit
     
         def EndEdit(self):
-            self.document.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
+            self.project.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
 
 
 ##### Code
@@ -1128,19 +837,18 @@ Drag and drop:
 
     class Code(ParagraphBase, Editable):
     
-        def __init__(self, parent, theme, document, page_id, paragraph):
-            self.theme = theme
-            ParagraphBase.__init__(self, document, page_id, paragraph)
+        def __init__(self, parent, project, page_id, paragraph):
+            ParagraphBase.__init__(self, project, page_id, paragraph)
             Editable.__init__(self, parent)
     
         def CreateView(self):
-            return CodeView(self, self.theme, self.paragraph)
+            return CodeView(self, self.project, self.paragraph)
     
         def CreateEdit(self):
-            return CodeEditor(self, self.view, self.paragraph)
+            return CodeEditor(self, self.project, self.paragraph)
     
         def EndEdit(self):
-            self.document.edit_paragraph(self.paragraph.id, {
+            self.project.edit_paragraph(self.paragraph.id, {
                 "path": self.edit.path.Value.split(" / "),
                 "text": self.edit.text.Value,
             })
@@ -1155,9 +863,9 @@ Drag and drop:
         BORDER = 1
         PADDING = 5
     
-        def __init__(self, parent, theme, code_paragraph):
+        def __init__(self, parent, project, code_paragraph):
             wx.Panel.__init__(self, parent)
-            self.theme = theme
+            self.project = project
             self.Font = create_font(monospace=True)
             self.vsizer = wx.BoxSizer(wx.VERTICAL)
             self.vsizer.Add(
@@ -1190,7 +898,7 @@ Drag and drop:
         def _create_code(self, code_paragraph):
             panel = wx.Panel(self)
             panel.SetBackgroundColour((253, 246, 227))
-            body = CodeBody(panel, self.theme, code_paragraph)
+            body = CodeBody(panel, self.project, code_paragraph)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
             panel.SetSizer(sizer)
@@ -1210,9 +918,9 @@ Drag and drop:
 
     class CodeBody(wx.ScrolledWindow):
     
-        def __init__(self, parent, theme, paragraph):
+        def __init__(self, parent, project, paragraph):
             wx.ScrolledWindow.__init__(self, parent)
-            self.theme = theme
+            self.project = project
             self.children = []
             sizer = wx.BoxSizer(wx.VERTICAL)
             self._add_lines(sizer, paragraph)
@@ -1230,7 +938,7 @@ Drag and drop:
         def _line_to_markup(self, line):
             return "".join([
                 "<span color='{}'>{}</span>".format(
-                    self.theme.get_style(part.token_type).color,
+                    self.project.get_style(part.token_type).color,
                     xml.sax.saxutils.escape(part.text)
                 )
                 for part in line
@@ -1302,8 +1010,8 @@ Drag and drop:
 
     class Factory(ParagraphBase, wx.Panel):
     
-        def __init__(self, parent, theme, document, page_id, paragraph):
-            ParagraphBase.__init__(self, document, page_id, paragraph)
+        def __init__(self, parent, project, page_id, paragraph):
+            ParagraphBase.__init__(self, project, page_id, paragraph)
             wx.Panel.__init__(self, parent)
             MouseEventHelper.bind(
                 [self],
@@ -1333,10 +1041,10 @@ Drag and drop:
             self.SetSizer(self.vsizer)
     
         def OnTextButton(self, event):
-            self.document.edit_paragraph(self.paragraph.id, {"type": "text", "text": "Enter text here..."})
+            self.project.edit_paragraph(self.paragraph.id, {"type": "text", "text": "Enter text here..."})
     
         def OnCodeButton(self, event):
-            self.document.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
+            self.project.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
 
 
 ##### Common
@@ -1347,8 +1055,8 @@ Drag and drop:
 
     class ParagraphBase(object):
     
-        def __init__(self, document, page_id, paragraph):
-            self.document = document
+        def __init__(self, project, page_id, paragraph):
+            self.project = project
             self.page_id = page_id
             self.paragraph = paragraph
     
@@ -1363,7 +1071,7 @@ Drag and drop:
     
         def ShowContextMenu(self):
             menu = ParagraphContextMenu(
-                self.document, self.page_id, self.paragraph
+                self.project, self.page_id, self.paragraph
             )
             self.PopupMenu(menu)
             menu.Destroy()
@@ -1375,9 +1083,9 @@ Drag and drop:
 
     class ParagraphContextMenu(wx.Menu):
     
-        def __init__(self, document, page_id, paragraph):
+        def __init__(self, project, page_id, paragraph):
             wx.Menu.__init__(self)
-            self.document = document
+            self.project = project
             self.page_id = page_id
             self.paragraph = paragraph
             self._create_menu()
@@ -1385,7 +1093,7 @@ Drag and drop:
         def _create_menu(self):
             self.Bind(
                 wx.EVT_MENU,
-                lambda event: self.document.delete_paragraph(
+                lambda event: self.project.delete_paragraph(
                     page_id=self.page_id,
                     paragraph_id=self.paragraph.id
                 ),
@@ -1393,7 +1101,7 @@ Drag and drop:
             )
             self.Bind(
                 wx.EVT_MENU,
-                lambda event: self.document.edit_paragraph(
+                lambda event: self.project.edit_paragraph(
                     self.paragraph.id,
                     {"text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)}
                 ),
@@ -1437,7 +1145,355 @@ Drag and drop:
                 event.Skip()
 
 
-### Layouts
+### Project
+
+A project is a container for a few other objects:
+
+`rliterate.py / <<classes>>`:
+
+    class Project(Observable):
+    
+        def __init__(self, filepath):
+            Observable.__init__(self)
+            self.theme = SolarizedTheme()
+            self.document = Document.from_file(filepath)
+            self.document.listen(self.notify_forwarder("document"))
+            self.layout = Layout(".{}.layout".format(filepath))
+            self.layout.listen(self.notify_forwarder("layout"))
+            FileGenerator().set_document(self.document)
+            MarkdownGenerator(filepath+".markdown").set_document(self.document)
+    
+        <<Project>>
+
+
+Wrapper methods for layout:
+
+`rliterate.py / <<classes>> / <<Project>>`:
+
+    def toggle_collapsed(self, *args, **kwargs):
+        return self.layout.toggle_collapsed(*args, **kwargs)
+    
+    def is_collapsed(self, *args, **kwargs):
+        return self.layout.is_collapsed(*args, **kwargs)
+    
+    def get_scratch_pages(self, *args, **kwargs):
+        return self.layout.get_scratch_pages(*args, **kwargs)
+    
+    def set_scratch_pages(self, *args, **kwargs):
+        return self.layout.set_scratch_pages(*args, **kwargs)
+
+
+Wrapper methods for document:
+
+`rliterate.py / <<classes>> / <<Project>>`:
+
+    def get_page(self, *args, **kwargs):
+        return self.document.get_page(*args, **kwargs)
+    
+    def add_page(self, *args, **kwargs):
+        return self.document.add_page(*args, **kwargs)
+    
+    def delete_page(self, *args, **kwargs):
+        return self.document.delete_page(*args, **kwargs)
+    
+    def move_page(self, *args, **kwargs):
+        return self.document.move_page(*args, **kwargs)
+    
+    def edit_page(self, *args, **kwargs):
+        return self.document.edit_page(*args, **kwargs)
+    
+    def add_paragraph(self, *args, **kwargs):
+        return self.document.add_paragraph(*args, **kwargs)
+    
+    def move_paragraph(self, *args, **kwargs):
+        return self.document.move_paragraph(*args, **kwargs)
+    
+    def delete_paragraph(self, *args, **kwargs):
+        return self.document.delete_paragraph(*args, **kwargs)
+    
+    def edit_paragraph(self, *args, **kwargs):
+        return self.document.edit_paragraph(*args, **kwargs)
+
+
+Wrapper for theme:
+
+`rliterate.py / <<classes>> / <<Project>>`:
+
+    def get_style(self, *args, **kwargs):
+        return self.theme.get_style(*args, **kwargs)
+
+
+#### Document model
+
+##### Document
+
+`rliterate.py / <<classes>>`:
+
+    class Document(Observable):
+    
+        @classmethod
+        def from_file(cls, path):
+            return cls(path)
+    
+        def __init__(self, path):
+            Observable.__init__(self)
+            self.path = path
+            self._load()
+            self._cache()
+            self.listen(lambda event: self._save())
+    
+        def _cache(self):
+            self._pages = {}
+            self._parent_pages = {}
+            self._paragraphs = {}
+            self._cache_page(self.root_page)
+    
+        def _cache_page(self, page, parent_page=None):
+            self._pages[page["id"]] = page
+            self._parent_pages[page["id"]] = parent_page
+            for paragraph in page["paragraphs"]:
+                self._paragraphs[paragraph["id"]] = paragraph
+            for child in page["children"]:
+                self._cache_page(child, page)
+    
+        def _save(self):
+            write_json_to_file(self.path, self.root_page)
+    
+        def _load(self):
+            self.root_page = load_json_from_file(self.path)
+    
+        <<Document>>
+    
+        # Page operations
+    
+        def add_page(self, title="New page", parent_id=None):
+            with self.notify():
+                page = {
+                    "id": genid(),
+                    "title": "New page...",
+                    "children": [],
+                    "paragraphs": [],
+                }
+                parent_page = self._pages[parent_id]
+                parent_page["children"].append(page)
+                self._pages[page["id"]] = page
+                self._parent_pages[page["id"]] = parent_page
+    
+        def delete_page(self, page_id):
+            with self.notify():
+                page = self._pages[page_id]
+                parent_page = self._parent_pages[page_id]
+                index = index_with_id(parent_page["children"], page_id)
+                parent_page["children"].pop(index)
+                self._pages.pop(page_id)
+                self._parent_pages.pop(page_id)
+                for child in reversed(page["children"]):
+                    parent_page["children"].insert(index, child)
+                    self._parent_pages[child["id"]] = parent_page
+    
+        def move_page(self, page_id, parent_page_id, before_page_id):
+            with self.notify():
+                if page_id == before_page_id:
+                    return
+                parent = self._pages[parent_page_id]
+                while parent is not None:
+                    if parent["id"] == page_id:
+                        return
+                    parent = self._parent_pages[parent["id"]]
+                parent = self._parent_pages[page_id]
+                page = parent["children"].pop(index_with_id(parent["children"], page_id))
+                new_parent = self._pages[parent_page_id]
+                self._parent_pages[page_id] = new_parent
+                if before_page_id is None:
+                    new_parent["children"].append(page)
+                else:
+                    new_parent["children"].insert(
+                        index_with_id(new_parent["children"], before_page_id),
+                        page
+                    )
+    
+        def edit_page(self, page_id, data):
+            with self.notify():
+                self._pages[page_id].update(data)
+    
+        # Paragraph operations
+    
+        def add_paragraph(self, page_id, before_id=None):
+            with self.notify():
+                paragraph = {
+                    "id": genid(),
+                    "type": "factory",
+                    "text":
+                    "factory",
+                }
+                self._pages[page_id]["paragraphs"].append(paragraph)
+                self._paragraphs[paragraph["id"]] = paragraph
+    
+        def move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):
+            with self.notify():
+                if (source_page == target_page and
+                    source_paragraph == before_paragraph):
+                    return
+                paragraph = self.delete_paragraph(source_page, source_paragraph)
+                self._add_paragraph(target_page, paragraph, before_id=before_paragraph)
+    
+        def _add_paragraph(self, page_id, paragraph, before_id):
+            paragraphs = self._pages[page_id]["paragraphs"]
+            if before_id is None:
+                paragraphs.append(paragraph)
+            else:
+                paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)
+            self._paragraphs[paragraph["id"]] = paragraph
+    
+        def delete_paragraph(self, page_id, paragraph_id):
+            with self.notify():
+                paragraphs = self._pages[page_id]["paragraphs"]
+                paragraphs.pop(index_with_id(paragraphs, paragraph_id))
+                return self._paragraphs.pop(paragraph_id)
+    
+        def edit_paragraph(self, paragraph_id, data):
+            with self.notify():
+                self._paragraphs[paragraph_id].update(data)
+
+
+##### Views
+
+Views provide a read only interface to a document. It is the only way to query a document.
+
+`rliterate.py / <<classes>> / <<Document>>`:
+
+    def get_page(self, page_id=None):
+        if page_id is None:
+            page_id = self.root_page["id"]
+        page_dict = self._pages.get(page_id, None)
+        if page_dict is None:
+            return None
+        return DictPage(page_dict)
+
+
+`rliterate.py / <<classes>>`:
+
+    class DictPage(object):
+    
+        def __init__(self, page_dict):
+            self._page_dict = page_dict
+    
+        @property
+        def id(self):
+            return self._page_dict["id"]
+    
+        @property
+        def title(self):
+            return self._page_dict["title"]
+    
+        @property
+        def paragraphs(self):
+            return [
+                DictParagraph.create(paragraph_dict)
+                for paragraph_dict
+                in self._page_dict["paragraphs"]
+            ]
+    
+        @property
+        def children(self):
+            return [
+                DictPage(child_dict)
+                for child_dict
+                in self._page_dict["children"]
+            ]
+
+
+`rliterate.py / <<classes>>`:
+
+    class DictParagraph(object):
+    
+        @staticmethod
+        def create(paragraph_dict):
+            return {
+                "text": DictTextParagraph,
+                "code": DictCodeParagraph,
+            }.get(paragraph_dict["type"], DictParagraph)(paragraph_dict)
+    
+        def __init__(self, paragraph_dict):
+            self._paragraph_dict = paragraph_dict
+    
+        @property
+        def id(self):
+            return self._paragraph_dict["id"]
+    
+        @property
+        def type(self):
+            return self._paragraph_dict["type"]
+
+
+`rliterate.py / <<classes>>`:
+
+    class DictTextParagraph(DictParagraph):
+    
+        @property
+        def text(self):
+            return self._paragraph_dict["text"]
+
+
+`rliterate.py / <<classes>>`:
+
+    class DictCodeParagraph(DictParagraph):
+    
+        @property
+        def text(self):
+            return self._paragraph_dict["text"]
+    
+        @property
+        def path(self):
+            return tuple(self._paragraph_dict["path"])
+    
+        @property
+        def filename(self):
+            last_part = ""
+            for part in self.path:
+                if part.startswith("<<"):
+                    break
+                last_part = part
+            return last_part
+    
+        @property
+        def highlighted_code(self):
+            try:
+                lexer = pygments.lexers.get_lexer_for_filename(
+                    self.filename,
+                    stripnl=False
+                )
+            except:
+                lexer = pygments.lexers.TextLexer(stripnl=False)
+            return self._split_tokens(lexer.get_tokens(self.text))
+    
+        def _split_tokens(self, tokens):
+            lines = []
+            line = []
+            for token_type, text in tokens:
+                parts = text.split("\n")
+                line.append(Part(token_type=token_type, text=parts.pop(0)))
+                while parts:
+                    lines.append(line)
+                    line = []
+                    line.append(Part(token_type=token_type, text=parts.pop(0)))
+            if line:
+                lines.append(line)
+            if lines and lines[-1] and len(lines[-1]) == 1 and len(lines[-1][0].text) == 0:
+                lines.pop(-1)
+            return lines
+
+
+`rliterate.py / <<classes>>`:
+
+    class Part(object):
+    
+        def __init__(self, token_type, text):
+            self.token_type = token_type
+            self.text = text
+
+
+#### Layouts
 
 A layout records the visual state of the program. It records what pages are expanded/collapsed in the table of contents and what pages are open in the workspace.
 
@@ -1447,7 +1503,7 @@ A layout records the visual state of the program. It records what pages are expa
     
         def __init__(self, path):
             Observable.__init__(self)
-            self.listen(lambda: write_json_to_file(path, self.data))
+            self.listen(lambda event: write_json_to_file(path, self.data))
             if os.path.exists(path):
                 self.data = load_json_from_file(path)
             else:
@@ -1483,7 +1539,7 @@ A layout records the visual state of the program. It records what pages are expa
                 self._workspace_scratch[:] = page_ids
 
 
-### Themes
+#### Themes
 
 Some parts of the application can be themed. Token types from pygments denote different things that can be styled.
 
@@ -1724,40 +1780,62 @@ A drop target that can work with windows that supports FindClosestDropPoint.
             self._notify_count = 0
             self._listeners = []
     
-        def listen(self, fn, event=None):
-            self._listeners.append((fn, event))
+        def listen(self, fn, *events):
+            self._listeners.append((fn, events))
     
-        def unlisten(self, fn, event=None):
-            self._listeners.remove((fn, event))
+        def unlisten(self, fn, *events):
+            self._listeners.remove((fn, events))
     
         @contextlib.contextmanager
-        def notify(self, event=None):
+        def notify(self, event=""):
             self._notify_count += 1
             try:
                 yield
             finally:
                 self._notify_count -= 1
-                if self._notify_count == 0:
-                    for fn, fn_event in self._listeners:
-                        if fn_event is None or event == fn_event:
-                            fn()
+                self._notify(event)
+    
+        def notify_forwarder(self, prefix):
+            def forwarder(event):
+                self._notify("{}.{}".format(prefix, event))
+            return forwarder
+    
+        def _notify(self, event):
+            if self._notify_count == 0:
+                for fn, fn_events in self._listeners:
+                    if self._is_match(fn_events, event):
+                        fn(event)
+    
+        def _is_match(self, fn_events, event):
+            if len(fn_events) == 0:
+                return True
+            for fn_event in fn_events:
+                if is_prefix(fn_event.split("."), event.split(".")):
+                    return True
+            return False
+
+
+`rliterate.py / <<functions>>`:
+
+    def is_prefix(left, right):
+        return left == right[:len(left)]
 
 
 `rliterate.py / <<classes>>`:
 
     class Listener(object):
     
-        def __init__(self, fn, event=None):
+        def __init__(self, fn, *events):
             self.fn = fn
-            self.event = event
+            self.events = events
             self.observable = None
     
         def set_observable(self, observable):
             if self.observable is not None:
-                self.observable.unlisten(self.fn, self.event)
+                self.observable.unlisten(self.fn, *self.events)
             self.observable = observable
-            self.observable.listen(self.fn, self.event)
-            self.fn()
+            self.observable.listen(self.fn, *self.events)
+            self.fn("")
 
 
 ### JSON serialization mechanisms
