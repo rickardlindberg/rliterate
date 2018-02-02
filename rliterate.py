@@ -340,8 +340,18 @@ class TableOfContents(wx.ScrolledWindow):
     def _re_render(self):
         self.drop_points = []
         self.sizer.Clear(True)
-        self._render_page(self.project.get_page())
+        if self.project.get_hoisted_page() is not None:
+            self._render_unhoist_button()
+        self._render_page(self.project.get_page(self.project.get_hoisted_page()))
         self.Layout()
+
+    def _render_unhoist_button(self):
+        button = wx.Button(self, label="unhoist")
+        button.Bind(wx.EVT_BUTTON, lambda event: self.project.set_hoisted_page(None))
+        self.sizer.Add(
+            button,
+            flag=wx.EXPAND
+        )
 
     def _render_page(self, page, indentation=0):
         is_collapsed = self.project.is_collapsed(page.id)
@@ -521,6 +531,12 @@ class PageContextMenu(wx.Menu):
             wx.EVT_MENU,
             lambda event: self.project.add_page(parent_id=self.page_id),
             self.Append(wx.NewId(), "Add child")
+        )
+        self.AppendSeparator()
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.project.set_hoisted_page(self.page_id),
+            self.Append(wx.NewId(), "Hoist")
         )
         self.AppendSeparator()
         self.Bind(
@@ -1009,6 +1025,12 @@ class Project(Observable):
 
     def set_scratch_pages(self, *args, **kwargs):
         return self.layout.set_scratch_pages(*args, **kwargs)
+
+    def get_hoisted_page(self, *args, **kwargs):
+        return self.layout.get_hoisted_page(*args, **kwargs)
+
+    def set_hoisted_page(self, *args, **kwargs):
+        return self.layout.set_hoisted_page(*args, **kwargs)
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
@@ -1296,8 +1318,8 @@ class Layout(Observable):
         self._ensure_defaults()
 
     def _ensure_defaults(self):
-        toc = self._ensure_key(self.data, "toc", {})
-        self._toc_collapsed = self._ensure_key(toc, "collapsed", [])
+        self._toc = self._ensure_key(self.data, "toc", {})
+        self._toc_collapsed = self._ensure_key(self._toc, "collapsed", [])
         workspace = self._ensure_key(self.data, "workspace", {})
         self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
 
@@ -1315,6 +1337,13 @@ class Layout(Observable):
                 self._toc_collapsed.remove(page_id)
             else:
                 self._toc_collapsed.append(page_id)
+
+    def get_hoisted_page(self):
+        return self._toc.get("hoisted_page_id", None)
+
+    def set_hoisted_page(self, page_id):
+        with self.notify("toc"):
+            self._toc["hoisted_page_id"] = page_id
 
     def get_scratch_pages(self):
         return self._workspace_scratch[:]
