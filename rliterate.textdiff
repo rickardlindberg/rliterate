@@ -1281,6 +1281,10 @@ Views provide a read only interface to a document. It is the only way to query a
     class DictTextParagraph(DictParagraph):
     
         @property
+        def filename(self):
+            return "paragraph.txt"
+    
+        @property
         def text(self):
             return self._paragraph_dict["text"]
 

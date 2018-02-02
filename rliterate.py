@@ -1219,6 +1219,10 @@ class DictParagraph(object):
 class DictTextParagraph(DictParagraph):
 
     @property
+    def filename(self):
+        return "paragraph.txt"
+
+    @property
     def text(self):
         return self._paragraph_dict["text"]
 class DictCodeParagraph(DictParagraph):

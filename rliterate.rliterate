@@ -835,7 +835,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]",
+"text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n",
 "type":"code"
 },
 {
