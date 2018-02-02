@@ -172,7 +172,7 @@
 "<<TableOfContents>>",
 "<<__init__>>"
 ],
-"text":"self.SetDropTarget(TableOfContentsDropTarget(self))",
+"text":"self.SetDropTarget(TableOfContentsDropTarget(self, self.project))",
 "type":"code"
 },
 {
@@ -181,7 +181,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TableOfContentsDropTarget(DropPointDropTarget):\n\n    def __init__(self, toc):\n        DropPointDropTarget.__init__(self, toc, \"page\")\n        self.toc = toc\n\n    def OnDataDropped(self, dropped_page, drop_point):\n        self.toc.document.move_page(\n            page_id=dropped_page[\"page_id\"],\n            parent_page_id=drop_point.parent_page_id,\n            before_page_id=drop_point.before_page_id\n        )",
+"text":"class TableOfContentsDropTarget(DropPointDropTarget):\n\n    def __init__(self, toc, project):\n        DropPointDropTarget.__init__(self, toc, \"page\")\n        self.project = project\n\n    def OnDataDropped(self, dropped_page, drop_point):\n        self.project.move_page(\n            page_id=dropped_page[\"page_id\"],\n            parent_page_id=drop_point.parent_page_id,\n            before_page_id=drop_point.before_page_id\n        )\n",
 "type":"code"
 },
 {
@@ -363,7 +363,7 @@
 "<<Workspace>>",
 "<<__init__>>"
 ],
-"text":"self.SetDropTarget(WorkspaceDropTarget(self))",
+"text":"self.SetDropTarget(WorkspaceDropTarget(self, self.project))",
 "type":"code"
 },
 {
@@ -372,7 +372,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.workspace = workspace\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.workspace.document.move_paragraph(\n            source_page=dropped_paragraph[\"page_id\"],\n            source_paragraph=dropped_paragraph[\"paragraph_id\"],\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )",
+"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace, project):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.project = project\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.project.move_paragraph(\n            source_page=dropped_paragraph[\"page_id\"],\n            source_paragraph=dropped_paragraph[\"paragraph_id\"],\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
 "type":"code"
 },
 {

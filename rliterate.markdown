@@ -367,7 +367,7 @@ Inside the table of contents, pages can be dragged and drop. The drag is initiat
 `rliterate.py / <<classes>> / <<TableOfContents>> / <<__init__>>`:
 
 ```python
-self.SetDropTarget(TableOfContentsDropTarget(self))
+self.SetDropTarget(TableOfContentsDropTarget(self, self.project))
 ```
 
 `rliterate.py / <<classes>>`:
@@ -375,12 +375,12 @@ self.SetDropTarget(TableOfContentsDropTarget(self))
 ```python
 class TableOfContentsDropTarget(DropPointDropTarget):
 
-    def __init__(self, toc):
+    def __init__(self, toc, project):
         DropPointDropTarget.__init__(self, toc, "page")
-        self.toc = toc
+        self.project = project
 
     def OnDataDropped(self, dropped_page, drop_point):
-        self.toc.document.move_page(
+        self.project.move_page(
             page_id=dropped_page["page_id"],
             parent_page_id=drop_point.parent_page_id,
             before_page_id=drop_point.before_page_id
@@ -619,7 +619,7 @@ Inside a workspace, paragraphs can be dragged and dropped. The drag is handled i
 `rliterate.py / <<classes>> / <<Workspace>> / <<__init__>>`:
 
 ```python
-self.SetDropTarget(WorkspaceDropTarget(self))
+self.SetDropTarget(WorkspaceDropTarget(self, self.project))
 ```
 
 `rliterate.py / <<classes>>`:
@@ -627,12 +627,12 @@ self.SetDropTarget(WorkspaceDropTarget(self))
 ```python
 class WorkspaceDropTarget(DropPointDropTarget):
 
-    def __init__(self, workspace):
+    def __init__(self, workspace, project):
         DropPointDropTarget.__init__(self, workspace, "paragraph")
-        self.workspace = workspace
+        self.project = project
 
     def OnDataDropped(self, dropped_paragraph, drop_point):
-        self.workspace.document.move_paragraph(
+        self.project.move_paragraph(
             source_page=dropped_paragraph["page_id"],
             source_paragraph=dropped_paragraph["paragraph_id"],
             target_page=drop_point.page_id,
