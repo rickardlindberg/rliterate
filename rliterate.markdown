@@ -40,7 +40,7 @@ RLiterate is implemented in Python. This chapter gives a complete description of
     class FileGenerator(object):
     
         def __init__(self):
-            self.listener = Listener(lambda event: self._generate)
+            self.listener = Listener(lambda event: self._generate())
     
         def set_document(self, document):
             self.document = document
@@ -93,7 +93,7 @@ RLiterate is implemented in Python. This chapter gives a complete description of
     class MarkdownGenerator(object):
     
         def __init__(self, path):
-            self.listener = Listener(lambda event: self._generate)
+            self.listener = Listener(lambda event: self._generate())
             self.path = path
     
         def set_document(self, document):
@@ -845,7 +845,7 @@ Drag and drop:
             return CodeView(self, self.project, self.paragraph)
     
         def CreateEdit(self):
-            return CodeEditor(self, self.project, self.paragraph)
+            return CodeEditor(self, self.view, self.paragraph)
     
         def EndEdit(self):
             self.project.edit_paragraph(self.paragraph.id, {
