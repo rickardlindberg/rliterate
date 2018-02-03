@@ -133,9 +133,6 @@ Random notes of what I might want to work on in the future.
     * Otherwise put inside ScrolledWindow
 * Right click should only be generated on up if first down
 * Workspace should not be wider that a column, that creates an unnecessary scrollbar
-* This is a thinking tool
-    * Open all immediate children
-        * Read breath first
 * Literate programming treats any target programming language as an assembly language
 * TOC should only expand first 3(?) levels when opening a file for the first time
 * Deleting root (even hoisted root) gives error
@@ -580,6 +577,14 @@ A drop target that can work with windows that supports FindClosestDropPoint.
                 event.Skip()
 
 
+3ad55f274f724ebab8cea5d5c63d8dc0: Reading tool
+
+RLiterate is a reading and thinking tool. The following features support that.
+
+Hoisting a page in the table of contents allows you to **focus on a subset** of the document.
+
+Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
+
 3f0fc44a9eba4a5cbcae5da3ee5d8925: Rendering
 
 Rendering a workspace means laying out a set of column widgets horizontally. Currently only one column, the scratch column, is supported.
@@ -1000,9 +1005,7 @@ A workspace is a container for pages. Pages are ordered in columns. Currently on
 
 600aa145cf474a6aa732a4c4edb5f44b: About
 
-* This is a thinking tool
-    * Hoist/Unhoist
-        * Read with focus
+RLiterate is a tool for working with documents. Documents have pages organized in a hierarchy. Pages have a title and a list of paragraphs. Paragraphs can be of different types. For example text paragraphs or code paragraphs. The code paragraphs enable literate programming.
 
 63ff2f7abea44406922c78b7683e2dd3: Generating output
 
@@ -1162,7 +1165,7 @@ The following things were inspiration for rliterate.
 
 956ae4613f144e3581d420995a7ef046: RLiterate
 
-This is a tool for literal programming.
+RLiterate started out as an experiment to develop a tool for doing literate programming. The focus was to develop a tool for editing documents where those documents supported literate programming.
 
 99a2a81b38164293b9ad9287b33bfbbb: Dropping pages
 

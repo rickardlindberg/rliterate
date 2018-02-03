@@ -1,12 +1,35 @@
 {
 "children":[
 {
+"children":[
+{
 "children":[],
+"id":"3ad55f274f724ebab8cea5d5c63d8dc0",
+"paragraphs":[
+{
+"id":"0e82720d665642f69b79b2e35234cf99",
+"text":"RLiterate is a reading and thinking tool. The following features support that.",
+"type":"text"
+},
+{
+"id":"394402716d9b45e195298f16a6d4c8d5",
+"text":"Hoisting a page in the table of contents allows you to **focus on a subset** of the document.",
+"type":"text"
+},
+{
+"id":"359a25b33d5645b69be21e54b5b78abe",
+"text":"Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.",
+"type":"text"
+}
+],
+"title":"Reading tool"
+}
+],
 "id":"600aa145cf474a6aa732a4c4edb5f44b",
 "paragraphs":[
 {
-"id":"394402716d9b45e195298f16a6d4c8d5",
-"text":"* This is a thinking tool\n    * Hoist/Unhoist\n        * Read with focus",
+"id":"fb1a6842fe1f4642a2aa21113a2ad179",
+"text":"RLiterate is a tool for working with documents. Documents have pages organized in a hierarchy. Pages have a title and a list of paragraphs. Paragraphs can be of different types. For example text paragraphs or code paragraphs. The code paragraphs enable literate programming.",
 "type":"text"
 }
 ],
@@ -1303,7 +1326,7 @@
 },
 {
 "id":"334a278ca527447482c3059353cfed4f",
-"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Code editor\n    * Tab indents with tab: should indent 4 spaces?\n    * Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* File generator writes empty filename\n* There is no way to control empty lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Highlight object being dragged somehow (screenshot?)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect (or other program) using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific width\n    * Otherwise put inside ScrolledWindow\n* Right click should only be generated on up if first down\n* Workspace should not be wider that a column, that creates an unnecessary scrollbar\n* This is a thinking tool\n    * Open all immediate children\n        * Read breath first\n* Literate programming treats any target programming language as an assembly language\n* TOC should only expand first 3(?) levels when opening a file for the first time\n* Deleting root (even hoisted root) gives error",
+"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Code editor\n    * Tab indents with tab: should indent 4 spaces?\n    * Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* File generator writes empty filename\n* There is no way to control empty lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Highlight object being dragged somehow (screenshot?)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect (or other program) using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific width\n    * Otherwise put inside ScrolledWindow\n* Right click should only be generated on up if first down\n* Workspace should not be wider that a column, that creates an unnecessary scrollbar\n* Literate programming treats any target programming language as an assembly language\n* TOC should only expand first 3(?) levels when opening a file for the first time\n* Deleting root (even hoisted root) gives error",
 "type":"text"
 }
 ],
@@ -1314,7 +1337,7 @@
 "paragraphs":[
 {
 "id":"893d4544706e49e3bdbc771f0363b6ae",
-"text":"This is a tool for literal programming.",
+"text":"RLiterate started out as an experiment to develop a tool for doing literate programming. The focus was to develop a tool for editing documents where those documents supported literate programming.",
 "type":"text"
 }
 ],

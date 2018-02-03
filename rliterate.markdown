@@ -1,12 +1,18 @@
 # RLiterate
 
-This is a tool for literal programming.
+RLiterate started out as an experiment to develop a tool for doing literate programming. The focus was to develop a tool for editing documents where those documents supported literate programming.
 
 ## About
 
-* This is a thinking tool
-    * Hoist/Unhoist
-        * Read with focus
+RLiterate is a tool for working with documents. Documents have pages organized in a hierarchy. Pages have a title and a list of paragraphs. Paragraphs can be of different types. For example text paragraphs or code paragraphs. The code paragraphs enable literate programming.
+
+### Reading tool
+
+RLiterate is a reading and thinking tool. The following features support that.
+
+Hoisting a page in the table of contents allows you to **focus on a subset** of the document.
+
+Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
 
 ## Inspiration
 
@@ -2215,9 +2221,6 @@ Random notes of what I might want to work on in the future.
     * Otherwise put inside ScrolledWindow
 * Right click should only be generated on up if first down
 * Workspace should not be wider that a column, that creates an unnecessary scrollbar
-* This is a thinking tool
-    * Open all immediate children
-        * Read breath first
 * Literate programming treats any target programming language as an assembly language
 * TOC should only expand first 3(?) levels when opening a file for the first time
 * Deleting root (even hoisted root) gives error
