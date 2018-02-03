@@ -2,6 +2,27 @@
 
 RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. The code paragraph for example enables literate programming by allowing chunks of code to be defined and then the final source file is automatically generated. RLiterate documens can also be exported to different formats for display in different mediums.
 
+## A tour of RLiterate
+
+### Main GUI
+
+* smallest federated wiki inspired the factory and the editing workflow
+* leo and smallest federated wiki inspired TOC and seeing a single page/node at a time
+
+### Reading tool
+
+RLiterate is a reading and thinking tool. The following features support that.
+
+Hoisting a page in the table of contents allows you to **focus on a subset** of the document.
+
+Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
+
+Code can either be read in chunks or the final output. And you can follow links between them.
+
+### Literate programming
+
+Describe how code paragraphs enable literate programming.
+
 ## Background
 
 Many things inspired RLiterate, but the initial thought was triggered by the paper [Active Essays on the Web](http://www.vpri.org/pdf/tr2009002_active_essays.pdf). In it they talk about embedding code in documents that the reader can interact with. They also mention [Literate programming](https://en.wikipedia.org/wiki/Literate_programming) as having a related goal.
@@ -31,185 +52,17 @@ I can up with a document model where pages were organized in a hierarchy and whe
 * ProjecturED
   http://projectured.org/
 
-## A tour of RLiterate
-
-### Main GUI
-
-* smallest federated wiki inspired the factory and the editing workflow
-* leo and smallest federated wiki inspired TOC and seeing a single page/node at a time
-
-### Reading tool
-
-RLiterate is a reading and thinking tool. The following features support that.
-
-Hoisting a page in the table of contents allows you to **focus on a subset** of the document.
-
-Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
-
-Code can either be read in chunks or the final output. And you can follow links between them.
-
-### Literate programming
-
-Describe how code paragraphs enable literate programming.
-
 ## Implementation
 
 RLiterate is implemented in Python. This chapter gives a complete description of all the code.
 
-### Generating output
+### GUI wxPython
 
-#### Code files
+The main GUI is written in wxPython.
 
-`rliterate.py / <<classes>>`:
+#### Main frame
 
-```python
-class FileGenerator(object):
-
-    def __init__(self):
-        self.listener = Listener(lambda event: self._generate())
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        self._parts = defaultdict(list)
-        self._collect_parts(self.document.get_page())
-        self._generate_files()
-
-    def _collect_parts(self, page):
-        for paragraph in page.paragraphs:
-            if paragraph.type == "code":
-                for line in paragraph.text.splitlines():
-                    self._parts[paragraph.path].append(line)
-        for child in page.children:
-            self._collect_parts(child)
-
-    def _generate_files(self):
-        for key in self._parts.keys():
-            filepath = self._get_filepath(key)
-            if filepath is not None:
-                with open(filepath, "w") as f:
-                    self._render(f, key)
-
-    def _render(self, f, key, prefix=""):
-        for line in self._parts[key]:
-            match = re.match(r"^(\s*)(<<.*>>)\s*$", line)
-            if match:
-                self._render(f, key + (match.group(2),), prefix=prefix+match.group(1))
-            else:
-                if len(line) > 0:
-                    f.write(prefix)
-                    f.write(line)
-                f.write("\n")
-
-    def _get_filepath(self, key):
-        if len(key) == 0:
-            return None
-        for part in key:
-            if part.startswith("<<") and part.endswith(">>"):
-                return None
-        return os.path.join(*key)
-```
-
-#### Markdown book
-
-`rliterate.py / <<classes>>`:
-
-```python
-class MarkdownGenerator(object):
-
-    def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
-        self.path = path
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        with open(self.path, "w") as f:
-            self._render_page(f, self.document.get_page())
-
-    def _render_page(self, f, page, level=1):
-        f.write("#"*level+" "+page.title+"\n\n")
-        for paragraph in page.paragraphs:
-            {
-                "text": self._render_text,
-                "code": self._render_code,
-            }.get(paragraph.type, self._render_unknown)(f, paragraph)
-        for child in page.children:
-            self._render_page(f, child, level+1)
-
-    def _render_text(self, f, text):
-        f.write(text.text+"\n\n")
-
-    def _render_code(self, f, code):
-        f.write("`"+" / ".join(code.path)+"`:\n\n")
-        f.write("```"+code.language+"\n")
-        for line in code.text.splitlines():
-            f.write(line+"\n")
-        f.write("```"+"\n")
-        f.write("\n")
-
-    def _render_unknown(self, f, paragraph):
-        f.write("Unknown type = "+paragraph.type+"\n\n")
-```
-
-#### Textual diffing
-
-This generates a file that is suitable for textual diffing.
-
-`rliterate.py / <<classes>>`:
-
-```python
-class TextDiff(object):
-
-    def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
-        self.path = path
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        with open(self.path, "w") as f:
-            self.pages = []
-            self._collect_pages(self.document.get_page())
-            self._render_pages(f)
-
-    def _collect_pages(self, page):
-        self.pages.append(page)
-        for child in page.children:
-            self._collect_pages(child)
-
-    def _render_pages(self, f):
-        for page in sorted(self.pages, key=lambda page: page.id):
-            f.write(page.id)
-            f.write(": ")
-            f.write(page.title)
-            f.write("\n\n")
-            for paragraph in page.paragraphs:
-                {
-                    "text": self._render_text,
-                    "code": self._render_code,
-                }.get(paragraph.type, self._render_unknown)(f, paragraph)
-
-    def _render_text(self, f, text):
-        f.write(text.text+"\n\n")
-
-    def _render_code(self, f, code):
-        f.write("`"+" / ".join(code.path)+"`:\n\n")
-        for line in code.text.splitlines():
-            f.write("    "+line+"\n")
-        f.write("\n\n")
-
-    def _render_unknown(self, f, paragraph):
-        f.write("Unknown type = "+paragraph.type+"\n\n")
-```
-
-### Main frame
+The main frame lays out two widgets horizontally: the table of contents and the workspace. It also creates the project from the specified file path.
 
 `rliterate.py / <<classes>>`:
 
@@ -227,11 +80,11 @@ class MainFrame(wx.Frame):
         self.SetSizerAndFit(sizer)
 ```
 
-### Table of contents
+#### Table of contents
 
 The table of contents shows the outline of the document. It allows only subtrees to be shown (hoisting) and allows subtrees to be expanded/collapsed. It also provides navigation functions to allow pages to be opened.
 
-#### Main widget
+##### Main widget
 
 The main table of contents widget listens for changes to a project (only events related to changes in the document and the layout of the table of contents) and then re-renders itself.
 
@@ -269,7 +122,7 @@ def _re_render_from_event(self, event):
     wx.CallAfter(self._re_render)
 ```
 
-##### Rendering
+###### Rendering
 
 The table of contents widget lays out two components in a vertical container: the unhoist button and the page container.
 
@@ -382,7 +235,7 @@ class TableOfContentsDropPoint(object):
         self.divider.Hide()
 ```
 
-##### Dropping pages
+###### Dropping pages
 
 Inside the table of contents, pages can be dragged and drop. The drag is initiated in the row widget and handled in the table of contents widget.
 
@@ -428,7 +281,7 @@ def FindClosestDropPoint(self, screen_pos):
             )
 ```
 
-#### Row widget
+##### Row widget
 
 The row widget renders the page title at the appropriate indentation. If the page has children, an expand/collapse widget is also rendered to the left of the title.
 
@@ -510,7 +363,7 @@ def _on_leave_window(self, event):
     self.SetBackgroundColour((255, 255, 255))
 ```
 
-#### Expand/Collapse widget
+##### Expand/Collapse widget
 
 `rliterate.py / <<classes>>`:
 
@@ -543,7 +396,7 @@ class TableOfContentsButton(wx.Panel):
         )
 ```
 
-#### Page context menu
+##### Page context menu
 
 `rliterate.py / <<classes>>`:
 
@@ -576,11 +429,11 @@ class PageContextMenu(wx.Menu):
         )
 ```
 
-### Workspace
+#### Workspace
 
 A workspace is a container for pages. Pages are ordered in columns. Currently only one column is supported.
 
-#### Main widget
+##### Main widget
 
 The main workspace widget is a scrolling container containing column widgets.
 
@@ -606,7 +459,7 @@ def SetProject(self, project):
     self.project_listener.set_observable(self.project)
 ```
 
-##### Rendering
+###### Rendering
 
 Rendering a workspace means laying out a set of column widgets horizontally. Currently only one column, the scratch column, is supported.
 
@@ -645,7 +498,7 @@ def _re_render_from_event(self, event):
     wx.CallAfter(self._re_render)
 ```
 
-##### Dropping paragraphs
+###### Dropping paragraphs
 
 Inside a workspace, paragraphs can be dragged and dropped. The drag is handled in the paragraph widget, but the drop is handled in the workspace widget.
 
@@ -685,7 +538,7 @@ def FindClosestDropPoint(self, screen_pos):
     )
 ```
 
-#### Column widget
+##### Column widget
 
 The column widget is a panel containing a set of pages.
 
@@ -741,7 +594,7 @@ def FindClosestDropPoint(self, screen_pos):
     )
 ```
 
-#### Page container
+##### Page container
 
 `rliterate.py / <<classes>>`:
 
@@ -783,7 +636,7 @@ def FindClosestDropPoint(self, screen_pos):
     return self.page_body.FindClosestDropPoint(screen_pos)
 ```
 
-#### Page
+##### Page
 
 `rliterate.py / <<classes>>`:
 
@@ -799,7 +652,7 @@ class Page(wx.Panel):
     <<Page>>
 ```
 
-##### Rendering
+###### Rendering
 
 `rliterate.py / <<classes>> / <<Page>>`:
 
@@ -885,7 +738,7 @@ class PageDropPoint(object):
         self.divider.Hide()
 ```
 
-##### Dropping paragraphs
+###### Dropping paragraphs
 
 `rliterate.py / <<classes>> / <<Page>>`:
 
@@ -899,7 +752,7 @@ def FindClosestDropPoint(self, screen_pos):
         )
 ```
 
-#### Title
+##### Title
 
 `rliterate.py / <<classes>>`:
 
@@ -927,11 +780,11 @@ class Title(Editable):
         self.project.edit_page(self.page.id, {"title": self.edit.Value})
 ```
 
-#### Paragraphs
+##### Paragraphs
 
-##### Text
+###### Text
 
-###### Paragraph
+####### Paragraph
 
 `rliterate.py / <<classes>>`:
 
@@ -969,9 +822,9 @@ class Paragraph(ParagraphBase, Editable):
         self.project.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
 ```
 
-##### Code
+###### Code
 
-###### Container widget
+####### Container widget
 
 `rliterate.py / <<classes>>`:
 
@@ -995,7 +848,7 @@ class Code(ParagraphBase, Editable):
         })
 ```
 
-###### View widget
+####### View widget
 
 `rliterate.py / <<classes>>`:
 
@@ -1088,7 +941,7 @@ class CodeBody(wx.ScrolledWindow):
         ])
 ```
 
-###### Editor widget
+####### Editor widget
 
 `rliterate.py / <<classes>>`:
 
@@ -1148,7 +1001,7 @@ class CodeEditor(wx.Panel):
         wx.PostEvent(self, ParagraphEditEnd(0))
 ```
 
-##### Factory
+###### Factory
 
 `rliterate.py / <<classes>>`:
 
@@ -1192,9 +1045,9 @@ class Factory(ParagraphBase, wx.Panel):
         self.project.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
 ```
 
-##### Common
+###### Common
 
-###### Paragraph base
+####### Paragraph base
 
 `rliterate.py / <<base classes>>`:
 
@@ -1223,7 +1076,7 @@ class ParagraphBase(object):
         menu.Destroy()
 ```
 
-###### Paragraph context menu
+####### Paragraph context menu
 
 `rliterate.py / <<classes>>`:
 
@@ -1256,7 +1109,7 @@ class ParagraphContextMenu(wx.Menu):
         )
 ```
 
-###### Editable
+####### Editable
 
 `rliterate.py / <<base classes>>`:
 
@@ -1291,6 +1144,191 @@ class Editable(wx.Panel):
             self.OnParagraphEditEnd(None)
         else:
             event.Skip()
+```
+
+#### Drag & drop
+
+##### RLiterate data object
+
+`rliterate.py / <<classes>>`:
+
+```python
+class RliterateDataObject(wx.CustomDataObject):
+
+    def __init__(self, kind, json=None):
+        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
+        if json is not None:
+            self.set_json(json)
+
+    def set_json(self, data):
+        self.SetData(json.dumps(data))
+
+    def get_json(self):
+        return json.loads(self.GetData())
+```
+
+##### Drop point drop target
+
+A drop target that can work with windows that supports FindClosestDropPoint.
+
+`rliterate.py / <<base classes>>`:
+
+```python
+class DropPointDropTarget(wx.DropTarget):
+
+    def __init__(self, window, kind):
+        wx.DropTarget.__init__(self)
+        self.window = window
+        self.last_drop_point = None
+        self.rliterate_data = RliterateDataObject(kind)
+        self.DataObject = self.rliterate_data
+
+    def OnDragOver(self, x, y, defResult):
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
+        if drop_point is not None and defResult == wx.DragMove:
+            drop_point.Show()
+            self.last_drop_point = drop_point
+            return wx.DragMove
+        return wx.DragNone
+
+    def OnData(self, x, y, defResult):
+        self._hide_last_drop_point()
+        drop_point = self._find_closest_drop_point(x, y)
+        if drop_point is not None and self.GetData():
+            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
+        return defResult
+
+    def OnLeave(self):
+        self._hide_last_drop_point()
+
+    def _find_closest_drop_point(self, x, y):
+        return self.window.FindClosestDropPoint(
+            self.window.ClientToScreen((x, y))
+        )
+
+    def _hide_last_drop_point(self):
+        if self.last_drop_point is not None:
+            self.last_drop_point.Hide()
+            self.last_drop_point = None
+```
+
+##### Divider
+
+`rliterate.py / <<classes>>`:
+
+```python
+class Divider(wx.Panel):
+
+    def __init__(self, parent, padding=0, height=1):
+        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
+        self.line = wx.Panel(self, size=(-1, height))
+        self.line.SetBackgroundColour((255, 100, 0))
+        self.line.Hide()
+        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.vsizer.AddStretchSpacer(1)
+        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.vsizer.AddStretchSpacer(1)
+        self.SetSizer(self.vsizer)
+
+    def Show(self, left_space=0):
+        self.line.Show()
+        self.hsizer.Clear(False)
+        self.hsizer.Add((left_space, 1))
+        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
+        self.Layout()
+
+    def Hide(self):
+        self.line.Hide()
+        self.Layout()
+```
+
+#### wxPython utilities
+
+##### Mouse event helper
+
+`rliterate.py / <<classes>>`:
+
+```python
+class MouseEventHelper(object):
+
+    @classmethod
+    def bind(cls, windows, drag=None, click=None, right_click=None,
+             double_click=None):
+        for window in windows:
+            mouse_event_helper = cls(window)
+            if drag is not None:
+                mouse_event_helper.OnDrag = drag
+            if click is not None:
+                mouse_event_helper.OnClick = click
+            if right_click is not None:
+                mouse_event_helper.OnRightClick = right_click
+            if double_click is not None:
+                mouse_event_helper.OnDoubleClick = double_click
+
+    def __init__(self, window):
+        self.down_pos = None
+        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        window.Bind(wx.EVT_MOTION, self._on_motion)
+        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
+        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
+
+    def OnDrag(self):
+        pass
+
+    def OnClick(self):
+        pass
+
+    def OnRightClick(self):
+        pass
+
+    def OnDoubleClick(self):
+        pass
+
+    def _on_left_down(self, event):
+        self.down_pos = event.Position
+
+    def _on_motion(self, event):
+        if self._should_drag(event.Position):
+            self.down_pos = None
+            self.OnDrag()
+
+    def _should_drag(self, pos):
+        if self.down_pos is not None:
+            diff = self.down_pos - pos
+            if abs(diff.x) > 2:
+                return True
+            if abs(diff.y) > 2:
+                return True
+        return False
+
+    def _on_left_up(self, event):
+        if self.down_pos is not None:
+            self.OnClick()
+        self.down_pos = None
+
+    def _on_left_dclick(self, event):
+        self.OnDoubleClick()
+
+    def _on_right_up(self, event):
+        self.OnRightClick()
+```
+
+#### Constants
+
+`rliterate.py / <<constants>>`:
+
+```python
+PAGE_BODY_WIDTH = 600
+PAGE_PADDING = 12
+SHADOW_SIZE = 2
+PARAGRAPH_SPACE = 15
+
+
+ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
+ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
 ```
 
 ### Project
@@ -1795,174 +1833,157 @@ class SolarizedTheme(BaseTheme):
     }
 ```
 
-### Drag & drop
+### Generating output
 
-#### RLiterate data object
-
-`rliterate.py / <<classes>>`:
-
-```python
-class RliterateDataObject(wx.CustomDataObject):
-
-    def __init__(self, kind, json=None):
-        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
-        if json is not None:
-            self.set_json(json)
-
-    def set_json(self, data):
-        self.SetData(json.dumps(data))
-
-    def get_json(self):
-        return json.loads(self.GetData())
-```
-
-#### Drop point drop target
-
-A drop target that can work with windows that supports FindClosestDropPoint.
-
-`rliterate.py / <<base classes>>`:
-
-```python
-class DropPointDropTarget(wx.DropTarget):
-
-    def __init__(self, window, kind):
-        wx.DropTarget.__init__(self)
-        self.window = window
-        self.last_drop_point = None
-        self.rliterate_data = RliterateDataObject(kind)
-        self.DataObject = self.rliterate_data
-
-    def OnDragOver(self, x, y, defResult):
-        self._hide_last_drop_point()
-        drop_point = self._find_closest_drop_point(x, y)
-        if drop_point is not None and defResult == wx.DragMove:
-            drop_point.Show()
-            self.last_drop_point = drop_point
-            return wx.DragMove
-        return wx.DragNone
-
-    def OnData(self, x, y, defResult):
-        self._hide_last_drop_point()
-        drop_point = self._find_closest_drop_point(x, y)
-        if drop_point is not None and self.GetData():
-            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
-        return defResult
-
-    def OnLeave(self):
-        self._hide_last_drop_point()
-
-    def _find_closest_drop_point(self, x, y):
-        return self.window.FindClosestDropPoint(
-            self.window.ClientToScreen((x, y))
-        )
-
-    def _hide_last_drop_point(self):
-        if self.last_drop_point is not None:
-            self.last_drop_point.Hide()
-            self.last_drop_point = None
-```
-
-#### Divider
+#### Code files
 
 `rliterate.py / <<classes>>`:
 
 ```python
-class Divider(wx.Panel):
+class FileGenerator(object):
 
-    def __init__(self, parent, padding=0, height=1):
-        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
-        self.line = wx.Panel(self, size=(-1, height))
-        self.line.SetBackgroundColour((255, 100, 0))
-        self.line.Hide()
-        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.vsizer.AddStretchSpacer(1)
-        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.vsizer.AddStretchSpacer(1)
-        self.SetSizer(self.vsizer)
+    def __init__(self):
+        self.listener = Listener(lambda event: self._generate())
 
-    def Show(self, left_space=0):
-        self.line.Show()
-        self.hsizer.Clear(False)
-        self.hsizer.Add((left_space, 1))
-        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
-        self.Layout()
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
 
-    def Hide(self):
-        self.line.Hide()
-        self.Layout()
+    def _generate(self):
+        self._parts = defaultdict(list)
+        self._collect_parts(self.document.get_page())
+        self._generate_files()
+
+    def _collect_parts(self, page):
+        for paragraph in page.paragraphs:
+            if paragraph.type == "code":
+                for line in paragraph.text.splitlines():
+                    self._parts[paragraph.path].append(line)
+        for child in page.children:
+            self._collect_parts(child)
+
+    def _generate_files(self):
+        for key in self._parts.keys():
+            filepath = self._get_filepath(key)
+            if filepath is not None:
+                with open(filepath, "w") as f:
+                    self._render(f, key)
+
+    def _render(self, f, key, prefix=""):
+        for line in self._parts[key]:
+            match = re.match(r"^(\s*)(<<.*>>)\s*$", line)
+            if match:
+                self._render(f, key + (match.group(2),), prefix=prefix+match.group(1))
+            else:
+                if len(line) > 0:
+                    f.write(prefix)
+                    f.write(line)
+                f.write("\n")
+
+    def _get_filepath(self, key):
+        if len(key) == 0:
+            return None
+        for part in key:
+            if part.startswith("<<") and part.endswith(">>"):
+                return None
+        return os.path.join(*key)
 ```
 
-### wxPython utilities
-
-#### Mouse event helper
+#### Markdown book
 
 `rliterate.py / <<classes>>`:
 
 ```python
-class MouseEventHelper(object):
+class MarkdownGenerator(object):
 
-    @classmethod
-    def bind(cls, windows, drag=None, click=None, right_click=None,
-             double_click=None):
-        for window in windows:
-            mouse_event_helper = cls(window)
-            if drag is not None:
-                mouse_event_helper.OnDrag = drag
-            if click is not None:
-                mouse_event_helper.OnClick = click
-            if right_click is not None:
-                mouse_event_helper.OnRightClick = right_click
-            if double_click is not None:
-                mouse_event_helper.OnDoubleClick = double_click
+    def __init__(self, path):
+        self.listener = Listener(lambda event: self._generate())
+        self.path = path
 
-    def __init__(self, window):
-        self.down_pos = None
-        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
-        window.Bind(wx.EVT_MOTION, self._on_motion)
-        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
-        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
-        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
 
-    def OnDrag(self):
-        pass
+    def _generate(self):
+        with open(self.path, "w") as f:
+            self._render_page(f, self.document.get_page())
 
-    def OnClick(self):
-        pass
+    def _render_page(self, f, page, level=1):
+        f.write("#"*level+" "+page.title+"\n\n")
+        for paragraph in page.paragraphs:
+            {
+                "text": self._render_text,
+                "code": self._render_code,
+            }.get(paragraph.type, self._render_unknown)(f, paragraph)
+        for child in page.children:
+            self._render_page(f, child, level+1)
 
-    def OnRightClick(self):
-        pass
+    def _render_text(self, f, text):
+        f.write(text.text+"\n\n")
 
-    def OnDoubleClick(self):
-        pass
+    def _render_code(self, f, code):
+        f.write("`"+" / ".join(code.path)+"`:\n\n")
+        f.write("```"+code.language+"\n")
+        for line in code.text.splitlines():
+            f.write(line+"\n")
+        f.write("```"+"\n")
+        f.write("\n")
 
-    def _on_left_down(self, event):
-        self.down_pos = event.Position
+    def _render_unknown(self, f, paragraph):
+        f.write("Unknown type = "+paragraph.type+"\n\n")
+```
 
-    def _on_motion(self, event):
-        if self._should_drag(event.Position):
-            self.down_pos = None
-            self.OnDrag()
+#### Textual diffing
 
-    def _should_drag(self, pos):
-        if self.down_pos is not None:
-            diff = self.down_pos - pos
-            if abs(diff.x) > 2:
-                return True
-            if abs(diff.y) > 2:
-                return True
-        return False
+This generates a file that is suitable for textual diffing.
 
-    def _on_left_up(self, event):
-        if self.down_pos is not None:
-            self.OnClick()
-        self.down_pos = None
+`rliterate.py / <<classes>>`:
 
-    def _on_left_dclick(self, event):
-        self.OnDoubleClick()
+```python
+class TextDiff(object):
 
-    def _on_right_up(self, event):
-        self.OnRightClick()
+    def __init__(self, path):
+        self.listener = Listener(lambda event: self._generate())
+        self.path = path
+
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
+
+    def _generate(self):
+        with open(self.path, "w") as f:
+            self.pages = []
+            self._collect_pages(self.document.get_page())
+            self._render_pages(f)
+
+    def _collect_pages(self, page):
+        self.pages.append(page)
+        for child in page.children:
+            self._collect_pages(child)
+
+    def _render_pages(self, f):
+        for page in sorted(self.pages, key=lambda page: page.id):
+            f.write(page.id)
+            f.write(": ")
+            f.write(page.title)
+            f.write("\n\n")
+            for paragraph in page.paragraphs:
+                {
+                    "text": self._render_text,
+                    "code": self._render_code,
+                }.get(paragraph.type, self._render_unknown)(f, paragraph)
+
+    def _render_text(self, f, text):
+        f.write(text.text+"\n\n")
+
+    def _render_code(self, f, code):
+        f.write("`"+" / ".join(code.path)+"`:\n\n")
+        for line in code.text.splitlines():
+            f.write("    "+line+"\n")
+        f.write("\n\n")
+
+    def _render_unknown(self, f, paragraph):
+        f.write("Unknown type = "+paragraph.type+"\n\n")
 ```
 
 ### Publish subscribe mechanisms
@@ -2071,21 +2092,6 @@ def safely_write_file(path):
     ) as tmp:
         yield tmp
     os.rename(tmp.name, path)
-```
-
-### Constants
-
-`rliterate.py / <<constants>>`:
-
-```python
-PAGE_BODY_WIDTH = 600
-PAGE_PADDING = 12
-SHADOW_SIZE = 2
-PARAGRAPH_SPACE = 15
-
-
-ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
-ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
 ```
 
 ### Functions

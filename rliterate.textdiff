@@ -1128,6 +1128,8 @@ Describe how code paragraphs enable literate programming.
 
 8ab608f28a5046548963649371cab5fe: Main frame
 
+The main frame lays out two widgets horizontally: the table of contents and the workspace. It also creates the project from the specified file path.
+
 `rliterate.py / <<classes>>`:
 
     class MainFrame(wx.Frame):
@@ -1862,6 +1864,10 @@ The main workspace widget is a scrolling container containing column widgets.
         self.project = project
         self.project_listener.set_observable(self.project)
 
+
+e418766e480b41b1844c8d754b3746fc: GUI wxPython
+
+The main GUI is written in wxPython.
 
 e836cd0edf4a4b66ab8dd1e5d7fbbea3: Similar tools
 

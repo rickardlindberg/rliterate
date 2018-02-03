@@ -76,10 +76,6 @@ class Editable(wx.Panel):
             self.OnParagraphEditEnd(None)
         else:
             event.Skip()
-class Style(object):
-
-    def __init__(self, color):
-        self.color = color
 class DropPointDropTarget(wx.DropTarget):
 
     def __init__(self, window, kind):
@@ -117,6 +113,10 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
+class Style(object):
+
+    def __init__(self, color):
+        self.color = color
 class Observable(object):
 
     def __init__(self):
@@ -156,134 +156,6 @@ class Observable(object):
             if is_prefix(fn_event.split("."), event.split(".")):
                 return True
         return False
-class FileGenerator(object):
-
-    def __init__(self):
-        self.listener = Listener(lambda event: self._generate())
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        self._parts = defaultdict(list)
-        self._collect_parts(self.document.get_page())
-        self._generate_files()
-
-    def _collect_parts(self, page):
-        for paragraph in page.paragraphs:
-            if paragraph.type == "code":
-                for line in paragraph.text.splitlines():
-                    self._parts[paragraph.path].append(line)
-        for child in page.children:
-            self._collect_parts(child)
-
-    def _generate_files(self):
-        for key in self._parts.keys():
-            filepath = self._get_filepath(key)
-            if filepath is not None:
-                with open(filepath, "w") as f:
-                    self._render(f, key)
-
-    def _render(self, f, key, prefix=""):
-        for line in self._parts[key]:
-            match = re.match(r"^(\s*)(<<.*>>)\s*$", line)
-            if match:
-                self._render(f, key + (match.group(2),), prefix=prefix+match.group(1))
-            else:
-                if len(line) > 0:
-                    f.write(prefix)
-                    f.write(line)
-                f.write("\n")
-
-    def _get_filepath(self, key):
-        if len(key) == 0:
-            return None
-        for part in key:
-            if part.startswith("<<") and part.endswith(">>"):
-                return None
-        return os.path.join(*key)
-class MarkdownGenerator(object):
-
-    def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
-        self.path = path
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        with open(self.path, "w") as f:
-            self._render_page(f, self.document.get_page())
-
-    def _render_page(self, f, page, level=1):
-        f.write("#"*level+" "+page.title+"\n\n")
-        for paragraph in page.paragraphs:
-            {
-                "text": self._render_text,
-                "code": self._render_code,
-            }.get(paragraph.type, self._render_unknown)(f, paragraph)
-        for child in page.children:
-            self._render_page(f, child, level+1)
-
-    def _render_text(self, f, text):
-        f.write(text.text+"\n\n")
-
-    def _render_code(self, f, code):
-        f.write("`"+" / ".join(code.path)+"`:\n\n")
-        f.write("```"+code.language+"\n")
-        for line in code.text.splitlines():
-            f.write(line+"\n")
-        f.write("```"+"\n")
-        f.write("\n")
-
-    def _render_unknown(self, f, paragraph):
-        f.write("Unknown type = "+paragraph.type+"\n\n")
-class TextDiff(object):
-
-    def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
-        self.path = path
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        with open(self.path, "w") as f:
-            self.pages = []
-            self._collect_pages(self.document.get_page())
-            self._render_pages(f)
-
-    def _collect_pages(self, page):
-        self.pages.append(page)
-        for child in page.children:
-            self._collect_pages(child)
-
-    def _render_pages(self, f):
-        for page in sorted(self.pages, key=lambda page: page.id):
-            f.write(page.id)
-            f.write(": ")
-            f.write(page.title)
-            f.write("\n\n")
-            for paragraph in page.paragraphs:
-                {
-                    "text": self._render_text,
-                    "code": self._render_code,
-                }.get(paragraph.type, self._render_unknown)(f, paragraph)
-
-    def _render_text(self, f, text):
-        f.write(text.text+"\n\n")
-
-    def _render_code(self, f, code):
-        f.write("`"+" / ".join(code.path)+"`:\n\n")
-        for line in code.text.splitlines():
-            f.write("    "+line+"\n")
-        f.write("\n\n")
-
-    def _render_unknown(self, f, paragraph):
-        f.write("Unknown type = "+paragraph.type+"\n\n")
 class MainFrame(wx.Frame):
 
     def __init__(self, filepath):
@@ -987,6 +859,105 @@ class ParagraphContextMenu(wx.Menu):
             ),
             self.Append(wx.NewId(), "Edit in gvim")
         )
+class RliterateDataObject(wx.CustomDataObject):
+
+    def __init__(self, kind, json=None):
+        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
+        if json is not None:
+            self.set_json(json)
+
+    def set_json(self, data):
+        self.SetData(json.dumps(data))
+
+    def get_json(self):
+        return json.loads(self.GetData())
+class Divider(wx.Panel):
+
+    def __init__(self, parent, padding=0, height=1):
+        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
+        self.line = wx.Panel(self, size=(-1, height))
+        self.line.SetBackgroundColour((255, 100, 0))
+        self.line.Hide()
+        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.vsizer.AddStretchSpacer(1)
+        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.vsizer.AddStretchSpacer(1)
+        self.SetSizer(self.vsizer)
+
+    def Show(self, left_space=0):
+        self.line.Show()
+        self.hsizer.Clear(False)
+        self.hsizer.Add((left_space, 1))
+        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
+        self.Layout()
+
+    def Hide(self):
+        self.line.Hide()
+        self.Layout()
+class MouseEventHelper(object):
+
+    @classmethod
+    def bind(cls, windows, drag=None, click=None, right_click=None,
+             double_click=None):
+        for window in windows:
+            mouse_event_helper = cls(window)
+            if drag is not None:
+                mouse_event_helper.OnDrag = drag
+            if click is not None:
+                mouse_event_helper.OnClick = click
+            if right_click is not None:
+                mouse_event_helper.OnRightClick = right_click
+            if double_click is not None:
+                mouse_event_helper.OnDoubleClick = double_click
+
+    def __init__(self, window):
+        self.down_pos = None
+        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        window.Bind(wx.EVT_MOTION, self._on_motion)
+        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
+        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
+
+    def OnDrag(self):
+        pass
+
+    def OnClick(self):
+        pass
+
+    def OnRightClick(self):
+        pass
+
+    def OnDoubleClick(self):
+        pass
+
+    def _on_left_down(self, event):
+        self.down_pos = event.Position
+
+    def _on_motion(self, event):
+        if self._should_drag(event.Position):
+            self.down_pos = None
+            self.OnDrag()
+
+    def _should_drag(self, pos):
+        if self.down_pos is not None:
+            diff = self.down_pos - pos
+            if abs(diff.x) > 2:
+                return True
+            if abs(diff.y) > 2:
+                return True
+        return False
+
+    def _on_left_up(self, event):
+        if self.down_pos is not None:
+            self.OnClick()
+        self.down_pos = None
+
+    def _on_left_dclick(self, event):
+        self.OnDoubleClick()
+
+    def _on_right_up(self, event):
+        self.OnRightClick()
 class Project(Observable):
 
     def __init__(self, filepath):
@@ -1380,105 +1351,134 @@ class SolarizedTheme(BaseTheme):
         pygments.token.Operator.Word:       Style(color=green),
         pygments.token.Comment:             Style(color=base1),
     }
-class RliterateDataObject(wx.CustomDataObject):
+class FileGenerator(object):
 
-    def __init__(self, kind, json=None):
-        wx.CustomDataObject.__init__(self, "rliterate/{}".format(kind))
-        if json is not None:
-            self.set_json(json)
+    def __init__(self):
+        self.listener = Listener(lambda event: self._generate())
 
-    def set_json(self, data):
-        self.SetData(json.dumps(data))
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
 
-    def get_json(self):
-        return json.loads(self.GetData())
-class Divider(wx.Panel):
+    def _generate(self):
+        self._parts = defaultdict(list)
+        self._collect_parts(self.document.get_page())
+        self._generate_files()
 
-    def __init__(self, parent, padding=0, height=1):
-        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
-        self.line = wx.Panel(self, size=(-1, height))
-        self.line.SetBackgroundColour((255, 100, 0))
-        self.line.Hide()
-        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.vsizer.AddStretchSpacer(1)
-        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.vsizer.AddStretchSpacer(1)
-        self.SetSizer(self.vsizer)
+    def _collect_parts(self, page):
+        for paragraph in page.paragraphs:
+            if paragraph.type == "code":
+                for line in paragraph.text.splitlines():
+                    self._parts[paragraph.path].append(line)
+        for child in page.children:
+            self._collect_parts(child)
 
-    def Show(self, left_space=0):
-        self.line.Show()
-        self.hsizer.Clear(False)
-        self.hsizer.Add((left_space, 1))
-        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
-        self.Layout()
+    def _generate_files(self):
+        for key in self._parts.keys():
+            filepath = self._get_filepath(key)
+            if filepath is not None:
+                with open(filepath, "w") as f:
+                    self._render(f, key)
 
-    def Hide(self):
-        self.line.Hide()
-        self.Layout()
-class MouseEventHelper(object):
+    def _render(self, f, key, prefix=""):
+        for line in self._parts[key]:
+            match = re.match(r"^(\s*)(<<.*>>)\s*$", line)
+            if match:
+                self._render(f, key + (match.group(2),), prefix=prefix+match.group(1))
+            else:
+                if len(line) > 0:
+                    f.write(prefix)
+                    f.write(line)
+                f.write("\n")
 
-    @classmethod
-    def bind(cls, windows, drag=None, click=None, right_click=None,
-             double_click=None):
-        for window in windows:
-            mouse_event_helper = cls(window)
-            if drag is not None:
-                mouse_event_helper.OnDrag = drag
-            if click is not None:
-                mouse_event_helper.OnClick = click
-            if right_click is not None:
-                mouse_event_helper.OnRightClick = right_click
-            if double_click is not None:
-                mouse_event_helper.OnDoubleClick = double_click
+    def _get_filepath(self, key):
+        if len(key) == 0:
+            return None
+        for part in key:
+            if part.startswith("<<") and part.endswith(">>"):
+                return None
+        return os.path.join(*key)
+class MarkdownGenerator(object):
 
-    def __init__(self, window):
-        self.down_pos = None
-        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
-        window.Bind(wx.EVT_MOTION, self._on_motion)
-        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
-        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
-        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
+    def __init__(self, path):
+        self.listener = Listener(lambda event: self._generate())
+        self.path = path
 
-    def OnDrag(self):
-        pass
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
 
-    def OnClick(self):
-        pass
+    def _generate(self):
+        with open(self.path, "w") as f:
+            self._render_page(f, self.document.get_page())
 
-    def OnRightClick(self):
-        pass
+    def _render_page(self, f, page, level=1):
+        f.write("#"*level+" "+page.title+"\n\n")
+        for paragraph in page.paragraphs:
+            {
+                "text": self._render_text,
+                "code": self._render_code,
+            }.get(paragraph.type, self._render_unknown)(f, paragraph)
+        for child in page.children:
+            self._render_page(f, child, level+1)
 
-    def OnDoubleClick(self):
-        pass
+    def _render_text(self, f, text):
+        f.write(text.text+"\n\n")
 
-    def _on_left_down(self, event):
-        self.down_pos = event.Position
+    def _render_code(self, f, code):
+        f.write("`"+" / ".join(code.path)+"`:\n\n")
+        f.write("```"+code.language+"\n")
+        for line in code.text.splitlines():
+            f.write(line+"\n")
+        f.write("```"+"\n")
+        f.write("\n")
 
-    def _on_motion(self, event):
-        if self._should_drag(event.Position):
-            self.down_pos = None
-            self.OnDrag()
+    def _render_unknown(self, f, paragraph):
+        f.write("Unknown type = "+paragraph.type+"\n\n")
+class TextDiff(object):
 
-    def _should_drag(self, pos):
-        if self.down_pos is not None:
-            diff = self.down_pos - pos
-            if abs(diff.x) > 2:
-                return True
-            if abs(diff.y) > 2:
-                return True
-        return False
+    def __init__(self, path):
+        self.listener = Listener(lambda event: self._generate())
+        self.path = path
 
-    def _on_left_up(self, event):
-        if self.down_pos is not None:
-            self.OnClick()
-        self.down_pos = None
+    def set_document(self, document):
+        self.document = document
+        self.listener.set_observable(self.document)
 
-    def _on_left_dclick(self, event):
-        self.OnDoubleClick()
+    def _generate(self):
+        with open(self.path, "w") as f:
+            self.pages = []
+            self._collect_pages(self.document.get_page())
+            self._render_pages(f)
 
-    def _on_right_up(self, event):
-        self.OnRightClick()
+    def _collect_pages(self, page):
+        self.pages.append(page)
+        for child in page.children:
+            self._collect_pages(child)
+
+    def _render_pages(self, f):
+        for page in sorted(self.pages, key=lambda page: page.id):
+            f.write(page.id)
+            f.write(": ")
+            f.write(page.title)
+            f.write("\n\n")
+            for paragraph in page.paragraphs:
+                {
+                    "text": self._render_text,
+                    "code": self._render_code,
+                }.get(paragraph.type, self._render_unknown)(f, paragraph)
+
+    def _render_text(self, f, text):
+        f.write(text.text+"\n\n")
+
+    def _render_code(self, f, code):
+        f.write("`"+" / ".join(code.path)+"`:\n\n")
+        for line in code.text.splitlines():
+            f.write("    "+line+"\n")
+        f.write("\n\n")
+
+    def _render_unknown(self, f, paragraph):
+        f.write("Unknown type = "+paragraph.type+"\n\n")
 class Listener(object):
 
     def __init__(self, fn, *events):
