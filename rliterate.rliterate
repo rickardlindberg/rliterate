@@ -46,7 +46,7 @@
 },
 {
 "id":"ead08e336d8749f79b82f0093feeeb94",
-"text":"* Donald Knuth's literate programming.\n\n* https://www.youtube.com/watch?v=Av0PQDVTP4A\n  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)\n  Change the mindset from wring a program to writing a book\n  http://axiom-developer.org/axiom-website/litprog.html\n\n* https://www.youtube.com/watch?v=5V1ynVyud4M\n  \"Eve\" by Chris Granger\n\n* http://eve-lang.com/deepdives/literate.html\n\n* Add factory button is stolen from fedrated wiki\n\n* ProjecturED\n  http://projectured.org/\n\n* leo\n\n* smallest federated wiki\n\n* https://software-carpentry.org/blog/2011/03/literate-programming.html",
+"text":"* Active essays\n   http://www.vpri.org/pdf/tr2009002_active_essays.pdf\n\n* Donald Knuth's literate programming.\n\n* https://www.youtube.com/watch?v=Av0PQDVTP4A\n  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)\n  Change the mindset from wring a program to writing a book\n  http://axiom-developer.org/axiom-website/litprog.html\n\n* https://www.youtube.com/watch?v=5V1ynVyud4M\n  \"Eve\" by Chris Granger\n\n* http://eve-lang.com/deepdives/literate.html\n\n* Add factory button is stolen from fedrated wiki\n\n* ProjecturED\n  http://projectured.org/\n\n* leo\n\n* smallest federated wiki\n\n* https://software-carpentry.org/blog/2011/03/literate-programming.html",
 "type":"text"
 }
 ],

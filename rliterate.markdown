@@ -18,6 +18,9 @@ Openining a page and all immediate children (double click on a page in the table
 
 The following things were inspiration for rliterate.
 
+* Active essays
+   http://www.vpri.org/pdf/tr2009002_active_essays.pdf
+
 * Donald Knuth's literate programming.
 
 * https://www.youtube.com/watch?v=Av0PQDVTP4A
