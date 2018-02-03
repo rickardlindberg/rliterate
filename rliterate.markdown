@@ -1,8 +1,10 @@
 # RLiterate
 
-RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. The code paragraph for example enables literate programming by allowing chunks of code to be defined and then the final source file is automatically generated. RLiterate documens can also be exported to different formats for display in different mediums.
+RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documens can also be exported to different formats for display in different mediums.
 
 ## A tour of RLiterate
+
+This chapter gives an overview what RLiterate looks like.
 
 ### Main GUI
 
@@ -27,18 +29,23 @@ Describe how code paragraphs enable literate programming.
 
 Many things inspired RLiterate, but the initial thought was triggered by the paper [Active Essays on the Web](http://www.vpri.org/pdf/tr2009002_active_essays.pdf). In it they talk about embedding code in documents that the reader can interact with. They also mention [Literate programming](https://en.wikipedia.org/wiki/Literate_programming) as having a related goal.
 
-At the time I was working on a program that I thought would be nice to express in this way. I wanted to write an article about the program and have to code for the program embedded in the article. I could have used a literate programming tool for this, but the interaction aspect of active essays made me think that a tool would be much more powerful if the document could be edited "live". More similar to WYSIWYG editors.
+At the time I was working on a program that I thought would be nice to express in this way. I wanted to write an article about the program and have the code for the program embedded in the article. I could have used a literate programming tool for this, but the interactive aspect of active essays made me think that a tool would be much more powerful if the document could be edited "live", similar to WYSIWYG editors. Literate programming tools I were aware of worked by editing plain text files with a special syntax for code and documentation blocks, thus lacking the interactive aspect.
 
-I can up with a document model where pages were organized in a hierarchy and where each page had paragraphs that could be of different types. This idea was stolen from Smallest Federated Wiki.
+### The prototype
+
+So I decided to build a prototype to learn what such a tool migh be like.
+
+First I came up with a document model where pages were organized in a hierarchy and where each page had paragraphs that could be of different types. This idea was stolen from [Smallest Federated Wiki](https://en.wikipedia.org/wiki/Smallest_Federated_Wiki). The code paragraph would allow for literate programming. I also envisioned other paragraph types that would allow for more interaction. Perhaps one paragraph type could be [Graphviz](http://graphviz.org/) code, and when edited, a generated graph would appear instead of the code.
+
+After coming up with a document model, I implement a GUI that would allow editing such documents. This GUI had to be first class as it would be the primary way to read and author documents.
+
+At a certain point I had all the functionality in place for doing literate programming. Then I imported all the code into an RLiterate document and started extracring pieces and adding prose to explain the program. As I went along I noticed features I was lacking.
 
 ### Why literate programming?
 
-* http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/
+To me, the most central idea in literate programming is that we should write programs for other humans. Only secondary for the machine. I find code easier to understand if I can understand it in isolated pieces. One example where it is difficult to isolate a piece without literate programming is test code. Usually the test code is located in one file, and the implementation in another. To fully understand the piece it is useful to both read the tests and the implementation. To do this we have to find this related information in two unrelated files. I wrote about this problem in 2003 in [Related things are not kept together](http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/). Literate programming allows us to present the test and the implementation in the same place, yet have the different pieces written to different files. The compiler might require that they are in separate files, but with literate programming, we care first about the other human that will read our code, and only second about the compiler.
 
-* https://www.youtube.com/watch?v=Av0PQDVTP4A
-  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)
-  Change the mindset from wring a program to writing a book
-  http://axiom-developer.org/axiom-website/litprog.html
+Another argument for literate programming is to express the "why". Why is this code here? Timothy Daly talks about it in his talk [Literate Programming in the Large](https://www.youtube.com/watch?v=Av0PQDVTP4A). He also argues that programmers must "change the mindset from wring a program to writing a book".  Some more can be read here: http://axiom-developer.org/axiom-website/litprog.html.
 
 * https://www.youtube.com/watch?v=5V1ynVyud4M
   "Eve" by Chris Granger
