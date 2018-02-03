@@ -236,7 +236,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = self.ScreenToClient(screen_pos)\n    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(scroll_x)\n            )",
+"text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = self.page_container.ScreenToClient(screen_pos)\n    if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        scroll_pos = (scroll_x, scroll_y) = self.page_container.CalcUnscrolledPosition(client_pos)\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(scroll_x)\n            )\n",
 "type":"code"
 }
 ],

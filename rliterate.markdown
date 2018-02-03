@@ -407,9 +407,9 @@ The DropPointDropTarget requires FindClosestDropPoint to be defined on the targe
 
 ```python
 def FindClosestDropPoint(self, screen_pos):
-    client_pos = self.ScreenToClient(screen_pos)
-    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-        scroll_pos = (scroll_x, scroll_y) = self.CalcUnscrolledPosition(client_pos)
+    client_pos = self.page_container.ScreenToClient(screen_pos)
+    if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
+        scroll_pos = (scroll_x, scroll_y) = self.page_container.CalcUnscrolledPosition(client_pos)
         y_distances = defaultdict(list)
         for drop_point in self.drop_points:
             y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)
