@@ -116,18 +116,38 @@
 "id":"49b2e6c578264b24a860b0172a9ac3a3",
 "paragraphs":[
 {
+"id":"77b6cddc2a2946249d6c2cbae7134ed1",
+"text":"The table of contents widget lays out two components in a vertical container: the unhoist button and the page container.",
+"type":"text"
+},
+{
 "id":"811a46cc4115441eb7d9fb27cd4b9916",
 "path":[
 "rliterate.py",
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def _render(self):\n    self.SetScrollRate(20, 20)\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.SetBackgroundColour((255, 255, 255))\n    self.Bind(EVT_TREE_TOGGLE, self._on_tree_toggle)\n    self.Bind(EVT_TREE_LEFT_CLICK, self._on_tree_left_click)\n    self.Bind(EVT_TREE_RIGHT_CLICK, self._on_tree_right_click)\n    self.Bind(EVT_TREE_DOUBLE_CLICK, self._on_tree_double_click)\n    self._re_render()\n\ndef _on_tree_toggle(self, event):\n    self.project.toggle_collapsed(event.page_id)\n\ndef _on_tree_left_click(self, event):\n    self.project.set_scratch_pages([event.page_id])\n\ndef _on_tree_right_click(self, event):\n    menu = PageContextMenu(self.project, event.page_id)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_tree_double_click(self, event):\n    page_ids = [event.page_id]\n    for child in self.project.get_page(event.page_id).children:\n        page_ids.append(child.id)\n    self.project.set_scratch_pages(page_ids)\n",
+"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.SetBackgroundColour((255, 255, 255))\n    self._re_render()\n\ndef _re_render(self):\n    self.drop_points = []\n    self.sizer.Clear(True)\n    self._render_unhoist_button()\n    self._render_page_container()\n    self.Layout()",
 "type":"code"
 },
 {
-"id":"d94d39eb26ab438aa603fd2cb36d898b",
-"text":"The table of contents widget is re-rendered when the document or layout changes:",
+"id":"8cf1468ca45b41d4a2d0f2e8de91c35d",
+"text":"The unhoist button (only shown if a page has been hoisted):",
+"type":"text"
+},
+{
+"id":"87836442b7824a8891244f5c8e9dc07d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<TableOfContents>>"
+],
+"text":"def _render_unhoist_button(self):\n    if self.project.get_hoisted_page() is not None:\n        button = wx.Button(self, label=\"unhoist\")\n        button.Bind(\n            wx.EVT_BUTTON,\n            lambda event: self.project.set_hoisted_page(None)\n        )\n        self.sizer.Add(button, flag=wx.EXPAND)\n",
+"type":"code"
+},
+{
+"id":"48e403ac69b5492bb09ff41381d77b8f",
+"text":"The page container is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.",
 "type":"text"
 },
 {
@@ -137,7 +157,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def _re_render(self):\n    self.drop_points = []\n    self.sizer.Clear(True)\n    if self.project.get_hoisted_page() is not None:\n        self._render_unhoist_button()\n    self._render_page(self.project.get_page(self.project.get_hoisted_page()))\n    self.Layout()\n\ndef _render_unhoist_button(self):\n    button = wx.Button(self, label=\"unhoist\")\n    button.Bind(wx.EVT_BUTTON, lambda event: self.project.set_hoisted_page(None))\n    self.sizer.Add(\n        button,\n        flag=wx.EXPAND\n    )\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.project.is_collapsed(page.id)\n    self.sizer.Add(\n        TableOfContentsRow(self, indentation, page, is_collapsed),\n        flag=wx.EXPAND\n    )\n    divider = Divider(self, padding=0, height=2)\n    self.sizer.Add(\n        divider,\n        flag=wx.EXPAND\n    )\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in pairs(page.children):\n            divider = self._render_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n",
+"text":"def _render_page_container(self):\n    self.page_sizer = wx.BoxSizer(wx.VERTICAL)\n    self.page_container = wx.ScrolledWindow(self)\n    self.page_container.SetScrollRate(20, 20)\n    self.page_container.SetSizer(self.page_sizer)\n    self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)\n    self._render_page(self.project.get_page(self.project.get_hoisted_page()))\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.project.is_collapsed(page.id)\n    self.page_sizer.Add(\n        TableOfContentsRow(self.page_container, self.project, page, indentation),\n        flag=wx.EXPAND\n    )\n    divider = Divider(self.page_container, padding=0, height=2)\n    self.page_sizer.Add(\n        divider,\n        flag=wx.EXPAND\n    )\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in pairs(page.children):\n            divider = self._render_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n",
 "type":"code"
 },
 {
@@ -147,21 +167,6 @@
 "<<classes>>"
 ],
 "text":"class TableOfContentsDropPoint(object):\n\n    def __init__(self, divider, indentation, parent_page_id, before_page_id):\n        self.divider = divider\n        self.indentation = indentation\n        self.parent_page_id = parent_page_id\n        self.before_page_id = before_page_id\n\n    def x_distance_to(self, x):\n        left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER\n        span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * (self.indentation + 1.5)\n        return abs(span_x_center - x)\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show(sum([\n            TableOfContentsRow.BORDER,\n            TableOfContentsButton.SIZE,\n            1,\n            self.indentation*TableOfContentsRow.INDENTATION_SIZE,\n        ]))\n\n    def Hide(self):\n        self.divider.Hide()",
-"type":"code"
-},
-{
-"id":"a1ec06a34b604de99e5102a82fe00f1b",
-"text":"This seems to be needed for some reason:",
-"type":"text"
-},
-{
-"id":"05d68cdb54b84316862f03915d6030a4",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<TableOfContents>>"
-],
-"text":"def _re_render_from_event(self, event):\n    wx.CallAfter(self._re_render)",
 "type":"code"
 }
 ],
@@ -218,8 +223,8 @@
 "id":"f0c6aa103d2a45aa8737d7d964e860bc",
 "paragraphs":[
 {
-"id":"48e403ac69b5492bb09ff41381d77b8f",
-"text":"The main table of contents widget is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.",
+"id":"d7196568704f4228956b0166a06b2ab5",
+"text":"The main table of contents widget listens for changes to a project (only events related to changes in the document and the layout of the table of contents) and then re-renders itself.",
 "type":"text"
 },
 {
@@ -228,7 +233,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TableOfContents(wx.ScrolledWindow):\n    <<TableOfContents>>\n",
+"text":"class TableOfContents(wx.Panel):\n    <<TableOfContents>>\n",
 "type":"code"
 },
 {
@@ -238,7 +243,22 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def __init__(self, parent, project):\n    wx.ScrolledWindow.__init__(self, parent, size=(250, -1))\n    self.project_listener = Listener(self._re_render_from_event, \"document\", \"layout.toc\")\n    self.SetProject(project)\n    <<__init__>>\n    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
+"text":"def __init__(self, parent, project):\n    wx.Panel.__init__(self, parent, size=(250, -1))\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\", \"layout.toc\"\n    )\n    self.SetProject(project)\n    <<__init__>>\n    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
+"type":"code"
+},
+{
+"id":"a1ec06a34b604de99e5102a82fe00f1b",
+"text":"This seems to be needed for some reason:",
+"type":"text"
+},
+{
+"id":"05d68cdb54b84316862f03915d6030a4",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<TableOfContents>>"
+],
+"text":"def _re_render_from_event(self, event):\n    wx.CallAfter(self._re_render)",
 "type":"code"
 }
 ],
@@ -250,7 +270,7 @@
 "paragraphs":[
 {
 "id":"f0f947ef43f0460ab970e56b50dfb339",
-"text":"The row widget renders the page title at the appropriate indentation. If the page has children, an expand/collapse widget is also rendered. Events for a page are handled here, but forwarded upwards via wx.PostEvent.",
+"text":"The row widget renders the page title at the appropriate indentation. If the page has children, an expand/collapse widget is also rendered to the left of the title.",
 "type":"text"
 },
 {
@@ -259,8 +279,13 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TableOfContentsRow(wx.Panel):\n\n    def __init__(self, parent, indentation, page, is_collapsed):\n        wx.Panel.__init__(self, parent)\n        self.indentation = indentation\n        self.page = page\n        self.is_collapsed = is_collapsed\n        self._render()\n\n    <<TableOfContentsRow>>\n",
+"text":"class TableOfContentsRow(wx.Panel):\n\n    def __init__(self, parent, project, page, indentation):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page = page\n        self.indentation = indentation\n        self._render()\n\n    <<TableOfContentsRow>>\n",
 "type":"code"
+},
+{
+"id":"0b017f41b129456d9969b8b4115f3b6c",
+"text":"Rendering lays out expand/collapse button (if the page has children) and the page title in a horizontal sizer:",
+"type":"text"
 },
 {
 "id":"e7222f9d1f2e4c6dbcdee098b3f75ca4",
@@ -269,7 +294,22 @@
 "<<classes>>",
 "<<TableOfContentsRow>>"
 ],
-"text":"BORDER = 2\nINDENTATION_SIZE = 16\n\ndef _render(self):\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.Add((self.indentation*self.INDENTATION_SIZE, 1))\n    if self.page.children:\n        button = TableOfContentsButton(self, self.page.id, self.is_collapsed)\n        self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)\n    else:\n        self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))\n    text = wx.StaticText(self)\n    text.SetLabelText(self.page.title)\n    self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)\n    self.SetSizer(self.sizer)\n    self.Bind(wx.EVT_ENTER_WINDOW, self.on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self.on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self.on_drag\n        helper.OnDoubleClick = self.on_double_click\n    self.original_colour = self.Parent.GetBackgroundColour()\n\ndef _on_click(self):\n    wx.PostEvent(self, TreeLeftClick(0, page_id=self.page.id))\n\ndef _on_right_click(self):\n    wx.PostEvent(self, TreeRightClick(0, page_id=self.page.id))\n\ndef on_double_click(self):\n    wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page.id))\n\ndef on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef on_leave_window(self, event):\n    self.SetBackgroundColour(self.original_colour)\n",
+"text":"BORDER = 2\nINDENTATION_SIZE = 16\n\ndef _render(self):\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.Add((self.indentation*self.INDENTATION_SIZE, 1))\n    if self.page.children:\n        button = TableOfContentsButton(self, self.project, self.page)\n        self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)\n    else:\n        self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))\n    text = wx.StaticText(self)\n    text.SetLabelText(self.page.title)\n    self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)\n    self.SetSizer(self.sizer)\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(text)]:\n        helper.OnClick = self._on_click\n        helper.OnDoubleClick = self._on_double_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n",
+"type":"code"
+},
+{
+"id":"2f458d6548464fc88dbde361469cfcba",
+"text":"Event handlers:",
+"type":"text"
+},
+{
+"id":"38c32e72a6514307926cf2ae728dbbf6",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<TableOfContentsRow>>"
+],
+"text":"def _on_click(self):\n    self.project.set_scratch_pages([self.page.id])\n\ndef _on_double_click(self):\n    page_ids = [self.page.id]\n    for child in self.project.get_page(self.page.id).children:\n        page_ids.append(child.id)\n    self.project.set_scratch_pages(page_ids)\n\ndef _on_right_click(self):\n    menu = PageContextMenu(self.project, self.page)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
 "type":"code"
 }
 ],
@@ -285,7 +325,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TableOfContentsButton(wx.Panel):\n\n    SIZE = 16\n\n    def __init__(self, parent, page_id, is_collapsed):\n        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))\n        self.Bind(wx.EVT_PAINT, self.OnPaint)\n        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)\n        self.page_id = page_id\n        self.is_hovered = False\n        self.is_collapsed = is_collapsed\n        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n\n    def OnLeftDown(self, event):\n        wx.PostEvent(self, TreeToggle(0, page_id=self.page_id))\n\n    def OnPaint(self, event):\n        dc = wx.GCDC(wx.PaintDC(self))\n        dc.SetBrush(wx.BLACK_BRUSH)\n        render = wx.RendererNative.Get()\n        (w, h) = self.Size\n        render.DrawTreeItemButton(\n            self,\n            dc,\n            (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),\n            flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED\n        )",
+"text":"class TableOfContentsButton(wx.Panel):\n\n    SIZE = 16\n\n    def __init__(self, parent, project, page):\n        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))\n        self.Bind(wx.EVT_PAINT, self.OnPaint)\n        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)\n        self.project = project\n        self.page = page\n        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n\n    def OnLeftDown(self, event):\n        self.project.toggle_collapsed(self.page.id)\n\n    def OnPaint(self, event):\n        dc = wx.GCDC(wx.PaintDC(self))\n        dc.SetBrush(wx.BLACK_BRUSH)\n        render = wx.RendererNative.Get()\n        (w, h) = self.Size\n        render.DrawTreeItemButton(\n            self,\n            dc,\n            (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),\n            flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED\n        )\n",
 "type":"code"
 }
 ],
@@ -301,7 +341,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page_id):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page_id = page_id\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.add_page(parent_id=self.page_id),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.set_hoisted_page(self.page_id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.delete_page(page_id=self.page_id),\n            self.Append(wx.NewId(), \"Delete\")\n        )\n",
+"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page = page\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.add_page(parent_id=self.page.id),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.set_hoisted_page(self.page.id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.delete_page(self.page.id),\n            self.Append(wx.NewId(), \"Delete\")\n        )\n",
 "type":"code"
 }
 ],
@@ -309,7 +349,13 @@
 }
 ],
 "id":"c456e147b7b745ed80697c4faeb02bcb",
-"paragraphs":[],
+"paragraphs":[
+{
+"id":"7fa7bfb6863d487b9989cb454fed762d",
+"text":"The table of contents shows the outline of the document. It allows only subtrees to be shown (hoisting) and allows subtrees to be expanded/collapsed. It also provides navigation functions to allow pages to be opened.",
+"type":"text"
+}
+],
 "title":"Table of contents"
 },
 {
@@ -1172,7 +1218,7 @@
 "rliterate.py",
 "<<constants>>"
 ],
-"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\n\n\nTreeToggle, EVT_TREE_TOGGLE = wx.lib.newevent.NewCommandEvent()\nTreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()\nTreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()\nTreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()",
+"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\n\n\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()",
 "type":"code"
 }
 ],
@@ -1257,7 +1303,7 @@
 },
 {
 "id":"334a278ca527447482c3059353cfed4f",
-"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Code editor\n    * Tab indents with tab: should indent 4 spaces?\n    * Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* File generator writes empty filename\n* There is no way to control empty lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Highlight object being dragged somehow (screenshot?)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect (or other program) using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific width\n    * Otherwise put inside ScrolledWindow\n* Right click should only be generated on up if first down\n* Workspace should not be wider that a column, that creates an unnecessary scrollbar\n* This is a thinking tool\n    * Open all immediate children\n        * Read breath first\n* Literate programming treats any target programming language as an assembly language\n* TOC should only expand first 3(?) levels when opening a file for the first time",
+"text":"* Multiple editors can be opened (only last opened is saved)\n* Factory should drop right into edit mode\n* Highlighting of toc rows is not always up to date\n* Invalid drop targets are still shown\n    * Hide dragged item?\n* Code editor\n    * Tab indents with tab: should indent 4 spaces?\n    * Shift+Tab deletes: should dedent\n* Normalize paragraph when saving\n    * Split into multiple paragraphs on more than one newline\n    * Remove single newlines\n    * Remove paragraph if text is empty\n* Missing page operations\n    * Add (before, after)\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* File generator writes empty filename\n* There is no way to control empty lines from placeholders\n* There is no list paragraph type\n* During conversion\n    * Save button is very far down if there is lots of code and only top is edited\n* Scrolling a page does not work if mouse is over a code paragraph\n* Not possible to go to a page with Ctrl+T\n* Highlight object being dragged somehow (screenshot?)\n* Make each column scrollable (like Tweetdeck)\n* Save when clicking outside text field (how to do this?)\n* This is really a writing tool\n    * Spell checking\n* Final test: rewrite rlselect (or other program) using rliterate\n    1. Import all source code as is\n    2. Write narrative\n    3. Ensure generated files are not changed\n* Highlight active page in TOC\n* FancyText might be an option for the code view\n* Create a wx widget that can display a list of themed parts\n    * Can be used for both code / paragraps / title\n    * Should have an option to wrap lines at specific width\n    * Otherwise put inside ScrolledWindow\n* Right click should only be generated on up if first down\n* Workspace should not be wider that a column, that creates an unnecessary scrollbar\n* This is a thinking tool\n    * Open all immediate children\n        * Read breath first\n* Literate programming treats any target programming language as an assembly language\n* TOC should only expand first 3(?) levels when opening a file for the first time\n* Deleting root (even hoisted root) gives error",
 "type":"text"
 }
 ],

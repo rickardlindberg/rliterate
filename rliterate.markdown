@@ -212,14 +212,16 @@ class MainFrame(wx.Frame):
 
 ### Table of contents
 
+The table of contents shows the outline of the document. It allows only subtrees to be shown (hoisting) and allows subtrees to be expanded/collapsed. It also provides navigation functions to allow pages to be opened.
+
 #### Main widget
 
-The main table of contents widget is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.
+The main table of contents widget listens for changes to a project (only events related to changes in the document and the layout of the table of contents) and then re-renders itself.
 
 `rliterate.py / <<classes>>`:
 
 ```python
-class TableOfContents(wx.ScrolledWindow):
+class TableOfContents(wx.Panel):
     <<TableOfContents>>
 ```
 
@@ -227,8 +229,11 @@ class TableOfContents(wx.ScrolledWindow):
 
 ```python
 def __init__(self, parent, project):
-    wx.ScrolledWindow.__init__(self, parent, size=(250, -1))
-    self.project_listener = Listener(self._re_render_from_event, "document", "layout.toc")
+    wx.Panel.__init__(self, parent, size=(250, -1))
+    self.project_listener = Listener(
+        self._re_render_from_event,
+        "document", "layout.toc"
+    )
     self.SetProject(project)
     <<__init__>>
     self._render()
@@ -238,69 +243,72 @@ def SetProject(self, project):
     self.project_listener.set_observable(self.project)
 ```
 
+This seems to be needed for some reason:
+
+`rliterate.py / <<classes>> / <<TableOfContents>>`:
+
+```python
+def _re_render_from_event(self, event):
+    wx.CallAfter(self._re_render)
+```
+
 ##### Rendering
+
+The table of contents widget lays out two components in a vertical container: the unhoist button and the page container.
 
 `rliterate.py / <<classes>> / <<TableOfContents>>`:
 
 ```python
 def _render(self):
-    self.SetScrollRate(20, 20)
     self.sizer = wx.BoxSizer(wx.VERTICAL)
     self.SetSizer(self.sizer)
     self.SetBackgroundColour((255, 255, 255))
-    self.Bind(EVT_TREE_TOGGLE, self._on_tree_toggle)
-    self.Bind(EVT_TREE_LEFT_CLICK, self._on_tree_left_click)
-    self.Bind(EVT_TREE_RIGHT_CLICK, self._on_tree_right_click)
-    self.Bind(EVT_TREE_DOUBLE_CLICK, self._on_tree_double_click)
     self._re_render()
 
-def _on_tree_toggle(self, event):
-    self.project.toggle_collapsed(event.page_id)
-
-def _on_tree_left_click(self, event):
-    self.project.set_scratch_pages([event.page_id])
-
-def _on_tree_right_click(self, event):
-    menu = PageContextMenu(self.project, event.page_id)
-    self.PopupMenu(menu)
-    menu.Destroy()
-
-def _on_tree_double_click(self, event):
-    page_ids = [event.page_id]
-    for child in self.project.get_page(event.page_id).children:
-        page_ids.append(child.id)
-    self.project.set_scratch_pages(page_ids)
+def _re_render(self):
+    self.drop_points = []
+    self.sizer.Clear(True)
+    self._render_unhoist_button()
+    self._render_page_container()
+    self.Layout()
 ```
 
-The table of contents widget is re-rendered when the document or layout changes:
+The unhoist button (only shown if a page has been hoisted):
 
 `rliterate.py / <<classes>> / <<TableOfContents>>`:
 
 ```python
-def _re_render(self):
-    self.drop_points = []
-    self.sizer.Clear(True)
-    if self.project.get_hoisted_page() is not None:
-        self._render_unhoist_button()
-    self._render_page(self.project.get_page(self.project.get_hoisted_page()))
-    self.Layout()
-
 def _render_unhoist_button(self):
-    button = wx.Button(self, label="unhoist")
-    button.Bind(wx.EVT_BUTTON, lambda event: self.project.set_hoisted_page(None))
-    self.sizer.Add(
-        button,
-        flag=wx.EXPAND
-    )
+    if self.project.get_hoisted_page() is not None:
+        button = wx.Button(self, label="unhoist")
+        button.Bind(
+            wx.EVT_BUTTON,
+            lambda event: self.project.set_hoisted_page(None)
+        )
+        self.sizer.Add(button, flag=wx.EXPAND)
+```
+
+The page container is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.
+
+`rliterate.py / <<classes>> / <<TableOfContents>>`:
+
+```python
+def _render_page_container(self):
+    self.page_sizer = wx.BoxSizer(wx.VERTICAL)
+    self.page_container = wx.ScrolledWindow(self)
+    self.page_container.SetScrollRate(20, 20)
+    self.page_container.SetSizer(self.page_sizer)
+    self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)
+    self._render_page(self.project.get_page(self.project.get_hoisted_page()))
 
 def _render_page(self, page, indentation=0):
     is_collapsed = self.project.is_collapsed(page.id)
-    self.sizer.Add(
-        TableOfContentsRow(self, indentation, page, is_collapsed),
+    self.page_sizer.Add(
+        TableOfContentsRow(self.page_container, self.project, page, indentation),
         flag=wx.EXPAND
     )
-    divider = Divider(self, padding=0, height=2)
-    self.sizer.Add(
+    divider = Divider(self.page_container, padding=0, height=2)
+    self.page_sizer.Add(
         divider,
         flag=wx.EXPAND
     )
@@ -357,15 +365,6 @@ class TableOfContentsDropPoint(object):
         self.divider.Hide()
 ```
 
-This seems to be needed for some reason:
-
-`rliterate.py / <<classes>> / <<TableOfContents>>`:
-
-```python
-def _re_render_from_event(self, event):
-    wx.CallAfter(self._re_render)
-```
-
 ##### Dropping pages
 
 Inside the table of contents, pages can be dragged and drop. The drag is initiated in the row widget and handled in the table of contents widget.
@@ -414,22 +413,24 @@ def FindClosestDropPoint(self, screen_pos):
 
 #### Row widget
 
-The row widget renders the page title at the appropriate indentation. If the page has children, an expand/collapse widget is also rendered. Events for a page are handled here, but forwarded upwards via wx.PostEvent.
+The row widget renders the page title at the appropriate indentation. If the page has children, an expand/collapse widget is also rendered to the left of the title.
 
 `rliterate.py / <<classes>>`:
 
 ```python
 class TableOfContentsRow(wx.Panel):
 
-    def __init__(self, parent, indentation, page, is_collapsed):
+    def __init__(self, parent, project, page, indentation):
         wx.Panel.__init__(self, parent)
-        self.indentation = indentation
+        self.project = project
         self.page = page
-        self.is_collapsed = is_collapsed
+        self.indentation = indentation
         self._render()
 
     <<TableOfContentsRow>>
 ```
+
+Rendering lays out expand/collapse button (if the page has children) and the page title in a horizontal sizer:
 
 `rliterate.py / <<classes>> / <<TableOfContentsRow>>`:
 
@@ -441,7 +442,7 @@ def _render(self):
     self.sizer = wx.BoxSizer(wx.HORIZONTAL)
     self.sizer.Add((self.indentation*self.INDENTATION_SIZE, 1))
     if self.page.children:
-        button = TableOfContentsButton(self, self.page.id, self.is_collapsed)
+        button = TableOfContentsButton(self, self.project, self.page)
         self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
     else:
         self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
@@ -449,25 +450,35 @@ def _render(self):
     text.SetLabelText(self.page.title)
     self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
     self.SetSizer(self.sizer)
-    self.Bind(wx.EVT_ENTER_WINDOW, self.on_enter_window)
-    self.Bind(wx.EVT_LEAVE_WINDOW, self.on_leave_window)
+    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)
+    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
     for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
         helper.OnClick = self._on_click
+        helper.OnDoubleClick = self._on_double_click
         helper.OnRightClick = self._on_right_click
-        helper.OnDrag = self.on_drag
-        helper.OnDoubleClick = self.on_double_click
-    self.original_colour = self.Parent.GetBackgroundColour()
+        helper.OnDrag = self._on_drag
+```
 
+Event handlers:
+
+`rliterate.py / <<classes>> / <<TableOfContentsRow>>`:
+
+```python
 def _on_click(self):
-    wx.PostEvent(self, TreeLeftClick(0, page_id=self.page.id))
+    self.project.set_scratch_pages([self.page.id])
+
+def _on_double_click(self):
+    page_ids = [self.page.id]
+    for child in self.project.get_page(self.page.id).children:
+        page_ids.append(child.id)
+    self.project.set_scratch_pages(page_ids)
 
 def _on_right_click(self):
-    wx.PostEvent(self, TreeRightClick(0, page_id=self.page.id))
+    menu = PageContextMenu(self.project, self.page)
+    self.PopupMenu(menu)
+    menu.Destroy()
 
-def on_double_click(self):
-    wx.PostEvent(self, TreeDoubleClick(0, page_id=self.page.id))
-
-def on_drag(self):
+def _on_drag(self):
     data = RliterateDataObject("page", {
         "page_id": self.page.id,
     })
@@ -475,11 +486,11 @@ def on_drag(self):
     drag_source.SetData(data)
     result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
-def on_enter_window(self, event):
+def _on_enter_window(self, event):
     self.SetBackgroundColour((240, 240, 240))
 
-def on_leave_window(self, event):
-    self.SetBackgroundColour(self.original_colour)
+def _on_leave_window(self, event):
+    self.SetBackgroundColour((255, 255, 255))
 ```
 
 #### Expand/Collapse widget
@@ -491,17 +502,16 @@ class TableOfContentsButton(wx.Panel):
 
     SIZE = 16
 
-    def __init__(self, parent, page_id, is_collapsed):
+    def __init__(self, parent, project, page):
         wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.page_id = page_id
-        self.is_hovered = False
-        self.is_collapsed = is_collapsed
+        self.project = project
+        self.page = page
         self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
 
     def OnLeftDown(self, event):
-        wx.PostEvent(self, TreeToggle(0, page_id=self.page_id))
+        self.project.toggle_collapsed(self.page.id)
 
     def OnPaint(self, event):
         dc = wx.GCDC(wx.PaintDC(self))
@@ -512,7 +522,7 @@ class TableOfContentsButton(wx.Panel):
             self,
             dc,
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
-            flags=0 if self.is_collapsed else wx.CONTROL_EXPANDED
+            flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED
         )
 ```
 
@@ -523,28 +533,28 @@ class TableOfContentsButton(wx.Panel):
 ```python
 class PageContextMenu(wx.Menu):
 
-    def __init__(self, project, page_id):
+    def __init__(self, project, page):
         wx.Menu.__init__(self)
         self.project = project
-        self.page_id = page_id
+        self.page = page
         self._create_menu()
 
     def _create_menu(self):
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.add_page(parent_id=self.page_id),
+            lambda event: self.project.add_page(parent_id=self.page.id),
             self.Append(wx.NewId(), "Add child")
         )
         self.AppendSeparator()
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.set_hoisted_page(self.page_id),
+            lambda event: self.project.set_hoisted_page(self.page.id),
             self.Append(wx.NewId(), "Hoist")
         )
         self.AppendSeparator()
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.delete_page(page_id=self.page_id),
+            lambda event: self.project.delete_page(self.page.id),
             self.Append(wx.NewId(), "Delete")
         )
 ```
@@ -2057,10 +2067,6 @@ SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
 
 
-TreeToggle, EVT_TREE_TOGGLE = wx.lib.newevent.NewCommandEvent()
-TreeLeftClick, EVT_TREE_LEFT_CLICK = wx.lib.newevent.NewCommandEvent()
-TreeRightClick, EVT_TREE_RIGHT_CLICK = wx.lib.newevent.NewCommandEvent()
-TreeDoubleClick, EVT_TREE_DOUBLE_CLICK = wx.lib.newevent.NewCommandEvent()
 ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
 ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
 ```
@@ -2214,4 +2220,5 @@ Random notes of what I might want to work on in the future.
         * Read breath first
 * Literate programming treats any target programming language as an assembly language
 * TOC should only expand first 3(?) levels when opening a file for the first time
+* Deleting root (even hoisted root) gives error
 
