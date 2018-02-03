@@ -585,6 +585,8 @@ Hoisting a page in the table of contents allows you to **focus on a subset** of 
 
 Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
 
+Code can either be read in chunks or the final output. And you can follow links between them.
+
 3f0fc44a9eba4a5cbcae5da3ee5d8925: Rendering
 
 Rendering a workspace means laying out a set of column widgets horizontally. Currently only one column, the scratch column, is supported.
@@ -1003,9 +1005,7 @@ A workspace is a container for pages. Pages are ordered in columns. Currently on
 
 5c3647a616b8495f8bebd268be84377d: wxPython utilities
 
-600aa145cf474a6aa732a4c4edb5f44b: About
-
-RLiterate is a tool for working with documents. Documents have pages organized in a hierarchy. Pages have a title and a list of paragraphs. Paragraphs can be of different types. For example text paragraphs or code paragraphs. The code paragraphs enable literate programming.
+600aa145cf474a6aa732a4c4edb5f44b: A tour of RLiterate
 
 63ff2f7abea44406922c78b7683e2dd3: Generating output
 
@@ -1078,6 +1078,10 @@ RLiterate is a tool for working with documents. Documents have pages organized i
             self.OnRightClick()
 
 
+6c34776183394824824be039e65de531: Literate programming
+
+Describe how code paragraphs enable literate programming.
+
 745dcf0d093a4f179dc7fbe1dc8b7bdd: Main Python file
 
 `rliterate.py`:
@@ -1115,6 +1119,11 @@ RLiterate is a tool for working with documents. Documents have pages organized i
 
 7d907fe6583843d5b63d38467164a2ca: Text
 
+7f14d9ec23c0425c89039ea68dfdac16: Main GUI
+
+* smallest federated wiki inspired the factory and the editing workflow
+* leo and smallest federated wiki inspired TOC and seeing a single page/node at a time
+
 812b00fc06964e0493087f88e6f5e397: Common
 
 8ab608f28a5046548963649371cab5fe: Main frame
@@ -1136,39 +1145,17 @@ RLiterate is a tool for working with documents. Documents have pages organized i
 
 91969238a9d24673aec5bc1c8bc8bd7b: Code
 
-95150c4f0d92428bbeef4ae5a865398d: Inspiration
+95150c4f0d92428bbeef4ae5a865398d: Background
 
-The following things were inspiration for rliterate.
+Many things inspired RLiterate, but the initial thought was triggered by the paper [Active Essays on the Web](http://www.vpri.org/pdf/tr2009002_active_essays.pdf). In it they talk about embedding code in documents that the reader can interact with. They also mention [Literate programming](https://en.wikipedia.org/wiki/Literate_programming) as having a related goal.
 
-* Active essays
-   http://www.vpri.org/pdf/tr2009002_active_essays.pdf
+At the time I was working on a program that I thought would be nice to express in this way. I wanted to write an article about the program and have to code for the program embedded in the article. I could have used a literate programming tool for this, but the interaction aspect of active essays made me think that a tool would be much more powerful if the document could be edited "live". More similar to WYSIWYG editors.
 
-* Donald Knuth's literate programming.
-
-* https://www.youtube.com/watch?v=Av0PQDVTP4A
-  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)
-  Change the mindset from wring a program to writing a book
-  http://axiom-developer.org/axiom-website/litprog.html
-
-* https://www.youtube.com/watch?v=5V1ynVyud4M
-  "Eve" by Chris Granger
-
-* http://eve-lang.com/deepdives/literate.html
-
-* Add factory button is stolen from fedrated wiki
-
-* ProjecturED
-  http://projectured.org/
-
-* leo
-
-* smallest federated wiki
-
-* https://software-carpentry.org/blog/2011/03/literate-programming.html
+I can up with a document model where pages were organized in a hierarchy and where each page had paragraphs that could be of different types. This idea was stolen from Smallest Federated Wiki.
 
 956ae4613f144e3581d420995a7ef046: RLiterate
 
-RLiterate started out as an experiment to develop a tool for doing literate programming. The focus was to develop a tool for editing documents where those documents supported literate programming.
+RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. The code paragraph for example enables literate programming by allowing chunks of code to be defined and then the final source file is automatically generated. RLiterate documens can also be exported to different formats for display in different mediums.
 
 99a2a81b38164293b9ad9287b33bfbbb: Dropping pages
 
@@ -1876,6 +1863,11 @@ The main workspace widget is a scrolling container containing column widgets.
         self.project_listener.set_observable(self.project)
 
 
+e836cd0edf4a4b66ab8dd1e5d7fbbea3: Similar tools
+
+* ProjecturED
+  http://projectured.org/
+
 e85c134f26aa41288557f5b0c04fb29a: View widget
 
 `rliterate.py / <<classes>>`:
@@ -2043,6 +2035,22 @@ f1137543026a4319a6a9e2ce5d0f3d5e: Title
         def EndEdit(self):
             self.project.edit_page(self.page.id, {"title": self.edit.Value})
 
+
+f496615acbe44223a64e1db1fc154b12: Why literate programming?
+
+* http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/
+
+* https://www.youtube.com/watch?v=Av0PQDVTP4A
+  Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)
+  Change the mindset from wring a program to writing a book
+  http://axiom-developer.org/axiom-website/litprog.html
+
+* https://www.youtube.com/watch?v=5V1ynVyud4M
+  "Eve" by Chris Granger
+
+* http://eve-lang.com/deepdives/literate.html
+
+* https://software-carpentry.org/blog/2011/03/literate-programming.html
 
 f7f16199492c4bad80567c3a960b8bc9: Layouts
 

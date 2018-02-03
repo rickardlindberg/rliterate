@@ -1,27 +1,18 @@
 # RLiterate
 
-RLiterate started out as an experiment to develop a tool for doing literate programming. The focus was to develop a tool for editing documents where those documents supported literate programming.
+RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. The code paragraph for example enables literate programming by allowing chunks of code to be defined and then the final source file is automatically generated. RLiterate documens can also be exported to different formats for display in different mediums.
 
-## About
+## Background
 
-RLiterate is a tool for working with documents. Documents have pages organized in a hierarchy. Pages have a title and a list of paragraphs. Paragraphs can be of different types. For example text paragraphs or code paragraphs. The code paragraphs enable literate programming.
+Many things inspired RLiterate, but the initial thought was triggered by the paper [Active Essays on the Web](http://www.vpri.org/pdf/tr2009002_active_essays.pdf). In it they talk about embedding code in documents that the reader can interact with. They also mention [Literate programming](https://en.wikipedia.org/wiki/Literate_programming) as having a related goal.
 
-### Reading tool
+At the time I was working on a program that I thought would be nice to express in this way. I wanted to write an article about the program and have to code for the program embedded in the article. I could have used a literate programming tool for this, but the interaction aspect of active essays made me think that a tool would be much more powerful if the document could be edited "live". More similar to WYSIWYG editors.
 
-RLiterate is a reading and thinking tool. The following features support that.
+I can up with a document model where pages were organized in a hierarchy and where each page had paragraphs that could be of different types. This idea was stolen from Smallest Federated Wiki.
 
-Hoisting a page in the table of contents allows you to **focus on a subset** of the document.
+### Why literate programming?
 
-Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
-
-## Inspiration
-
-The following things were inspiration for rliterate.
-
-* Active essays
-   http://www.vpri.org/pdf/tr2009002_active_essays.pdf
-
-* Donald Knuth's literate programming.
+* http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/
 
 * https://www.youtube.com/watch?v=Av0PQDVTP4A
   Literate Programming in the Large - Timothy Daly - (Axiom/Literat clojure)
@@ -33,16 +24,33 @@ The following things were inspiration for rliterate.
 
 * http://eve-lang.com/deepdives/literate.html
 
-* Add factory button is stolen from fedrated wiki
+* https://software-carpentry.org/blog/2011/03/literate-programming.html
+
+### Similar tools
 
 * ProjecturED
   http://projectured.org/
 
-* leo
+## A tour of RLiterate
 
-* smallest federated wiki
+### Main GUI
 
-* https://software-carpentry.org/blog/2011/03/literate-programming.html
+* smallest federated wiki inspired the factory and the editing workflow
+* leo and smallest federated wiki inspired TOC and seeing a single page/node at a time
+
+### Reading tool
+
+RLiterate is a reading and thinking tool. The following features support that.
+
+Hoisting a page in the table of contents allows you to **focus on a subset** of the document.
+
+Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
+
+Code can either be read in chunks or the final output. And you can follow links between them.
+
+### Literate programming
+
+Describe how code paragraphs enable literate programming.
 
 ## Implementation
 
