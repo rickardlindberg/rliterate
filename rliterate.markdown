@@ -1,6 +1,6 @@
 # RLiterate
 
-RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documens can also be exported to different formats for display in different mediums.
+RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documens can also be exported to different formats for display in different mediums.
 
 ## A tour of RLiterate
 
@@ -18,8 +18,6 @@ RLiterate is a reading and thinking tool. The following features support that.
 Hoisting a page in the table of contents allows you to **focus on a subset** of the document.
 
 Openining a page and all immediate children (double click on a page in the table of contents) allows you to read a subset of the document **breath first**. It's like reading only the first paragraph in an entire book.
-
-Code can either be read in chunks or the final output. And you can follow links between them.
 
 ### Literate programming
 
@@ -39,13 +37,15 @@ First I came up with a document model where pages were organized in a hierarchy 
 
 After coming up with a document model, I implement a GUI that would allow editing such documents. This GUI had to be first class as it would be the primary way to read and author documents.
 
-At a certain point I had all the functionality in place for doing literate programming. Then I imported all the code into an RLiterate document and started extracring pieces and adding prose to explain the program. As I went along I noticed features I was lacking.
+At a certain point I had all the functionality in place for doing literate programming. Then I imported all the code into an RLiterate document (previously it was written as a single Python file) and started extracting pieces and adding prose to explain the program. As I went along I noticed features I was lacking.
 
 ### Why literate programming?
 
 To me, the most central idea in literate programming is that we should write programs for other humans. Only secondary for the machine. I find code easier to understand if I can understand it in isolated pieces. One example where it is difficult to isolate a piece without literate programming is test code. Usually the test code is located in one file, and the implementation in another. To fully understand the piece it is useful to both read the tests and the implementation. To do this we have to find this related information in two unrelated files. I wrote about this problem in 2003 in [Related things are not kept together](http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/). Literate programming allows us to present the test and the implementation in the same place, yet have the different pieces written to different files. The compiler might require that they are in separate files, but with literate programming, we care first about the other human that will read our code, and only second about the compiler.
 
-Another argument for literate programming is to express the "why". Why is this code here? Timothy Daly talks about it in his talk [Literate Programming in the Large](https://www.youtube.com/watch?v=Av0PQDVTP4A). He also argues that programmers must "change the mindset from wring a program to writing a book".  Some more can be read here: http://axiom-developer.org/axiom-website/litprog.html.
+Another argument for literate programming is to express the "why". Why is this code here? Timothy Daly talks about it in his talk [Literate Programming in the Large](https://www.youtube.com/watch?v=Av0PQDVTP4A). He also argues that programmers must change the mindset from wring a program to writing a book. Some more can be read here: http://axiom-developer.org/axiom-website/litprog.html.
+
+Some more resources about literate programming:
 
 * https://www.youtube.com/watch?v=5V1ynVyud4M
   "Eve" by Chris Granger
@@ -56,8 +56,7 @@ Another argument for literate programming is to express the "why". Why is this c
 
 ### Similar tools
 
-* ProjecturED
-  http://projectured.org/
+I stumled across [ProjecturED](http://projectured.org/). It is similar to RLiterate in the sense that it is an editor for richer documents. Not just text. The most interesting aspect for me is that a variable name exists in one place, but can be rendered in multiple. So a rename is really simple. With RLiterate, you have to do a search and replace. But with ProjecturED you just change the name and it replicates everywhere. This is an attractive feature and is made possible by the different document model. Probably RLiterate can never support that because a completely different approach needs to be taken, but it is an interesting project to investigate further.
 
 ## Implementation
 
@@ -2224,8 +2223,7 @@ Random notes of what I might want to work on in the future.
 * File generator writes empty filename
 * There is no way to control empty lines from placeholders
 * There is no list paragraph type
-* During conversion
-    * Save button is very far down if there is lots of code and only top is edited
+* Save button (in code editor) is very far down if there is lots of code and only top is edited
 * Scrolling a page does not work if mouse is over a code paragraph
 * Not possible to go to a page with Ctrl+T
 * Highlight object being dragged somehow (screenshot?)
@@ -2248,4 +2246,6 @@ Random notes of what I might want to work on in the future.
 * Literate programming treats any target programming language as an assembly language
 * TOC should only expand first 3(?) levels when opening a file for the first time
 * Deleting root (even hoisted root) gives error
+* Reading tool: Code can either be read in chunks or the final output. And you can follow links between them.
+* Undo
 
