@@ -808,6 +808,7 @@ class Paragraph(ParagraphBase, Editable):
             self,
             self.project,
             self.paragraph.formatted_text,
+            line_height=1.2
         )
         MouseEventHelper.bind(
             [view],
@@ -1321,10 +1322,11 @@ This widget can display rich text according to a theme.
 ```python
 class RichTextDisplay(wx.Panel):
 
-    def __init__(self, parent, project, fragments):
+    def __init__(self, parent, project, fragments, line_height=1):
         wx.Panel.__init__(self, parent)
         self.project = project
         self.fragments = fragments
+        self.line_height = line_height
         self._set_fragments()
         self.Bind(wx.EVT_PAINT, self._on_paint)
 
@@ -1343,14 +1345,14 @@ class RichTextDisplay(wx.Panel):
         for fragment in self._newline_fragments():
             if fragment.text is None:
                 x = 0
-                y += dc.GetTextExtent("M")[1]+2
+                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
                 continue
             style = self.project.get_style(fragment.token)
             style.apply_to_wx_dc(dc, self.GetFont())
             w, h = dc.GetTextExtent(fragment.text)
             if x > 0 and x+w > PAGE_BODY_WIDTH:
                 x = 0
-                y += dc.GetTextExtent("M")[1]+2
+                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
             fragments.append((fragment.text, style, x, y))
             max_x = max(max_x, x+w)
             max_y = max(max_y, y+h)
