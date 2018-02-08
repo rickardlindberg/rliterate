@@ -1363,7 +1363,11 @@ class RichTextDisplay(wx.Panel):
         x = 0
         y = 0
         max_x, max_y = dc.GetTextExtent("M")
-        for part in self.parts:
+        for part in self._newline_parts():
+            if part.text is None:
+                x = 0
+                y += dc.GetTextExtent("M")[1]
+                continue
             dc.SetFont(self._font(bold=part.bold))
             w, h = dc.GetTextExtent(part.text)
             if x > 0 and x+w > PAGE_BODY_WIDTH:
@@ -1380,6 +1384,14 @@ class RichTextDisplay(wx.Panel):
             max_y = max(max_y, y+h)
             x += w
         return (max_x, max_y, fragments)
+
+    def _newline_parts(self):
+        for part in self.parts:
+            if "\n" in part.text:
+                for x in insert_between(None, part.text.split("\n")):
+                    yield Part(token_type=part.token_type, bold=part.bold, text=x)
+            else:
+                yield part
 
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
@@ -1721,11 +1733,18 @@ class DictTextParagraph(DictParagraph):
 
     @property
     def formatted_text(self):
-        return [
-            Part(token_type=None, text=x)
-            for x
-            in re.split(r"(\s+)", self._paragraph_dict["text"])
-        ]
+        parts = []
+        text = self._paragraph_dict["text"]
+        while text:
+            match = re.match(r"\*\*(.+?)\*\*", text, flags=re.DOTALL)
+            if match:
+                parts.append(Part(token_type=None, text=match.group(1), bold=True))
+                text = text[match.end(0):]
+            else:
+                match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
+                parts.append(Part(token_type=None, text=match.group(0)))
+                text = text[match.end(0):]
+        return parts
 ```
 
 `rliterate.py / <<classes>>`:
