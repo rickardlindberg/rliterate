@@ -2312,11 +2312,6 @@ Random notes of what I might want to work on in the future.
     2. Write narrative
     3. Ensure generated files are not changed
 * Highlight active page in TOC
-* FancyText might be an option for the code view
-* Create a wx widget that can display a list of themed parts
-    * Can be used for both code / paragraps / title
-    * Should have an option to wrap lines at specific width
-    * Otherwise put inside ScrolledWindow
 * Right click should only be generated on up if first down
 * Workspace should not be wider that a column, that creates an unnecessary scrollbar
 * Literate programming treats any target programming language as an assembly language
