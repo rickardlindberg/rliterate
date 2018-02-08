@@ -117,6 +117,11 @@ class Style(object):
 
     def __init__(self, color):
         self.color = color
+        self.color_rgb = tuple([
+            int(x, 16)
+            for x
+            in (color[1:3], color[3:5], color[5:7])
+        ])
 class Observable(object):
 
     def __init__(self):
@@ -602,8 +607,11 @@ class Title(Editable):
 
     def CreateView(self):
         self.Font = create_font(size=16)
-        view = wx.StaticText(self, style=wx.ST_ELLIPSIZE_END)
-        view.SetLabelText(self.page.title)
+        view = RichTextDisplay(
+            self,
+            self.project,
+            [Part(token_type=None, text=self.page.title)]
+        )
         view.SetToolTip(wx.ToolTip(self.page.title))
         return view
 
@@ -621,9 +629,11 @@ class Paragraph(ParagraphBase, Editable):
         Editable.__init__(self, parent)
 
     def CreateView(self):
-        view = wx.StaticText(self)
-        view.SetLabelText(self.paragraph.text)
-        view.Wrap(PAGE_BODY_WIDTH)
+        view = RichTextDisplay(
+            self,
+            self.project,
+            self.paragraph.formatted_text,
+        )
         MouseEventHelper.bind(
             [view],
             drag=self.DoDragDrop,
@@ -686,8 +696,14 @@ class CodeView(wx.Panel):
     def _create_path(self, code_paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((248, 241, 223))
-        text = wx.StaticText(panel, label=" / ".join(code_paragraph.path))
-        text.Font = text.Font.Bold()
+        text = RichTextDisplay(
+            panel,
+            self.project,
+            insert_between(
+                Part(token_type=None, text=" / "),
+                [Part(token_type=None, text=x, bold=True) for x in code_paragraph.path]
+            )
+        )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
@@ -730,19 +746,9 @@ class CodeBody(wx.ScrolledWindow):
 
     def _add_lines(self, sizer, paragraph):
         for line in paragraph.highlighted_code:
-            text = wx.StaticText(self, label="")
-            text.SetLabelMarkup(self._line_to_markup(line))
+            text = RichTextDisplay(self, self.project, line)
             sizer.Add(text)
             self.children.append(text)
-
-    def _line_to_markup(self, line):
-        return "".join([
-            "<span color='{}'>{}</span>".format(
-                self.project.get_style(part.token_type).color,
-                xml.sax.saxutils.escape(part.text)
-            )
-            for part in line
-        ])
 class CodeEditor(wx.Panel):
 
     BORDER = 1
@@ -958,6 +964,57 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
+class RichTextDisplay(wx.Panel):
+
+    def __init__(self, parent, project, parts):
+        wx.Panel.__init__(self, parent)
+        self.project = project
+        self.parts = parts
+        self._set_fragments()
+        self.Bind(wx.EVT_PAINT, self._on_paint)
+
+    def _set_fragments(self):
+        dc = wx.MemoryDC()
+        dc.SetFont(self.GetFont())
+        dc.SelectObject(wx.EmptyBitmap(1, 1))
+        w, h, self.fragments = self._calculate_fragments(dc)
+        self.SetMinSize((w, h))
+
+    def _calculate_fragments(self, dc):
+        fragments = []
+        x = 0
+        y = 0
+        max_x, max_y = dc.GetTextExtent("M")
+        for part in self.parts:
+            dc.SetFont(self._font(bold=part.bold))
+            w, h = dc.GetTextExtent(part.text)
+            if x > 0 and x+w > PAGE_BODY_WIDTH:
+                x = 0
+                y += dc.GetTextExtent("M")[1]
+            fragments.append((
+                part.text,
+                self.project.get_style(part.token_type).color_rgb,
+                part.bold,
+                x,
+                y,
+            ))
+            max_x = max(max_x, x+w)
+            max_y = max(max_y, y+h)
+            x += w
+        return (max_x, max_y, fragments)
+
+    def _on_paint(self, event):
+        dc = wx.PaintDC(self)
+        for text, color, bold, x, y in self.fragments:
+            dc.SetFont(self._font(bold=bold))
+            dc.SetTextForeground(color)
+            dc.DrawText(text, x, y)
+
+    def _font(self, bold=False):
+        if bold:
+            return self.GetFont().Bold()
+        else:
+            return self.GetFont()
 class Project(Observable):
 
     def __init__(self, filepath):
@@ -1203,6 +1260,14 @@ class DictTextParagraph(DictParagraph):
     @property
     def text(self):
         return self._paragraph_dict["text"]
+
+    @property
+    def formatted_text(self):
+        return [
+            Part(token_type=None, text=x)
+            for x
+            in re.split(r"(\s+)", self._paragraph_dict["text"])
+        ]
 class DictCodeParagraph(DictParagraph):
 
     @property
@@ -1260,9 +1325,10 @@ class DictCodeParagraph(DictParagraph):
         return lines
 class Part(object):
 
-    def __init__(self, token_type, text):
+    def __init__(self, token_type, text, bold=False):
         self.token_type = token_type
         self.text = text
+        self.bold = bold
 class Layout(Observable):
 
     def __init__(self, path):
@@ -1311,6 +1377,8 @@ class Layout(Observable):
 class BaseTheme(object):
 
     def get_style(self, token_type):
+        if token_type is None:
+            return Style(color="#2e3436")
         if token_type in self.styles:
             return self.styles[token_type]
         return self.get_style(token_type.parent)
@@ -1492,6 +1560,13 @@ class Listener(object):
         self.observable = observable
         self.observable.listen(self.fn, *self.events)
         self.fn("")
+def insert_between(separator, items):
+    result = []
+    for i, item in enumerate(items):
+        if i > 0:
+            result.append(separator)
+        result.append(item)
+    return result
 def is_prefix(left, right):
     return left == right[:len(left)]
 def load_json_from_file(path):

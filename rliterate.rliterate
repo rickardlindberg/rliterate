@@ -704,7 +704,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.project = project\n        self.page = page\n        Editable.__init__(self, parent)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = wx.StaticText(self, style=wx.ST_ELLIPSIZE_END)\n        view.SetLabelText(self.page.title)\n        view.SetToolTip(wx.ToolTip(self.page.title))\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())\n        return edit\n\n    def EndEdit(self):\n        self.project.edit_page(self.page.id, {\"title\": self.edit.Value})\n",
+"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.project = project\n        self.page = page\n        Editable.__init__(self, parent)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = RichTextDisplay(\n            self,\n            self.project,\n            [Part(token_type=None, text=self.page.title)]\n        )\n        view.SetToolTip(wx.ToolTip(self.page.title))\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())\n        return edit\n\n    def EndEdit(self):\n        self.project.edit_page(self.page.id, {\"title\": self.edit.Value})\n",
 "type":"code"
 }
 ],
@@ -724,7 +724,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Paragraph(ParagraphBase, Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        ParagraphBase.__init__(self, project, page_id, paragraph)\n        Editable.__init__(self, parent)\n\n    def CreateView(self):\n        view = wx.StaticText(self)\n        view.SetLabelText(self.paragraph.text)\n        view.Wrap(PAGE_BODY_WIDTH)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(\n            self,\n            style=wx.TE_MULTILINE,\n            value=self.paragraph.text\n        )\n        # Error is printed if height is too small:\n        # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar\n        # Solution: Make it at least 50 heigh.\n        edit.MinSize = (-1, max(50, self.view.Size[1]))\n        return edit\n\n    def EndEdit(self):\n        self.project.edit_paragraph(self.paragraph.id, {\"text\": self.edit.Value})\n",
+"text":"class Paragraph(ParagraphBase, Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        ParagraphBase.__init__(self, project, page_id, paragraph)\n        Editable.__init__(self, parent)\n\n    def CreateView(self):\n        view = RichTextDisplay(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n        )\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(\n            self,\n            style=wx.TE_MULTILINE,\n            value=self.paragraph.text\n        )\n        # Error is printed if height is too small:\n        # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar\n        # Solution: Make it at least 50 heigh.\n        edit.MinSize = (-1, max(50, self.view.Size[1]))\n        return edit\n\n    def EndEdit(self):\n        self.project.edit_paragraph(self.paragraph.id, {\"text\": self.edit.Value})\n",
 "type":"code"
 }
 ],
@@ -763,7 +763,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class CodeView(wx.Panel):\n\n    BORDER = 1\n    PADDING = 5\n\n    def __init__(self, parent, project, code_paragraph):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.Font = create_font(monospace=True)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.vsizer.Add(\n            self._create_path(code_paragraph),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n        self.vsizer.Add(\n            self._create_code(code_paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n        self.SetBackgroundColour((243, 236, 219))\n\n    def _create_path(self, code_paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((248, 241, 223))\n        text = wx.StaticText(panel, label=\" / \".join(code_paragraph.path))\n        text.Font = text.Font.Bold()\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, text],\n            double_click=self._post_paragraph_edit_start,\n            drag=self.Parent.DoDragDrop,\n            right_click=self.Parent.ShowContextMenu\n        )\n        return panel\n\n    def _create_code(self, code_paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((253, 246, 227))\n        body = CodeBody(panel, self.project, code_paragraph)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, body]+body.children,\n            double_click=self._post_paragraph_edit_start,\n            drag=self.Parent.DoDragDrop,\n            right_click=self.Parent.ShowContextMenu\n        )\n        return panel\n\n    def _post_paragraph_edit_start(self):\n        wx.PostEvent(self, ParagraphEditStart(0))\n",
+"text":"class CodeView(wx.Panel):\n\n    BORDER = 1\n    PADDING = 5\n\n    def __init__(self, parent, project, code_paragraph):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.Font = create_font(monospace=True)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.vsizer.Add(\n            self._create_path(code_paragraph),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n        self.vsizer.Add(\n            self._create_code(code_paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n        self.SetBackgroundColour((243, 236, 219))\n\n    def _create_path(self, code_paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((248, 241, 223))\n        text = RichTextDisplay(\n            panel,\n            self.project,\n            insert_between(\n                Part(token_type=None, text=\" / \"),\n                [Part(token_type=None, text=x, bold=True) for x in code_paragraph.path]\n            )\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, text],\n            double_click=self._post_paragraph_edit_start,\n            drag=self.Parent.DoDragDrop,\n            right_click=self.Parent.ShowContextMenu\n        )\n        return panel\n\n    def _create_code(self, code_paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((253, 246, 227))\n        body = CodeBody(panel, self.project, code_paragraph)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, body]+body.children,\n            double_click=self._post_paragraph_edit_start,\n            drag=self.Parent.DoDragDrop,\n            right_click=self.Parent.ShowContextMenu\n        )\n        return panel\n\n    def _post_paragraph_edit_start(self):\n        wx.PostEvent(self, ParagraphEditStart(0))\n",
 "type":"code"
 },
 {
@@ -772,7 +772,16 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class CodeBody(wx.ScrolledWindow):\n\n    def __init__(self, parent, project, paragraph):\n        wx.ScrolledWindow.__init__(self, parent)\n        self.project = project\n        self.children = []\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self._add_lines(sizer, paragraph)\n        self.SetSizer(sizer)\n        self.SetMinSize((-1, sizer.GetMinSize()[1]))\n        self.SetScrollRate(20, 20)\n\n    def _add_lines(self, sizer, paragraph):\n        for line in paragraph.highlighted_code:\n            text = wx.StaticText(self, label=\"\")\n            text.SetLabelMarkup(self._line_to_markup(line))\n            sizer.Add(text)\n            self.children.append(text)\n\n    def _line_to_markup(self, line):\n        return \"\".join([\n            \"<span color='{}'>{}</span>\".format(\n                self.project.get_style(part.token_type).color,\n                xml.sax.saxutils.escape(part.text)\n            )\n            for part in line\n        ])\n",
+"text":"class CodeBody(wx.ScrolledWindow):\n\n    def __init__(self, parent, project, paragraph):\n        wx.ScrolledWindow.__init__(self, parent)\n        self.project = project\n        self.children = []\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self._add_lines(sizer, paragraph)\n        self.SetSizer(sizer)\n        self.SetMinSize((-1, sizer.GetMinSize()[1]))\n        self.SetScrollRate(20, 20)\n\n    def _add_lines(self, sizer, paragraph):\n        for line in paragraph.highlighted_code:\n            text = RichTextDisplay(self, self.project, line)\n            sizer.Add(text)\n            self.children.append(text)\n",
+"type":"code"
+},
+{
+"id":"7b087c5b9fd0460088e21aa2dc47567f",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def insert_between(separator, items):\n    result = []\n    for i, item in enumerate(items):\n        if i > 0:\n            result.append(separator)\n        result.append(item)\n    return result\n",
 "type":"code"
 }
 ],
@@ -963,6 +972,27 @@
 }
 ],
 "title":"Mouse event helper"
+},
+{
+"children":[],
+"id":"f2fd8440f526447fbcd4442951435021",
+"paragraphs":[
+{
+"id":"7286b9e86d644834b949ed82e6afb3ee",
+"text":"This widget can display rich text according to a theme.",
+"type":"text"
+},
+{
+"id":"5569510f0ba84a3c8c970fd81304964a",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class RichTextDisplay(wx.Panel):\n\n    def __init__(self, parent, project, parts):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.parts = parts\n        self._set_fragments()\n        self.Bind(wx.EVT_PAINT, self._on_paint)\n\n    def _set_fragments(self):\n        dc = wx.MemoryDC()\n        dc.SetFont(self.GetFont())\n        dc.SelectObject(wx.EmptyBitmap(1, 1))\n        w, h, self.fragments = self._calculate_fragments(dc)\n        self.SetMinSize((w, h))\n\n    def _calculate_fragments(self, dc):\n        fragments = []\n        x = 0\n        y = 0\n        max_x, max_y = dc.GetTextExtent(\"M\")\n        for part in self.parts:\n            dc.SetFont(self._font(bold=part.bold))\n            w, h = dc.GetTextExtent(part.text)\n            if x > 0 and x+w > PAGE_BODY_WIDTH:\n                x = 0\n                y += dc.GetTextExtent(\"M\")[1]\n            fragments.append((\n                part.text,\n                self.project.get_style(part.token_type).color_rgb,\n                part.bold,\n                x,\n                y,\n            ))\n            max_x = max(max_x, x+w)\n            max_y = max(max_y, y+h)\n            x += w\n        return (max_x, max_y, fragments)\n\n    def _on_paint(self, event):\n        dc = wx.PaintDC(self)\n        for text, color, bold, x, y in self.fragments:\n            dc.SetFont(self._font(bold=bold))\n            dc.SetTextForeground(color)\n            dc.DrawText(text, x, y)\n\n    def _font(self, bold=False):\n        if bold:\n            return self.GetFont().Bold()\n        else:\n            return self.GetFont()\n",
+"type":"code"
+}
+],
+"title":"Rich text display"
 }
 ],
 "id":"5c3647a616b8495f8bebd268be84377d",
@@ -1059,7 +1089,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n",
+"text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        return [\n            Part(token_type=None, text=x)\n            for x\n            in re.split(r\"(\\s+)\", self._paragraph_dict[\"text\"])\n        ]\n",
 "type":"code"
 },
 {
@@ -1077,7 +1107,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Part(object):\n\n    def __init__(self, token_type, text):\n        self.token_type = token_type\n        self.text = text\n",
+"text":"class Part(object):\n\n    def __init__(self, token_type, text, bold=False):\n        self.token_type = token_type\n        self.text = text\n        self.bold = bold\n",
 "type":"code"
 }
 ],
@@ -1124,7 +1154,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class BaseTheme(object):\n\n    def get_style(self, token_type):\n        if token_type in self.styles:\n            return self.styles[token_type]\n        return self.get_style(token_type.parent)",
+"text":"class BaseTheme(object):\n\n    def get_style(self, token_type):\n        if token_type is None:\n            return Style(color=\"#2e3436\")\n        if token_type in self.styles:\n            return self.styles[token_type]\n        return self.get_style(token_type.parent)\n",
 "type":"code"
 },
 {
@@ -1133,7 +1163,7 @@
 "rliterate.py",
 "<<base classes>>"
 ],
-"text":"class Style(object):\n\n    def __init__(self, color):\n        self.color = color",
+"text":"class Style(object):\n\n    def __init__(self, color):\n        self.color = color\n        self.color_rgb = tuple([\n            int(x, 16)\n            for x\n            in (color[1:3], color[3:5], color[5:7])\n        ])\n",
 "type":"code"
 },
 {
