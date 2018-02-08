@@ -701,8 +701,6 @@ This generates a file that is suitable for textual diffing.
     
     ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
     ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
-    
-    Token = pygments.token.Token
 
 
 49b2e6c578264b24a860b0172a9ac3a3: Rendering
@@ -1113,10 +1111,9 @@ Describe how code paragraphs enable literate programming.
     import tempfile
     import time
     import uuid
-    import xml.sax.saxutils
     
     import pygments.lexers
-    import pygments.token
+    from pygments.token import Token
     import wx
     import wx.lib.newevent
     

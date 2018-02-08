@@ -1387,8 +1387,6 @@ PARAGRAPH_SPACE = 15
 
 ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
 ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
-
-Token = pygments.token.Token
 ```
 
 ### Project
@@ -2258,10 +2256,9 @@ import sys
 import tempfile
 import time
 import uuid
-import xml.sax.saxutils
 
 import pygments.lexers
-import pygments.token
+from pygments.token import Token
 import wx
 import wx.lib.newevent
 

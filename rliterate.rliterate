@@ -1000,7 +1000,7 @@
 "rliterate.py",
 "<<constants>>"
 ],
-"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\n\n\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()\n\nToken = pygments.token.Token",
+"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\n\n\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()",
 "type":"code"
 }
 ],
@@ -1406,7 +1406,7 @@
 "path":[
 "rliterate.py"
 ],
-"text":"from collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport xml.sax.saxutils\n\nimport pygments.lexers\nimport pygments.token\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    app = wx.App()\n    main_frame = MainFrame(filepath=sys.argv[1])\n    main_frame.Show()\n    app.MainLoop()\n",
+"text":"from collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\n\nimport pygments.lexers\nfrom pygments.token import Token\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    app = wx.App()\n    main_frame = MainFrame(filepath=sys.argv[1])\n    main_frame.Show()\n    app.MainLoop()\n",
 "type":"code"
 }
 ],
