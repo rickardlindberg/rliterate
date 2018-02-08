@@ -718,12 +718,12 @@ class CodeView(wx.Panel):
     def _create_code(self, code_paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
-        body = CodeBody(panel, self.project, code_paragraph)
+        body = RichTextDisplay(panel, self.project, code_paragraph.highlighted_code)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
         panel.SetSizer(sizer)
         MouseEventHelper.bind(
-            [panel, body]+body.children,
+            [panel, body],
             double_click=self._post_paragraph_edit_start,
             drag=self.Parent.DoDragDrop,
             right_click=self.Parent.ShowContextMenu
@@ -732,23 +732,6 @@ class CodeView(wx.Panel):
 
     def _post_paragraph_edit_start(self):
         wx.PostEvent(self, ParagraphEditStart(0))
-class CodeBody(wx.ScrolledWindow):
-
-    def __init__(self, parent, project, paragraph):
-        wx.ScrolledWindow.__init__(self, parent)
-        self.project = project
-        self.children = []
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self._add_lines(sizer, paragraph)
-        self.SetSizer(sizer)
-        self.SetMinSize((-1, sizer.GetMinSize()[1]))
-        self.SetScrollRate(20, 20)
-
-    def _add_lines(self, sizer, paragraph):
-        for line in paragraph.highlighted_code:
-            text = RichTextDisplay(self, self.project, line)
-            sizer.Add(text)
-            self.children.append(text)
 class CodeEditor(wx.Panel):
 
     BORDER = 1
@@ -1319,7 +1302,7 @@ class DictCodeParagraph(DictParagraph):
             lexer = self._get_lexer()
         except:
             lexer = pygments.lexers.TextLexer(stripnl=False)
-        return self._split_tokens(lexer.get_tokens(self.text))
+        return self._convert_tokens(lexer.get_tokens(self.text))
 
     def _get_lexer(self):
         return pygments.lexers.get_lexer_for_filename(
@@ -1327,21 +1310,12 @@ class DictCodeParagraph(DictParagraph):
             stripnl=False
         )
 
-    def _split_tokens(self, tokens):
-        lines = []
-        line = []
-        for token_type, text in tokens:
-            parts = text.split("\n")
-            line.append(Part(token_type=token_type, text=parts.pop(0)))
-            while parts:
-                lines.append(line)
-                line = []
-                line.append(Part(token_type=token_type, text=parts.pop(0)))
-        if line:
-            lines.append(line)
-        if lines and lines[-1] and len(lines[-1]) == 1 and len(lines[-1][0].text) == 0:
-            lines.pop(-1)
-        return lines
+    def _convert_tokens(self, tokens):
+        return [
+            Part(token_type=token_type, text=text)
+            for token_type, text
+            in tokens
+        ]
 class Part(object):
 
     def __init__(self, token_type, text, bold=False):
