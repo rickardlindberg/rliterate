@@ -775,9 +775,8 @@ class Title(Editable):
         view = RichTextDisplay(
             self,
             self.project,
-            [Part(token_type=None, text=self.page.title)]
+            Fragment(self.page.title).word_split()
         )
-        view.SetToolTip(wx.ToolTip(self.page.title))
         return view
 
     def CreateEdit(self):
@@ -892,8 +891,8 @@ class CodeView(wx.Panel):
             panel,
             self.project,
             insert_between(
-                Part(token_type=None, text=" / "),
-                [Part(token_type=None, text=x, bold=True) for x in code_paragraph.path]
+                Fragment(" / "),
+                [Fragment(x, token=pygments.token.Token.RLiterate.Strong) for x in code_paragraph.path]
             )
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -910,7 +909,7 @@ class CodeView(wx.Panel):
     def _create_code(self, code_paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
-        body = RichTextDisplay(panel, self.project, code_paragraph.highlighted_code)
+        body = RichTextDisplay(panel, self.project, code_paragraph.formatted_text)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
         panel.SetSizer(sizer)
@@ -1322,10 +1321,10 @@ This widget can display rich text according to a theme.
 ```python
 class RichTextDisplay(wx.Panel):
 
-    def __init__(self, parent, project, parts):
+    def __init__(self, parent, project, fragments):
         wx.Panel.__init__(self, parent)
         self.project = project
-        self.parts = parts
+        self.fragments = fragments
         self._set_fragments()
         self.Bind(wx.EVT_PAINT, self._on_paint)
 
@@ -1341,48 +1340,36 @@ class RichTextDisplay(wx.Panel):
         x = 0
         y = 0
         max_x, max_y = dc.GetTextExtent("M")
-        for part in self._newline_parts():
-            if part.text is None:
+        for fragment in self._newline_fragments():
+            if fragment.text is None:
                 x = 0
-                y += dc.GetTextExtent("M")[1]
+                y += dc.GetTextExtent("M")[1]+2
                 continue
-            dc.SetFont(self._font(bold=part.bold))
-            w, h = dc.GetTextExtent(part.text)
+            style = self.project.get_style(fragment.token)
+            style.apply_to_wx_dc(dc, self.GetFont())
+            w, h = dc.GetTextExtent(fragment.text)
             if x > 0 and x+w > PAGE_BODY_WIDTH:
                 x = 0
-                y += dc.GetTextExtent("M")[1]
-            fragments.append((
-                part.text,
-                self.project.get_style(part.token_type).color_rgb,
-                part.bold,
-                x,
-                y,
-            ))
+                y += dc.GetTextExtent("M")[1]+2
+            fragments.append((fragment.text, style, x, y))
             max_x = max(max_x, x+w)
             max_y = max(max_y, y+h)
             x += w
         return (max_x, max_y, fragments)
 
-    def _newline_parts(self):
-        for part in self.parts:
-            if "\n" in part.text:
-                for x in insert_between(None, part.text.split("\n")):
-                    yield Part(token_type=part.token_type, bold=part.bold, text=x)
+    def _newline_fragments(self):
+        for fragment in self.fragments:
+            if "\n" in fragment.text:
+                for x in insert_between(None, fragment.text.split("\n")):
+                    yield Fragment(x, token=fragment.token)
             else:
-                yield part
+                yield fragment
 
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
-        for text, color, bold, x, y in self.fragments:
-            dc.SetFont(self._font(bold=bold))
-            dc.SetTextForeground(color)
+        for text, style, x, y in self.fragments:
+            style.apply_to_wx_dc(dc, self.GetFont())
             dc.DrawText(text, x, y)
-
-    def _font(self, bold=False):
-        if bold:
-            return self.GetFont().Bold()
-        else:
-            return self.GetFont()
 ```
 
 #### Constants
@@ -1398,6 +1385,8 @@ PARAGRAPH_SPACE = 15
 
 ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
 ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
+
+Token = pygments.token.Token
 ```
 
 ### Project
@@ -1711,18 +1700,18 @@ class DictTextParagraph(DictParagraph):
 
     @property
     def formatted_text(self):
-        parts = []
+        fragments = []
         text = self._paragraph_dict["text"]
         while text:
             match = re.match(r"\*\*(.+?)\*\*", text, flags=re.DOTALL)
             if match:
-                parts.append(Part(token_type=None, text=match.group(1), bold=True))
+                fragments.extend(Fragment(match.group(1), token=Token.RLiterate.Strong).word_split())
                 text = text[match.end(0):]
             else:
                 match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
-                parts.append(Part(token_type=None, text=match.group(0)))
+                fragments.append(Fragment(match.group(0)))
                 text = text[match.end(0):]
-        return parts
+        return fragments
 ```
 
 `rliterate.py / <<classes>>`:
@@ -1733,6 +1722,14 @@ class DictCodeParagraph(DictParagraph):
     @property
     def text(self):
         return self._paragraph_dict["text"]
+
+    @property
+    def formatted_text(self):
+        try:
+            lexer = self._get_lexer()
+        except:
+            lexer = pygments.lexers.TextLexer(stripnl=False)
+        return self._tokens_to_fragments(lexer.get_tokens(self.text))
 
     @property
     def path(self):
@@ -1754,37 +1751,36 @@ class DictCodeParagraph(DictParagraph):
         except:
             return ""
 
-    @property
-    def highlighted_code(self):
-        try:
-            lexer = self._get_lexer()
-        except:
-            lexer = pygments.lexers.TextLexer(stripnl=False)
-        return self._convert_tokens(lexer.get_tokens(self.text))
-
     def _get_lexer(self):
         return pygments.lexers.get_lexer_for_filename(
             self.filename,
             stripnl=False
         )
 
-    def _convert_tokens(self, tokens):
-        return [
-            Part(token_type=token_type, text=text)
-            for token_type, text
-            in tokens
-        ]
+    def _tokens_to_fragments(self, tokens):
+        fragments = []
+        for token, text in tokens:
+            fragments.extend(Fragment(text, token=token).word_split())
+        return fragments
 ```
 
 `rliterate.py / <<classes>>`:
 
 ```python
-class Part(object):
+class Fragment(object):
 
-    def __init__(self, token_type, text, bold=False):
-        self.token_type = token_type
+    def __init__(self, text, token=Token.RLiterate):
         self.text = text
-        self.bold = bold
+        self.token = token
+
+    def word_split(self):
+        fragments = []
+        text = self.text
+        while text:
+            match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
+            fragments.append(Fragment(text=match.group(0), token=self.token))
+            text = text[match.end(0):]
+        return fragments
 ```
 
 #### Layouts
@@ -1851,8 +1847,6 @@ Some parts of the application can be themed. Token types from pygments denote di
 class BaseTheme(object):
 
     def get_style(self, token_type):
-        if token_type is None:
-            return Style(color="#2e3436")
         if token_type in self.styles:
             return self.styles[token_type]
         return self.get_style(token_type.parent)
@@ -1863,13 +1857,21 @@ class BaseTheme(object):
 ```python
 class Style(object):
 
-    def __init__(self, color):
+    def __init__(self, color, bold=None):
         self.color = color
         self.color_rgb = tuple([
             int(x, 16)
             for x
             in (color[1:3], color[3:5], color[5:7])
         ])
+        self.bold = bold
+
+    def apply_to_wx_dc(self, dc, base_font):
+        if self.bold:
+            dc.SetFont(base_font.Bold())
+        else:
+            dc.SetFont(base_font)
+        dc.SetTextForeground(self.color_rgb)
 ```
 
 Here is a theme based on solarized. Mostly stolen from https://github.com/honza/solarized-pygments/blob/master/solarized.py.
@@ -1879,40 +1881,44 @@ Here is a theme based on solarized. Mostly stolen from https://github.com/honza/
 ```python
 class SolarizedTheme(BaseTheme):
 
-    base03  =  '#002b36'
-    base02  =  '#073642'
-    base01  =  '#586e75'
-    base00  =  '#657b83'
-    base0   =  '#839496'
-    base1   =  '#93a1a1'
-    base2   =  '#eee8d5'
-    base3   =  '#fdf6e3'
-    yellow  =  '#b58900'
-    orange  =  '#cb4b16'
-    red     =  '#dc322f'
-    magenta =  '#d33682'
-    violet  =  '#6c71c4'
-    blue    =  '#268bd2'
-    cyan    =  '#2aa198'
-    green   =  '#859900'
+    base03  = "#002b36"
+    base02  = "#073642"
+    base01  = "#586e75"
+    base00  = "#657b83"
+    base0   = "#839496"
+    base1   = "#93a1a1"
+    base2   = "#eee8d5"
+    base3   = "#fdf6e3"
+    yellow  = "#b58900"
+    orange  = "#cb4b16"
+    red     = "#dc322f"
+    magenta = "#d33682"
+    violet  = "#6c71c4"
+    blue    = "#268bd2"
+    cyan    = "#2aa198"
+    green   = "#859900"
+
+    text    = "#2e3436"
 
     styles = {
-        pygments.token.Token:               Style(color=base00),
-        pygments.token.Keyword:             Style(color=green),
-        pygments.token.Keyword.Constant:    Style(color=cyan),
-        pygments.token.Keyword.Declaration: Style(color=blue),
-        pygments.token.Keyword.Namespace:   Style(color=orange),
-        pygments.token.Name.Builtin:        Style(color=red),
-        pygments.token.Name.Builtin.Pseudo: Style(color=blue),
-        pygments.token.Name.Class:          Style(color=blue),
-        pygments.token.Name.Decorator:      Style(color=blue),
-        pygments.token.Name.Entity:         Style(color=violet),
-        pygments.token.Name.Exception:      Style(color=yellow),
-        pygments.token.Name.Function:       Style(color=blue),
-        pygments.token.String:              Style(color=cyan),
-        pygments.token.Number:              Style(color=cyan),
-        pygments.token.Operator.Word:       Style(color=green),
-        pygments.token.Comment:             Style(color=base1),
+        Token:                     Style(color=base00),
+        Token.Keyword:             Style(color=green),
+        Token.Keyword.Constant:    Style(color=cyan),
+        Token.Keyword.Declaration: Style(color=blue),
+        Token.Keyword.Namespace:   Style(color=orange),
+        Token.Name.Builtin:        Style(color=red),
+        Token.Name.Builtin.Pseudo: Style(color=blue),
+        Token.Name.Class:          Style(color=blue),
+        Token.Name.Decorator:      Style(color=blue),
+        Token.Name.Entity:         Style(color=violet),
+        Token.Name.Exception:      Style(color=yellow),
+        Token.Name.Function:       Style(color=blue),
+        Token.String:              Style(color=cyan),
+        Token.Number:              Style(color=cyan),
+        Token.Operator.Word:       Style(color=green),
+        Token.Comment:             Style(color=base1),
+        Token.RLiterate:           Style(color=text),
+        Token.RLiterate.Strong:    Style(color=text, bold=True),
     }
 ```
 
