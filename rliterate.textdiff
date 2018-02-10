@@ -134,7 +134,6 @@ Random notes of what I might want to work on in the future.
 * Diff two rliterate documents
 * Search and replace
 * Highlight placeholders in code fragments
-* Rich text display sometime draws text too far right (outside page)
 
 1164b94ba82c476897ce18fc1b70a5b8: Container widget
 
@@ -305,7 +304,8 @@ Event handlers:
                 self,
                 self.project,
                 self.paragraph.formatted_text,
-                line_height=1.2
+                line_height=1.2,
+                max_width=PAGE_BODY_WIDTH
             )
             MouseEventHelper.bind(
                 [view],
@@ -1939,7 +1939,8 @@ e85c134f26aa41288557f5b0c04fb29a: View widget
                 insert_between(
                     Fragment(" / "),
                     [Fragment(x, token=pygments.token.Token.RLiterate.Strong) for x in code_paragraph.path]
-                )
+                ),
+                max_width=PAGE_BODY_WIDTH-2*self.PADDING
             )
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
@@ -1955,7 +1956,12 @@ e85c134f26aa41288557f5b0c04fb29a: View widget
         def _create_code(self, code_paragraph):
             panel = wx.Panel(self)
             panel.SetBackgroundColour((253, 246, 227))
-            body = RichTextDisplay(panel, self.project, code_paragraph.formatted_text)
+            body = RichTextDisplay(
+                panel,
+                self.project,
+                code_paragraph.formatted_text,
+                max_width=PAGE_BODY_WIDTH-2*self.PADDING
+            )
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
             panel.SetSizer(sizer)
@@ -2048,7 +2054,8 @@ f1137543026a4319a6a9e2ce5d0f3d5e: Title
             view = RichTextDisplay(
                 self,
                 self.project,
-                Fragment(self.page.title).word_split()
+                Fragment(self.page.title).word_split(),
+                max_width=PAGE_BODY_WIDTH
             )
             return view
     
@@ -2073,11 +2080,12 @@ The rich text display widget displayes styled text fragments. It does so by draw
 
 `rliterate.py / <<classes>> / <<RichTextDisplay>>`:
 
-    def __init__(self, parent, project, fragments, line_height=1):
+    def __init__(self, parent, project, fragments, **kwargs):
         wx.Panel.__init__(self, parent)
         self.project = project
         self.fragments = fragments
-        self.line_height = line_height
+        self.line_height = kwargs.get("line_height", 1)
+        self.max_width = kwargs.get("max_width", 100)
         <<__init__>>
 
 
@@ -2110,7 +2118,7 @@ First, the text fragment positions are calculated. For that a DC is needed. But 
             style = self.project.get_style(fragment.token)
             style.apply_to_wx_dc(dc, self.GetFont())
             w, h = dc.GetTextExtent(fragment.text)
-            if x > 0 and x+w > PAGE_BODY_WIDTH:
+            if x > 0 and x+w > self.max_width:
                 x = 0
                 y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
             fragments.append((fragment.text, style, x, y))

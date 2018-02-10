@@ -633,7 +633,8 @@ class Title(Editable):
         view = RichTextDisplay(
             self,
             self.project,
-            Fragment(self.page.title).word_split()
+            Fragment(self.page.title).word_split(),
+            max_width=PAGE_BODY_WIDTH
         )
         return view
 
@@ -655,7 +656,8 @@ class Paragraph(ParagraphBase, Editable):
             self,
             self.project,
             self.paragraph.formatted_text,
-            line_height=1.2
+            line_height=1.2,
+            max_width=PAGE_BODY_WIDTH
         )
         MouseEventHelper.bind(
             [view],
@@ -725,7 +727,8 @@ class CodeView(wx.Panel):
             insert_between(
                 Fragment(" / "),
                 [Fragment(x, token=pygments.token.Token.RLiterate.Strong) for x in code_paragraph.path]
-            )
+            ),
+            max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
@@ -741,7 +744,12 @@ class CodeView(wx.Panel):
     def _create_code(self, code_paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
-        body = RichTextDisplay(panel, self.project, code_paragraph.formatted_text)
+        body = RichTextDisplay(
+            panel,
+            self.project,
+            code_paragraph.formatted_text,
+            max_width=PAGE_BODY_WIDTH-2*self.PADDING
+        )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
         panel.SetSizer(sizer)
@@ -971,11 +979,12 @@ class MouseEventHelper(object):
     def _on_right_up(self, event):
         self.OnRightClick()
 class RichTextDisplay(wx.Panel):
-    def __init__(self, parent, project, fragments, line_height=1):
+    def __init__(self, parent, project, fragments, **kwargs):
         wx.Panel.__init__(self, parent)
         self.project = project
         self.fragments = fragments
-        self.line_height = line_height
+        self.line_height = kwargs.get("line_height", 1)
+        self.max_width = kwargs.get("max_width", 100)
         self._set_fragments()
         self.Bind(wx.EVT_PAINT, self._on_paint)
     def _set_fragments(self):
@@ -998,7 +1007,7 @@ class RichTextDisplay(wx.Panel):
             style = self.project.get_style(fragment.token)
             style.apply_to_wx_dc(dc, self.GetFont())
             w, h = dc.GetTextExtent(fragment.text)
-            if x > 0 and x+w > PAGE_BODY_WIDTH:
+            if x > 0 and x+w > self.max_width:
                 x = 0
                 y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
             fragments.append((fragment.text, style, x, y))
