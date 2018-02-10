@@ -437,7 +437,8 @@ class PageContextMenu(wx.Menu):
 
 #### Workspace
 
-A workspace is a container for widgets. Widgets are ordered in columns. Each column contain widgets stacked vertically.
+The workspace shows body content of pages in the document. It is organized in columns, and each column can show body content from multiple pages.
+
 
 ##### Main widget
 
@@ -475,7 +476,7 @@ def SetProject(self, project):
 
 ###### Rendering
 
-Rendering a workspace means laying out a set of column widgets horizontally. Currently only one column, the scratch column, is supported.
+Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled withe page body content.
 
 Layout has to be called on the parent. Otherwise scrollbars don't update appropriately.
 
@@ -561,7 +562,7 @@ def FindClosestDropPoint(self, screen_pos):
 
 ##### Column widget
 
-The column widget is a panel containing a set of containers.
+The column widget is a panel containing containers.
 
 `rliterate.py / <<classes>>`:
 
@@ -589,7 +590,7 @@ class Column(wx.Panel):
 
 ##### Container widget
 
-The container widget draws a box with border around a widget. Typically a page.
+The container widget draws a box with border. Widgets acan then be added to the container. Typically only a single page widget is added.
 
 `rliterate.py / <<classes>>`:
 

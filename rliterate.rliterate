@@ -424,7 +424,7 @@
 "paragraphs":[
 {
 "id":"246a23a170164f1c91e73f877b824930",
-"text":"Rendering a workspace means laying out a set of column widgets horizontally. Currently only one column, the scratch column, is supported.",
+"text":"Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled withe page body content.",
 "type":"text"
 },
 {
@@ -543,7 +543,7 @@
 "paragraphs":[
 {
 "id":"5d9d79b33aa44d6ca21b8a760fd09dc3",
-"text":"The column widget is a panel containing a set of containers.",
+"text":"The column widget is a panel containing containers.",
 "type":"text"
 },
 {
@@ -564,7 +564,7 @@
 "paragraphs":[
 {
 "id":"bb9393f32b254e4c8d629a90e706a5a1",
-"text":"The container widget draws a box with border around a widget. Typically a page.",
+"text":"The container widget draws a box with border. Widgets acan then be added to the container. Typically only a single page widget is added.",
 "type":"text"
 },
 {
@@ -825,7 +825,7 @@
 "paragraphs":[
 {
 "id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
-"text":"A workspace is a container for widgets. Widgets are ordered in columns. Each column contain widgets stacked vertically.",
+"text":"The workspace shows body content of pages in the document. It is organized in columns, and each column can show body content from multiple pages.\n",
 "type":"text"
 }
 ],
