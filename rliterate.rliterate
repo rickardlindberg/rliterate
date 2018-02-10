@@ -439,7 +439,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def _render(self):\n    self.SetScrollRate(20, 20)\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.SetSizer(self.sizer)\n    self._re_render()\n\ndef _re_render(self):\n    self.sizer.Clear(True)\n    self.columns = []\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self._render_column(self.project.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _render_column(self, page_ids):\n    column = Column(self, self.project, page_ids)\n    self.columns.append(column)\n    self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)\n    return column\n",
+"text":"def _render(self):\n    self.SetScrollRate(20, 20)\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.SetSizer(self.sizer)\n    self._re_render()\n\ndef _re_render(self):\n    self.sizer.Clear(True)\n    self.pages = []\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self._render_pages_column(self.project.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _render_pages_column(self, page_ids):\n    column = self._add_column()\n    for page_id in page_ids:\n        if self.project.get_page(page_id) is not None:\n            self.pages.append(\n                column.AddContainer().AddPage(self.project, page_id)\n            )\n\ndef _add_column(self):\n    column = Column(self)\n    self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)\n    return column\n",
 "type":"code"
 },
 {
@@ -501,7 +501,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.columns,\n        lambda column: column.FindClosestDropPoint(screen_pos)\n    )",
+"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.pages,\n        lambda page: page.FindClosestDropPoint(screen_pos)\n    )",
 "type":"code"
 }
 ],
@@ -531,7 +531,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def __init__(self, parent, project):\n    wx.ScrolledWindow.__init__(self, parent, size=(int(PAGE_BODY_WIDTH*1.2), 300))\n    self.project_listener = Listener(self._re_render_from_event, \"document\", \"layout.workspace\")\n    self.SetProject(project)\n    <<__init__>>\n    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
+"text":"def __init__(self, parent, project):\n    wx.ScrolledWindow.__init__(\n        self,\n        parent,\n        size=(int(PAGE_BODY_WIDTH*1.2), 300)\n    )\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\",\n        \"layout.workspace\"\n    )\n    self.SetProject(project)\n    <<__init__>>\n    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
 "type":"code"
 }
 ],
@@ -543,7 +543,7 @@
 "paragraphs":[
 {
 "id":"5d9d79b33aa44d6ca21b8a760fd09dc3",
-"text":"The column widget is a panel containing a set of pages.",
+"text":"The column widget is a panel containing a set of containers.",
 "type":"text"
 },
 {
@@ -552,37 +552,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Column(wx.Panel):\n\n    def __init__(self, parent, project, page_ids):\n        wx.Panel.__init__(\n            self,\n            parent,\n            size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1)\n        )\n        self.project = project\n        self.page_ids = page_ids\n        self._render()\n\n    <<Column>>\n",
-"type":"code"
-},
-{
-"id":"c0c9b3b18c554858ac20ccd48a64d04f",
-"text":"Rendering means laying out a set of pages vertically.",
-"type":"text"
-},
-{
-"id":"39591191e5cf4dd587b637a44959c91d",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Column>>"
-],
-"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.pages = [\n        self._render_page(page_id)\n        for page_id\n        in self.page_ids\n        if self.project.get_page(page_id) is not None\n    ]\n    self.SetSizer(self.sizer)\n\ndef _render_page(self, page_id):\n    page = PageContainer(self, self.project, page_id)\n    self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)\n    return page\n",
-"type":"code"
-},
-{
-"id":"55b0def000b0493eb185748bfb38877d",
-"text":"Dropping stuff:",
-"type":"text"
-},
-{
-"id":"807cfa1da4a64089a8280ad76b44cd8c",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Column>>"
-],
-"text":"def FindClosestDropPoint(self, screen_pos):\n    return find_first(\n        self.pages,\n        lambda page: page.FindClosestDropPoint(screen_pos)\n    )\n",
+"text":"class Column(wx.Panel):\n\n    def __init__(self, parent):\n        wx.Panel.__init__(self, parent)\n        self._setup_layout()\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n\n    def AddContainer(self):\n        container = Container(self)\n        self.sizer.Add(\n            container,\n            flag=wx.BOTTOM|wx.EXPAND,\n            border=PAGE_PADDING\n        )\n        return container\n",
 "type":"code"
 }
 ],
@@ -593,46 +563,21 @@
 "id":"1164b94ba82c476897ce18fc1b70a5b8",
 "paragraphs":[
 {
+"id":"bb9393f32b254e4c8d629a90e706a5a1",
+"text":"The container widget draws a box with border around a widget. Typically a page.",
+"type":"text"
+},
+{
 "id":"29a948082ed3467395fb08fcbc0ad7c9",
 "path":[
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class PageContainer(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    <<PageContainer>>\n",
-"type":"code"
-},
-{
-"id":"8f132dbbbf5d43cc81523cd192118c93",
-"text":"Rendering:",
-"type":"text"
-},
-{
-"id":"e300caaff4ed44199bb7db013a910ef7",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<PageContainer>>"
-],
-"text":"def _render(self):\n    self.SetBackgroundColour((150, 150, 150))\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.page_body = Page(self, self.project, self.page_id)\n    self.sizer.Add(\n        self.page_body,\n        flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n        border=SHADOW_SIZE\n    )\n    self.SetSizer(self.sizer)\n",
-"type":"code"
-},
-{
-"id":"d29dee71792a448fa78b885f7170caba",
-"text":"Drag and drop:",
-"type":"text"
-},
-{
-"id":"bbc55d4aa6874c048669deb66d9a80b7",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<PageContainer>>"
-],
-"text":"def FindClosestDropPoint(self, screen_pos):\n    return self.page_body.FindClosestDropPoint(screen_pos)\n",
+"text":"class Container(wx.Panel):\n\n    def __init__(self, parent):\n        wx.Panel.__init__(\n            self,\n            parent,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER, -1)\n        )\n        self._render()\n\n    def _render(self):\n        self.SetBackgroundColour((150, 150, 150))\n        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.inner_container = wx.Panel(self)\n        self.inner_container.SetBackgroundColour((255, 255, 255))\n        self.inner_container.SetSizer(self.inner_sizer)\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(\n            self.inner_container,\n            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n            border=SHADOW_SIZE\n        )\n        self.SetSizer(self.sizer)\n        self.inner_sizer.AddSpacer(CONTAINER_BORDER)\n\n    def AddPage(self, project, page_id):\n        return self._add(Page(self.inner_container, project, page_id))\n\n    def _add(self, widget):\n        self.inner_sizer.Add(\n            widget,\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n            border=CONTAINER_BORDER\n        )\n        return widget\n",
 "type":"code"
 }
 ],
-"title":"Page container"
+"title":"Container widget"
 },
 {
 "children":[
@@ -647,7 +592,7 @@
 "<<classes>>",
 "<<Page>>"
 ],
-"text":"def _render(self):\n    self.SetBackgroundColour(wx.WHITE)\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    self.sizer.AddSpacer(PARAGRAPH_SPACE)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Paragraph,\n            \"code\": Code,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.sizer.Add(\n        paragraph,\n        flag=wx.LEFT|wx.RIGHT|wx.EXPAND,\n        border=PARAGRAPH_SPACE\n    )\n    divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)\n    self.sizer.Add(\n        divider,\n        flag=wx.LEFT|wx.RIGHT|wx.EXPAND,\n        border=PARAGRAPH_SPACE\n    )\n    return divider\n\ndef _render_add_button(self):\n    add_button = wx.BitmapButton(\n        self,\n        bitmap=wx.ArtProvider.GetBitmap(\n            wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON,\n            (16, 16)\n        ),\n        style=wx.NO_BORDER\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n    self.sizer.Add(\n        add_button,\n        flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,\n        border=PARAGRAPH_SPACE\n    )\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
+"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Paragraph,\n            \"code\": Code,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.sizer.Add(\n        paragraph,\n        flag=wx.EXPAND,\n        border=PARAGRAPH_SPACE\n    )\n    divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)\n    self.sizer.Add(\n        divider,\n        flag=wx.EXPAND,\n        border=PARAGRAPH_SPACE\n    )\n    return divider\n\ndef _render_add_button(self):\n    add_button = wx.BitmapButton(\n        self,\n        bitmap=wx.ArtProvider.GetBitmap(\n            wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON,\n            (16, 16)\n        ),\n        style=wx.NO_BORDER\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n    self.sizer.Add(\n        add_button,\n        flag=wx.TOP|wx.ALIGN_RIGHT,\n        border=PARAGRAPH_SPACE\n    )\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
 "type":"code"
 },
 {
@@ -880,7 +825,7 @@
 "paragraphs":[
 {
 "id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
-"text":"A workspace is a container for pages. Pages are ordered in columns. Currently only one column is supported.",
+"text":"A workspace is a container for widgets. Widgets are ordered in columns. Each column contain widgets stacked vertically.",
 "type":"text"
 }
 ],
@@ -1062,7 +1007,7 @@
 "rliterate.py",
 "<<constants>>"
 ],
-"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\n\n\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()",
+"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 12\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\nCONTAINER_BORDER = PARAGRAPH_SPACE\n\n\nParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()\nParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()",
 "type":"code"
 }
 ],

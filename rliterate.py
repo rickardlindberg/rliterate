@@ -19,6 +19,7 @@ PAGE_BODY_WIDTH = 600
 PAGE_PADDING = 12
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
+CONTAINER_BORDER = PARAGRAPH_SPACE
 
 
 ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
@@ -416,8 +417,16 @@ class PageContextMenu(wx.Menu):
         )
 class Workspace(wx.ScrolledWindow):
     def __init__(self, parent, project):
-        wx.ScrolledWindow.__init__(self, parent, size=(int(PAGE_BODY_WIDTH*1.2), 300))
-        self.project_listener = Listener(self._re_render_from_event, "document", "layout.workspace")
+        wx.ScrolledWindow.__init__(
+            self,
+            parent,
+            size=(int(PAGE_BODY_WIDTH*1.2), 300)
+        )
+        self.project_listener = Listener(
+            self._re_render_from_event,
+            "document",
+            "layout.workspace"
+        )
         self.SetProject(project)
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
         self._render()
@@ -434,22 +443,29 @@ class Workspace(wx.ScrolledWindow):
 
     def _re_render(self):
         self.sizer.Clear(True)
-        self.columns = []
+        self.pages = []
         self.sizer.AddSpacer(PAGE_PADDING)
-        self._render_column(self.project.get_scratch_pages())
+        self._render_pages_column(self.project.get_scratch_pages())
         self.Parent.Layout()
 
-    def _render_column(self, page_ids):
-        column = Column(self, self.project, page_ids)
-        self.columns.append(column)
+    def _render_pages_column(self, page_ids):
+        column = self._add_column()
+        for page_id in page_ids:
+            if self.project.get_page(page_id) is not None:
+                self.pages.append(
+                    column.AddContainer().AddPage(self.project, page_id)
+                )
+
+    def _add_column(self):
+        column = Column(self)
         self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
         return column
     def _re_render_from_event(self, event):
         wx.CallAfter(self._re_render)
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            self.columns,
-            lambda column: column.FindClosestDropPoint(screen_pos)
+            self.pages,
+            lambda page: page.FindClosestDropPoint(screen_pos)
         )
 class WorkspaceDropTarget(DropPointDropTarget):
 
@@ -466,56 +482,58 @@ class WorkspaceDropTarget(DropPointDropTarget):
         )
 class Column(wx.Panel):
 
-    def __init__(self, parent, project, page_ids):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self._setup_layout()
+
+    def _setup_layout(self):
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.AddSpacer(PAGE_PADDING)
+        self.SetSizer(self.sizer)
+
+    def AddContainer(self):
+        container = Container(self)
+        self.sizer.Add(
+            container,
+            flag=wx.BOTTOM|wx.EXPAND,
+            border=PAGE_PADDING
+        )
+        return container
+class Container(wx.Panel):
+
+    def __init__(self, parent):
         wx.Panel.__init__(
             self,
             parent,
-            size=(PAGE_BODY_WIDTH+2*PARAGRAPH_SPACE+SHADOW_SIZE, -1)
+            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER, -1)
         )
-        self.project = project
-        self.page_ids = page_ids
-        self._render()
-
-    def _render(self):
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.AddSpacer(PAGE_PADDING)
-        self.pages = [
-            self._render_page(page_id)
-            for page_id
-            in self.page_ids
-            if self.project.get_page(page_id) is not None
-        ]
-        self.SetSizer(self.sizer)
-
-    def _render_page(self, page_id):
-        page = PageContainer(self, self.project, page_id)
-        self.sizer.Add(page, flag=wx.BOTTOM|wx.EXPAND, border=PAGE_PADDING)
-        return page
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            self.pages,
-            lambda page: page.FindClosestDropPoint(screen_pos)
-        )
-class PageContainer(wx.Panel):
-
-    def __init__(self, parent, project, page_id):
-        wx.Panel.__init__(self, parent)
-        self.project = project
-        self.page_id = page_id
         self._render()
 
     def _render(self):
         self.SetBackgroundColour((150, 150, 150))
+        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.inner_container = wx.Panel(self)
+        self.inner_container.SetBackgroundColour((255, 255, 255))
+        self.inner_container.SetSizer(self.inner_sizer)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.page_body = Page(self, self.project, self.page_id)
         self.sizer.Add(
-            self.page_body,
+            self.inner_container,
             flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
             border=SHADOW_SIZE
         )
         self.SetSizer(self.sizer)
-    def FindClosestDropPoint(self, screen_pos):
-        return self.page_body.FindClosestDropPoint(screen_pos)
+        self.inner_sizer.AddSpacer(CONTAINER_BORDER)
+
+    def AddPage(self, project, page_id):
+        return self._add(Page(self.inner_container, project, page_id))
+
+    def _add(self, widget):
+        self.inner_sizer.Add(
+            widget,
+            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+            border=CONTAINER_BORDER
+        )
+        return widget
 class Page(wx.Panel):
 
     def __init__(self, parent, project, page_id):
@@ -525,12 +543,10 @@ class Page(wx.Panel):
         self._render()
 
     def _render(self):
-        self.SetBackgroundColour(wx.WHITE)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         self.drop_points = []
         page = self.project.get_page(self.page_id)
-        self.sizer.AddSpacer(PARAGRAPH_SPACE)
         divider = self._render_paragraph(Title(self, self.project, page))
         for paragraph in page.paragraphs:
             self.drop_points.append(PageDropPoint(
@@ -553,13 +569,13 @@ class Page(wx.Panel):
     def _render_paragraph(self, paragraph):
         self.sizer.Add(
             paragraph,
-            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
+            flag=wx.EXPAND,
             border=PARAGRAPH_SPACE
         )
         divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)
         self.sizer.Add(
             divider,
-            flag=wx.LEFT|wx.RIGHT|wx.EXPAND,
+            flag=wx.EXPAND,
             border=PARAGRAPH_SPACE
         )
         return divider
@@ -577,7 +593,7 @@ class Page(wx.Panel):
         add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
         self.sizer.Add(
             add_button,
-            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT,
+            flag=wx.TOP|wx.ALIGN_RIGHT,
             border=PARAGRAPH_SPACE
         )
 
