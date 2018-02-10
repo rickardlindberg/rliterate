@@ -955,7 +955,6 @@ class MouseEventHelper(object):
     def _on_right_up(self, event):
         self.OnRightClick()
 class RichTextDisplay(wx.Panel):
-
     def __init__(self, parent, project, fragments, line_height=1):
         wx.Panel.__init__(self, parent)
         self.project = project
@@ -963,7 +962,6 @@ class RichTextDisplay(wx.Panel):
         self.line_height = line_height
         self._set_fragments()
         self.Bind(wx.EVT_PAINT, self._on_paint)
-
     def _set_fragments(self):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
@@ -1000,7 +998,6 @@ class RichTextDisplay(wx.Panel):
                     yield Fragment(x, token=fragment.token)
             else:
                 yield fragment
-
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
         for text, style, x, y in self.fragments:

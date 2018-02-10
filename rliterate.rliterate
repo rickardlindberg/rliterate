@@ -970,7 +970,7 @@
 "paragraphs":[
 {
 "id":"7286b9e86d644834b949ed82e6afb3ee",
-"text":"This widget can display rich text according to a theme.",
+"text":"The rich text display widget displayes styled text fragments. It does so by drawing text on a DC.",
 "type":"text"
 },
 {
@@ -979,7 +979,69 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class RichTextDisplay(wx.Panel):\n\n    def __init__(self, parent, project, fragments, line_height=1):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.fragments = fragments\n        self.line_height = line_height\n        self._set_fragments()\n        self.Bind(wx.EVT_PAINT, self._on_paint)\n\n    def _set_fragments(self):\n        dc = wx.MemoryDC()\n        dc.SetFont(self.GetFont())\n        dc.SelectObject(wx.EmptyBitmap(1, 1))\n        w, h, self.fragments = self._calculate_fragments(dc)\n        self.SetMinSize((w, h))\n\n    def _calculate_fragments(self, dc):\n        fragments = []\n        x = 0\n        y = 0\n        max_x, max_y = dc.GetTextExtent(\"M\")\n        for fragment in self._newline_fragments():\n            if fragment.text is None:\n                x = 0\n                y += int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n                continue\n            style = self.project.get_style(fragment.token)\n            style.apply_to_wx_dc(dc, self.GetFont())\n            w, h = dc.GetTextExtent(fragment.text)\n            if x > 0 and x+w > PAGE_BODY_WIDTH:\n                x = 0\n                y += int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n            fragments.append((fragment.text, style, x, y))\n            max_x = max(max_x, x+w)\n            max_y = max(max_y, y+h)\n            x += w\n        return (max_x, max_y, fragments)\n\n    def _newline_fragments(self):\n        for fragment in self.fragments:\n            if \"\\n\" in fragment.text:\n                for x in insert_between(None, fragment.text.split(\"\\n\")):\n                    yield Fragment(x, token=fragment.token)\n            else:\n                yield fragment\n\n    def _on_paint(self, event):\n        dc = wx.PaintDC(self)\n        for text, style, x, y in self.fragments:\n            style.apply_to_wx_dc(dc, self.GetFont())\n            dc.DrawText(text, x, y)\n",
+"text":"class RichTextDisplay(wx.Panel):\n    <<RichTextDisplay>>\n",
+"type":"code"
+},
+{
+"id":"1b458cc32c9444d7a16d19205948b38f",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<RichTextDisplay>>"
+],
+"text":"def __init__(self, parent, project, fragments, line_height=1):\n    wx.Panel.__init__(self, parent)\n    self.project = project\n    self.fragments = fragments\n    self.line_height = line_height\n    <<__init__>>",
+"type":"code"
+},
+{
+"id":"44cdc54053dc4136ab337a605d8d0de8",
+"text":"First, the text fragment positions are calculated. For that a DC is needed. But the positions need to be calculated before we can draw on the panel, so a temporary memory DC is created.",
+"type":"text"
+},
+{
+"id":"2c5fccea05ca4f0caa6484a1667e7980",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<RichTextDisplay>>",
+"<<__init__>>"
+],
+"text":"self._set_fragments()",
+"type":"code"
+},
+{
+"id":"2d866dd174ea4e659741a72c91b59b49",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<RichTextDisplay>>"
+],
+"text":"def _set_fragments(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    w, h, self.fragments = self._calculate_fragments(dc)\n    self.SetMinSize((w, h))\n\ndef _calculate_fragments(self, dc):\n    fragments = []\n    x = 0\n    y = 0\n    max_x, max_y = dc.GetTextExtent(\"M\")\n    for fragment in self._newline_fragments():\n        if fragment.text is None:\n            x = 0\n            y += int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n            continue\n        style = self.project.get_style(fragment.token)\n        style.apply_to_wx_dc(dc, self.GetFont())\n        w, h = dc.GetTextExtent(fragment.text)\n        if x > 0 and x+w > PAGE_BODY_WIDTH:\n            x = 0\n            y += int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n        fragments.append((fragment.text, style, x, y))\n        max_x = max(max_x, x+w)\n        max_y = max(max_y, y+h)\n        x += w\n    return (max_x, max_y, fragments)\n\ndef _newline_fragments(self):\n    for fragment in self.fragments:\n        if \"\\n\" in fragment.text:\n            for x in insert_between(None, fragment.text.split(\"\\n\")):\n                yield Fragment(x, token=fragment.token)\n        else:\n            yield fragment\n",
+"type":"code"
+},
+{
+"id":"e077531deeeb4cddbf5d03713a5232fe",
+"text":"Drawing the rich text is just a matter of drawing all fragments at the pre-calculated positions:",
+"type":"text"
+},
+{
+"id":"548cace182ad42d6b8b08a5065bf79e6",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<RichTextDisplay>>",
+"<<__init__>>"
+],
+"text":"self.Bind(wx.EVT_PAINT, self._on_paint)",
+"type":"code"
+},
+{
+"id":"bfc4f55298ea43dba7d1a94526901cdb",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<RichTextDisplay>>"
+],
+"text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for text, style, x, y in self.fragments:\n        style.apply_to_wx_dc(dc, self.GetFont())\n        dc.DrawText(text, x, y)\n",
 "type":"code"
 }
 ],
