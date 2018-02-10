@@ -610,7 +610,7 @@ Openining a page and all immediate children (double click on a page in the table
 
 3f0fc44a9eba4a5cbcae5da3ee5d8925: Rendering
 
-Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled withe page body content.
+Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled with page body content.
 
 Layout has to be called on the parent. Otherwise scrollbars don't update appropriately.
 

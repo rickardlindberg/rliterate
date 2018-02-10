@@ -476,7 +476,7 @@ def SetProject(self, project):
 
 ###### Rendering
 
-Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled withe page body content.
+Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled with page body content.
 
 Layout has to be called on the parent. Otherwise scrollbars don't update appropriately.
 
