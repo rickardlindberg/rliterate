@@ -2352,4 +2352,8 @@ Random notes of what I might want to work on in the future.
 * Deleting root (even hoisted root) gives error
 * Reading tool: Code can either be read in chunks or the final output. And you can follow links between them.
 * Undo
+* Diff two rliterate documents
+* Search and replace
+* Highlight placeholders in code fragments
+* Rich text display sometime draws text too far right (outside page)
 
