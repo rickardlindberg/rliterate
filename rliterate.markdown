@@ -856,7 +856,7 @@ class Code(ParagraphBase, Editable):
 ```python
 class CodeView(wx.Panel):
 
-    BORDER = 1
+    BORDER = 0
     PADDING = 5
 
     def __init__(self, parent, project, code_paragraph):

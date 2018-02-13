@@ -1917,7 +1917,7 @@ e85c134f26aa41288557f5b0c04fb29a: View widget
 
     class CodeView(wx.Panel):
     
-        BORDER = 1
+        BORDER = 0
         PADDING = 5
     
         def __init__(self, parent, project, code_paragraph):
