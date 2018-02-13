@@ -1348,7 +1348,6 @@ class Fragment(object):
             text = text[match.end(0):]
         return fragments
 class Layout(Observable):
-
     def __init__(self, path):
         Observable.__init__(self)
         self.listen(lambda event: write_json_to_file(path, self.data))
@@ -1356,19 +1355,16 @@ class Layout(Observable):
             self.data = load_json_from_file(path)
         else:
             self.data = {}
-        self._ensure_defaults()
+        self._toc = ensure_key(self.data, "toc", {})
+        self._toc_collapsed = ensure_key(self._toc, "collapsed", [])
+        self._workspace = ensure_key(self.data, "workspace", {})
+        self._workspace_scratch = ensure_key(self._workspace, "scratch", [])
+    def get_hoisted_page(self):
+        return self._toc.get("hoisted_page_id", None)
 
-    def _ensure_defaults(self):
-        self._toc = self._ensure_key(self.data, "toc", {})
-        self._toc_collapsed = self._ensure_key(self._toc, "collapsed", [])
-        workspace = self._ensure_key(self.data, "workspace", {})
-        self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
-
-    def _ensure_key(self, a_dict, key, default):
-        if key not in a_dict:
-            a_dict[key] = default
-        return a_dict[key]
-
+    def set_hoisted_page(self, page_id):
+        with self.notify("toc"):
+            self._toc["hoisted_page_id"] = page_id
     def is_collapsed(self, page_id):
         return page_id in self._toc_collapsed
 
@@ -1378,14 +1374,6 @@ class Layout(Observable):
                 self._toc_collapsed.remove(page_id)
             else:
                 self._toc_collapsed.append(page_id)
-
-    def get_hoisted_page(self):
-        return self._toc.get("hoisted_page_id", None)
-
-    def set_hoisted_page(self, page_id):
-        with self.notify("toc"):
-            self._toc["hoisted_page_id"] = page_id
-
     def get_scratch_pages(self):
         return self._workspace_scratch[:]
 
@@ -1587,6 +1575,10 @@ def insert_between(separator, items):
             result.append(separator)
         result.append(item)
     return result
+def ensure_key(a_dict, key, default):
+    if key not in a_dict:
+        a_dict[key] = default
+    return a_dict[key]
 def is_prefix(left, right):
     return left == right[:len(left)]
 def load_json_from_file(path):

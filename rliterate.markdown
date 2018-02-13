@@ -1811,56 +1811,102 @@ class Fragment(object):
 
 #### Layouts
 
-A layout records the visual state of the program. It records what pages are expanded/collapsed in the table of contents and what pages are open in the workspace.
+A layout knows the visual state of the program. It for example knows what pages are expanded/collapsed in the table of contents and what is shown in the workspace.
+
+The layout is recorded in a JSON object that is serialized to disk as soon as something changes.
 
 `rliterate.py / <<classes>>`:
 
 ```python
 class Layout(Observable):
+    <<Layout>>
+```
 
-    def __init__(self, path):
-        Observable.__init__(self)
-        self.listen(lambda event: write_json_to_file(path, self.data))
-        if os.path.exists(path):
-            self.data = load_json_from_file(path)
+`rliterate.py / <<classes>> / <<Layout>>`:
+
+```python
+def __init__(self, path):
+    Observable.__init__(self)
+    self.listen(lambda event: write_json_to_file(path, self.data))
+    if os.path.exists(path):
+        self.data = load_json_from_file(path)
+    else:
+        self.data = {}
+    <<__init__>>
+```
+
+The rest of this class provides methods for reading and writing the `data` dict.
+
+The hoisted page is stored in `toc.hoisted_page_id`:
+
+`rliterate.py / <<classes>> / <<Layout>> / <<__init__>>`:
+
+```python
+self._toc = ensure_key(self.data, "toc", {})
+```
+
+`rliterate.py / <<classes>> / <<Layout>>`:
+
+```python
+def get_hoisted_page(self):
+    return self._toc.get("hoisted_page_id", None)
+
+def set_hoisted_page(self, page_id):
+    with self.notify("toc"):
+        self._toc["hoisted_page_id"] = page_id
+```
+
+The collapsed pages are stored in `toc.collapsed`:
+
+`rliterate.py / <<classes>> / <<Layout>> / <<__init__>>`:
+
+```python
+self._toc_collapsed = ensure_key(self._toc, "collapsed", [])
+```
+
+`rliterate.py / <<classes>> / <<Layout>>`:
+
+```python
+def is_collapsed(self, page_id):
+    return page_id in self._toc_collapsed
+
+def toggle_collapsed(self, page_id):
+    with self.notify("toc"):
+        if page_id in self._toc_collapsed:
+            self._toc_collapsed.remove(page_id)
         else:
-            self.data = {}
-        self._ensure_defaults()
+            self._toc_collapsed.append(page_id)
+```
 
-    def _ensure_defaults(self):
-        self._toc = self._ensure_key(self.data, "toc", {})
-        self._toc_collapsed = self._ensure_key(self._toc, "collapsed", [])
-        workspace = self._ensure_key(self.data, "workspace", {})
-        self._workspace_scratch = self._ensure_key(workspace, "scratch", [])
+The scratch pages are stored in `workspace.scratch`:
 
-    def _ensure_key(self, a_dict, key, default):
-        if key not in a_dict:
-            a_dict[key] = default
-        return a_dict[key]
+`rliterate.py / <<classes>> / <<Layout>> / <<__init__>>`:
 
-    def is_collapsed(self, page_id):
-        return page_id in self._toc_collapsed
+```python
+self._workspace = ensure_key(self.data, "workspace", {})
+self._workspace_scratch = ensure_key(self._workspace, "scratch", [])
+```
 
-    def toggle_collapsed(self, page_id):
-        with self.notify("toc"):
-            if page_id in self._toc_collapsed:
-                self._toc_collapsed.remove(page_id)
-            else:
-                self._toc_collapsed.append(page_id)
+`rliterate.py / <<classes>> / <<Layout>>`:
 
-    def get_hoisted_page(self):
-        return self._toc.get("hoisted_page_id", None)
+```python
+def get_scratch_pages(self):
+    return self._workspace_scratch[:]
 
-    def set_hoisted_page(self, page_id):
-        with self.notify("toc"):
-            self._toc["hoisted_page_id"] = page_id
+def set_scratch_pages(self, page_ids):
+    with self.notify("workspace"):
+        self._workspace_scratch[:] = page_ids
+```
 
-    def get_scratch_pages(self):
-        return self._workspace_scratch[:]
+Finally we have a utility function for ensuring that a specific key exists in a dictionary.
 
-    def set_scratch_pages(self, page_ids):
-        with self.notify("workspace"):
-            self._workspace_scratch[:] = page_ids
+`rliterate.py / <<functions>>`:
+
+```python
+def ensure_key(a_dict, key, default):
+    if key not in a_dict:
+        a_dict[key] = default
+    return a_dict[key]
 ```
 
 #### Themes
