@@ -2349,8 +2349,13 @@ Random notes of what I might want to work on in the future.
 * TOC should only expand first 3(?) levels when opening a file for the first time
 * Deleting root (even hoisted root) gives error
 * Reading tool: Code can either be read in chunks or the final output. And you can follow links between them.
-* Undo
+* Undo (use immutable data types (pyrsistent?))
 * Diff two rliterate documents
 * Search and replace
 * Highlight placeholders in code fragments
+* `word_split` should put whitespace in separate fragment and rich text display should have `skip_leading_space` option
+* Export to stand-alone html for use in blog
+* Drag and drop does not work om Mac (incorrect coordinate calculations?)
+* Dynamic scripting
+    * Show graph paragraph based on data paragraph defined earlier on the page (or on other page)
 
