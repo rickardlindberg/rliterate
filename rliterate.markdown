@@ -1,6 +1,7 @@
 # RLiterate
 
-RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documens special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documens can also be exported to different formats for display in different mediums.
+RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documents special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documents can also be exported to different formats for display in different mediums.
+
 
 ## A tour of RLiterate
 
@@ -31,7 +32,8 @@ At the time I was working on a program that I thought would be nice to express i
 
 ### The prototype
 
-So I decided to build a prototype to learn what such a tool migh be like.
+So I decided to build a prototype to learn what such a tool might be like.
+
 
 First I came up with a document model where pages were organized in a hierarchy and where each page had paragraphs that could be of different types. This idea was stolen from [Smallest Federated Wiki](https://en.wikipedia.org/wiki/Smallest_Federated_Wiki). The code paragraph would allow for literate programming. I also envisioned other paragraph types that would allow for more interaction. Perhaps one paragraph type could be [Graphviz](http://graphviz.org/) code, and when edited, a generated graph would appear instead of the code.
 
@@ -56,7 +58,8 @@ Some more resources about literate programming:
 
 ### Similar tools
 
-I stumled across [ProjecturED](http://projectured.org/). It is similar to RLiterate in the sense that it is an editor for richer documents. Not just text. The most interesting aspect for me is that a variable name exists in one place, but can be rendered in multiple. So a rename is really simple. With RLiterate, you have to do a search and replace. But with ProjecturED you just change the name and it replicates everywhere. This is an attractive feature and is made possible by the different document model. Probably RLiterate can never support that because a completely different approach needs to be taken, but it is an interesting project to investigate further.
+I stumbled across [ProjecturED](http://projectured.org/). It is similar to RLiterate in the sense that it is an editor for richer documents. Not just text. The most interesting aspect for me is that a variable name exists in one place, but can be rendered in multiple. So a rename is really simple. With RLiterate, you have to do a search and replace. But with ProjecturED you just change the name and it replicates everywhere. This is an attractive feature and is made possible by the different document model. Probably RLiterate can never support that because a completely different approach needs to be taken, but it is an interesting project to investigate further.
+
 
 ## Implementation
 
@@ -2399,9 +2402,10 @@ Random notes of what I might want to work on in the future.
 * Diff two rliterate documents
 * Search and replace
 * Highlight placeholders in code fragments
-* `word_split` should put whitespace in separate fragment and rich text display should have `skip_leading_space` option
+* `word_split` should put white space in separate fragment and rich text display should have `skip_leading_space` option
 * Export to stand-alone html for use in blog
 * Drag and drop does not work om Mac (incorrect coordinate calculations?)
 * Dynamic scripting
     * Show graph paragraph based on data paragraph defined earlier on the page (or on other page)
+
 
