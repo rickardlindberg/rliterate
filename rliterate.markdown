@@ -1731,16 +1731,45 @@ class DictTextParagraph(DictParagraph):
     def formatted_text(self):
         fragments = []
         text = self._paragraph_dict["text"]
+        partial = ""
         while text:
-            match = re.match(r"\*\*(.+?)\*\*", text, flags=re.DOTALL)
-            if match:
-                fragments.extend(Fragment(match.group(1), token=Token.RLiterate.Strong).word_split())
-                text = text[match.end(0):]
+            result = self._get_special_fragment(text)
+            if result is None:
+                partial += text[0]
+                text = text[1:]
             else:
-                match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
-                fragments.append(Fragment(match.group(0)))
+                match, fragment = result
+                if partial:
+                    fragments.extend(Fragment(partial).word_split())
+                    partial = ""
+                fragments.extend(fragment)
                 text = text[match.end(0):]
+        if partial:
+            fragments.extend(Fragment(partial).word_split())
         return fragments
+
+    PATTERNS = [
+        (
+            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Strong
+            )
+        ),
+        (
+            re.compile(r"\[(.+?)\]\((.+?)\)", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Link
+            )
+        ),
+    ]
+
+    def _get_special_fragment(self, text):
+        for pattern, fn in self.PATTERNS:
+            match = pattern.match(text)
+            if match:
+                return match, fn(match).word_split()
 ```
 
 `rliterate.py / <<classes>>`:
@@ -1932,7 +1961,7 @@ class BaseTheme(object):
 ```python
 class Style(object):
 
-    def __init__(self, color, bold=None):
+    def __init__(self, color, bold=None, underlined=None):
         self.color = color
         self.color_rgb = tuple([
             int(x, 16)
@@ -1940,12 +1969,15 @@ class Style(object):
             in (color[1:3], color[3:5], color[5:7])
         ])
         self.bold = bold
+        self.underlined = underlined
 
     def apply_to_wx_dc(self, dc, base_font):
+        font = base_font
         if self.bold:
-            dc.SetFont(base_font.Bold())
-        else:
-            dc.SetFont(base_font)
+            font = font.Bold()
+        if self.underlined:
+            font = font.Underlined()
+        dc.SetFont(font)
         dc.SetTextForeground(self.color_rgb)
 ```
 
@@ -1994,6 +2026,7 @@ class SolarizedTheme(BaseTheme):
         Token.Comment:             Style(color=base1),
         Token.RLiterate:           Style(color=text),
         Token.RLiterate.Strong:    Style(color=text, bold=True),
+        Token.RLiterate.Link:      Style(color=blue, underlined=True),
     }
 ```
 
