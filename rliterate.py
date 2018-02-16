@@ -522,11 +522,12 @@ class Column(CompactScrolledWindow):
     def SetPages(self, project, page_ids):
         self.pages = []
         self.sizer.Clear(True)
+        self.sizer.AddSpacer(PAGE_PADDING)
         for page_id in page_ids:
             container = Container(self)
             self.sizer.Add(
                 container,
-                flag=wx.TOP|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+                flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
                 border=PAGE_PADDING
             )
             self.pages.append(container.AddPage(project, page_id))
