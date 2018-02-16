@@ -2482,5 +2482,5 @@ Random notes of what I might want to work on in the future.
 * Drag and drop does not work om Mac (incorrect coordinate calculations?)
 * Dynamic scripting
     * Show graph paragraph based on data paragraph defined earlier on the page (or on other page)
-
+* Editors: highlight the word/fragment that is double clicked
 
