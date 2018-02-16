@@ -213,7 +213,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def _render_page_container(self):\n    self.page_sizer = wx.BoxSizer(wx.VERTICAL)\n    self.page_container = wx.ScrolledWindow(self)\n    self.page_container.SetScrollRate(20, 20)\n    self.page_container.SetSizer(self.page_sizer)\n    self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)\n    self._render_page(self.project.get_page(self.project.get_hoisted_page()))\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.project.is_collapsed(page.id)\n    self.page_sizer.Add(\n        TableOfContentsRow(self.page_container, self.project, page, indentation),\n        flag=wx.EXPAND\n    )\n    divider = Divider(self.page_container, padding=0, height=2)\n    self.page_sizer.Add(\n        divider,\n        flag=wx.EXPAND\n    )\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in pairs(page.children):\n            divider = self._render_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n",
+"text":"def _render_page_container(self):\n    self.page_sizer = wx.BoxSizer(wx.VERTICAL)\n    self.page_container = CompactScrolledWindow(self)\n    self.page_container.SetScrollRate(20, 20)\n    self.page_container.SetSizer(self.page_sizer)\n    self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)\n    self._render_page(self.project.get_page(self.project.get_hoisted_page()))\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.project.is_collapsed(page.id)\n    self.page_sizer.Add(\n        TableOfContentsRow(self.page_container, self.project, page, indentation),\n        flag=wx.EXPAND\n    )\n    divider = Divider(self.page_container, padding=0, height=2)\n    self.page_sizer.Add(\n        divider,\n        flag=wx.EXPAND\n    )\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in pairs(page.children):\n            divider = self._render_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n",
 "type":"code"
 },
 {
@@ -439,7 +439,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def _render(self):\n    self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)\n    self.SetScrollRate(1, 0)\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.SetSizer(self.sizer)\n    self.columns = []\n    self._re_render()\n\ndef _on_mousewheel(self, event):\n    x, y = self.GetViewStart()\n    delta = event.GetWheelRotation() / event.GetWheelDelta()\n    self.Scroll(x+delta*100, y)\n\ndef _re_render(self):\n    self._ensure_num_columns(2)\n    for i in range(2):\n        self.columns[i].SetPages(self.project, self.project.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _ensure_num_columns(self, num):\n    while len(self.columns) > num:\n        self.sizer.Remove(self.columns[-1])\n        self.columns.pop(-1)\n    while len(self.columns) < num:\n        self.columns.append(self._add_column())\n\ndef _add_column(self):\n    column = Column(self)\n    self.sizer.Insert(1+len(self.columns), column, flag=wx.EXPAND)\n    return column\n",
+"text":"def _render(self):\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.SetSizer(self.sizer)\n    self.columns = []\n    self._re_render()\n\ndef _re_render(self):\n    self._ensure_num_columns(2)\n    for i in range(2):\n        self.columns[i].SetPages(self.project, self.project.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _ensure_num_columns(self, num):\n    while len(self.columns) > num:\n        self.sizer.Remove(self.columns[-1])\n        self.columns.pop(-1)\n    while len(self.columns) < num:\n        self.columns.append(self._add_column())\n\ndef _add_column(self):\n    column = Column(self)\n    self.sizer.Insert(1+len(self.columns), column, flag=wx.EXPAND)\n    return column\n",
 "type":"code"
 },
 {
@@ -521,7 +521,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Workspace(wx.ScrolledWindow):\n    <<Workspace>>\n",
+"text":"class Workspace(CompactScrolledWindow):\n    <<Workspace>>\n",
 "type":"code"
 },
 {
@@ -531,7 +531,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def __init__(self, parent, project):\n    wx.ScrolledWindow.__init__(self, parent, style=wx.HSCROLL)\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\",\n        \"layout.workspace\"\n    )\n    self.MinSize = (200, 200)\n    self.SetProject(project)\n    <<__init__>>\n    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
+"text":"def __init__(self, parent, project):\n    CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\",\n        \"layout.workspace\"\n    )\n    self.MinSize = (200, 200)\n    self.SetProject(project)\n    <<__init__>>\n    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
 "type":"code"
 },
 {
@@ -562,7 +562,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Column(wx.ScrolledWindow):\n\n    def __init__(self, parent):\n        wx.ScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING, -1)\n        )\n        self._setup_layout()\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n        self.SetScrollRate(0, 1)\n        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)\n\n    def _on_mousewheel(self, event):\n        x, y = self.GetViewStart()\n        delta = event.GetWheelRotation() / event.GetWheelDelta()\n        self.Scroll(x, y-delta*100)\n\n    def SetPages(self, project, page_ids):\n        self.pages = []\n        self.sizer.Clear(True)\n        for page_id in page_ids:\n            container = Container(self)\n            self.sizer.Add(\n                container,\n                flag=wx.TOP|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                border=PAGE_PADDING\n            )\n            self.pages.append(container.AddPage(project, page_id))\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.pages,\n            lambda page: page.FindClosestDropPoint(screen_pos)\n        )\n",
+"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING, -1)\n        )\n        self._setup_layout()\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.pages = []\n        self.sizer.Clear(True)\n        for page_id in page_ids:\n            container = Container(self)\n            self.sizer.Add(\n                container,\n                flag=wx.TOP|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                border=PAGE_PADDING\n            )\n            self.pages.append(container.AddPage(project, page_id))\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.pages,\n            lambda page: page.FindClosestDropPoint(screen_pos)\n        )\n",
 "type":"code"
 }
 ],
@@ -1001,6 +1001,27 @@
 }
 ],
 "title":"Rich text display"
+},
+{
+"children":[],
+"id":"94b57547a194415cb00feb2aaf486e27",
+"paragraphs":[
+{
+"id":"77379e702560445c9fd31a8bb833cc65",
+"text":"The default scrolling window gives extra space. See https://stackoverflow.com/a/22817659. This custom control sovles this problem.",
+"type":"text"
+},
+{
+"id":"9bf32ef3ab984aca83e6ec65321388c7",
+"path":[
+"rliterate.py",
+"<<base classes>>"
+],
+"text":"class CompactScrolledWindow(wx.ScrolledWindow):\n\n    def __init__(self, parent, style=0, size=wx.DefaultSize):\n        wx.ScrolledWindow.__init__(self, parent, style=style, size=size)\n        if style == wx.HSCROLL:\n            self.SetScrollRate(1, 0)\n            self._calc_scroll_pos = self._calc_scroll_pos_hscroll\n        elif style == wx.VSCROLL:\n            self.SetScrollRate(0, 1)\n            self._calc_scroll_pos = self._calc_scroll_pos_vscroll\n        else:\n            self.SetScrollRate(1, 1)\n            self._calc_scroll_pos = self._calc_scroll_pos_vscroll\n        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)\n\n    def _on_mousewheel(self, event):\n        x, y = self.GetViewStart()\n        delta = event.GetWheelRotation() / event.GetWheelDelta()\n        self.Scroll(*self._calc_scroll_pos(x, y, delta))\n\n    def _calc_scroll_pos_hscroll(self, x, y, delta):\n        return (x+delta*100, y)\n\n    def _calc_scroll_pos_vscroll(self, x, y, delta):\n        return (x, y-delta*100)\n",
+"type":"code"
+}
+],
+"title":"Scrolling containers"
 }
 ],
 "id":"5c3647a616b8495f8bebd268be84377d",

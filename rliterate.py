@@ -113,6 +113,31 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
+class CompactScrolledWindow(wx.ScrolledWindow):
+
+    def __init__(self, parent, style=0, size=wx.DefaultSize):
+        wx.ScrolledWindow.__init__(self, parent, style=style, size=size)
+        if style == wx.HSCROLL:
+            self.SetScrollRate(1, 0)
+            self._calc_scroll_pos = self._calc_scroll_pos_hscroll
+        elif style == wx.VSCROLL:
+            self.SetScrollRate(0, 1)
+            self._calc_scroll_pos = self._calc_scroll_pos_vscroll
+        else:
+            self.SetScrollRate(1, 1)
+            self._calc_scroll_pos = self._calc_scroll_pos_vscroll
+        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)
+
+    def _on_mousewheel(self, event):
+        x, y = self.GetViewStart()
+        delta = event.GetWheelRotation() / event.GetWheelDelta()
+        self.Scroll(*self._calc_scroll_pos(x, y, delta))
+
+    def _calc_scroll_pos_hscroll(self, x, y, delta):
+        return (x+delta*100, y)
+
+    def _calc_scroll_pos_vscroll(self, x, y, delta):
+        return (x, y-delta*100)
 class Style(object):
 
     def __init__(self, color, bold=None, underlined=None):
@@ -221,7 +246,7 @@ class TableOfContents(wx.Panel):
             self.sizer.Add(button, flag=wx.EXPAND)
     def _render_page_container(self):
         self.page_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.page_container = wx.ScrolledWindow(self)
+        self.page_container = CompactScrolledWindow(self)
         self.page_container.SetScrollRate(20, 20)
         self.page_container.SetSizer(self.page_sizer)
         self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)
@@ -418,9 +443,9 @@ class PageContextMenu(wx.Menu):
             lambda event: self.project.delete_page(self.page.id),
             self.Append(wx.NewId(), "Delete")
         )
-class Workspace(wx.ScrolledWindow):
+class Workspace(CompactScrolledWindow):
     def __init__(self, parent, project):
-        wx.ScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
+        CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
         self.project_listener = Listener(
             self._re_render_from_event,
             "document",
@@ -435,19 +460,12 @@ class Workspace(wx.ScrolledWindow):
         self.project = project
         self.project_listener.set_observable(self.project)
     def _render(self):
-        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)
-        self.SetScrollRate(1, 0)
         self.SetBackgroundColour((200, 200, 200))
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
         self.columns = []
         self._re_render()
-
-    def _on_mousewheel(self, event):
-        x, y = self.GetViewStart()
-        delta = event.GetWheelRotation() / event.GetWheelDelta()
-        self.Scroll(x+delta*100, y)
 
     def _re_render(self):
         self._ensure_num_columns(2)
@@ -486,10 +504,10 @@ class WorkspaceDropTarget(DropPointDropTarget):
             target_page=drop_point.page_id,
             before_paragraph=drop_point.next_paragraph_id
         )
-class Column(wx.ScrolledWindow):
+class Column(CompactScrolledWindow):
 
     def __init__(self, parent):
-        wx.ScrolledWindow.__init__(
+        CompactScrolledWindow.__init__(
             self,
             parent,
             style=wx.VSCROLL,
@@ -500,13 +518,6 @@ class Column(wx.ScrolledWindow):
     def _setup_layout(self):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
-        self.SetScrollRate(0, 1)
-        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)
-
-    def _on_mousewheel(self, event):
-        x, y = self.GetViewStart()
-        delta = event.GetWheelRotation() / event.GetWheelDelta()
-        self.Scroll(x, y-delta*100)
 
     def SetPages(self, project, page_ids):
         self.pages = []
