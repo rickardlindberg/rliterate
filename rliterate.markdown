@@ -458,16 +458,13 @@ class Workspace(wx.ScrolledWindow):
 
 ```python
 def __init__(self, parent, project):
-    wx.ScrolledWindow.__init__(
-        self,
-        parent,
-        size=(int(PAGE_BODY_WIDTH*1.2), 300)
-    )
+    wx.ScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
     self.project_listener = Listener(
         self._re_render_from_event,
         "document",
         "layout.workspace"
     )
+    self.MinSize = (200, 200)
     self.SetProject(project)
     <<__init__>>
     self._render()
@@ -476,6 +473,10 @@ def SetProject(self, project):
     self.project = project
     self.project_listener.set_observable(self.project)
 ```
+
+The minimum size is needed to prevent this error:
+
+(rliterate.py:23983): Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
 
 ###### Rendering
 
@@ -487,30 +488,36 @@ Layout has to be called on the parent. Otherwise scrollbars don't update appropr
 
 ```python
 def _render(self):
-    self.SetScrollRate(20, 20)
+    self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)
+    self.SetScrollRate(1, 0)
     self.SetBackgroundColour((200, 200, 200))
     self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.sizer.AddSpacer(PAGE_PADDING)
     self.SetSizer(self.sizer)
+    self.columns = []
     self._re_render()
 
+def _on_mousewheel(self, event):
+    x, y = self.GetViewStart()
+    delta = event.GetWheelRotation() / event.GetWheelDelta()
+    self.Scroll(x+delta*100, y)
+
 def _re_render(self):
-    self.sizer.Clear(True)
-    self.pages = []
-    self.sizer.AddSpacer(PAGE_PADDING)
-    self._render_pages_column(self.project.get_scratch_pages())
+    self._ensure_num_columns(2)
+    for i in range(2):
+        self.columns[i].SetPages(self.project, self.project.get_scratch_pages())
     self.Parent.Layout()
 
-def _render_pages_column(self, page_ids):
-    column = self._add_column()
-    for page_id in page_ids:
-        if self.project.get_page(page_id) is not None:
-            self.pages.append(
-                column.AddContainer().AddPage(self.project, page_id)
-            )
+def _ensure_num_columns(self, num):
+    while len(self.columns) > num:
+        self.sizer.Remove(self.columns[-1])
+        self.columns.pop(-1)
+    while len(self.columns) < num:
+        self.columns.append(self._add_column())
 
 def _add_column(self):
     column = Column(self)
-    self.sizer.Add(column, flag=wx.RIGHT, border=PAGE_PADDING)
+    self.sizer.Insert(1+len(self.columns), column, flag=wx.EXPAND)
     return column
 ```
 
@@ -558,8 +565,8 @@ The DropPointDropTarget requires FindClosestDropPoint to be defined on the targe
 ```python
 def FindClosestDropPoint(self, screen_pos):
     return find_first(
-        self.pages,
-        lambda page: page.FindClosestDropPoint(screen_pos)
+        self.columns,
+        lambda column: column.FindClosestDropPoint(screen_pos)
     )
 ```
 
@@ -570,25 +577,45 @@ The column widget is a panel containing containers.
 `rliterate.py / <<classes>>`:
 
 ```python
-class Column(wx.Panel):
+class Column(wx.ScrolledWindow):
 
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
+        wx.ScrolledWindow.__init__(
+            self,
+            parent,
+            style=wx.VSCROLL,
+            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING, -1)
+        )
         self._setup_layout()
 
     def _setup_layout(self):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.AddSpacer(PAGE_PADDING)
         self.SetSizer(self.sizer)
+        self.SetScrollRate(0, 1)
+        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)
 
-    def AddContainer(self):
-        container = Container(self)
-        self.sizer.Add(
-            container,
-            flag=wx.BOTTOM|wx.EXPAND,
-            border=PAGE_PADDING
+    def _on_mousewheel(self, event):
+        x, y = self.GetViewStart()
+        delta = event.GetWheelRotation() / event.GetWheelDelta()
+        self.Scroll(x, y-delta*100)
+
+    def SetPages(self, project, page_ids):
+        self.pages = []
+        self.sizer.Clear(True)
+        for page_id in page_ids:
+            container = Container(self)
+            self.sizer.Add(
+                container,
+                flag=wx.TOP|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+                border=PAGE_PADDING
+            )
+            self.pages.append(container.AddPage(project, page_id))
+
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.pages,
+            lambda page: page.FindClosestDropPoint(screen_pos)
         )
-        return container
 ```
 
 ##### Container widget
@@ -601,11 +628,7 @@ The container widget draws a box with border. Widgets acan then be added to the 
 class Container(wx.Panel):
 
     def __init__(self, parent):
-        wx.Panel.__init__(
-            self,
-            parent,
-            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER, -1)
-        )
+        wx.Panel.__init__(self, parent)
         self._render()
 
     def _render(self):
@@ -1408,7 +1431,7 @@ def _on_paint(self, event):
 
 ```python
 PAGE_BODY_WIDTH = 600
-PAGE_PADDING = 12
+PAGE_PADDING = 13
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
 CONTAINER_BORDER = PARAGRAPH_SPACE
@@ -2416,7 +2439,6 @@ Random notes of what I might want to work on in the future.
 * Save button (in code editor) is very far down if there is lots of code and only top is edited
 * Not possible to go to a page with Ctrl+T
 * Highlight object being dragged somehow (screenshot?)
-* Make each column scrollable (like Tweetdeck)
 * Save when clicking outside text field (how to do this?)
 * This is really a writing tool
     * Spell checking
