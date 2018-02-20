@@ -461,12 +461,13 @@ class PageContextMenu(wx.Menu):
 
 #### Workspace
 
-The workspace shows body content of pages in the document. It is organized in columns, and each column can show body content from multiple pages.
-
+The workspace shows pages in the document. It is organized in columns, and each column can show multiple pages. The pages can also be edited from the workspace.
 
 ##### Main widget
 
-The main workspace widget is a scrolling container containing column widgets.
+The main workspace widget is a horizontal scrolling container containing column widgets.
+
+The workspace is re-rendered whenever relevant parts of the project changes.
 
 `rliterate.py / <<classes>>`:
 
@@ -485,7 +486,6 @@ def __init__(self, parent, project):
         "document",
         "layout.workspace"
     )
-    self.MinSize = (200, 200)
     self.SetProject(project)
     <<__init__>>
     self._render()
@@ -495,15 +495,9 @@ def SetProject(self, project):
     self.project_listener.set_observable(self.project)
 ```
 
-The minimum size is needed to prevent this error:
-
-(rliterate.py:23983): Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
-
 ###### Rendering
 
-Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled with page body content.
-
-Layout has to be called on the parent. Otherwise scrollbars don't update appropriately.
+Rendering a workspace means laying out a set of column widgets horizontally. Columns are filled with page containers.
 
 `rliterate.py / <<classes>> / <<Workspace>>`:
 
@@ -533,6 +527,8 @@ def _add_column(self):
     self.sizer.Add(column, flag=wx.EXPAND)
     return column
 ```
+
+`Layout` is called on the parent. Otherwise scrollbars don't seem to update appropriately.
 
 On removing widgets [Removing a widget from its wxPython parent](https://stackoverflow.com/a/41064558):
 
@@ -589,7 +585,7 @@ def FindClosestDropPoint(self, screen_pos):
 
 ##### Column widget
 
-The column widget is a panel containing containers.
+The column widget is a vertical scrolling container containing page containers.
 
 `rliterate.py / <<classes>>`:
 
@@ -611,39 +607,41 @@ class Column(CompactScrolledWindow):
         self.SetSizer(self.sizer)
 
     def SetPages(self, project, page_ids):
-        self.pages = []
+        self.containers = []
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PAGE_PADDING)
         for page_id in page_ids:
-            container = Container(self)
+            container = PageContainer(self, project, page_id)
             self.sizer.Add(
                 container,
                 flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
                 border=PAGE_PADDING
             )
-            self.pages.append(container.AddPage(project, page_id))
+            self.containers.append(container)
         if page_ids != self._page_ids:
             self.Scroll(0, 0)
             self._page_ids = page_ids
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            self.pages,
-            lambda page: page.FindClosestDropPoint(screen_pos)
+            self.containers,
+            lambda container: container.FindClosestDropPoint(screen_pos)
         )
 ```
 
-##### Container widget
+##### Page container widget
 
-The container widget draws a box with border. Widgets acan then be added to the container. Typically only a single page widget is added.
+The page container widget draws a box with border. Inside the box a page widget is rendered.
 
 `rliterate.py / <<classes>>`:
 
 ```python
-class Container(wx.Panel):
+class PageContainer(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, project, page_id):
         wx.Panel.__init__(self, parent)
+        self.project = project
+        self.page_id = page_id
         self._render()
 
     def _render(self):
@@ -660,17 +658,15 @@ class Container(wx.Panel):
         )
         self.SetSizer(self.sizer)
         self.inner_sizer.AddSpacer(CONTAINER_BORDER)
-
-    def AddPage(self, project, page_id):
-        return self._add(Page(self.inner_container, project, page_id))
-
-    def _add(self, widget):
+        self.page = Page(self.inner_container, self.project, self.page_id)
         self.inner_sizer.Add(
-            widget,
+            self.page,
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
             border=CONTAINER_BORDER
         )
-        return widget
+
+    def FindClosestDropPoint(self, screen_pos):
+        return self.page.FindClosestDropPoint(screen_pos)
 ```
 
 ##### Page
@@ -1449,8 +1445,14 @@ The default scrolling window gives extra space. See https://stackoverflow.com/a/
 ```python
 class CompactScrolledWindow(wx.ScrolledWindow):
 
+    MIN_WIDTH = 200
+    MIN_HEIGHT = 200
+
     def __init__(self, parent, style=0, size=wx.DefaultSize, step=100):
+        w, h = size
+        size = (max(w, self.MIN_WIDTH), max(h, self.MIN_HEIGHT))
         wx.ScrolledWindow.__init__(self, parent, style=style, size=size)
+        self.Size = size
         if style == wx.HSCROLL:
             self.SetScrollRate(1, 0)
             self._calc_scroll_pos = self._calc_scroll_pos_hscroll
@@ -1474,6 +1476,10 @@ class CompactScrolledWindow(wx.ScrolledWindow):
     def _calc_scroll_pos_vscroll(self, x, y, delta):
         return (x, y-delta*self.step)
 ```
+
+The minimum size is set to prevent the following error:
+
+(rliterate.py:23983): Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
 
 #### Constants
 

@@ -115,8 +115,14 @@ class DropPointDropTarget(wx.DropTarget):
             self.last_drop_point = None
 class CompactScrolledWindow(wx.ScrolledWindow):
 
+    MIN_WIDTH = 200
+    MIN_HEIGHT = 200
+
     def __init__(self, parent, style=0, size=wx.DefaultSize, step=100):
+        w, h = size
+        size = (max(w, self.MIN_WIDTH), max(h, self.MIN_HEIGHT))
         wx.ScrolledWindow.__init__(self, parent, style=style, size=size)
+        self.Size = size
         if style == wx.HSCROLL:
             self.SetScrollRate(1, 0)
             self._calc_scroll_pos = self._calc_scroll_pos_hscroll
@@ -473,7 +479,6 @@ class Workspace(CompactScrolledWindow):
             "document",
             "layout.workspace"
         )
-        self.MinSize = (200, 200)
         self.SetProject(project)
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
         self._render()
@@ -542,30 +547,32 @@ class Column(CompactScrolledWindow):
         self.SetSizer(self.sizer)
 
     def SetPages(self, project, page_ids):
-        self.pages = []
+        self.containers = []
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PAGE_PADDING)
         for page_id in page_ids:
-            container = Container(self)
+            container = PageContainer(self, project, page_id)
             self.sizer.Add(
                 container,
                 flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
                 border=PAGE_PADDING
             )
-            self.pages.append(container.AddPage(project, page_id))
+            self.containers.append(container)
         if page_ids != self._page_ids:
             self.Scroll(0, 0)
             self._page_ids = page_ids
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            self.pages,
-            lambda page: page.FindClosestDropPoint(screen_pos)
+            self.containers,
+            lambda container: container.FindClosestDropPoint(screen_pos)
         )
-class Container(wx.Panel):
+class PageContainer(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, project, page_id):
         wx.Panel.__init__(self, parent)
+        self.project = project
+        self.page_id = page_id
         self._render()
 
     def _render(self):
@@ -582,17 +589,15 @@ class Container(wx.Panel):
         )
         self.SetSizer(self.sizer)
         self.inner_sizer.AddSpacer(CONTAINER_BORDER)
-
-    def AddPage(self, project, page_id):
-        return self._add(Page(self.inner_container, project, page_id))
-
-    def _add(self, widget):
+        self.page = Page(self.inner_container, self.project, self.page_id)
         self.inner_sizer.Add(
-            widget,
+            self.page,
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
             border=CONTAINER_BORDER
         )
-        return widget
+
+    def FindClosestDropPoint(self, screen_pos):
+        return self.page.FindClosestDropPoint(screen_pos)
 class Page(wx.Panel):
 
     def __init__(self, parent, project, page_id):
