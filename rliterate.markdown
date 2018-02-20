@@ -495,9 +495,9 @@ def _render(self):
     self._re_render()
 
 def _re_render(self):
-    self._ensure_num_columns(2)
-    for i in range(2):
-        self.columns[i].SetPages(self.project, self.project.get_scratch_pages())
+    self._ensure_num_columns(len(self.project.get_columns()))
+    for index, page_ids in enumerate(self.project.get_columns()):
+        self.columns[index].SetPages(self.project, page_ids)
     self.Parent.Layout()
 
 def _ensure_num_columns(self, num):
@@ -578,6 +578,7 @@ class Column(CompactScrolledWindow):
             style=wx.VSCROLL,
             size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING, -1)
         )
+        self._page_ids = []
         self._setup_layout()
 
     def _setup_layout(self):
@@ -596,6 +597,9 @@ class Column(CompactScrolledWindow):
                 border=PAGE_PADDING
             )
             self.pages.append(container.AddPage(project, page_id))
+        if page_ids != self._page_ids:
+            self.Scroll(0, 0)
+            self._page_ids = page_ids
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
@@ -1502,6 +1506,12 @@ def get_scratch_pages(self, *args, **kwargs):
 def set_scratch_pages(self, *args, **kwargs):
     return self.layout.set_scratch_pages(*args, **kwargs)
 
+def get_columns(self, *args, **kwargs):
+    return self.layout.get_columns(*args, **kwargs)
+
+def set_pages(self, *args, **kwargs):
+    return self.layout.set_pages(*args, **kwargs)
+
 def get_hoisted_page(self, *args, **kwargs):
     return self.layout.get_hoisted_page(*args, **kwargs)
 
@@ -1970,8 +1980,31 @@ def get_scratch_pages(self):
     return self._workspace_scratch[:]
 
 def set_scratch_pages(self, page_ids):
+    self.set_pages(page_ids, column_index=0)
+```
+
+The pages displayed in the columns in the workspace are stored in `workspace.columns`:
+
+`rliterate.py / <<classes>> / <<Layout>> / <<__init__>>`:
+
+```python
+self._workspace_columns = ensure_key(self._workspace, "columns", [])
+```
+
+`rliterate.py / <<classes>> / <<Layout>>`:
+
+```python
+def get_columns(self):
+    if self._workspace_columns:
+        return [column[:] for column in self._workspace_columns]
+    else:
+        return [self.get_scratch_pages()]
+
+def set_pages(self, page_ids, column_index=None):
     with self.notify("workspace"):
-        self._workspace_scratch[:] = page_ids
+        if column_index is None:
+            column_index = len(self._workspace_columns)
+        self._workspace_columns[column_index:] = [page_ids[:]]
 ```
 
 Finally we have a utility function for ensuring that a specific key exists in a dictionary.

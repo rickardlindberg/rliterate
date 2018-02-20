@@ -439,7 +439,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def _render(self):\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.SetSizer(self.sizer)\n    self.columns = []\n    self._re_render()\n\ndef _re_render(self):\n    self._ensure_num_columns(2)\n    for i in range(2):\n        self.columns[i].SetPages(self.project, self.project.get_scratch_pages())\n    self.Parent.Layout()\n\ndef _ensure_num_columns(self, num):\n    while len(self.columns) > num:\n        self.sizer.Remove(self.columns[-1])\n        self.columns.pop(-1)\n    while len(self.columns) < num:\n        self.columns.append(self._add_column())\n\ndef _add_column(self):\n    column = Column(self)\n    self.sizer.Insert(1+len(self.columns), column, flag=wx.EXPAND)\n    return column\n",
+"text":"def _render(self):\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.SetSizer(self.sizer)\n    self.columns = []\n    self._re_render()\n\ndef _re_render(self):\n    self._ensure_num_columns(len(self.project.get_columns()))\n    for index, page_ids in enumerate(self.project.get_columns()):\n        self.columns[index].SetPages(self.project, page_ids)\n    self.Parent.Layout()\n\ndef _ensure_num_columns(self, num):\n    while len(self.columns) > num:\n        self.sizer.Remove(self.columns[-1])\n        self.columns.pop(-1)\n    while len(self.columns) < num:\n        self.columns.append(self._add_column())\n\ndef _add_column(self):\n    column = Column(self)\n    self.sizer.Insert(1+len(self.columns), column, flag=wx.EXPAND)\n    return column\n",
 "type":"code"
 },
 {
@@ -562,7 +562,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING, -1)\n        )\n        self._setup_layout()\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.pages = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            container = Container(self)\n            self.sizer.Add(\n                container,\n                flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                border=PAGE_PADDING\n            )\n            self.pages.append(container.AddPage(project, page_id))\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.pages,\n            lambda page: page.FindClosestDropPoint(screen_pos)\n        )\n",
+"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING, -1)\n        )\n        self._page_ids = []\n        self._setup_layout()\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.pages = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            container = Container(self)\n            self.sizer.Add(\n                container,\n                flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                border=PAGE_PADDING\n            )\n            self.pages.append(container.AddPage(project, page_id))\n        if page_ids != self._page_ids:\n            self.Scroll(0, 0)\n            self._page_ids = page_ids\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.pages,\n            lambda page: page.FindClosestDropPoint(screen_pos)\n        )\n",
 "type":"code"
 }
 ],
@@ -1260,7 +1260,33 @@
 "<<classes>>",
 "<<Layout>>"
 ],
-"text":"def get_scratch_pages(self):\n    return self._workspace_scratch[:]\n\ndef set_scratch_pages(self, page_ids):\n    with self.notify(\"workspace\"):\n        self._workspace_scratch[:] = page_ids\n",
+"text":"def get_scratch_pages(self):\n    return self._workspace_scratch[:]\n\ndef set_scratch_pages(self, page_ids):\n    self.set_pages(page_ids, column_index=0)\n",
+"type":"code"
+},
+{
+"id":"881b5b9cc3f54fe381aa7862b804887a",
+"text":"The pages displayed in the columns in the workspace are stored in `workspace.columns`:",
+"type":"text"
+},
+{
+"id":"0d83575340f24f67af49175cb0a1db83",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Layout>>",
+"<<__init__>>"
+],
+"text":"self._workspace_columns = ensure_key(self._workspace, \"columns\", [])",
+"type":"code"
+},
+{
+"id":"d21e2540eb5547db8926f8b9e55ca2a7",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Layout>>"
+],
+"text":"def get_columns(self):\n    if self._workspace_columns:\n        return [column[:] for column in self._workspace_columns]\n    else:\n        return [self.get_scratch_pages()]\n\ndef set_pages(self, page_ids, column_index=None):\n    with self.notify(\"workspace\"):\n        if column_index is None:\n            column_index = len(self._workspace_columns)\n        self._workspace_columns[column_index:] = [page_ids[:]]\n",
 "type":"code"
 },
 {
@@ -1353,7 +1379,7 @@
 "<<classes>>",
 "<<Project>>"
 ],
-"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\ndef get_scratch_pages(self, *args, **kwargs):\n    return self.layout.get_scratch_pages(*args, **kwargs)\n\ndef set_scratch_pages(self, *args, **kwargs):\n    return self.layout.set_scratch_pages(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
+"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\ndef get_scratch_pages(self, *args, **kwargs):\n    return self.layout.get_scratch_pages(*args, **kwargs)\n\ndef set_scratch_pages(self, *args, **kwargs):\n    return self.layout.set_scratch_pages(*args, **kwargs)\n\ndef get_columns(self, *args, **kwargs):\n    return self.layout.get_columns(*args, **kwargs)\n\ndef set_pages(self, *args, **kwargs):\n    return self.layout.set_pages(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
 "type":"code"
 },
 {
