@@ -423,9 +423,31 @@ class PageContextMenu(wx.Menu):
         wx.Menu.__init__(self)
         self.project = project
         self.page = page
+        self.child_ids = [child.id for child in page.children]
         self._create_menu()
 
     def _create_menu(self):
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.project.set_pages([self.page.id], column_index=0),
+            self.Append(wx.NewId(), "Open")
+        )
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.project.set_pages([self.page.id]),
+            self.Append(wx.NewId(), "Open append")
+        )
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.project.set_pages(self.child_ids, column_index=0),
+            self.Append(wx.NewId(), "Open with children")
+        )
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.project.set_pages(self.child_ids),
+            self.Append(wx.NewId(), "Open with children append")
+        )
+        self.AppendSeparator()
         self.Bind(
             wx.EVT_MENU,
             lambda event: self.project.add_page(parent_id=self.page.id),
@@ -475,14 +497,13 @@ class Workspace(CompactScrolledWindow):
 
     def _ensure_num_columns(self, num):
         while len(self.columns) > num:
-            self.sizer.Remove(self.columns[-1])
-            self.columns.pop(-1)
+            self.columns.pop(-1).Destroy()
         while len(self.columns) < num:
             self.columns.append(self._add_column())
 
     def _add_column(self):
         column = Column(self)
-        self.sizer.Insert(1+len(self.columns), column, flag=wx.EXPAND)
+        self.sizer.Add(column, flag=wx.EXPAND)
         return column
     def _re_render_from_event(self, event):
         wx.CallAfter(self._re_render)

@@ -519,9 +519,31 @@ A drop target that can work with windows that supports FindClosestDropPoint.
             wx.Menu.__init__(self)
             self.project = project
             self.page = page
+            self.child_ids = [child.id for child in page.children]
             self._create_menu()
     
         def _create_menu(self):
+            self.Bind(
+                wx.EVT_MENU,
+                lambda event: self.project.set_pages([self.page.id], column_index=0),
+                self.Append(wx.NewId(), "Open")
+            )
+            self.Bind(
+                wx.EVT_MENU,
+                lambda event: self.project.set_pages([self.page.id]),
+                self.Append(wx.NewId(), "Open append")
+            )
+            self.Bind(
+                wx.EVT_MENU,
+                lambda event: self.project.set_pages(self.child_ids, column_index=0),
+                self.Append(wx.NewId(), "Open with children")
+            )
+            self.Bind(
+                wx.EVT_MENU,
+                lambda event: self.project.set_pages(self.child_ids),
+                self.Append(wx.NewId(), "Open with children append")
+            )
+            self.AppendSeparator()
             self.Bind(
                 wx.EVT_MENU,
                 lambda event: self.project.add_page(parent_id=self.page.id),
@@ -637,16 +659,19 @@ Layout has to be called on the parent. Otherwise scrollbars don't update appropr
     
     def _ensure_num_columns(self, num):
         while len(self.columns) > num:
-            self.sizer.Remove(self.columns[-1])
-            self.columns.pop(-1)
+            self.columns.pop(-1).Destroy()
         while len(self.columns) < num:
             self.columns.append(self._add_column())
     
     def _add_column(self):
         column = Column(self)
-        self.sizer.Insert(1+len(self.columns), column, flag=wx.EXPAND)
+        self.sizer.Add(column, flag=wx.EXPAND)
         return column
 
+
+On removing widgets [Removing a widget from its wxPython parent](https://stackoverflow.com/a/41064558):
+
+Widgets will remove themselves from the sizer when they are destroyed, so yes, it is redundant. Also, widgets will remove themselves from the parent's child list, so calling RemoveChild is also redundant. IOW, the call to window.Destroy() will be sufficient to remove the widget and its resources, and to do the necessary clean-ups in the parent and the sizer.
 
 wx.CallAfter seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.
 
