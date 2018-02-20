@@ -343,13 +343,13 @@ Event handlers:
 
 ```python
 def _on_click(self):
-    self.project.set_scratch_pages([self.page.id])
+    self.project.open_pages([self.page.id], column_index=0)
 
 def _on_double_click(self):
     page_ids = [self.page.id]
     for child in self.project.get_page(self.page.id).children:
         page_ids.append(child.id)
-    self.project.set_scratch_pages(page_ids)
+    self.project.open_pages(page_ids, column_index=0)
 
 def _on_right_click(self):
     menu = PageContextMenu(self.project, self.page)
@@ -421,22 +421,22 @@ class PageContextMenu(wx.Menu):
     def _create_menu(self):
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.set_pages([self.page.id], column_index=0),
+            lambda event: self.project.open_pages([self.page.id], column_index=0),
             self.Append(wx.NewId(), "Open")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.set_pages([self.page.id]),
+            lambda event: self.project.open_pages([self.page.id]),
             self.Append(wx.NewId(), "Open append")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.set_pages(self.child_ids, column_index=0),
+            lambda event: self.project.open_pages(self.child_ids, column_index=0),
             self.Append(wx.NewId(), "Open with children")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.set_pages(self.child_ids),
+            lambda event: self.project.open_pages(self.child_ids),
             self.Append(wx.NewId(), "Open with children append")
         )
         self.AppendSeparator()
@@ -517,8 +517,8 @@ def _render(self):
     self._re_render()
 
 def _re_render(self):
-    self._ensure_num_columns(len(self.project.get_columns()))
-    for index, page_ids in enumerate(self.project.get_columns()):
+    self._ensure_num_columns(len(self.project.columns))
+    for index, page_ids in enumerate(self.project.columns):
         self.columns[index].SetPages(self.project, page_ids)
     self.Parent.Layout()
 
@@ -1531,11 +1531,12 @@ def get_scratch_pages(self, *args, **kwargs):
 def set_scratch_pages(self, *args, **kwargs):
     return self.layout.set_scratch_pages(*args, **kwargs)
 
-def get_columns(self, *args, **kwargs):
-    return self.layout.get_columns(*args, **kwargs)
+@property
+def columns(self):
+    return self.layout.columns
 
-def set_pages(self, *args, **kwargs):
-    return self.layout.set_pages(*args, **kwargs)
+def open_pages(self, *args, **kwargs):
+    return self.layout.open_pages(*args, **kwargs)
 
 def get_hoisted_page(self, *args, **kwargs):
     return self.layout.get_hoisted_page(*args, **kwargs)
@@ -2019,13 +2020,14 @@ self._workspace_columns = ensure_key(self._workspace, "columns", [])
 `rliterate.py / <<classes>> / <<Layout>>`:
 
 ```python
-def get_columns(self):
+@property
+def columns(self):
     if self._workspace_columns:
         return [column[:] for column in self._workspace_columns]
     else:
         return [self.get_scratch_pages()]
 
-def set_pages(self, page_ids, column_index=None):
+def open_pages(self, page_ids, column_index=None):
     with self.notify("workspace"):
         if column_index is None:
             column_index = len(self._workspace_columns)
