@@ -1550,6 +1550,7 @@ class Project(Observable):
         self.layout.listen(self.notify_forwarder("layout"))
         FileGenerator().set_document(self.document)
         MarkdownGenerator(os.path.splitext(filepath)[0]+".markdown").set_document(self.document)
+        HTMLGenerator(os.path.splitext(filepath)[0]+".html").set_project(self)
         TextDiff(os.path.splitext(filepath)[0]+".textdiff").set_document(self.document)
 
     <<Project>>
@@ -2118,6 +2119,9 @@ class Style(object):
         self.bold = bold
         self.underlined = underlined
 
+    def get_css(self):
+        return "color: {}".format(self.color)
+
     def apply_to_wx_dc(self, dc, base_font):
         font = base_font
         if self.bold:
@@ -2275,6 +2279,73 @@ class MarkdownGenerator(object):
 
     def _render_unknown(self, f, paragraph):
         f.write("Unknown type = "+paragraph.type+"\n\n")
+```
+
+#### HTML
+
+`rliterate.py / <<classes>>`:
+
+```python
+class HTMLGenerator(object):
+
+    def __init__(self, path):
+        self.listener = Listener(lambda event: self._generate())
+        self.path = path
+
+    def set_project(self, project):
+        self.project = project
+        self.listener.set_observable(self.project)
+
+    def _generate(self):
+        with open(self.path, "w") as f:
+            self._render_page(f, self.project.get_page())
+
+    def _render_page(self, f, page, level=1):
+        with self._tag(f, "h{}".format(level)):
+            self._write_html(f, page.title)
+        for paragraph in page.paragraphs:
+            {
+                "text": self._render_text,
+                "code": self._render_code,
+            }.get(paragraph.type, self._render_unknown)(f, paragraph)
+        for child in page.children:
+            self._render_page(f, child, level+1)
+
+    def _render_text(self, f, text):
+        with self._tag(f, "p"):
+            f.write(text.text)
+
+    def _render_code(self, f, code):
+        with self._tag(f, "p"):
+            with self._tag(f, "code"):
+                self._write_html(f, " / ".join(code.path))
+        with self._tag(f, "pre"):
+            for fragment in code.formatted_text:
+                with self._tag(
+                    f,
+                    "span",
+                    newlines=False,
+                    args={"style": self.project.get_style(fragment.token).get_css()}
+                ):
+                    self._write_html(f, fragment.text)
+
+    def _render_unknown(self, f, paragraph):
+        with self._tag(f, "p"):
+            self._write_html(f, "Unknown paragraph...")
+
+    def _write_html(self, f, text):
+        f.write(xml.sax.saxutils.escape(text))
+
+    @contextlib.contextmanager
+    def _tag(self, f, tag, newlines=True, args={}):
+        args_string = ""
+        if args:
+            args_string = " " + " ".join("{}=\"{}\"".format(k, v) for k, v in args.items())
+        f.write("<{}{}>".format(tag, args_string))
+        yield
+        f.write("</{}>".format(tag))
+        if newlines:
+            f.write("\n\n")
 ```
 
 #### Textual diffing
@@ -2512,6 +2583,7 @@ import tempfile
 import time
 import uuid
 import webbrowser
+import xml.sax.saxutils
 
 import pygments.lexers
 from pygments.token import Token

@@ -291,6 +291,72 @@ Event handlers:
             )
 
 
+162d5b5c668d4c958c88b7d37e6f5d3e: HTML
+
+`rliterate.py / <<classes>>`:
+
+    class HTMLGenerator(object):
+    
+        def __init__(self, path):
+            self.listener = Listener(lambda event: self._generate())
+            self.path = path
+    
+        def set_project(self, project):
+            self.project = project
+            self.listener.set_observable(self.project)
+    
+        def _generate(self):
+            with open(self.path, "w") as f:
+                self._render_page(f, self.project.get_page())
+    
+        def _render_page(self, f, page, level=1):
+            with self._tag(f, "h{}".format(level)):
+                self._write_html(f, page.title)
+            for paragraph in page.paragraphs:
+                {
+                    "text": self._render_text,
+                    "code": self._render_code,
+                }.get(paragraph.type, self._render_unknown)(f, paragraph)
+            for child in page.children:
+                self._render_page(f, child, level+1)
+    
+        def _render_text(self, f, text):
+            with self._tag(f, "p"):
+                f.write(text.text)
+    
+        def _render_code(self, f, code):
+            with self._tag(f, "p"):
+                with self._tag(f, "code"):
+                    self._write_html(f, " / ".join(code.path))
+            with self._tag(f, "pre"):
+                for fragment in code.formatted_text:
+                    with self._tag(
+                        f,
+                        "span",
+                        newlines=False,
+                        args={"style": self.project.get_style(fragment.token).get_css()}
+                    ):
+                        self._write_html(f, fragment.text)
+    
+        def _render_unknown(self, f, paragraph):
+            with self._tag(f, "p"):
+                self._write_html(f, "Unknown paragraph...")
+    
+        def _write_html(self, f, text):
+            f.write(xml.sax.saxutils.escape(text))
+    
+        @contextlib.contextmanager
+        def _tag(self, f, tag, newlines=True, args={}):
+            args_string = ""
+            if args:
+                args_string = " " + " ".join("{}=\"{}\"".format(k, v) for k, v in args.items())
+            f.write("<{}{}>".format(tag, args_string))
+            yield
+            f.write("</{}>".format(tag))
+            if newlines:
+                f.write("\n\n")
+
+
 1688f5eee57645a68af81fa5f02a1560: Paragraph
 
 `rliterate.py / <<classes>>`:
@@ -376,6 +442,9 @@ Some parts of the application can be themed. Token types from pygments denote di
             ])
             self.bold = bold
             self.underlined = underlined
+    
+        def get_css(self):
+            return "color: {}".format(self.color)
     
         def apply_to_wx_dc(self, dc, base_font):
             font = base_font
@@ -1179,6 +1248,7 @@ Describe how code paragraphs enable literate programming.
     import time
     import uuid
     import webbrowser
+    import xml.sax.saxutils
     
     import pygments.lexers
     from pygments.token import Token
@@ -1596,6 +1666,7 @@ A project is a container for a few other objects:
             self.layout.listen(self.notify_forwarder("layout"))
             FileGenerator().set_document(self.document)
             MarkdownGenerator(os.path.splitext(filepath)[0]+".markdown").set_document(self.document)
+            HTMLGenerator(os.path.splitext(filepath)[0]+".html").set_project(self)
             TextDiff(os.path.splitext(filepath)[0]+".textdiff").set_document(self.document)
     
         <<Project>>

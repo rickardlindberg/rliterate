@@ -1360,7 +1360,7 @@
 "rliterate.py",
 "<<base classes>>"
 ],
-"text":"class Style(object):\n\n    def __init__(self, color, bold=None, underlined=None):\n        self.color = color\n        self.color_rgb = tuple([\n            int(x, 16)\n            for x\n            in (color[1:3], color[3:5], color[5:7])\n        ])\n        self.bold = bold\n        self.underlined = underlined\n\n    def apply_to_wx_dc(self, dc, base_font):\n        font = base_font\n        if self.bold:\n            font = font.Bold()\n        if self.underlined:\n            font = font.Underlined()\n        dc.SetFont(font)\n        dc.SetTextForeground(self.color_rgb)\n",
+"text":"class Style(object):\n\n    def __init__(self, color, bold=None, underlined=None):\n        self.color = color\n        self.color_rgb = tuple([\n            int(x, 16)\n            for x\n            in (color[1:3], color[3:5], color[5:7])\n        ])\n        self.bold = bold\n        self.underlined = underlined\n\n    def get_css(self):\n        return \"color: {}\".format(self.color)\n\n    def apply_to_wx_dc(self, dc, base_font):\n        font = base_font\n        if self.bold:\n            font = font.Bold()\n        if self.underlined:\n            font = font.Underlined()\n        dc.SetFont(font)\n        dc.SetTextForeground(self.color_rgb)\n",
 "type":"code"
 },
 {
@@ -1394,7 +1394,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n        MarkdownGenerator(os.path.splitext(filepath)[0]+\".markdown\").set_document(self.document)\n        TextDiff(os.path.splitext(filepath)[0]+\".textdiff\").set_document(self.document)\n\n    <<Project>>\n",
+"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n        MarkdownGenerator(os.path.splitext(filepath)[0]+\".markdown\").set_document(self.document)\n        HTMLGenerator(os.path.splitext(filepath)[0]+\".html\").set_project(self)\n        TextDiff(os.path.splitext(filepath)[0]+\".textdiff\").set_document(self.document)\n\n    <<Project>>\n",
 "type":"code"
 },
 {
@@ -1478,6 +1478,22 @@
 }
 ],
 "title":"Markdown book"
+},
+{
+"children":[],
+"id":"162d5b5c668d4c958c88b7d37e6f5d3e",
+"paragraphs":[
+{
+"id":"1dc61da331924d68982c1a73b9fe1f02",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class HTMLGenerator(object):\n\n    def __init__(self, path):\n        self.listener = Listener(lambda event: self._generate())\n        self.path = path\n\n    def set_project(self, project):\n        self.project = project\n        self.listener.set_observable(self.project)\n\n    def _generate(self):\n        with open(self.path, \"w\") as f:\n            self._render_page(f, self.project.get_page())\n\n    def _render_page(self, f, page, level=1):\n        with self._tag(f, \"h{}\".format(level)):\n            self._write_html(f, page.title)\n        for paragraph in page.paragraphs:\n            {\n                \"text\": self._render_text,\n                \"code\": self._render_code,\n            }.get(paragraph.type, self._render_unknown)(f, paragraph)\n        for child in page.children:\n            self._render_page(f, child, level+1)\n\n    def _render_text(self, f, text):\n        with self._tag(f, \"p\"):\n            f.write(text.text)\n\n    def _render_code(self, f, code):\n        with self._tag(f, \"p\"):\n            with self._tag(f, \"code\"):\n                self._write_html(f, \" / \".join(code.path))\n        with self._tag(f, \"pre\"):\n            for fragment in code.formatted_text:\n                with self._tag(\n                    f,\n                    \"span\",\n                    newlines=False,\n                    args={\"style\": self.project.get_style(fragment.token).get_css()}\n                ):\n                    self._write_html(f, fragment.text)\n\n    def _render_unknown(self, f, paragraph):\n        with self._tag(f, \"p\"):\n            self._write_html(f, \"Unknown paragraph...\")\n\n    def _write_html(self, f, text):\n        f.write(xml.sax.saxutils.escape(text))\n\n    @contextlib.contextmanager\n    def _tag(self, f, tag, newlines=True, args={}):\n        args_string = \"\"\n        if args:\n            args_string = \" \" + \" \".join(\"{}=\\\"{}\\\"\".format(k, v) for k, v in args.items())\n        f.write(\"<{}{}>\".format(tag, args_string))\n        yield\n        f.write(\"</{}>\".format(tag))\n        if newlines:\n            f.write(\"\\n\\n\")\n",
+"type":"code"
+}
+],
+"title":"HTML"
 },
 {
 "children":[],
@@ -1612,7 +1628,7 @@
 "path":[
 "rliterate.py"
 ],
-"text":"from collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\n\nimport pygments.lexers\nfrom pygments.token import Token\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    app = wx.App()\n    main_frame = MainFrame(filepath=sys.argv[1])\n    main_frame.Show()\n    app.MainLoop()\n",
+"text":"from collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\n\nimport pygments.lexers\nfrom pygments.token import Token\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    app = wx.App()\n    main_frame = MainFrame(filepath=sys.argv[1])\n    main_frame.Show()\n    app.MainLoop()\n",
 "type":"code"
 }
 ],
