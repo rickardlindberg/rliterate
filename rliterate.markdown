@@ -415,7 +415,7 @@ class PageContextMenu(wx.Menu):
         wx.Menu.__init__(self)
         self.project = project
         self.page = page
-        self.child_ids = [child.id for child in page.children]
+        self.child_ids = [page.id]+[child.id for child in page.children]
         self._create_menu()
 
     def _create_menu(self):
