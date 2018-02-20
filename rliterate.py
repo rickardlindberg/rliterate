@@ -1663,7 +1663,7 @@ class MarkdownGenerator(object):
 class HTMLGenerator(object):
 
     def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
+        self.listener = Listener(lambda event: self._generate(), "document")
         self.path = path
 
     def set_project(self, project):
