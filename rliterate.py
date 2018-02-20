@@ -8,6 +8,7 @@ import sys
 import tempfile
 import time
 import uuid
+import webbrowser
 
 import pygments.lexers
 from pygments.token import Token
@@ -726,9 +727,26 @@ class Paragraph(ParagraphBase, Editable):
         MouseEventHelper.bind(
             [view],
             drag=self.DoDragDrop,
-            right_click=self.ShowContextMenu
+            right_click=self.ShowContextMenu,
+            move=self._change_cursor,
+            click=self._follow_link
         )
+        self.default_cursor = view.GetCursor()
+        self.link_fragment = None
         return view
+
+    def _change_cursor(self, position):
+        fragment = self.view.GetFragment(position)
+        if fragment is not None and fragment.token == Token.RLiterate.Link:
+            self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+            self.link_fragment = fragment
+        else:
+            self.SetCursor(self.default_cursor)
+            self.link_fragment = None
+
+    def _follow_link(self):
+        if self.link_fragment is not None:
+            webbrowser.open(self.link_fragment.extra["url"])
 
     def CreateEdit(self):
         edit = wx.TextCtrl(
@@ -983,7 +1001,7 @@ class MouseEventHelper(object):
 
     @classmethod
     def bind(cls, windows, drag=None, click=None, right_click=None,
-             double_click=None):
+             double_click=None, move=None):
         for window in windows:
             mouse_event_helper = cls(window)
             if drag is not None:
@@ -994,6 +1012,8 @@ class MouseEventHelper(object):
                 mouse_event_helper.OnRightClick = right_click
             if double_click is not None:
                 mouse_event_helper.OnDoubleClick = double_click
+            if move is not None:
+                mouse_event_helper.OnMove = move
 
     def __init__(self, window):
         self.down_pos = None
@@ -1015,10 +1035,15 @@ class MouseEventHelper(object):
     def OnDoubleClick(self):
         pass
 
+    def OnMove(self, position):
+        pass
+
     def _on_left_down(self, event):
         self.down_pos = event.Position
 
     def _on_motion(self, event):
+        if self.down_pos is None:
+            self.OnMove(event.Position)
         if self._should_drag(event.Position):
             self.down_pos = None
             self.OnDrag()
@@ -1055,11 +1080,11 @@ class RichTextDisplay(wx.Panel):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
         dc.SelectObject(wx.EmptyBitmap(1, 1))
-        w, h, self.fragments = self._calculate_fragments(dc)
+        w, h = self._calculate_fragments(dc)
         self.SetMinSize((w, h))
 
     def _calculate_fragments(self, dc):
-        fragments = []
+        self.draw_fragments = []
         x = 0
         y = 0
         max_x, max_y = dc.GetTextExtent("M")
@@ -1074,11 +1099,11 @@ class RichTextDisplay(wx.Panel):
             if x > 0 and x+w > self.max_width:
                 x = 0
                 y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
-            fragments.append((fragment.text, style, x, y))
+            self.draw_fragments.append((fragment, style, wx.Rect(x, y, w, h)))
             max_x = max(max_x, x+w)
             max_y = max(max_y, y+h)
             x += w
-        return (max_x, max_y, fragments)
+        return (max_x, max_y)
 
     def _newline_fragments(self):
         for fragment in self.fragments:
@@ -1089,9 +1114,13 @@ class RichTextDisplay(wx.Panel):
                 yield fragment
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
-        for text, style, x, y in self.fragments:
+        for fragment, style, box in self.draw_fragments:
             style.apply_to_wx_dc(dc, self.GetFont())
-            dc.DrawText(text, x, y)
+            dc.DrawText(fragment.text, box.X, box.Y)
+    def GetFragment(self, position):
+        for fragment, style, box in self.draw_fragments:
+            if box.Contains(position):
+                return fragment
 class Project(Observable):
 
     def __init__(self, filepath):
@@ -1378,7 +1407,8 @@ class DictTextParagraph(DictParagraph):
             re.compile(r"\[(.+?)\]\((.+?)\)", flags=re.DOTALL),
             lambda match: Fragment(
                 match.group(1),
-                token=Token.RLiterate.Link
+                token=Token.RLiterate.Link,
+                url=match.group(2)
             )
         ),
     ]
@@ -1435,16 +1465,17 @@ class DictCodeParagraph(DictParagraph):
         return fragments
 class Fragment(object):
 
-    def __init__(self, text, token=Token.RLiterate):
+    def __init__(self, text, token=Token.RLiterate, **extra):
         self.text = text
         self.token = token
+        self.extra = extra
 
     def word_split(self):
         fragments = []
         text = self.text
         while text:
             match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
-            fragments.append(Fragment(text=match.group(0), token=self.token))
+            fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))
             text = text[match.end(0):]
         return fragments
 class Layout(Observable):
