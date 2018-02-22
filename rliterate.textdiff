@@ -298,63 +298,108 @@ Event handlers:
     class HTMLGenerator(object):
     
         def __init__(self, path):
-            self.listener = Listener(lambda event: self._generate(), "document")
+            self.listener = Listener(lambda event: self._generate())
             self.path = path
     
-        def set_project(self, project):
-            self.project = project
-            self.listener.set_observable(self.project)
+        def set_document(self, document):
+            self.document = document
+            self.listener.set_observable(self.document)
     
         def _generate(self):
             with open(self.path, "w") as f:
-                self._render_page(f, self.project.get_page())
+                f.write(HTMLBuilder(self.document).build())
     
-        def _render_page(self, f, page, level=1):
-            with self._tag(f, "h{}".format(level)):
-                self._write_html(f, page.title)
+    
+    class HTMLBuilder(object):
+    
+        def __init__(self, document, **options):
+            self.document = document
+            self.parts = []
+            self.generate_toc = options.get("generate_toc", True)
+            self.toc_max_depth = options.get("toc_max_depth", 3)
+    
+        def build(self):
+            self.page(self.document.get_page())
+            return "".join(self.parts)
+    
+        def toc(self, root_page, levels_left):
+            if levels_left > 0:
+                with self.tag("ul", newlines=False):
+                    for page in root_page.children:
+                        with self.tag("li", newlines=False):
+                            with self.tag("a", newlines=False, args={"href": "#{}".format(page.id)}):
+                                self.escaped(page.title)
+                                self.toc(page, levels_left - 1)
+    
+        def page(self, page, level=1):
+            with self.tag("h{}".format(level)):
+                if level > 1 and level <= self.toc_max_depth+1:
+                    with self.tag("a", args={"name": page.id}):
+                        pass
+                self.escaped(page.title)
             for paragraph in page.paragraphs:
                 {
-                    "text": self._render_text,
-                    "code": self._render_code,
-                }.get(paragraph.type, self._render_unknown)(f, paragraph)
+                    "text": self.paragraph_text,
+                    "code": self.paragraph_code,
+                }.get(paragraph.type, self.paragraph_unknown)(paragraph)
+            if level == 1 and self.generate_toc:
+                self.toc(page, self.toc_max_depth)
             for child in page.children:
-                self._render_page(f, child, level+1)
+                self.page(child, level+1)
     
-        def _render_text(self, f, text):
-            with self._tag(f, "p"):
-                f.write(text.text)
+        def paragraph_text(self, text):
+            with self.tag("p"):
+                for fragment in text.formatted_text:
+                    {
+                        Token.RLiterate.Strong: self.fragment_strong,
+                        Token.RLiterate.Link: self.fragment_link,
+                    }.get(fragment.token, self.fragment_default)(fragment)
     
-        def _render_code(self, f, code):
-            with self._tag(f, "p"):
-                with self._tag(f, "code"):
-                    self._write_html(f, " / ".join(code.path))
-            with self._tag(f, "pre"):
-                for fragment in code.formatted_text:
-                    with self._tag(
-                        f,
-                        "span",
-                        newlines=False,
-                        args={"style": self.project.get_style(fragment.token).get_css()}
-                    ):
-                        self._write_html(f, fragment.text)
+        def fragment_strong(self, fragment):
+            with self.tag("strong", newlines=False):
+                self.escaped(fragment.text)
     
-        def _render_unknown(self, f, paragraph):
-            with self._tag(f, "p"):
-                self._write_html(f, "Unknown paragraph...")
+        def fragment_link(self, fragment):
+            with self.tag("a", args={"href": fragment.extra["url"]}, newlines=False):
+                self.escaped(fragment.text)
     
-        def _write_html(self, f, text):
-            f.write(xml.sax.saxutils.escape(text))
+        def fragment_default(self, fragment):
+            self.escaped(fragment.text)
+    
+        def paragraph_code(self, code):
+            with self.tag("p"):
+                with self.tag("code", newlines=False):
+                    self.escaped(" / ".join(code.path))
+            with self.tag("div", args={"class": "highlight"}):
+                with self.tag("pre", newlines=False):
+                    for fragment in code.formatted_text:
+                        with self.tag(
+                            "span",
+                            newlines=False,
+                            args={"class": STANDARD_TYPES.get(fragment.token, "")}
+                        ):
+                            self.escaped(fragment.text)
+    
+        def paragraph_unknown(self, paragraph):
+            with self.tag("p"):
+                self.escaped("Unknown paragraph...")
     
         @contextlib.contextmanager
-        def _tag(self, f, tag, newlines=True, args={}):
+        def tag(self, tag, newlines=True, args={}):
             args_string = ""
             if args:
                 args_string = " " + " ".join("{}=\"{}\"".format(k, v) for k, v in args.items())
-            f.write("<{}{}>".format(tag, args_string))
+            self.raw("<{}{}>".format(tag, args_string))
             yield
-            f.write("</{}>".format(tag))
+            self.raw("</{}>".format(tag))
             if newlines:
-                f.write("\n\n")
+                self.raw("\n\n")
+    
+        def raw(self, text):
+            self.parts.append(text)
+    
+        def escaped(self, text):
+            self.parts.append(xml.sax.saxutils.escape(text))
 
 
 1688f5eee57645a68af81fa5f02a1560: Paragraph
@@ -1251,7 +1296,7 @@ Describe how code paragraphs enable literate programming.
     import xml.sax.saxutils
     
     import pygments.lexers
-    from pygments.token import Token
+    from pygments.token import Token, STANDARD_TYPES
     import wx
     import wx.lib.newevent
     
@@ -1516,12 +1561,12 @@ Views provide a read only interface to a document. It is the only way to query a
                 else:
                     match, fragment = result
                     if partial:
-                        fragments.extend(Fragment(partial).word_split())
+                        fragments.append(Fragment(partial))
                         partial = ""
-                    fragments.extend(fragment)
+                    fragments.append(fragment)
                     text = text[match.end(0):]
             if partial:
-                fragments.extend(Fragment(partial).word_split())
+                fragments.append(Fragment(partial))
             return fragments
     
         PATTERNS = [
@@ -1546,7 +1591,7 @@ Views provide a read only interface to a document. It is the only way to query a
             for pattern, fn in self.PATTERNS:
                 match = pattern.match(text)
                 if match:
-                    return match, fn(match).word_split()
+                    return match, fn(match)
 
 
 `rliterate.py / <<classes>>`:
@@ -1594,7 +1639,7 @@ Views provide a read only interface to a document. It is the only way to query a
         def _tokens_to_fragments(self, tokens):
             fragments = []
             for token, text in tokens:
-                fragments.extend(Fragment(text, token=token).word_split())
+                fragments.append(Fragment(text, token=token))
             return fragments
 
 
@@ -1666,7 +1711,7 @@ A project is a container for a few other objects:
             self.layout.listen(self.notify_forwarder("layout"))
             FileGenerator().set_document(self.document)
             MarkdownGenerator(os.path.splitext(filepath)[0]+".markdown").set_document(self.document)
-            HTMLGenerator(os.path.splitext(filepath)[0]+".html").set_project(self)
+            HTMLGenerator(os.path.splitext(filepath)[0]+".html").set_document(self.document)
             TextDiff(os.path.splitext(filepath)[0]+".textdiff").set_document(self.document)
     
         <<Project>>
@@ -2280,7 +2325,7 @@ f1137543026a4319a6a9e2ce5d0f3d5e: Title
             view = RichTextDisplay(
                 self,
                 self.project,
-                Fragment(self.page.title).word_split(),
+                [Fragment(self.page.title)],
                 max_width=PAGE_BODY_WIDTH
             )
             return view
@@ -2337,7 +2382,7 @@ First, the text fragment positions are calculated. For that a DC is needed. But 
         y = 0
         max_x, max_y = dc.GetTextExtent("M")
         for fragment in self._newline_fragments():
-            if fragment.text is None:
+            if fragment is None:
                 x = 0
                 y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
                 continue
@@ -2357,9 +2402,14 @@ First, the text fragment positions are calculated. For that a DC is needed. But 
         for fragment in self.fragments:
             if "\n" in fragment.text:
                 for x in insert_between(None, fragment.text.split("\n")):
-                    yield Fragment(x, token=fragment.token)
+                    if x is None:
+                        yield x
+                    else:
+                        for subfragment in Fragment(x, token=fragment.token).word_split():
+                            yield subfragment
             else:
-                yield fragment
+                for subfragment in fragment.word_split():
+                    yield subfragment
 
 
 Drawing the rich text is just a matter of drawing all fragments at the pre-calculated positions:
