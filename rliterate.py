@@ -1907,7 +1907,10 @@ def edit_in_gvim(text, filename):
 
 
 if __name__ == "__main__":
-    app = wx.App()
-    main_frame = MainFrame(filepath=sys.argv[1])
-    main_frame.Show()
-    app.MainLoop()
+    if sys.argv[2:] == ["--html"]:
+        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())
+    else:
+        app = wx.App()
+        main_frame = MainFrame(filepath=sys.argv[1])
+        main_frame.Show()
+        app.MainLoop()
