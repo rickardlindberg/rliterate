@@ -1401,8 +1401,10 @@ At the time I was working on a program that I thought would be nice to express i
 
 956ae4613f144e3581d420995a7ef046: RLiterate
 
-RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what makes RLiterate documents special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documents can also be exported to different formats for display in different mediums.
+RLiterate is a tool for reading and authoring documents. Documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what make RLiterate documents special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documents can also be exported to different formats for display in different mediums.
 
+
+This book explains RLiterate and also includes the complete implementation of the program.
 
 99a2a81b38164293b9ad9287b33bfbbb: Dropping pages
 
