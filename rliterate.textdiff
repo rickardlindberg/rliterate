@@ -140,6 +140,8 @@ Random notes of what I might want to work on in the future.
     * Show graph paragraph based on data paragraph defined earlier on the page (or on other page)
 * Editors: highlight the word/fragment that is double clicked
 * Paragraph editor has comment: extract comment to prose
+* Style.generate_css not used?
+* Much generator code not used
 
 1164b94ba82c476897ce18fc1b70a5b8: Page container widget
 
