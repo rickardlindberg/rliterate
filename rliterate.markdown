@@ -1555,7 +1555,6 @@ class Project(Observable):
         self.layout.listen(self.notify_forwarder("layout"))
         FileGenerator().set_document(self.document)
         MarkdownGenerator(os.path.splitext(filepath)[0]+".markdown").set_document(self.document)
-        HTMLGenerator(os.path.splitext(filepath)[0]+".html").set_document(self.document)
         TextDiff(os.path.splitext(filepath)[0]+".textdiff").set_document(self.document)
 
     <<Project>>
