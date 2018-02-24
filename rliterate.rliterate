@@ -1394,7 +1394,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n        TextDiff(os.path.splitext(filepath)[0]+\".textdiff\").set_document(self.document)\n\n    <<Project>>\n",
+"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n\n    <<Project>>\n",
 "type":"code"
 },
 {
