@@ -1780,38 +1780,55 @@ class TextDiff(object):
 
     def _generate(self):
         with open(self.path, "w") as f:
-            self.pages = []
-            self._collect_pages(self.document.get_page())
-            self._render_pages(f)
+            f.write(DiffBuilder(self.document).build())
+
+
+class DiffBuilder(object):
+
+    def __init__(self, document):
+        self.document = document
+
+    def build(self):
+        self.parts = []
+        self._foo()
+        return "".join(self.parts)
+
+    def _foo(self):
+        self.pages = []
+        self._collect_pages(self.document.get_page())
+        self._render_pages()
 
     def _collect_pages(self, page):
         self.pages.append(page)
         for child in page.children:
             self._collect_pages(child)
 
-    def _render_pages(self, f):
+    def _render_pages(self):
         for page in sorted(self.pages, key=lambda page: page.id):
-            f.write(page.id)
-            f.write(": ")
-            f.write(page.title)
-            f.write("\n\n")
+            self._write(page.id)
+            self._write(": ")
+            self._write(page.title)
+            self._write("\n\n")
             for paragraph in page.paragraphs:
                 {
                     "text": self._render_text,
                     "code": self._render_code,
-                }.get(paragraph.type, self._render_unknown)(f, paragraph)
+                }.get(paragraph.type, self._render_unknown)(paragraph)
 
-    def _render_text(self, f, text):
-        f.write(text.text+"\n\n")
+    def _render_text(self, text):
+        self._write(text.text+"\n\n")
 
-    def _render_code(self, f, code):
-        f.write("`"+" / ".join(code.path)+"`:\n\n")
+    def _render_code(self, code):
+        self._write("`"+" / ".join(code.path)+"`:\n\n")
         for line in code.text.splitlines():
-            f.write("    "+line+"\n")
-        f.write("\n\n")
+            self._write("    "+line+"\n")
+        self._write("\n\n")
 
-    def _render_unknown(self, f, paragraph):
-        f.write("Unknown type = "+paragraph.type+"\n\n")
+    def _render_unknown(self, paragraph):
+        self._write("Unknown type = "+paragraph.type+"\n\n")
+
+    def _write(self, text):
+        self.parts.append(text)
 class Listener(object):
 
     def __init__(self, fn, *events):
@@ -1907,6 +1924,8 @@ def edit_in_gvim(text, filename):
 if __name__ == "__main__":
     if sys.argv[2:] == ["--html"]:
         sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())
+    elif sys.argv[2:] == ["--diff"]:
+        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())
     else:
         app = wx.App()
         main_frame = MainFrame(filepath=sys.argv[1])

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+old_file="$2"
+new_file="$5"
+
+meld <(python rliterate.py "$old_file" --diff) <(python rliterate.py "$new_file" --diff)
