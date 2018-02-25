@@ -1915,11 +1915,29 @@ class DiffBuilder(object):
             for paragraph in page.paragraphs:
                 {
                     "text": self._render_text,
+                    "quote": self._render_quote,
                     "code": self._render_code,
                 }.get(paragraph.type, self._render_unknown)(paragraph)
 
     def _render_text(self, text):
-        self._write(text.text+"\n\n")
+        self._wrapped_text(text.text+"\n\n")
+
+    def _render_quote(self, text):
+        self._wrapped_text(text.text+"\n\n", indent=4)
+
+    def _wrapped_text(self, text, indent=0):
+        current_line = []
+        for part in text.replace("\n", " ").split(" "):
+            if len(" ".join(current_line)) > 60-indent:
+                self._write(" "*indent+" ".join(current_line))
+                self._write("\n")
+                current_line = []
+            if part.strip():
+                current_line.append(part.strip())
+        if current_line:
+            self._write(" "*indent+" ".join(current_line))
+            self._write("\n")
+        self._write("\n")
 
     def _render_code(self, code):
         self._write("`"+" / ".join(code.path)+"`:\n\n")
