@@ -17,21 +17,35 @@ import wx
 import wx.lib.newevent
 
 
+EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 PAGE_BODY_WIDTH = 600
 PAGE_PADDING = 13
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
 CONTAINER_BORDER = PARAGRAPH_SPACE
+class Editable(wx.Panel):
 
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.view = self.CreateView()
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
+        self.SetSizer(self.sizer)
+        self.view.Bind(EVT_EDIT_START, self.OnEditStart)
 
-ParagraphEditStart, EVT_PARAGRAPH_EDIT_START = wx.lib.newevent.NewCommandEvent()
-ParagraphEditEnd, EVT_PARAGRAPH_EDIT_END = wx.lib.newevent.NewCommandEvent()
-class ParagraphBase(object):
+    def OnEditStart(self, event):
+        self.edit = self.CreateEdit()
+        self.edit.SetFocus()
+        self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
+        self.sizer.Hide(self.view)
+        self.GetTopLevelParent().Layout()
+class ParagraphBase(Editable):
 
-    def __init__(self, project, page_id, paragraph):
+    def __init__(self, parent, project, page_id, paragraph):
         self.project = project
         self.page_id = page_id
         self.paragraph = paragraph
+        Editable.__init__(self, parent)
 
     def DoDragDrop(self):
         data = RliterateDataObject("paragraph", {
@@ -43,41 +57,41 @@ class ParagraphBase(object):
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
     def ShowContextMenu(self):
-        menu = ParagraphContextMenu(
-            self.project, self.page_id, self.paragraph
-        )
+        menu = ParagraphContextMenu()
+        self._add_base(menu)
         self.PopupMenu(menu)
         menu.Destroy()
-class Editable(wx.Panel):
 
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        self.view = self.CreateView()
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
-        self.SetSizer(self.sizer)
-        self.view.Bind(wx.EVT_LEFT_DCLICK, self.OnParagraphEditStart)
-        self.view.Bind(EVT_PARAGRAPH_EDIT_START, self.OnParagraphEditStart)
-
-    def OnParagraphEditStart(self, event):
-        self.edit = self.CreateEdit()
-        self.edit.SetFocus()
-        self.edit.Bind(wx.EVT_CHAR, self.OnChar)
-        self.edit.Bind(EVT_PARAGRAPH_EDIT_END, self.OnParagraphEditEnd)
-        self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
-        self.sizer.Hide(self.view)
-        self.GetTopLevelParent().Layout()
-
-    def OnParagraphEditEnd(self, event):
-        self.EndEdit()
-
-    def OnChar(self, event):
-        if event.KeyCode == wx.WXK_CONTROL_S:
-            self.OnParagraphEditEnd(None)
-        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
-            self.OnParagraphEditEnd(None)
-        else:
-            event.Skip()
+    def _add_base(self, menu):
+        menu.AppendItem(
+            "Delete",
+            lambda: self.project.delete_paragraph(
+                page_id=self.page_id,
+                paragraph_id=self.paragraph.id
+            )
+        )
+        menu.AppendItem(
+            "Edit in gvim",
+            lambda: self.project.edit_paragraph(
+                self.paragraph.id,
+                {"text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)}
+            )
+        )
+        menu.AppendSeparator()
+        menu.AppendItem(
+            "To quote",
+            lambda: self.project.edit_paragraph(
+                paragraph.id,
+                {"type": "quote"}
+            )
+        )
+        menu.AppendItem(
+            "To text",
+            lambda: self.project.edit_paragraph(
+                paragraph.id,
+                {"type": "text"}
+            )
+        )
 class DropPointDropTarget(wx.DropTarget):
 
     def __init__(self, window, kind):
@@ -115,6 +129,65 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
+class RichTextDisplay(wx.Panel):
+    def __init__(self, parent, project, fragments, **kwargs):
+        wx.Panel.__init__(self, parent)
+        self.project = project
+        self.fragments = fragments
+        self.line_height = kwargs.get("line_height", 1)
+        self.max_width = kwargs.get("max_width", 100)
+        self._set_fragments()
+        self.Bind(wx.EVT_PAINT, self._on_paint)
+    def _set_fragments(self):
+        dc = wx.MemoryDC()
+        dc.SetFont(self.GetFont())
+        dc.SelectObject(wx.EmptyBitmap(1, 1))
+        w, h = self._calculate_fragments(dc)
+        self.SetMinSize((w, h))
+
+    def _calculate_fragments(self, dc):
+        self.draw_fragments = []
+        x = 0
+        y = 0
+        max_x, max_y = dc.GetTextExtent("M")
+        for fragment in self._newline_fragments():
+            if fragment is None:
+                x = 0
+                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
+                continue
+            style = self.project.get_style(fragment.token)
+            style.apply_to_wx_dc(dc, self.GetFont())
+            w, h = dc.GetTextExtent(fragment.text)
+            if x > 0 and x+w > self.max_width:
+                x = 0
+                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
+            self.draw_fragments.append((fragment, style, wx.Rect(x, y, w, h)))
+            max_x = max(max_x, x+w)
+            max_y = max(max_y, y+h)
+            x += w
+        return (max_x, max_y)
+
+    def _newline_fragments(self):
+        for fragment in self.fragments:
+            if "\n" in fragment.text:
+                for x in insert_between(None, fragment.text.split("\n")):
+                    if x is None:
+                        yield x
+                    else:
+                        for subfragment in Fragment(x, token=fragment.token, **fragment.extra).word_split():
+                            yield subfragment
+            else:
+                for subfragment in fragment.word_split():
+                    yield subfragment
+    def _on_paint(self, event):
+        dc = wx.PaintDC(self)
+        for fragment, style, box in self.draw_fragments:
+            style.apply_to_wx_dc(dc, self.GetFont())
+            dc.DrawText(fragment.text, box.X, box.Y)
+    def GetFragment(self, position):
+        for fragment, style, box in self.draw_fragments:
+            if box.Contains(position):
+                return fragment
 class CompactScrolledWindow(wx.ScrolledWindow):
 
     MIN_WIDTH = 200
@@ -147,6 +220,20 @@ class CompactScrolledWindow(wx.ScrolledWindow):
 
     def _calc_scroll_pos_vscroll(self, x, y, delta):
         return (x, y-delta*self.step)
+class MultilineTextCtrl(wx.TextCtrl):
+
+    MIN_HEIGHT = 50
+
+    def __init__(self, parent, value, size=wx.DefaultSize):
+        w, h = size
+        size = (w, max(h, self.MIN_HEIGHT))
+        wx.TextCtrl.__init__(
+            self,
+            parent,
+            style=wx.TE_MULTILINE,
+            value=value,
+            size=size
+        )
 class Style(object):
 
     def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
@@ -633,7 +720,7 @@ class Page(wx.Panel):
                 next_paragraph_id=paragraph.id
             ))
             divider = self._render_paragraph({
-                "text": Paragraph,
+                "text": Text,
                 "quote": Quote,
                 "code": Code,
                 "factory": Factory,
@@ -715,42 +802,65 @@ class Title(Editable):
             [Fragment(self.page.title)],
             max_width=PAGE_BODY_WIDTH
         )
+        MouseEventHelper.bind(
+            [view],
+            double_click=lambda: post_edit_start(view)
+        )
         return view
 
     def CreateEdit(self):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
-        edit.Bind(wx.EVT_TEXT_ENTER, lambda _: self.EndEdit())
+        edit.Bind(
+            wx.EVT_TEXT_ENTER,
+            lambda _: self.project.edit_page(self.page.id, {"title": self.edit.Value})
+        )
         return edit
-
-    def EndEdit(self):
-        self.project.edit_page(self.page.id, {"title": self.edit.Value})
-class Paragraph(ParagraphBase, Editable):
-
-    def __init__(self, parent, project, page_id, paragraph):
-        ParagraphBase.__init__(self, project, page_id, paragraph)
-        Editable.__init__(self, parent)
+class Text(ParagraphBase):
 
     def CreateView(self):
-        view = RichTextDisplay(
+        return TextView(
             self,
             self.project,
-            self.paragraph.formatted_text,
+            self.paragraph,
+            self
+        )
+
+    def CreateEdit(self):
+        return TextEdit(
+            self,
+            self.project,
+            self.paragraph,
+            self.view
+        )
+
+
+
+
+
+class TextView(RichTextDisplay):
+
+    def __init__(self, parent, project, paragraph, base):
+        RichTextDisplay.__init__(
+            self,
+            parent,
+            project,
+            paragraph.formatted_text,
             line_height=1.2,
             max_width=PAGE_BODY_WIDTH
         )
         MouseEventHelper.bind(
-            [view],
-            drag=self.DoDragDrop,
-            right_click=self.ShowContextMenu,
+            [self],
+            drag=base.DoDragDrop,
+            right_click=base.ShowContextMenu,
+            double_click=lambda: post_edit_start(self),
             move=self._change_cursor,
             click=self._follow_link
         )
-        self.default_cursor = view.GetCursor()
+        self.default_cursor = self.GetCursor()
         self.link_fragment = None
-        return view
 
     def _change_cursor(self, position):
-        fragment = self.view.GetFragment(position)
+        fragment = self.GetFragment(position)
         if fragment is not None and fragment.token == Token.RLiterate.Link:
             self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
             self.link_fragment = fragment
@@ -761,100 +871,83 @@ class Paragraph(ParagraphBase, Editable):
     def _follow_link(self):
         if self.link_fragment is not None:
             webbrowser.open(self.link_fragment.extra["url"])
+class TextEdit(MultilineTextCtrl):
 
-    def CreateEdit(self):
-        edit = wx.TextCtrl(
+    def __init__(self, parent, project, paragraph, view):
+        MultilineTextCtrl.__init__(
             self,
-            style=wx.TE_MULTILINE,
-            value=self.paragraph.text
+            parent,
+            value=paragraph.text,
+            size=(-1, view.Size[1])
         )
-        # Error is printed if height is too small:
-        # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
-        # Solution: Make it at least 50 heigh.
-        edit.MinSize = (-1, max(50, self.view.Size[1]))
-        return edit
+        self.project = project
+        self.paragraph = paragraph
+        self.Bind(wx.EVT_CHAR, self._on_char)
 
-    def EndEdit(self):
-        self.project.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
-class Quote(Paragraph):
+    def _on_char(self, event):
+        if event.KeyCode == wx.WXK_CONTROL_S:
+            self._save()
+        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
+            self._save()
+        else:
+            event.Skip()
+
+    def _save(self):
+        self.project.edit_paragraph(
+            self.paragraph.id,
+            {"text": self.Value}
+        )
+class Quote(Text):
 
     INDENT = 20
 
     def CreateView(self):
         view = wx.Panel(self)
-        self.text = RichTextDisplay(
-            view,
-            self.project,
-            self.paragraph.formatted_text,
-            line_height=1.2,
-            max_width=PAGE_BODY_WIDTH-self.INDENT
-        )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        view.SetSizer(sizer)
         sizer.AddSpacer(self.INDENT)
-        sizer.Add(self.text, flag=wx.EXPAND, proportion=1)
-        MouseEventHelper.bind(
-            [self.text],
-            drag=self.DoDragDrop,
-            right_click=self.ShowContextMenu,
-            move=self._change_cursor,
-            click=self._follow_link
+        sizer.Add(
+            TextView(
+                view,
+                self.project,
+                self.paragraph,
+                self
+            ),
+            flag=wx.EXPAND,
+            proportion=1
         )
-        self.default_cursor = self.text.GetCursor()
-        self.link_fragment = None
+        view.SetSizer(sizer)
         return view
-
-    def _change_cursor(self, position):
-        fragment = self.text.GetFragment(position)
-        if fragment is not None and fragment.token == Token.RLiterate.Link:
-            self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-            self.link_fragment = fragment
-        else:
-            self.SetCursor(self.default_cursor)
-            self.link_fragment = None
-
-    def _follow_link(self):
-        if self.link_fragment is not None:
-            webbrowser.open(self.link_fragment.extra["url"])
-class Code(ParagraphBase, Editable):
-
-    def __init__(self, parent, project, page_id, paragraph):
-        ParagraphBase.__init__(self, project, page_id, paragraph)
-        Editable.__init__(self, parent)
+class Code(ParagraphBase):
 
     def CreateView(self):
-        return CodeView(self, self.project, self.paragraph)
+        return CodeView(self, self.project, self.paragraph, self)
 
     def CreateEdit(self):
-        return CodeEditor(self, self.view, self.paragraph)
+        return CodeEditor(self, self.project, self.paragraph, self.view)
 
-    def EndEdit(self):
-        self.project.edit_paragraph(self.paragraph.id, {
-            "path": self.edit.path.Value.split(" / "),
-            "text": self.edit.text.Value,
-        })
 class CodeView(wx.Panel):
 
     BORDER = 0
     PADDING = 5
 
-    def __init__(self, parent, project, code_paragraph):
+    def __init__(self, parent, project, paragraph, base):
         wx.Panel.__init__(self, parent)
         self.project = project
+        self.base = base
         self.Font = create_font(monospace=True)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.vsizer.Add(
-            self._create_path(code_paragraph),
+            self._create_path(paragraph),
             flag=wx.ALL|wx.EXPAND, border=self.BORDER
         )
         self.vsizer.Add(
-            self._create_code(code_paragraph),
+            self._create_code(paragraph),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
         self.SetSizer(self.vsizer)
         self.SetBackgroundColour((243, 236, 219))
 
-    def _create_path(self, code_paragraph):
+    def _create_path(self, paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((248, 241, 223))
         text = RichTextDisplay(
@@ -862,7 +955,7 @@ class CodeView(wx.Panel):
             self.project,
             insert_between(
                 Fragment(" / "),
-                [Fragment(x, token=pygments.token.Token.RLiterate.Strong) for x in code_paragraph.path]
+                [Fragment(x, token=pygments.token.Token.RLiterate.Strong) for x in paragraph.path]
             ),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
@@ -872,18 +965,18 @@ class CodeView(wx.Panel):
         MouseEventHelper.bind(
             [panel, text],
             double_click=self._post_paragraph_edit_start,
-            drag=self.Parent.DoDragDrop,
-            right_click=self.Parent.ShowContextMenu
+            drag=self.base.DoDragDrop,
+            right_click=self.base.ShowContextMenu
         )
         return panel
 
-    def _create_code(self, code_paragraph):
+    def _create_code(self, paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
         body = RichTextDisplay(
             panel,
             self.project,
-            code_paragraph.formatted_text,
+            paragraph.formatted_text,
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -898,23 +991,25 @@ class CodeView(wx.Panel):
         return panel
 
     def _post_paragraph_edit_start(self):
-        wx.PostEvent(self, ParagraphEditStart(0))
+        post_edit_start(self)
 class CodeEditor(wx.Panel):
 
     BORDER = 1
     PADDING = 3
 
-    def __init__(self, parent, view, code_paragraph):
+    def __init__(self, parent, project, paragraph, view):
         wx.Panel.__init__(self, parent)
         self.Font = create_font(monospace=True)
+        self.project = project
+        self.paragraph = paragraph
         self.view = view
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.vsizer.Add(
-            self._create_path(code_paragraph),
+            self._create_path(paragraph),
             flag=wx.ALL|wx.EXPAND, border=self.BORDER
         )
         self.vsizer.Add(
-            self._create_code(code_paragraph),
+            self._create_code(paragraph),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
         self.vsizer.Add(
@@ -923,23 +1018,19 @@ class CodeEditor(wx.Panel):
         )
         self.SetSizer(self.vsizer)
 
-    def _create_path(self, code_paragraph):
+    def _create_path(self, paragraph):
         self.path = wx.TextCtrl(
             self,
-            value=" / ".join(code_paragraph.path)
+            value=" / ".join(paragraph.path)
         )
         return self.path
 
-    def _create_code(self, code_paragraph):
-        self.text = wx.TextCtrl(
+    def _create_code(self, paragraph):
+        self.text = MultilineTextCtrl(
             self,
-            style=wx.TE_MULTILINE,
-            value=code_paragraph.text
+            value=paragraph.text,
+            size=(-1, self.view.Size[1])
         )
-        # Error is printed if height is too small:
-        # Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar
-        # Solution: Make it at least 50 heigh.
-        self.text.MinSize = (-1, max(50, self.view.Size[1]))
         return self.text
 
     def _create_save(self):
@@ -947,26 +1038,28 @@ class CodeEditor(wx.Panel):
             self,
             label="Save"
         )
-        self.Bind(wx.EVT_BUTTON, lambda event: self._post_paragraph_edit_end())
+        self.Bind(wx.EVT_BUTTON, self._on_save)
         return button
 
-    def _post_paragraph_edit_end(self):
-        wx.PostEvent(self, ParagraphEditEnd(0))
-class Factory(ParagraphBase, wx.Panel):
+    def _on_save(self, event):
+        self.project.edit_paragraph(self.paragraph.id, {
+            "path": self.path.Value.split(" / "),
+            "text": self.text.Value,
+        })
+class Factory(ParagraphBase):
 
-    def __init__(self, parent, project, page_id, paragraph):
-        ParagraphBase.__init__(self, project, page_id, paragraph)
-        wx.Panel.__init__(self, parent)
+    def CreateView(self):
+        view = wx.Panel(self)
         MouseEventHelper.bind(
-            [self],
+            [view],
             drag=self.DoDragDrop,
             right_click=self.ShowContextMenu
         )
-        self.SetBackgroundColour((240, 240, 240))
+        view.SetBackgroundColour((240, 240, 240))
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.vsizer.Add(
-            wx.StaticText(self, label="Factory"),
+            wx.StaticText(view, label="Factory"),
             flag=wx.TOP|wx.ALIGN_CENTER,
             border=PARAGRAPH_SPACE
         )
@@ -976,61 +1069,33 @@ class Factory(ParagraphBase, wx.Panel):
             border=PARAGRAPH_SPACE
         )
         text_button = wx.Button(self, label="Text")
-        text_button.Bind(wx.EVT_BUTTON, self.OnTextButton)
+        text_button.Bind(wx.EVT_BUTTON, self._on_text_button)
         self.hsizer.Add(text_button, flag=wx.ALL, border=2)
         code_button = wx.Button(self, label="Code")
-        code_button.Bind(wx.EVT_BUTTON, self.OnCodeButton)
+        code_button.Bind(wx.EVT_BUTTON, self._on_code_button)
         self.hsizer.Add(code_button, flag=wx.ALL, border=2)
         self.vsizer.AddSpacer(PARAGRAPH_SPACE)
-        self.SetSizer(self.vsizer)
+        view.SetSizer(self.vsizer)
+        return view
 
-    def OnTextButton(self, event):
-        self.project.edit_paragraph(self.paragraph.id, {"type": "text", "text": "Enter text here..."})
+    def _on_text_button(self, event):
+        self.project.edit_paragraph(
+            self.paragraph.id,
+            {"type": "text", "text": "Enter text here..."}
+        )
 
-    def OnCodeButton(self, event):
-        self.project.edit_paragraph(self.paragraph.id, {"type": "code", "path": [], "text": "Enter code here..."})
+    def _on_code_button(self, event):
+        self.project.edit_paragraph(
+            self.paragraph.id,
+            {"type": "code", "path": [], "text": "Enter code here..."}
+        )
 class ParagraphContextMenu(wx.Menu):
 
-    def __init__(self, project, page_id, paragraph):
-        wx.Menu.__init__(self)
-        self.project = project
-        self.page_id = page_id
-        self.paragraph = paragraph
-        self._create_menu()
-
-    def _create_menu(self):
+    def AppendItem(self, text, fn):
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.delete_paragraph(
-                page_id=self.page_id,
-                paragraph_id=self.paragraph.id
-            ),
-            self.Append(wx.NewId(), "Delete")
-        )
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: self.project.edit_paragraph(
-                self.paragraph.id,
-                {"text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)}
-            ),
-            self.Append(wx.NewId(), "Edit in gvim")
-        )
-        self.AppendSeparator()
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: self.project.edit_paragraph(
-                self.paragraph.id,
-                {"type": "quote"}
-            ),
-            self.Append(wx.NewId(), "To quote")
-        )
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: self.project.edit_paragraph(
-                self.paragraph.id,
-                {"type": "text"}
-            ),
-            self.Append(wx.NewId(), "To text")
+            lambda event: fn(),
+            self.Append(wx.NewId(), text)
         )
 class RliterateDataObject(wx.CustomDataObject):
 
@@ -1138,65 +1203,6 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
-class RichTextDisplay(wx.Panel):
-    def __init__(self, parent, project, fragments, **kwargs):
-        wx.Panel.__init__(self, parent)
-        self.project = project
-        self.fragments = fragments
-        self.line_height = kwargs.get("line_height", 1)
-        self.max_width = kwargs.get("max_width", 100)
-        self._set_fragments()
-        self.Bind(wx.EVT_PAINT, self._on_paint)
-    def _set_fragments(self):
-        dc = wx.MemoryDC()
-        dc.SetFont(self.GetFont())
-        dc.SelectObject(wx.EmptyBitmap(1, 1))
-        w, h = self._calculate_fragments(dc)
-        self.SetMinSize((w, h))
-
-    def _calculate_fragments(self, dc):
-        self.draw_fragments = []
-        x = 0
-        y = 0
-        max_x, max_y = dc.GetTextExtent("M")
-        for fragment in self._newline_fragments():
-            if fragment is None:
-                x = 0
-                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
-                continue
-            style = self.project.get_style(fragment.token)
-            style.apply_to_wx_dc(dc, self.GetFont())
-            w, h = dc.GetTextExtent(fragment.text)
-            if x > 0 and x+w > self.max_width:
-                x = 0
-                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
-            self.draw_fragments.append((fragment, style, wx.Rect(x, y, w, h)))
-            max_x = max(max_x, x+w)
-            max_y = max(max_y, y+h)
-            x += w
-        return (max_x, max_y)
-
-    def _newline_fragments(self):
-        for fragment in self.fragments:
-            if "\n" in fragment.text:
-                for x in insert_between(None, fragment.text.split("\n")):
-                    if x is None:
-                        yield x
-                    else:
-                        for subfragment in Fragment(x, token=fragment.token, **fragment.extra).word_split():
-                            yield subfragment
-            else:
-                for subfragment in fragment.word_split():
-                    yield subfragment
-    def _on_paint(self, event):
-        dc = wx.PaintDC(self)
-        for fragment, style, box in self.draw_fragments:
-            style.apply_to_wx_dc(dc, self.GetFont())
-            dc.DrawText(fragment.text, box.X, box.Y)
-    def GetFragment(self, position):
-        for fragment, style, box in self.draw_fragments:
-            if box.Contains(position):
-                return fragment
 class Project(Observable):
 
     def __init__(self, filepath):
@@ -1970,6 +1976,8 @@ def insert_between(separator, items):
             result.append(separator)
         result.append(item)
     return result
+def post_edit_start(control):
+    wx.PostEvent(control, EditStart(0))
 def ensure_key(a_dict, key, default):
     if key not in a_dict:
         a_dict[key] = default
