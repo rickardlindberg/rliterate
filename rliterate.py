@@ -81,15 +81,22 @@ class ParagraphBase(Editable):
         menu.AppendItem(
             "To quote",
             lambda: self.project.edit_paragraph(
-                paragraph.id,
+                self.paragraph.id,
                 {"type": "quote"}
             )
         )
         menu.AppendItem(
             "To text",
             lambda: self.project.edit_paragraph(
-                paragraph.id,
+                self.paragraph.id,
                 {"type": "text"}
+            )
+        )
+        menu.AppendItem(
+            "To list",
+            lambda: self.project.edit_paragraph(
+                self.paragraph.id,
+                {"type": "list"}
             )
         )
 class DropPointDropTarget(wx.DropTarget):
@@ -150,10 +157,11 @@ class RichTextDisplay(wx.Panel):
         x = 0
         y = 0
         max_x, max_y = dc.GetTextExtent("M")
+        line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self.line_height))
         for fragment in self._newline_fragments():
             if fragment is None:
                 x = 0
-                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
+                y += line_height_pixels
                 max_y = max(max_y, y)
                 continue
             style = self.project.get_style(fragment.token)
@@ -161,10 +169,10 @@ class RichTextDisplay(wx.Panel):
             w, h = dc.GetTextExtent(fragment.text)
             if x > 0 and x+w > self.max_width:
                 x = 0
-                y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
+                y += line_height_pixels
             self.draw_fragments.append((fragment, style, wx.Rect(x, y, w, h)))
             max_x = max(max_x, x+w)
-            max_y = max(max_y, y+h)
+            max_y = max(max_y, y+line_height_pixels)
             x += w
         return (max_x, max_y)
 
@@ -724,6 +732,7 @@ class Page(wx.Panel):
             divider = self._render_paragraph({
                 "text": Text,
                 "quote": Quote,
+                "list": List,
                 "code": Code,
                 "factory": Factory,
             }[paragraph.type](self, self.project, self.page_id, paragraph))
@@ -823,7 +832,7 @@ class Text(ParagraphBase):
         return TextView(
             self,
             self.project,
-            self.paragraph,
+            self.paragraph.formatted_text,
             self
         )
 
@@ -836,12 +845,12 @@ class Text(ParagraphBase):
         )
 class TextView(RichTextDisplay):
 
-    def __init__(self, parent, project, paragraph, base):
+    def __init__(self, parent, project, fragments, base):
         RichTextDisplay.__init__(
             self,
             parent,
             project,
-            paragraph.formatted_text,
+            fragments,
             line_height=1.2,
             max_width=PAGE_BODY_WIDTH
         )
@@ -906,7 +915,7 @@ class Quote(Text):
             TextView(
                 view,
                 self.project,
-                self.paragraph,
+                self.paragraph.formatted_text,
                 self
             ),
             flag=wx.EXPAND,
@@ -914,6 +923,34 @@ class Quote(Text):
         )
         view.SetSizer(sizer)
         return view
+class List(Text):
+
+    def CreateView(self):
+        view = wx.Panel(self)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.add_items(view, sizer, self.paragraph.item.children, self.paragraph.item.child_type)
+        view.SetSizer(sizer)
+        return view
+
+    def add_items(self, view, sizer, items, child_type, indent=0):
+        for index, item in enumerate(items):
+            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            inner_sizer.AddSpacer(20*indent)
+            if child_type == "ordered":
+                bullet = "{}.".format(index + 1)
+            else:
+                bullet = u"\u2022"
+            inner_sizer.Add(wx.StaticText(self, label=bullet+" "))
+            inner_sizer.Add(
+                TextView(
+                    view,
+                    self.project,
+                    item.formatted_text,
+                    self
+                )
+            )
+            sizer.Add(inner_sizer, flag=wx.EXPAND)
+            self.add_items(view, sizer, item.children, item.child_type, indent+1)
 class Code(ParagraphBase):
 
     def CreateView(self):
@@ -1428,6 +1465,7 @@ class DictParagraph(object):
         return {
             "text": DictTextParagraph,
             "quote": DictQuoteParagraph,
+            "list": DictListParagraph,
             "code": DictCodeParagraph,
         }.get(paragraph_dict["type"], DictParagraph)(paragraph_dict)
 
@@ -1453,11 +1491,14 @@ class DictTextParagraph(DictParagraph):
 
     @property
     def formatted_text(self):
+        return DictTextParagraph.parse(self.text)
+
+    @staticmethod
+    def parse(text):
         fragments = []
-        text = self._paragraph_dict["text"]
         partial = ""
         while text:
-            result = self._get_special_fragment(text)
+            result = DictTextParagraph._get_special_fragment(text)
             if result is None:
                 partial += text[0]
                 text = text[1:]
@@ -1504,13 +1545,80 @@ class DictTextParagraph(DictParagraph):
         ),
     ]
 
-    def _get_special_fragment(self, text):
-        for pattern, fn in self.PATTERNS:
+    @staticmethod
+    def _get_special_fragment(text):
+        for pattern, fn in DictTextParagraph.PATTERNS:
             match = pattern.match(text)
             if match:
                 return match, fn(match)
 class DictQuoteParagraph(DictTextParagraph):
     pass
+class DictListParagraph(DictTextParagraph):
+
+    @property
+    def item(self):
+        items, list_type = ListParser(self.text.strip().split("\n")).parse_items()
+        return ListItem("", items, list_type)
+
+
+class ListParser(object):
+
+    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
+
+    def __init__(self, lines):
+        self.lines = lines
+
+    def parse_items(self, level=0):
+        items = []
+        list_type = None
+        while True:
+            item_and_type = self.parse_item(level)
+            if item_and_type is None:
+                return items, list_type
+            else:
+                item, item_type = item_and_type
+                if list_type is None:
+                    list_type = item_type
+                items.append(item)
+
+    def parse_item(self, level):
+        print(("parse item", level, self.lines[:1]))
+        parts = self.consume_bodies()
+        next_level = level + 1
+        item_type = None
+        if self.lines:
+            match = self.ITEM_START_RE.match(self.lines[0])
+            if match:
+                matched_level = len(match.group(1))
+                if matched_level >= level:
+                    parts.append(match.group(3))
+                    self.lines.pop(0)
+                    parts.extend(self.consume_bodies())
+                    next_level = matched_level + 1
+                    if "*" in match.group(2):
+                        item_type = "unordered"
+                    else:
+                        item_type = "ordered"
+        if parts:
+            children, child_type = self.parse_items(next_level)
+            return ListItem(DictTextParagraph.parse(" ".join(parts)), children, child_type), item_type
+
+    def consume_bodies(self):
+        bodies = []
+        while self.lines:
+            if self.ITEM_START_RE.match(self.lines[0]):
+                break
+            else:
+                bodies.append(self.lines.pop(0))
+        return bodies
+
+
+class ListItem(object):
+
+    def __init__(self, formatted_text, children, child_type):
+        self.formatted_text = formatted_text
+        self.children = children
+        self.child_type = child_type
 class DictCodeParagraph(DictParagraph):
 
     @property
@@ -1796,6 +1904,7 @@ class HTMLBuilder(object):
             {
                 "text": self.paragraph_text,
                 "quote": self.paragraph_quote,
+                "list": self.paragraph_list,
                 "code": self.paragraph_code,
             }.get(paragraph.type, self.paragraph_unknown)(paragraph)
         if level == 1 and self.generate_toc:
@@ -1810,6 +1919,17 @@ class HTMLBuilder(object):
     def paragraph_quote(self, text):
         with self.tag("blockquote"):
             self.fragments(text.formatted_text)
+
+    def paragraph_list(self, paragraph):
+        self.list(paragraph.item)
+
+    def list(self, a_list):
+        if a_list.children:
+            with self.tag({"ordered": "ol"}.get(a_list.child_type, "ul")):
+                for item in a_list.children:
+                    with self.tag("li"):
+                        self.fragments(item.formatted_text)
+                        self.list(item)
 
     def fragments(self, fragments):
         for fragment in fragments:
