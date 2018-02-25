@@ -1515,17 +1515,17 @@ class DictTextParagraph(DictParagraph):
 
     PATTERNS = [
         (
-            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
-            lambda match: Fragment(
-                match.group(1),
-                token=Token.RLiterate.Emphasis
-            )
-        ),
-        (
             re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
             lambda match: Fragment(
                 match.group(1),
                 token=Token.RLiterate.Strong
+            )
+        ),
+        (
+            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Emphasis
             )
         ),
         (
