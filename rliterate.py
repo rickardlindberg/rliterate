@@ -1965,19 +1965,30 @@ class DiffBuilder(object):
             self._write(page.id)
             self._write(": ")
             self._write(page.title)
+            for child in page.children:
+                self._write("\n")
+                self._write("    ")
+                self._write(child.id)
+                self._write(": ")
+                self._write(child.title)
             self._write("\n\n")
             for paragraph in page.paragraphs:
                 {
                     "text": self._render_text,
                     "quote": self._render_quote,
+                    "list": self._render_list,
                     "code": self._render_code,
                 }.get(paragraph.type, self._render_unknown)(paragraph)
 
     def _render_text(self, text):
-        self._wrapped_text(text.text+"\n\n")
+        self._wrapped_text(text.text)
 
-    def _render_quote(self, text):
-        self._wrapped_text(text.text+"\n\n", indent=4)
+    def _render_quote(self, paragraph):
+        self._wrapped_text(paragraph.text, indent=4)
+
+    def _render_list(self, paragraph):
+        for line in paragraph.text.splitlines():
+            self._wrapped_text(line)
 
     def _wrapped_text(self, text, indent=0):
         current_line = []
@@ -1994,10 +2005,10 @@ class DiffBuilder(object):
         self._write("\n")
 
     def _render_code(self, code):
-        self._write("`"+" / ".join(code.path)+"`:\n\n")
+        self._write(" / ".join(code.path)+":\n\n")
         for line in code.text.splitlines():
             self._write("    "+line+"\n")
-        self._write("\n\n")
+        self._write("\n")
 
     def _render_unknown(self, paragraph):
         self._write("Unknown type = "+paragraph.type+"\n\n")
