@@ -736,7 +736,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.AddSpacer(self.INDENT)\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n",
+"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n",
 "type":"code"
 }
 ],

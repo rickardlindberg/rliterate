@@ -902,7 +902,7 @@ class Quote(Text):
     def CreateView(self):
         view = wx.Panel(self)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.AddSpacer(self.INDENT)
+        sizer.Add((self.INDENT, 1))
         sizer.Add(
             TextView(
                 view,
