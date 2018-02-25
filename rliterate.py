@@ -647,7 +647,7 @@ class Column(CompactScrolledWindow):
             self,
             parent,
             style=wx.VSCROLL,
-            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING, -1)
+            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)
         )
         self._page_ids = []
         self._setup_layout()
@@ -744,17 +744,9 @@ class Page(wx.Panel):
         self._render_add_button()
 
     def _render_paragraph(self, paragraph):
-        self.sizer.Add(
-            paragraph,
-            flag=wx.EXPAND,
-            border=PARAGRAPH_SPACE
-        )
+        self.sizer.Add(paragraph, flag=wx.EXPAND)
         divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)
-        self.sizer.Add(
-            divider,
-            flag=wx.EXPAND,
-            border=PARAGRAPH_SPACE
-        )
+        self.sizer.Add(divider, flag=wx.EXPAND)
         return divider
 
     def _render_add_button(self):
@@ -845,14 +837,14 @@ class Text(ParagraphBase):
         )
 class TextView(RichTextDisplay):
 
-    def __init__(self, parent, project, fragments, base):
+    def __init__(self, parent, project, fragments, base, indented=0):
         RichTextDisplay.__init__(
             self,
             parent,
             project,
             fragments,
             line_height=1.2,
-            max_width=PAGE_BODY_WIDTH
+            max_width=PAGE_BODY_WIDTH-indented
         )
         MouseEventHelper.bind(
             [self],
@@ -916,7 +908,8 @@ class Quote(Text):
                 view,
                 self.project,
                 self.paragraph.formatted_text,
-                self
+                self,
+                indented=self.INDENT
             ),
             flag=wx.EXPAND,
             proportion=1
@@ -924,6 +917,8 @@ class Quote(Text):
         view.SetSizer(sizer)
         return view
 class List(Text):
+
+    INDENT = 20
 
     def CreateView(self):
         view = wx.Panel(self)
@@ -935,22 +930,34 @@ class List(Text):
     def add_items(self, view, sizer, items, child_type, indent=0):
         for index, item in enumerate(items):
             inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            inner_sizer.AddSpacer(20*indent)
-            if child_type == "ordered":
-                bullet = "{}.".format(index + 1)
-            else:
-                bullet = u"\u2022"
-            inner_sizer.Add(wx.StaticText(self, label=bullet+" "))
+            inner_sizer.Add((self.INDENT*indent, 1))
+            bullet = self._create_bullet_widget(view, child_type, index)
+            inner_sizer.Add(bullet)
             inner_sizer.Add(
                 TextView(
                     view,
                     self.project,
                     item.formatted_text,
-                    self
-                )
+                    self,
+                    indented=self.INDENT*indent+bullet.GetMinSize()[0]
+                ),
+                proportion=1
             )
             sizer.Add(inner_sizer, flag=wx.EXPAND)
             self.add_items(view, sizer, item.children, item.child_type, indent+1)
+
+    def _create_bullet_widget(self, view, list_type, index):
+        return RichTextDisplay(
+            view,
+            self.project,
+            [Fragment(self._get_bullet_text(list_type, index))]
+        )
+
+    def _get_bullet_text(self, list_type, index):
+        if list_type == "ordered":
+            return "{}. ".format(index + 1)
+        else:
+            return u"\u2022 "
 class Code(ParagraphBase):
 
     def CreateView(self):
