@@ -9,7 +9,7 @@
 {
 "id":"d37ed809b1ea44cf9205e4cad963bcb5",
 "text":"* smallest federated wiki inspired the factory and the editing workflow\n* leo and smallest federated wiki inspired TOC and seeing a single page/node at a time",
-"type":"text"
+"type":"list"
 }
 ],
 "title":"Main GUI"
@@ -104,8 +104,13 @@
 },
 {
 "id":"ead08e336d8749f79b82f0093feeeb94",
-"text":"Some more resources about literate programming:\n\n* https://www.youtube.com/watch?v=5V1ynVyud4M\n  \"Eve\" by Chris Granger\n\n* http://eve-lang.com/deepdives/literate.html\n\n* https://software-carpentry.org/blog/2011/03/literate-programming.html",
+"text":"Some more resources about literate programming:",
 "type":"text"
+},
+{
+"id":"ab0371f11dd4469d982a7ea0ef617eb6",
+"text":"* https://www.youtube.com/watch?v=5V1ynVyud4M\n  \"Eve\" by Chris Granger\n\n* http://eve-lang.com/deepdives/literate.html\n\n* https://software-carpentry.org/blog/2011/03/literate-programming.html",
+"type":"list"
 }
 ],
 "title":"Why literate programming?"
