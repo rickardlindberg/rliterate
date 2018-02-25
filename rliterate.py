@@ -1820,58 +1820,6 @@ class FileGenerator(object):
             if part.startswith("<<") and part.endswith(">>"):
                 return None
         return os.path.join(*key)
-class MarkdownGenerator(object):
-
-    def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
-        self.path = path
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        with open(self.path, "w") as f:
-            self._render_page(f, self.document.get_page())
-
-    def _render_page(self, f, page, level=1):
-        f.write("#"*level+" "+page.title+"\n\n")
-        for paragraph in page.paragraphs:
-            {
-                "text": self._render_text,
-                "code": self._render_code,
-            }.get(paragraph.type, self._render_unknown)(f, paragraph)
-        for child in page.children:
-            self._render_page(f, child, level+1)
-
-    def _render_text(self, f, text):
-        f.write(text.text+"\n\n")
-
-    def _render_code(self, f, code):
-        f.write("`"+" / ".join(code.path)+"`:\n\n")
-        f.write("```"+code.language+"\n")
-        for line in code.text.splitlines():
-            f.write(line+"\n")
-        f.write("```"+"\n")
-        f.write("\n")
-
-    def _render_unknown(self, f, paragraph):
-        f.write("Unknown type = "+paragraph.type+"\n\n")
-class HTMLGenerator(object):
-
-    def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
-        self.path = path
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        with open(self.path, "w") as f:
-            f.write(HTMLBuilder(self.document).build())
-
-
 class HTMLBuilder(object):
 
     def __init__(self, document, **options):
@@ -1992,21 +1940,6 @@ class HTMLBuilder(object):
 
     def escaped(self, text):
         self.parts.append(xml.sax.saxutils.escape(text))
-class TextDiff(object):
-
-    def __init__(self, path):
-        self.listener = Listener(lambda event: self._generate())
-        self.path = path
-
-    def set_document(self, document):
-        self.document = document
-        self.listener.set_observable(self.document)
-
-    def _generate(self):
-        with open(self.path, "w") as f:
-            f.write(DiffBuilder(self.document).build())
-
-
 class DiffBuilder(object):
 
     def __init__(self, document):
