@@ -652,13 +652,14 @@ class Column(CompactScrolledWindow):
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PAGE_PADDING)
         for page_id in page_ids:
-            container = PageContainer(self, project, page_id)
-            self.sizer.Add(
-                container,
-                flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-                border=PAGE_PADDING
-            )
-            self.containers.append(container)
+            if project.get_page(page_id) is not None:
+                container = PageContainer(self, project, page_id)
+                self.sizer.Add(
+                    container,
+                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+                    border=PAGE_PADDING
+                )
+                self.containers.append(container)
         if page_ids != self._page_ids:
             self.Scroll(0, 0)
             self._page_ids = page_ids
