@@ -449,7 +449,7 @@
 },
 {
 "id":"c881d2542f834261b1060e001e991f85",
-"text":"Widgets will remove themselves from the sizer when they are destroyed, so yes, it is redundant. Also, widgets will remove themselves from the parent's child list, so calling RemoveChild is also redundant. IOW, the call to window.Destroy() will be sufficient to remove the widget and its resources, and to do the necessary clean-ups in the parent and the sizer.",
+"text":"Widgets will remove themselves from the sizer when they are destroyed, so yes, it is redundant. Also, widgets will remove themselves from the parent's child list, so calling `RemoveChild` is also redundant. IOW, the call to `window.Destroy()` will be sufficient to remove the widget and its resources, and to do the necessary clean-ups in the parent and the sizer.",
 "type":"quote"
 },
 {
