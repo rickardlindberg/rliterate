@@ -1116,7 +1116,7 @@ class RichTextDisplay(wx.Panel):
                     if x is None:
                         yield x
                     else:
-                        for subfragment in Fragment(x, token=fragment.token).word_split():
+                        for subfragment in Fragment(x, token=fragment.token, **fragment.extra).word_split():
                             yield subfragment
             else:
                 for subfragment in fragment.word_split():
