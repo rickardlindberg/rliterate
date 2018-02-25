@@ -1481,9 +1481,9 @@ class DictTextParagraph(DictParagraph):
             )
         ),
         (
-            re.compile(r"\[(.+?)\]\((.+?)\)", flags=re.DOTALL),
+            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
             lambda match: Fragment(
-                match.group(1),
+                match.group(1) or match.group(2),
                 token=Token.RLiterate.Link,
                 url=match.group(2)
             )
