@@ -1582,7 +1582,6 @@ class ListParser(object):
                 items.append(item)
 
     def parse_item(self, level):
-        print(("parse item", level, self.lines[:1]))
         parts = self.consume_bodies()
         next_level = level + 1
         item_type = None
