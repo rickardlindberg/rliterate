@@ -634,6 +634,7 @@ class Page(wx.Panel):
             ))
             divider = self._render_paragraph({
                 "text": Paragraph,
+                "quote": Quote,
                 "code": Code,
                 "factory": Factory,
             }[paragraph.type](self, self.project, self.page_id, paragraph))
@@ -775,6 +776,46 @@ class Paragraph(ParagraphBase, Editable):
 
     def EndEdit(self):
         self.project.edit_paragraph(self.paragraph.id, {"text": self.edit.Value})
+class Quote(Paragraph):
+
+    INDENT = 20
+
+    def CreateView(self):
+        view = wx.Panel(self)
+        self.text = RichTextDisplay(
+            view,
+            self.project,
+            self.paragraph.formatted_text,
+            line_height=1.2,
+            max_width=PAGE_BODY_WIDTH-self.INDENT
+        )
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        view.SetSizer(sizer)
+        sizer.AddSpacer(self.INDENT)
+        sizer.Add(self.text, flag=wx.EXPAND, proportion=1)
+        MouseEventHelper.bind(
+            [self.text],
+            drag=self.DoDragDrop,
+            right_click=self.ShowContextMenu,
+            move=self._change_cursor,
+            click=self._follow_link
+        )
+        self.default_cursor = self.text.GetCursor()
+        self.link_fragment = None
+        return view
+
+    def _change_cursor(self, position):
+        fragment = self.text.GetFragment(position)
+        if fragment is not None and fragment.token == Token.RLiterate.Link:
+            self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+            self.link_fragment = fragment
+        else:
+            self.SetCursor(self.default_cursor)
+            self.link_fragment = None
+
+    def _follow_link(self):
+        if self.link_fragment is not None:
+            webbrowser.open(self.link_fragment.extra["url"])
 class Code(ParagraphBase, Editable):
 
     def __init__(self, parent, project, page_id, paragraph):
@@ -973,6 +1014,23 @@ class ParagraphContextMenu(wx.Menu):
                 {"text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)}
             ),
             self.Append(wx.NewId(), "Edit in gvim")
+        )
+        self.AppendSeparator()
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.project.edit_paragraph(
+                self.paragraph.id,
+                {"type": "quote"}
+            ),
+            self.Append(wx.NewId(), "To quote")
+        )
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: self.project.edit_paragraph(
+                self.paragraph.id,
+                {"type": "text"}
+            ),
+            self.Append(wx.NewId(), "To text")
         )
 class RliterateDataObject(wx.CustomDataObject):
 
@@ -1367,6 +1425,7 @@ class DictParagraph(object):
     def create(paragraph_dict):
         return {
             "text": DictTextParagraph,
+            "quote": DictQuoteParagraph,
             "code": DictCodeParagraph,
         }.get(paragraph_dict["type"], DictParagraph)(paragraph_dict)
 
@@ -1448,6 +1507,8 @@ class DictTextParagraph(DictParagraph):
             match = pattern.match(text)
             if match:
                 return match, fn(match)
+class DictQuoteParagraph(DictTextParagraph):
+    pass
 class DictCodeParagraph(DictParagraph):
 
     @property
@@ -1732,6 +1793,7 @@ class HTMLBuilder(object):
         for paragraph in page.paragraphs:
             {
                 "text": self.paragraph_text,
+                "quote": self.paragraph_quote,
                 "code": self.paragraph_code,
             }.get(paragraph.type, self.paragraph_unknown)(paragraph)
         if level == 1 and self.generate_toc:
@@ -1741,13 +1803,20 @@ class HTMLBuilder(object):
 
     def paragraph_text(self, text):
         with self.tag("p"):
-            for fragment in text.formatted_text:
-                {
-                    Token.RLiterate.Emphasis: self.fragment_emphasis,
-                    Token.RLiterate.Strong: self.fragment_strong,
-                    Token.RLiterate.Code: self.fragment_code,
-                    Token.RLiterate.Link: self.fragment_link,
-                }.get(fragment.token, self.fragment_default)(fragment)
+            self.fragments(text.formatted_text)
+
+    def paragraph_quote(self, text):
+        with self.tag("blockquote"):
+            self.fragments(text.formatted_text)
+
+    def fragments(self, fragments):
+        for fragment in fragments:
+            {
+                Token.RLiterate.Emphasis: self.fragment_emphasis,
+                Token.RLiterate.Strong: self.fragment_strong,
+                Token.RLiterate.Code: self.fragment_code,
+                Token.RLiterate.Link: self.fragment_link,
+            }.get(fragment.token, self.fragment_default)(fragment)
 
     def fragment_emphasis(self, fragment):
         with self.tag("em", newlines=False):
