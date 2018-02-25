@@ -159,9 +159,6 @@ class Style(object):
         self.bold = bold
         self.underlined = underlined
 
-    def get_css(self):
-        return "color: {}".format(self.color)
-
     def apply_to_wx_dc(self, dc, base_font):
         font = base_font
         if self.bold:
