@@ -1236,69 +1236,6 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
-class Project(Observable):
-
-    def __init__(self, filepath):
-        Observable.__init__(self)
-        self.theme = SolarizedTheme()
-        self.document = Document.from_file(filepath)
-        self.document.listen(self.notify_forwarder("document"))
-        self.layout = Layout(".{}.layout".format(filepath))
-        self.layout.listen(self.notify_forwarder("layout"))
-        FileGenerator().set_document(self.document)
-
-    def toggle_collapsed(self, *args, **kwargs):
-        return self.layout.toggle_collapsed(*args, **kwargs)
-
-    def is_collapsed(self, *args, **kwargs):
-        return self.layout.is_collapsed(*args, **kwargs)
-
-    def get_scratch_pages(self, *args, **kwargs):
-        return self.layout.get_scratch_pages(*args, **kwargs)
-
-    def set_scratch_pages(self, *args, **kwargs):
-        return self.layout.set_scratch_pages(*args, **kwargs)
-
-    @property
-    def columns(self):
-        return self.layout.columns
-
-    def open_pages(self, *args, **kwargs):
-        return self.layout.open_pages(*args, **kwargs)
-
-    def get_hoisted_page(self, *args, **kwargs):
-        return self.layout.get_hoisted_page(*args, **kwargs)
-
-    def set_hoisted_page(self, *args, **kwargs):
-        return self.layout.set_hoisted_page(*args, **kwargs)
-    def get_page(self, *args, **kwargs):
-        return self.document.get_page(*args, **kwargs)
-
-    def add_page(self, *args, **kwargs):
-        return self.document.add_page(*args, **kwargs)
-
-    def delete_page(self, *args, **kwargs):
-        return self.document.delete_page(*args, **kwargs)
-
-    def move_page(self, *args, **kwargs):
-        return self.document.move_page(*args, **kwargs)
-
-    def edit_page(self, *args, **kwargs):
-        return self.document.edit_page(*args, **kwargs)
-
-    def add_paragraph(self, *args, **kwargs):
-        return self.document.add_paragraph(*args, **kwargs)
-
-    def move_paragraph(self, *args, **kwargs):
-        return self.document.move_paragraph(*args, **kwargs)
-
-    def delete_paragraph(self, *args, **kwargs):
-        return self.document.delete_paragraph(*args, **kwargs)
-
-    def edit_paragraph(self, *args, **kwargs):
-        return self.document.edit_paragraph(*args, **kwargs)
-    def get_style(self, *args, **kwargs):
-        return self.theme.get_style(*args, **kwargs)
 class Document(Observable):
 
     @classmethod
@@ -1773,6 +1710,69 @@ class SolarizedTheme(BaseTheme):
         Token.RLiterate.Code:      Style(color=text, monospace=True),
         Token.RLiterate.Link:      Style(color=blue, underlined=True),
     }
+class Project(Observable):
+
+    def __init__(self, filepath):
+        Observable.__init__(self)
+        self.theme = SolarizedTheme()
+        self.document = Document.from_file(filepath)
+        self.document.listen(self.notify_forwarder("document"))
+        self.layout = Layout(".{}.layout".format(filepath))
+        self.layout.listen(self.notify_forwarder("layout"))
+        FileGenerator().set_document(self.document)
+
+    def get_page(self, *args, **kwargs):
+        return self.document.get_page(*args, **kwargs)
+
+    def add_page(self, *args, **kwargs):
+        return self.document.add_page(*args, **kwargs)
+
+    def delete_page(self, *args, **kwargs):
+        return self.document.delete_page(*args, **kwargs)
+
+    def move_page(self, *args, **kwargs):
+        return self.document.move_page(*args, **kwargs)
+
+    def edit_page(self, *args, **kwargs):
+        return self.document.edit_page(*args, **kwargs)
+
+    def add_paragraph(self, *args, **kwargs):
+        return self.document.add_paragraph(*args, **kwargs)
+
+    def move_paragraph(self, *args, **kwargs):
+        return self.document.move_paragraph(*args, **kwargs)
+
+    def delete_paragraph(self, *args, **kwargs):
+        return self.document.delete_paragraph(*args, **kwargs)
+
+    def edit_paragraph(self, *args, **kwargs):
+        return self.document.edit_paragraph(*args, **kwargs)
+    def toggle_collapsed(self, *args, **kwargs):
+        return self.layout.toggle_collapsed(*args, **kwargs)
+
+    def is_collapsed(self, *args, **kwargs):
+        return self.layout.is_collapsed(*args, **kwargs)
+
+    def get_scratch_pages(self, *args, **kwargs):
+        return self.layout.get_scratch_pages(*args, **kwargs)
+
+    def set_scratch_pages(self, *args, **kwargs):
+        return self.layout.set_scratch_pages(*args, **kwargs)
+
+    @property
+    def columns(self):
+        return self.layout.columns
+
+    def open_pages(self, *args, **kwargs):
+        return self.layout.open_pages(*args, **kwargs)
+
+    def get_hoisted_page(self, *args, **kwargs):
+        return self.layout.get_hoisted_page(*args, **kwargs)
+
+    def set_hoisted_page(self, *args, **kwargs):
+        return self.layout.set_hoisted_page(*args, **kwargs)
+    def get_style(self, *args, **kwargs):
+        return self.theme.get_style(*args, **kwargs)
 class FileGenerator(object):
 
     def __init__(self):
