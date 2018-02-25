@@ -1743,12 +1743,22 @@ class HTMLBuilder(object):
         with self.tag("p"):
             for fragment in text.formatted_text:
                 {
+                    Token.RLiterate.Emphasis: self.fragment_emphasis,
                     Token.RLiterate.Strong: self.fragment_strong,
+                    Token.RLiterate.Code: self.fragment_code,
                     Token.RLiterate.Link: self.fragment_link,
                 }.get(fragment.token, self.fragment_default)(fragment)
 
+    def fragment_emphasis(self, fragment):
+        with self.tag("em", newlines=False):
+            self.escaped(fragment.text)
+
     def fragment_strong(self, fragment):
         with self.tag("strong", newlines=False):
+            self.escaped(fragment.text)
+
+    def fragment_code(self, fragment):
+        with self.tag("code", newlines=False):
             self.escaped(fragment.text)
 
     def fragment_link(self, fragment):
