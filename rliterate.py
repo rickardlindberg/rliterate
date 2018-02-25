@@ -154,6 +154,7 @@ class RichTextDisplay(wx.Panel):
             if fragment is None:
                 x = 0
                 y += int(round(dc.GetTextExtent("M")[1]*self.line_height))
+                max_y = max(max_y, y)
                 continue
             style = self.project.get_style(fragment.token)
             style.apply_to_wx_dc(dc, self.GetFont())
@@ -833,11 +834,6 @@ class Text(ParagraphBase):
             self.paragraph,
             self.view
         )
-
-
-
-
-
 class TextView(RichTextDisplay):
 
     def __init__(self, parent, project, paragraph, base):
@@ -925,7 +921,6 @@ class Code(ParagraphBase):
 
     def CreateEdit(self):
         return CodeEditor(self, self.project, self.paragraph, self.view)
-
 class CodeView(wx.Panel):
 
     BORDER = 0
