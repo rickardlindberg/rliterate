@@ -149,7 +149,7 @@ class CompactScrolledWindow(wx.ScrolledWindow):
         return (x, y-delta*self.step)
 class Style(object):
 
-    def __init__(self, color, bold=None, underlined=None):
+    def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
         self.color = color
         self.color_rgb = tuple([
             int(x, 16)
@@ -158,6 +158,8 @@ class Style(object):
         ])
         self.bold = bold
         self.underlined = underlined
+        self.italic = italic
+        self.monospace = monospace
 
     def apply_to_wx_dc(self, dc, base_font):
         font = base_font
@@ -165,6 +167,16 @@ class Style(object):
             font = font.Bold()
         if self.underlined:
             font = font.Underlined()
+        if self.italic:
+            font = font.Italic()
+        if self.monospace:
+            font = wx.Font(
+                pointSize=font.GetPointSize(),
+                family=wx.FONTFAMILY_TELETYPE,
+                style=font.GetStyle(),
+                weight=font.GetWeight(),
+                underline=font.GetUnderlined(),
+            )
         dc.SetFont(font)
         dc.SetTextForeground(self.color_rgb)
 class Observable(object):
@@ -1401,10 +1413,24 @@ class DictTextParagraph(DictParagraph):
 
     PATTERNS = [
         (
+            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Emphasis
+            )
+        ),
+        (
             re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
             lambda match: Fragment(
                 match.group(1),
                 token=Token.RLiterate.Strong
+            )
+        ),
+        (
+            re.compile(r"`(.+?)`", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Code
             )
         ),
         (
@@ -1572,7 +1598,9 @@ class SolarizedTheme(BaseTheme):
         Token.Operator.Word:       Style(color=green),
         Token.Comment:             Style(color=base1),
         Token.RLiterate:           Style(color=text),
+        Token.RLiterate.Emphasis:  Style(color=text, italic=True),
         Token.RLiterate.Strong:    Style(color=text, bold=True),
+        Token.RLiterate.Code:      Style(color=text, monospace=True),
         Token.RLiterate.Link:      Style(color=blue, underlined=True),
     }
 class FileGenerator(object):
