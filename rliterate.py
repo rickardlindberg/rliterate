@@ -1440,6 +1440,7 @@ class DictTextParagraph(DictParagraph):
 
     @staticmethod
     def parse(text):
+        text = DictTextParagraph.normalise_space(text)
         fragments = []
         partial = ""
         while text:
@@ -1457,6 +1458,12 @@ class DictTextParagraph(DictParagraph):
         if partial:
             fragments.append(Fragment(partial))
         return fragments
+
+    SPACE_RE = re.compile(r"\s+")
+
+    @staticmethod
+    def normalise_space(text):
+        return DictTextParagraph.SPACE_RE.sub(" ", text).strip()
 
     PATTERNS = [
         (
