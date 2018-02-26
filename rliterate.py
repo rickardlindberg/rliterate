@@ -23,7 +23,6 @@ PAGE_PADDING = 13
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
 CONTAINER_BORDER = PARAGRAPH_SPACE
-MAX_EDITOR_HEIHGT = 300
 class Editable(wx.Panel):
 
     def __init__(self, parent):
@@ -877,7 +876,7 @@ class TextEdit(MultilineTextCtrl):
             self,
             parent,
             value=paragraph.text,
-            size=(-1, min(MAX_EDITOR_HEIHGT, view.Size[1]))
+            size=(-1, view.Size[1])
         )
         self.project = project
         self.paragraph = paragraph
@@ -1070,7 +1069,7 @@ class CodeEditor(wx.Panel):
         self.text = MultilineTextCtrl(
             self,
             value=paragraph.text,
-            size=(-1, min(MAX_EDITOR_HEIHGT, self.view.Size[1]))
+            size=(-1, self.view.Size[1])
         )
         return self.text
 
