@@ -976,10 +976,11 @@ class CodeView(wx.Panel):
         self.base = base
         self.Font = create_font(monospace=True)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.vsizer.Add(
-            self._create_path(paragraph),
-            flag=wx.ALL|wx.EXPAND, border=self.BORDER
-        )
+        if "".join(paragraph.path):
+            self.vsizer.Add(
+                self._create_path(paragraph),
+                flag=wx.ALL|wx.EXPAND, border=self.BORDER
+            )
         self.vsizer.Add(
             self._create_code(paragraph),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
@@ -1805,14 +1806,14 @@ class FileGenerator(object):
         for paragraph in page.paragraphs:
             if paragraph.type == "code":
                 for line in paragraph.text.splitlines():
-                    self._parts[paragraph.path].append(line)
+                    self._parts[tuple(paragraph.path)].append(line)
         for child in page.children:
             self._collect_parts(child)
 
     def _generate_files(self):
         for key in self._parts.keys():
             filepath = self._get_filepath(key)
-            if filepath is not None:
+            if filepath:
                 with open(filepath, "w") as f:
                     self._render(f, key)
 
@@ -1921,9 +1922,10 @@ class HTMLBuilder(object):
         self.escaped(fragment.text)
 
     def paragraph_code(self, code):
-        with self.tag("p"):
-            with self.tag("code", newlines=False):
-                self.escaped(" / ".join(code.path))
+        if "".join(code.path):
+            with self.tag("p"):
+                with self.tag("code", newlines=False):
+                    self.escaped(" / ".join(code.path))
         with self.tag("div", args={"class": "highlight"}):
             with self.tag("pre", newlines=False):
                 for fragment in code.formatted_text:
