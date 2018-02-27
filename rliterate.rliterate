@@ -60,6 +60,54 @@
 "title":"A tour of RLiterate"
 },
 {
+"children":[],
+"id":"cc3c314da5a944d18eec6628eb042ba0",
+"paragraphs":[
+{
+"id":"1779778497c3405ea45d42a56b83ea16",
+"text":"You need the following packages to run RLiterate:",
+"type":"text"
+},
+{
+"id":"aaf20f16695b4631b91c4be4603be57a",
+"text":"* [Python](https://www.python.org/)\n    * [wxPython](https://wxpython.org/)\n    * [pygments](http://pygments.org/)\n",
+"type":"list"
+},
+{
+"id":"75359fa579334b61b95a06dd761ed58e",
+"text":"Here is how these dependencies can be installed on a Fedora system:",
+"type":"text"
+},
+{
+"id":"447febdb2f2043ab8c4d2a86b88a2992",
+"path":[
+""
+],
+"text":"dnf install python wxPython python2-pygments",
+"type":"code"
+},
+{
+"id":"e74c1810431b42aaae8b65755e5ff313",
+"text":"Once the dependecnies are installed, run RLiterate like this:",
+"type":"text"
+},
+{
+"id":"401185e82e054680b963f5397275eabb",
+"path":[
+""
+],
+"text":"python rliterate.py rliterate.rliterate",
+"type":"code"
+},
+{
+"id":"f6da445ecc2549a0862270dfb2171ed6",
+"text":"You should now see the RLiterate GUI displaying.",
+"type":"text"
+}
+],
+"title":"Installing"
+},
+{
 "children":[
 {
 "children":[],
