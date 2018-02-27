@@ -976,7 +976,7 @@ class CodeView(wx.Panel):
         self.base = base
         self.Font = create_font(monospace=True)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        if "".join(paragraph.path):
+        if paragraph.has_path:
             self.vsizer.Add(
                 self._create_path(paragraph),
                 flag=wx.ALL|wx.EXPAND, border=self.BORDER
@@ -1585,6 +1585,10 @@ class DictCodeParagraph(DictParagraph):
         return self._tokens_to_fragments(lexer.get_tokens(self.text))
 
     @property
+    def has_path(self):
+        return len("".join(self.path)) > 0
+
+    @property
     def path(self):
         return tuple(self._paragraph_dict["path"])
 
@@ -1806,7 +1810,7 @@ class FileGenerator(object):
         for paragraph in page.paragraphs:
             if paragraph.type == "code":
                 for line in paragraph.text.splitlines():
-                    self._parts[tuple(paragraph.path)].append(line)
+                    self._parts[paragraph.path].append(line)
         for child in page.children:
             self._collect_parts(child)
 
@@ -1922,7 +1926,7 @@ class HTMLBuilder(object):
         self.escaped(fragment.text)
 
     def paragraph_code(self, code):
-        if "".join(code.path):
+        if code.has_path:
             with self.tag("p"):
                 with self.tag("code", newlines=False):
                     self.escaped(" / ".join(code.path))
