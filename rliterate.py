@@ -880,6 +880,7 @@ class TextEdit(MultilineTextCtrl):
             value=paragraph.text,
             size=(-1, view.Size[1])
         )
+        self.Font = create_font(monospace=True)
         self.project = project
         self.paragraph = paragraph
         self.Bind(wx.EVT_CHAR, self._on_char)
