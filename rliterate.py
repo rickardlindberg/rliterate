@@ -1,3 +1,5 @@
+# This file is automatically extracted from rliterate.rliterate.
+
 from collections import defaultdict
 import contextlib
 import json
