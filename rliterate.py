@@ -1927,10 +1927,10 @@ class HTMLBuilder(object):
 
     def paragraph_code(self, code):
         if code.has_path:
-            with self.tag("p"):
-                with self.tag("code", newlines=False):
+            with self.tag("div", args={"class": "rliterate-code-header"}):
+                with self.tag("p", newlines=False):
                     self.escaped(" / ".join(code.path))
-        with self.tag("div", args={"class": "highlight"}):
+        with self.tag("div", args={"class": "rliterate-code-body"}):
             with self.tag("pre", newlines=False):
                 for fragment in code.formatted_text:
                     with self.tag(
