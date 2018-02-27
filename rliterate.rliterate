@@ -194,6 +194,51 @@
 {
 "children":[
 {
+"children":[],
+"id":"85bb3ad476d540bb8b6bfed905d158f0",
+"paragraphs":[
+{
+"id":"4cc12cc77623452782cf8a37f8ba6e52",
+"text":"When `*.rliterate` files are version controlled, the textual diff is hard to read. This problem can be sovled in Git by defining a textconv command that converts the `*.rliterate` file to text that is suitable for diffing. The `--diff` option to RLiterate outputs a file in a diff friendly format.",
+"type":"text"
+},
+{
+"id":"dbb16270187643a3978ee8aac0b16d8a",
+"text":"First associate `*.rliterate` files with `rliterate` using a Git attributes file. For example in `$HOME/.config/git/attributes`:",
+"type":"text"
+},
+{
+"id":"ca1d82459a9041689a51503bec437f67",
+"path":[
+""
+],
+"text":"*.rliterate diff=rliterate",
+"type":"code"
+},
+{
+"id":"c69258a42b6c449c95a310a041f1c6ec",
+"text":"Then define the `textconv` command in your git config (`$HOME/.gitconfig`):",
+"type":"text"
+},
+{
+"id":"3443fd22d8824369b1bdba19d4c4c361",
+"path":[
+""
+],
+"text":"[diff \"rliterate\"]\n      textconv=bash -c 'python $RLITERATE_ROOT/rliterate.py \"$0\" --diff'",
+"type":"code"
+}
+],
+"title":"Diffing *.rliterate files"
+}
+],
+"id":"28b1947216874cedaf4ea69c2e2574b4",
+"paragraphs":[],
+"title":"Tips & tricks"
+},
+{
+"children":[
+{
 "children":[
 {
 "children":[],
@@ -1795,51 +1840,6 @@
 }
 ],
 "title":"Implementation"
-},
-{
-"children":[
-{
-"children":[],
-"id":"85bb3ad476d540bb8b6bfed905d158f0",
-"paragraphs":[
-{
-"id":"4cc12cc77623452782cf8a37f8ba6e52",
-"text":"If `*.rliterate` documents are version controlled, the textual diff is hard to read. This problem can be sovled in Git by defining a textconv command that converts the `*.rliterate` document to text that is suitable for diffing. The `--diff` option to RLiterate outputs a document in a diff friendly format.",
-"type":"text"
-},
-{
-"id":"dbb16270187643a3978ee8aac0b16d8a",
-"text":"First associate `*.rliterate` files with `rliterate` using a Git attributes file. I put mine in `$HOME/.config/git/attributes`:",
-"type":"text"
-},
-{
-"id":"ca1d82459a9041689a51503bec437f67",
-"path":[
-""
-],
-"text":"*.rliterate diff=rliterate",
-"type":"code"
-},
-{
-"id":"c69258a42b6c449c95a310a041f1c6ec",
-"text":"Then define the `textconv` command in your git config (`$HOME/.gitconfig`):",
-"type":"text"
-},
-{
-"id":"3443fd22d8824369b1bdba19d4c4c361",
-"path":[
-""
-],
-"text":"[diff \"rliterate\"]\n      textconv=bash -c 'python $RLITERATE_ROOT/rliterate.py \"$0\" --diff'",
-"type":"code"
-}
-],
-"title":"Diffing"
-}
-],
-"id":"28b1947216874cedaf4ea69c2e2574b4",
-"paragraphs":[],
-"title":"Development"
 },
 {
 "children":[],
