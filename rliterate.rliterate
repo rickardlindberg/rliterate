@@ -1308,14 +1308,11 @@
 "title":"Document"
 },
 {
-"children":[],
-"id":"9e63791b51374f2c924e871da5ddc5d7",
-"paragraphs":[
+"children":[
 {
-"id":"089ffcc884f348128bcba997655c9251",
-"text":"Views provide a read only interface to a document. It is the only way to query a document.",
-"type":"text"
-},
+"children":[],
+"id":"95df0269255943f297d3ffc6de48874f",
+"paragraphs":[
 {
 "id":"eca45154b3f141c794c1cf1e56f273ee",
 "path":[
@@ -1334,7 +1331,14 @@
 ],
 "text":"class DictPage(object):\n\n    def __init__(self, page_dict):\n        self._page_dict = page_dict\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    @property\n    def paragraphs(self):\n        return [\n            DictParagraph.create(paragraph_dict)\n            for paragraph_dict\n            in self._page_dict[\"paragraphs\"]\n        ]\n\n    @property\n    def children(self):\n        return [\n            DictPage(child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n",
 "type":"code"
+}
+],
+"title":"Page"
 },
+{
+"children":[],
+"id":"00d70d4faee841deba24ba21564eb11b",
+"paragraphs":[
 {
 "id":"da88f3daf0d742e394fc3be9d21f522f",
 "path":[
@@ -1343,7 +1347,14 @@
 ],
 "text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(paragraph_dict)\n\n    def __init__(self, paragraph_dict):\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n",
 "type":"code"
+}
+],
+"title":"Paragraph base"
 },
+{
+"children":[],
+"id":"2572c635a4c04bcc97905362edc3aba2",
+"paragraphs":[
 {
 "id":"0a73bece721f44899efa8c493dff8916",
 "path":[
@@ -1352,7 +1363,14 @@
 ],
 "text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        return DictTextParagraph.parse(self.text)\n\n    @staticmethod\n    def parse(text):\n        text = DictTextParagraph.normalise_space(text)\n        fragments = []\n        partial = \"\"\n        while text:\n            result = DictTextParagraph._get_special_fragment(text)\n            if result is None:\n                partial += text[0]\n                text = text[1:]\n            else:\n                match, fragment = result\n                if partial:\n                    fragments.append(Fragment(partial))\n                    partial = \"\"\n                fragments.append(fragment)\n                text = text[match.end(0):]\n        if partial:\n            fragments.append(Fragment(partial))\n        return fragments\n\n    SPACE_RE = re.compile(r\"\\s+\")\n\n    @staticmethod\n    def normalise_space(text):\n        return DictTextParagraph.SPACE_RE.sub(\" \", text).strip()\n\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda match: Fragment(\n                match.group(1),\n                token=Token.RLiterate.Strong\n            )\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda match: Fragment(\n                match.group(1),\n                token=Token.RLiterate.Emphasis\n            )\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda match: Fragment(\n                match.group(1),\n                token=Token.RLiterate.Code\n            )\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda match: Fragment(\n                match.group(1) or match.group(2),\n                token=Token.RLiterate.Link,\n                url=match.group(2)\n            )\n        ),\n    ]\n\n    @staticmethod\n    def _get_special_fragment(text):\n        for pattern, fn in DictTextParagraph.PATTERNS:\n            match = pattern.match(text)\n            if match:\n                return match, fn(match)\n",
 "type":"code"
+}
+],
+"title":"Text"
 },
+{
+"children":[],
+"id":"c44416be38b441c88152c5b3cb1e07ed",
+"paragraphs":[
 {
 "id":"d100b29a782d4eba870356391b6b032d",
 "path":[
@@ -1361,7 +1379,14 @@
 ],
 "text":"class DictQuoteParagraph(DictTextParagraph):\n    pass",
 "type":"code"
+}
+],
+"title":"Quote"
 },
+{
+"children":[],
+"id":"4aeb570c789b4bea9580563407d0f94f",
+"paragraphs":[
 {
 "id":"688f0da89af846a2b2de0a9a131fab3e",
 "path":[
@@ -1370,7 +1395,14 @@
 ],
 "text":"class DictListParagraph(DictTextParagraph):\n\n    @property\n    def item(self):\n        items, list_type = ListParser(self.text.strip().split(\"\\n\")).parse_items()\n        return ListItem(\"\", items, list_type)\n\n\nclass ListParser(object):\n\n    ITEM_START_RE = re.compile(r\"( *)([*]|\\d+[.]) (.*)\")\n\n    def __init__(self, lines):\n        self.lines = lines\n\n    def parse_items(self, level=0):\n        items = []\n        list_type = None\n        while True:\n            item_and_type = self.parse_item(level)\n            if item_and_type is None:\n                return items, list_type\n            else:\n                item, item_type = item_and_type\n                if list_type is None:\n                    list_type = item_type\n                items.append(item)\n\n    def parse_item(self, level):\n        parts = self.consume_bodies()\n        next_level = level + 1\n        item_type = None\n        if self.lines:\n            match = self.ITEM_START_RE.match(self.lines[0])\n            if match:\n                matched_level = len(match.group(1))\n                if matched_level >= level:\n                    parts.append(match.group(3))\n                    self.lines.pop(0)\n                    parts.extend(self.consume_bodies())\n                    next_level = matched_level + 1\n                    if \"*\" in match.group(2):\n                        item_type = \"unordered\"\n                    else:\n                        item_type = \"ordered\"\n        if parts:\n            children, child_type = self.parse_items(next_level)\n            return ListItem(DictTextParagraph.parse(\" \".join(parts)), children, child_type), item_type\n\n    def consume_bodies(self):\n        bodies = []\n        while self.lines:\n            if self.ITEM_START_RE.match(self.lines[0]):\n                break\n            else:\n                bodies.append(self.lines.pop(0))\n        return bodies\n\n\nclass ListItem(object):\n\n    def __init__(self, formatted_text, children, child_type):\n        self.formatted_text = formatted_text\n        self.children = children\n        self.child_type = child_type\n",
 "type":"code"
+}
+],
+"title":"List"
 },
+{
+"children":[],
+"id":"74b0c8c33aa0436cbd01d16e205a738c",
+"paragraphs":[
 {
 "id":"40f7c112c54549b8851482fc2fafe614",
 "path":[
@@ -1379,7 +1411,14 @@
 ],
 "text":"class DictCodeParagraph(DictParagraph):\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._tokens_to_fragments(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(\"\".join(self.path)) > 0\n\n    @property\n    def path(self):\n        return tuple(self._paragraph_dict[\"path\"])\n\n    @property\n    def filename(self):\n        last_part = \"\"\n        for part in self.path:\n            if part.startswith(\"<<\"):\n                break\n            last_part = part\n        return last_part\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _tokens_to_fragments(self, tokens):\n        fragments = []\n        for token, text in tokens:\n            fragments.append(Fragment(text, token=token))\n        return fragments\n",
 "type":"code"
+}
+],
+"title":"Code"
 },
+{
+"children":[],
+"id":"36359ae8e32a440ca65f6359e91b214d",
+"paragraphs":[
 {
 "id":"75a8c2b60ac346e5be57b25dd5476f2d",
 "path":[
@@ -1388,6 +1427,17 @@
 ],
 "text":"class Fragment(object):\n\n    def __init__(self, text, token=Token.RLiterate, **extra):\n        self.text = text\n        self.token = token\n        self.extra = extra\n\n    def word_split(self):\n        fragments = []\n        text = self.text\n        while text:\n            match = re.match(r\".+?(\\s+|$)\", text, flags=re.DOTALL)\n            fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))\n            text = text[match.end(0):]\n        return fragments\n",
 "type":"code"
+}
+],
+"title":"Fragment"
+}
+],
+"id":"9e63791b51374f2c924e871da5ddc5d7",
+"paragraphs":[
+{
+"id":"089ffcc884f348128bcba997655c9251",
+"text":"Views provide a read only interface to a document. It is the only way to query a document.",
+"type":"text"
 }
 ],
 "title":"Views"
