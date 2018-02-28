@@ -19,6 +19,7 @@ import wx
 import wx.lib.newevent
 
 
+FragmentClick, EVT_FRAGMENT_CLICK = wx.lib.newevent.NewCommandEvent()
 EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 PAGE_BODY_WIDTH = 600
 PAGE_PADDING = 13
@@ -859,23 +860,23 @@ class TextView(RichTextDisplay):
             drag=base.DoDragDrop,
             right_click=base.ShowContextMenu,
             double_click=lambda: post_edit_start(self),
-            move=self._change_cursor,
-            click=self._follow_link
+            move=self._on_mouse_move,
+            click=self._on_click
         )
         self.default_cursor = self.GetCursor()
         self.link_fragment = None
 
-    def _change_cursor(self, position):
-        fragment = self.GetFragment(position)
-        if fragment is not None and fragment.token == Token.RLiterate.Link:
+    def _on_mouse_move(self, position):
+        self.fragment = self.GetFragment(position)
+        if self.fragment is not None and self.fragment.token == Token.RLiterate.Link:
             self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-            self.link_fragment = fragment
         else:
             self.SetCursor(self.default_cursor)
-            self.link_fragment = None
 
-    def _follow_link(self):
-        if self.link_fragment is not None:
+    def _on_click(self):
+        if self.fragment is not None:
+            post_fragment_click(self, self.fragment)
+        if self.fragment and self.fragment.token == Token.RLiterate.Link:
             webbrowser.open(self.link_fragment.extra["url"])
 class TextEdit(MultilineTextCtrl):
 
@@ -2069,6 +2070,8 @@ def set_clipboard_text(text):
             wx.TheClipboard.SetData(wx.TextDataObject(text.encode("utf-8")))
         finally:
             wx.TheClipboard.Close()
+def post_fragment_click(control, fragment):
+    wx.PostEvent(control, FragmentClick(0, fragment=fragment))
 def insert_between(separator, items):
     result = []
     for i, item in enumerate(items):

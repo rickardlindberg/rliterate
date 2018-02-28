@@ -808,7 +808,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextView(RichTextDisplay):\n\n    def __init__(self, parent, project, fragments, base, indented=0):\n        RichTextDisplay.__init__(\n            self,\n            parent,\n            project,\n            fragments,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._change_cursor,\n            click=self._follow_link\n        )\n        self.default_cursor = self.GetCursor()\n        self.link_fragment = None\n\n    def _change_cursor(self, position):\n        fragment = self.GetFragment(position)\n        if fragment is not None and fragment.token == Token.RLiterate.Link:\n            self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n            self.link_fragment = fragment\n        else:\n            self.SetCursor(self.default_cursor)\n            self.link_fragment = None\n\n    def _follow_link(self):\n        if self.link_fragment is not None:\n            webbrowser.open(self.link_fragment.extra[\"url\"])\n",
+"text":"class TextView(RichTextDisplay):\n\n    def __init__(self, parent, project, fragments, base, indented=0):\n        RichTextDisplay.__init__(\n            self,\n            parent,\n            project,\n            fragments,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.default_cursor = self.GetCursor()\n        self.link_fragment = None\n\n    def _on_mouse_move(self, position):\n        self.fragment = self.GetFragment(position)\n        if self.fragment is not None and self.fragment.token == Token.RLiterate.Link:\n            self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            self.SetCursor(self.default_cursor)\n\n    def _on_click(self):\n        if self.fragment is not None:\n            post_fragment_click(self, self.fragment)\n        if self.fragment and self.fragment.token == Token.RLiterate.Link:\n            webbrowser.open(self.link_fragment.extra[\"url\"])\n",
 "type":"code"
 },
 {
@@ -823,6 +823,24 @@
 "<<classes>>"
 ],
 "text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"text\": self.Value}\n        )\n",
+"type":"code"
+},
+{
+"id":"34a2a998616e4f6f93b325bcf361b57f",
+"path":[
+"rliterate.py",
+"<<constants>>"
+],
+"text":"FragmentClick, EVT_FRAGMENT_CLICK = wx.lib.newevent.NewCommandEvent()\n",
+"type":"code"
+},
+{
+"id":"f0ef454c41b0452d8ae299eb2694dc79",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def post_fragment_click(control, fragment):\n    wx.PostEvent(control, FragmentClick(0, fragment=fragment))\n",
 "type":"code"
 }
 ],
