@@ -1445,73 +1445,7 @@ class DictTextParagraph(DictParagraph):
 
     @property
     def formatted_text(self):
-        return DictTextParagraph.parse(self.text)
-
-    @staticmethod
-    def parse(text):
-        text = DictTextParagraph.normalise_space(text)
-        fragments = []
-        partial = ""
-        while text:
-            result = DictTextParagraph._get_special_fragment(text)
-            if result is None:
-                partial += text[0]
-                text = text[1:]
-            else:
-                match, fragment = result
-                if partial:
-                    fragments.append(Fragment(partial))
-                    partial = ""
-                fragments.append(fragment)
-                text = text[match.end(0):]
-        if partial:
-            fragments.append(Fragment(partial))
-        return fragments
-
-    SPACE_RE = re.compile(r"\s+")
-
-    @staticmethod
-    def normalise_space(text):
-        return DictTextParagraph.SPACE_RE.sub(" ", text).strip()
-
-    PATTERNS = [
-        (
-            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
-            lambda match: Fragment(
-                match.group(1),
-                token=Token.RLiterate.Strong
-            )
-        ),
-        (
-            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
-            lambda match: Fragment(
-                match.group(1),
-                token=Token.RLiterate.Emphasis
-            )
-        ),
-        (
-            re.compile(r"`(.+?)`", flags=re.DOTALL),
-            lambda match: Fragment(
-                match.group(1),
-                token=Token.RLiterate.Code
-            )
-        ),
-        (
-            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
-            lambda match: Fragment(
-                match.group(1) or match.group(2),
-                token=Token.RLiterate.Link,
-                url=match.group(2)
-            )
-        ),
-    ]
-
-    @staticmethod
-    def _get_special_fragment(text):
-        for pattern, fn in DictTextParagraph.PATTERNS:
-            match = pattern.match(text)
-            if match:
-                return match, fn(match)
+        return InlineTextParser().parse(self.text)
 class DictQuoteParagraph(DictTextParagraph):
     pass
 class DictListParagraph(DictTextParagraph):
@@ -1561,7 +1495,7 @@ class ListParser(object):
                         item_type = "ordered"
         if parts:
             children, child_type = self.parse_items(next_level)
-            return ListItem(DictTextParagraph.parse(" ".join(parts)), children, child_type), item_type
+            return ListItem(InlineTextParser().parse(" ".join(parts)), children, child_type), item_type
 
     def consume_bodies(self):
         bodies = []
@@ -1643,6 +1577,69 @@ class Fragment(object):
             fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))
             text = text[match.end(0):]
         return fragments
+class InlineTextParser(object):
+
+    SPACE_RE = re.compile(r"\s+")
+    PATTERNS = [
+        (
+            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Strong
+            )
+        ),
+        (
+            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Emphasis
+            )
+        ),
+        (
+            re.compile(r"`(.+?)`", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1),
+                token=Token.RLiterate.Code
+            )
+        ),
+        (
+            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1) or match.group(2),
+                token=Token.RLiterate.Link,
+                url=match.group(2)
+            )
+        ),
+    ]
+
+    def parse(self, text):
+        text = self._normalise_space(text)
+        fragments = []
+        partial = ""
+        while text:
+            result = self._get_special_fragment(text)
+            if result is None:
+                partial += text[0]
+                text = text[1:]
+            else:
+                match, fragment = result
+                if partial:
+                    fragments.append(Fragment(partial))
+                    partial = ""
+                fragments.append(fragment)
+                text = text[match.end(0):]
+        if partial:
+            fragments.append(Fragment(partial))
+        return fragments
+
+    def _normalise_space(self, text):
+        return self.SPACE_RE.sub(" ", text).strip()
+
+    def _get_special_fragment(self, text):
+        for pattern, fn in self.PATTERNS:
+            match = pattern.match(text)
+            if match:
+                return match, fn(match)
 class Layout(Observable):
     def __init__(self, path):
         Observable.__init__(self)
