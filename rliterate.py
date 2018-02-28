@@ -668,7 +668,10 @@ class Column(CompactScrolledWindow):
         if self.project is None:
             return
         if event.fragment.token == Token.RLiterate.Reference:
-            print(event.fragment.extra["page_id"])
+            self.project.open_pages(
+                [event.fragment.extra["page_id"]],
+                column_index=self.index+1
+            )
         elif event.fragment.token == Token.RLiterate.Link:
             webbrowser.open(event.fragment.extra["url"])
 
