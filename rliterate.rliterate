@@ -1847,7 +1847,7 @@
 "paragraphs":[
 {
 "id":"fda934bcd2ed4bb9b24a22fde654ded5",
-"text":"DoDragDrop must be called from within an event handler.",
+"text":"DoDragDrop must be called from within an event handler. (Not custom event handler, but actually like mouse down?)",
 "type":"text"
 },
 {
