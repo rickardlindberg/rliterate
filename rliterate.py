@@ -626,7 +626,7 @@ class Workspace(CompactScrolledWindow):
             self.columns.append(self._add_column())
 
     def _add_column(self):
-        column = Column(self)
+        column = Column(self, index=len(self.columns))
         self.sizer.Add(column, flag=wx.EXPAND)
         return column
     def _re_render_from_event(self, event):
@@ -651,21 +651,29 @@ class WorkspaceDropTarget(DropPointDropTarget):
         )
 class Column(CompactScrolledWindow):
 
-    def __init__(self, parent):
+    def __init__(self, parent, index):
         CompactScrolledWindow.__init__(
             self,
             parent,
             style=wx.VSCROLL,
             size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)
         )
+        self.project = None
+        self.index = index
         self._page_ids = []
         self._setup_layout()
+        self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)
+
+    def _on_fragment_click(self, event):
+        if self.project and event.fragment.token == Token.RLiterate.Reference:
+            print(event.fragment.extra["page_id"])
 
     def _setup_layout(self):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
 
     def SetPages(self, project, page_ids):
+        self.project = project
         self.containers = []
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PAGE_PADDING)
