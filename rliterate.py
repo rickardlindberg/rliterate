@@ -665,8 +665,12 @@ class Column(CompactScrolledWindow):
         self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)
 
     def _on_fragment_click(self, event):
-        if self.project and event.fragment.token == Token.RLiterate.Reference:
+        if self.project is None:
+            return
+        if event.fragment.token == Token.RLiterate.Reference:
             print(event.fragment.extra["page_id"])
+        elif event.fragment.token == Token.RLiterate.Link:
+            webbrowser.open(event.fragment.extra["url"])
 
     def _setup_layout(self):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -884,8 +888,6 @@ class TextView(RichTextDisplay):
     def _on_click(self):
         if self.fragment is not None:
             post_fragment_click(self, self.fragment)
-        if self.fragment and self.fragment.token == Token.RLiterate.Link:
-            webbrowser.open(self.link_fragment.extra["url"])
 class TextEdit(MultilineTextCtrl):
 
     def __init__(self, parent, project, paragraph, view):
