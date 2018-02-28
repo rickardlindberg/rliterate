@@ -1603,6 +1603,14 @@ class InlineTextParser(object):
             )
         ),
         (
+            re.compile(r"\[(.*?)\]\(\((.+?)\)\)", flags=re.DOTALL),
+            lambda match: Fragment(
+                match.group(1) or match.group(2),
+                token=Token.RLiterate.Reference,
+                page_id=match.group(2)
+            )
+        ),
+        (
             re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
             lambda match: Fragment(
                 match.group(1) or match.group(2),
@@ -1734,6 +1742,7 @@ class SolarizedTheme(BaseTheme):
         Token.RLiterate.Strong:    Style(color=text, bold=True),
         Token.RLiterate.Code:      Style(color=text, monospace=True),
         Token.RLiterate.Link:      Style(color=blue, underlined=True),
+        Token.RLiterate.Reference: Style(color=blue, italic=True),
     }
 class Project(Observable):
 
