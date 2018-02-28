@@ -580,6 +580,12 @@ class PageContextMenu(wx.Menu):
         self.AppendSeparator()
         self.Bind(
             wx.EVT_MENU,
+            lambda event: set_clipboard_text(self.page.id),
+            self.Append(wx.NewId(), "Copy id")
+        )
+        self.AppendSeparator()
+        self.Bind(
+            wx.EVT_MENU,
             lambda event: self.project.delete_page(self.page.id),
             self.Append(wx.NewId(), "Delete")
         )
@@ -2051,6 +2057,12 @@ class Listener(object):
         self.observable = observable
         self.observable.listen(self.fn, *self.events)
         self.fn("")
+def set_clipboard_text(text):
+    if wx.TheClipboard.Open():
+        try:
+            wx.TheClipboard.SetData(wx.TextDataObject(text.encode("utf-8")))
+        finally:
+            wx.TheClipboard.Close()
 def insert_between(separator, items):
     result = []
     for i, item in enumerate(items):
