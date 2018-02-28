@@ -876,7 +876,7 @@ class TextView(RichTextDisplay):
             click=self._on_click
         )
         self.default_cursor = self.GetCursor()
-        self.link_fragment = None
+        self.fragment = None
 
     def _on_mouse_move(self, position):
         self.fragment = self.GetFragment(position)
