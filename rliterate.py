@@ -1630,11 +1630,11 @@ class InlineTextParser(object):
             )
         ),
         (
-            re.compile(r"\[(.*?)\]\(\((.+?)\)\)", flags=re.DOTALL),
+            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
             lambda match: Fragment(
-                match.group(1) or match.group(2),
+                match.group(3) or match.group(1),
                 token=Token.RLiterate.Reference,
-                page_id=match.group(2)
+                page_id=match.group(1)
             )
         ),
         (
