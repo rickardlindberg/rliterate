@@ -674,7 +674,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)\n\n    def _on_fragment_click(self, event):\n        if self.project is None:\n            return\n        if event.fragment.token == Token.RLiterate.Reference:\n            self.project.open_pages(\n                [event.fragment.extra[\"page_id\"]],\n                column_index=self.index+1\n            )\n        elif event.fragment.token == Token.RLiterate.Link:\n            webbrowser.open(event.fragment.extra[\"url\"])\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids != self._page_ids:\n            self.Scroll(0, 0)\n            self._page_ids = page_ids\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
+"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_FRAGMENT_CHANGED, self._on_hovered_fragment_changed)\n        self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)\n\n    def _on_hovered_fragment_changed(self, event):\n        if event.fragment is not None and event.fragment.token in [\n            Token.RLiterate.Link,\n            Token.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_fragment_click(self, event):\n        if self.project is None:\n            return\n        if event.fragment.token == Token.RLiterate.Reference:\n            self.project.open_pages(\n                [event.fragment.extra[\"page_id\"]],\n                column_index=self.index+1\n            )\n        elif event.fragment.token == Token.RLiterate.Link:\n            webbrowser.open(event.fragment.extra[\"url\"])\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids != self._page_ids:\n            self.Scroll(0, 0)\n            self._page_ids = page_ids\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
 "type":"code"
 }
 ],
@@ -808,21 +808,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextView(RichTextDisplay):\n\n    def __init__(self, parent, project, fragments, base, indented=0):\n        RichTextDisplay.__init__(\n            self,\n            parent,\n            project,\n            fragments,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.default_cursor = self.GetCursor()\n        self.fragment = None\n\n    def _on_mouse_move(self, position):\n        self.fragment = self.GetFragment(position)\n        if self.fragment is not None and self.fragment.token == Token.RLiterate.Link:\n            self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            self.SetCursor(self.default_cursor)\n\n    def _on_click(self):\n        if self.fragment is not None:\n            post_fragment_click(self, self.fragment)\n",
-"type":"code"
-},
-{
-"id":"0dfb3ea73ab040ec9ce4a0c9eecaba27",
-"text":"The editor:",
-"type":"text"
-},
-{
-"id":"7cc47c031e0242aa98658e84c51e5418",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"text\": self.Value}\n        )\n",
+"text":"class TextView(RichTextDisplay):\n\n    def __init__(self, parent, project, fragments, base, indented=0):\n        RichTextDisplay.__init__(\n            self,\n            parent,\n            project,\n            fragments,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.default_cursor = self.GetCursor()\n        self.fragment = None\n\n    def SetDefaultCursor(self):\n        self.SetCursor(self.default_cursor)\n\n    def _on_mouse_move(self, position):\n        fragment = self.GetFragment(position)\n        if fragment is not self.fragment:\n            self.fragment = fragment\n            post_hovered_fragment_changed(self, self.fragment)\n\n    def _on_click(self):\n        if self.fragment is not None:\n            post_fragment_click(self, self.fragment)\n",
 "type":"code"
 },
 {
@@ -840,7 +826,39 @@
 "rliterate.py",
 "<<functions>>"
 ],
-"text":"def post_fragment_click(control, fragment):\n    wx.PostEvent(control, FragmentClick(0, fragment=fragment))\n",
+"text":"def post_fragment_click(widget, fragment):\n    wx.PostEvent(widget, FragmentClick(0, widget=widget, fragment=fragment))\n",
+"type":"code"
+},
+{
+"id":"d9cecc0ae947469d8799e6427b0cbfa2",
+"path":[
+"rliterate.py",
+"<<constants>>"
+],
+"text":"HoveredFragmentChanged, EVT_HOVERED_FRAGMENT_CHANGED = wx.lib.newevent.NewCommandEvent()",
+"type":"code"
+},
+{
+"id":"b982737c98b04b04bca93dd079d3003c",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def post_hovered_fragment_changed(widget, fragment):\n    wx.PostEvent(widget, HoveredFragmentChanged(0, widget=widget, fragment=fragment))\n",
+"type":"code"
+},
+{
+"id":"0dfb3ea73ab040ec9ce4a0c9eecaba27",
+"text":"The editor:",
+"type":"text"
+},
+{
+"id":"7cc47c031e0242aa98658e84c51e5418",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"text\": self.Value}\n        )\n",
 "type":"code"
 }
 ],

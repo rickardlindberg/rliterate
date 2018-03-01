@@ -20,6 +20,7 @@ import wx.lib.newevent
 
 
 FragmentClick, EVT_FRAGMENT_CLICK = wx.lib.newevent.NewCommandEvent()
+HoveredFragmentChanged, EVT_HOVERED_FRAGMENT_CHANGED = wx.lib.newevent.NewCommandEvent()
 EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 PAGE_BODY_WIDTH = 600
 PAGE_PADDING = 13
@@ -662,7 +663,17 @@ class Column(CompactScrolledWindow):
         self.index = index
         self._page_ids = []
         self._setup_layout()
+        self.Bind(EVT_HOVERED_FRAGMENT_CHANGED, self._on_hovered_fragment_changed)
         self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)
+
+    def _on_hovered_fragment_changed(self, event):
+        if event.fragment is not None and event.fragment.token in [
+            Token.RLiterate.Link,
+            Token.RLiterate.Reference,
+        ]:
+            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+        else:
+            event.widget.SetDefaultCursor()
 
     def _on_fragment_click(self, event):
         if self.project is None:
@@ -881,12 +892,14 @@ class TextView(RichTextDisplay):
         self.default_cursor = self.GetCursor()
         self.fragment = None
 
+    def SetDefaultCursor(self):
+        self.SetCursor(self.default_cursor)
+
     def _on_mouse_move(self, position):
-        self.fragment = self.GetFragment(position)
-        if self.fragment is not None and self.fragment.token == Token.RLiterate.Link:
-            self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-        else:
-            self.SetCursor(self.default_cursor)
+        fragment = self.GetFragment(position)
+        if fragment is not self.fragment:
+            self.fragment = fragment
+            post_hovered_fragment_changed(self, self.fragment)
 
     def _on_click(self):
         if self.fragment is not None:
@@ -2083,8 +2096,10 @@ def set_clipboard_text(text):
             wx.TheClipboard.SetData(wx.TextDataObject(text.encode("utf-8")))
         finally:
             wx.TheClipboard.Close()
-def post_fragment_click(control, fragment):
-    wx.PostEvent(control, FragmentClick(0, fragment=fragment))
+def post_fragment_click(widget, fragment):
+    wx.PostEvent(widget, FragmentClick(0, widget=widget, fragment=fragment))
+def post_hovered_fragment_changed(widget, fragment):
+    wx.PostEvent(widget, HoveredFragmentChanged(0, widget=widget, fragment=fragment))
 def insert_between(separator, items):
     result = []
     for i, item in enumerate(items):
