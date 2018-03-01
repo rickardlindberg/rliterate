@@ -1917,9 +1917,8 @@ class HTMLBuilder(object):
 
     def page(self, page, level=1):
         with self.tag("h{}".format(level)):
-            if level > 1 and level <= self.toc_max_depth+1:
-                with self.tag("a", args={"name": page.id}):
-                    pass
+            with self.tag("a", newlines=False, args={"name": page.id}):
+                pass
             self.escaped(page.title)
         for paragraph in page.paragraphs:
             {
