@@ -1959,6 +1959,7 @@ class HTMLBuilder(object):
                 Token.RLiterate.Strong: self.fragment_strong,
                 Token.RLiterate.Code: self.fragment_code,
                 Token.RLiterate.Link: self.fragment_link,
+                Token.RLiterate.Reference: self.fragment_reference,
             }.get(fragment.token, self.fragment_default)(fragment)
 
     def fragment_emphasis(self, fragment):
@@ -1975,6 +1976,10 @@ class HTMLBuilder(object):
 
     def fragment_link(self, fragment):
         with self.tag("a", args={"href": fragment.extra["url"]}, newlines=False):
+            self.escaped(fragment.text)
+
+    def fragment_reference(self, fragment):
+        with self.tag("a", args={"href": "#{}".format(fragment.extra["page_id"])}, newlines=False):
             self.escaped(fragment.text)
 
     def fragment_default(self, fragment):
