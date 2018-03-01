@@ -438,7 +438,7 @@
 },
 {
 "id":"0b017f41b129456d9969b8b4115f3b6c",
-"text":"Rendering lays out expand/collapse button (if the page has children) and the page title in a horizontal sizer:",
+"text":"Rendering lays out the expand/collapse button (if the page has children) and the page title in a horizontal sizer:",
 "type":"text"
 },
 {
@@ -473,6 +473,11 @@
 "children":[],
 "id":"159632cc0cfd436ab33cb97a335306b4",
 "paragraphs":[
+{
+"id":"65ea1114c9de4bc4819558ac74188f17",
+"text":"The expand/collapse widget draws a native looking expand/collapse symbol. When clicked, the corresponding page it toggled.",
+"type":"text"
+},
 {
 "id":"e91427b852754cb682eb63c881d490f4",
 "path":[
@@ -629,7 +634,7 @@
 "paragraphs":[
 {
 "id":"6a9ac9606ee5499694f3236ccabf1127",
-"text":"The main workspace widget is a horizontal scrolling container ([[94b57547a194415cb00feb2aaf486e27]]) containing column widgets.",
+"text":"The main workspace widget is a horizontal [[94b57547a194415cb00feb2aaf486e27:scrolling container]] containing column widgets.",
 "type":"text"
 },
 {
@@ -665,7 +670,7 @@
 "paragraphs":[
 {
 "id":"5d9d79b33aa44d6ca21b8a760fd09dc3",
-"text":"The column widget is a vertical scrolling container ([[94b57547a194415cb00feb2aaf486e27]]) containing page containers.",
+"text":"The column widget is a vertical [[94b57547a194415cb00feb2aaf486e27:scrolling container]] containing page containers.",
 "type":"text"
 },
 {
@@ -766,6 +771,11 @@
 "id":"f1137543026a4319a6a9e2ce5d0f3d5e",
 "paragraphs":[
 {
+"id":"da175bc1c650467c8ae17633c39ae50a",
+"text":"The title widget is an [[33398a32e9c0460d98d0ada485f19067:editable]] that displays the page title in bigger text.",
+"type":"text"
+},
+{
 "id":"24ce3a2a4785432ea263e18f55bfa106",
 "path":[
 "rliterate.py",
@@ -785,7 +795,7 @@
 "paragraphs":[
 {
 "id":"ad7205c2fdf24c87886bd053bcc87dab",
-"text":"The paragraph is created in [[2572c635a4c04bcc97905362edc3aba2]].",
+"text":"This paragraph is of type [[2572c635a4c04bcc97905362edc3aba2:text]].",
 "type":"text"
 },
 {
@@ -1007,7 +1017,13 @@
 }
 ],
 "id":"2280405b81c741cfa73d2629f1ef4b4b",
-"paragraphs":[],
+"paragraphs":[
+{
+"id":"d3cee89484754dec82eee787393cd916",
+"text":"All paragraphs are [[33398a32e9c0460d98d0ada485f19067:editables]].",
+"type":"text"
+}
+],
 "title":"Paragraphs"
 },
 {
@@ -2000,7 +2016,7 @@
 },
 {
 "id":"334a278ca527447482c3059353cfed4f",
-"text":"* Multiple editors can be opened but only last saved is saved\n* Factory should drop right into edit mode when button is clicked\n* Table of contents\n    * Highlighting of rows is not always up to date\n    * Highlight opened pages?\n    * Should only expand first 3(?) levels when opening a file for the first\n      time?\n* Drag and drop\n    * Highlight object being dragged somehow (screenshot?)\n    * Invalid drop targets are still shown\n        * Hide dragged item?\n    * Does not work om Mac (incorrect coordinate calculations?)\n* Code editor\n    * Tab indents with tab: should indent 4 spaces?\n    * Shift+Tab deletes: should dedent\n    * Save button is very far down if there is lots of code and only top is\n      edited\n    * Only open code body editor when double clicked?\n* Editors\n    * Save when clicking outside editor text field (how to do this?)\n    * Highlight the word/fragment that is double clicked\n* Missing page operations\n    * Add page before/after\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* There is no way to control empty lines from placeholders\n* Not possible to go to a page with Ctrl+T\n* This is really a writing tool\n    * Spell checking\n* Right click should only be generated on up if first down\n* Literate programming treats any target programming language as an assembly\n  language\n* Deleting root (even hoisted root) gives error\n* Reading tool\n    * Code can either be read in chunks or the final source output. And you can\n      follow links between them.\n* Undo (use immutable data types (pyrsistent?))\n* Diff/Merge of rliterate documents for collaboration\n* Search and replace\n* Highlight placeholders in code fragments\n* `word_split` should put white space in separate fragment and rich text\n  display should have `skip_leading_space` option?\n* Dynamic scripting\n    * Show graph paragraph based on data paragraph defined earlier on the page\n      (or on other page)\n* List code is messy (especially parsing)\n* Make intro shorter and move what is there to \"tour\" chapter.\n    * Intro: a Word for programmers\n* Make hoisted page a property? (Setter did not work well inside lambda)\n* Constants for border calculations are tricky. Especially calculation of page\n  width. How to make simpler?\n* Handle sizer code with helper to make it cleaner?\n* Picture paragraph type missing\n* Create more wx utility widgets to remove cruft. SingleLineTextCtrl for title?\n* Refactoring: split paragraph (where clicked?)\n* Can not create new rliterate files\n* Factory lacks buttons for quote and list paragraphs\n* Allow fonts to be customized\n    * Prose\n    * Monospace\n    * Title\n    * TOC\n* Scroll column when dragging paragraphs\n* Clone paragraph type would be really useful\n* Only scroll workspace if new page opened ([[3f0fc44a9eba4a5cbcae5da3ee5d8925]])\n* \"Browser history\" of workspace (remember previous columns in [[f7f16199492c4bad80567c3a960b8bc9]])",
+"text":"* Multiple editors can be opened but only last saved is saved\n* Factory should drop right into edit mode when button is clicked\n* Table of contents\n    * Highlighting of rows is not always up to date\n    * Highlight opened pages?\n    * Should only expand first 3(?) levels when opening a file for the first\n      time?\n* Drag and drop\n    * Highlight object being dragged somehow (screenshot?)\n    * Invalid drop targets are still shown\n        * Hide dragged item?\n    * Does not work om Mac (incorrect coordinate calculations?)\n* Code editor\n    * Tab indents with tab: should indent 4 spaces?\n    * Shift+Tab deletes: should dedent\n    * Save button is very far down if there is lots of code and only top is\n      edited\n    * Only open code body editor when double clicked?\n* Editors\n    * Save when clicking outside editor text field (how to do this?)\n    * Highlight the word/fragment that is double clicked\n* Missing page operations\n    * Add page before/after\n* Missing paragraph operations\n    * Context menu with add paragraph before/after\n* There is no way to control empty lines from placeholders\n* Not possible to go to a page with Ctrl+T\n* This is really a writing tool\n    * Spell checking\n* Right click should only be generated on up if first down\n* Literate programming treats any target programming language as an assembly\n  language\n* Deleting root (even hoisted root) gives error\n* Reading tool\n    * Code can either be read in chunks or the final source output. And you can\n      follow links between them.\n* Undo (use immutable data types (pyrsistent?))\n* Diff/Merge of rliterate documents for collaboration\n* Search and replace\n* Highlight placeholders in code fragments\n* `word_split` should put white space in separate fragment and rich text\n  display should have `skip_leading_space` option?\n* Dynamic scripting\n    * Show graph paragraph based on data paragraph defined earlier on the page\n      (or on other page)\n* List code is messy (especially parsing)\n* Make intro shorter and move what is there to \"tour\" chapter.\n    * Intro: a Word for programmers\n* Make hoisted page a property? (Setter did not work well inside lambda)\n* Constants for border calculations are tricky. Especially calculation of page\n  width. How to make simpler?\n* Handle sizer code with helper to make it cleaner?\n* Picture paragraph type missing\n* Create more wx utility widgets to remove cruft. SingleLineTextCtrl for title?\n* Refactoring: split paragraph (where clicked?)\n* Can not create new rliterate files\n* Factory lacks buttons for quote and list paragraphs\n* Allow fonts to be customized\n    * Prose\n    * Monospace\n    * Title\n    * TOC\n* Scroll column when dragging paragraphs\n* Clone paragraph type would be really useful\n* Only scroll workspace if new page opened ([[3f0fc44a9eba4a5cbcae5da3ee5d8925]])\n* \"Browser history\" of workspace (remember previous columns in [[f7f16199492c4bad80567c3a960b8bc9]])\n* Explain better \"architecture\" of drag and drop",
 "type":"list"
 }
 ],
