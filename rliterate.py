@@ -1923,7 +1923,7 @@ class HTMLBuilder(object):
                         self.toc(page, levels_left - 1)
 
     def page(self, page, level=1):
-        with self.tag("h{}".format(level)):
+        with self.tag(self.header_tag(level)):
             with self.tag("a", newlines=False, args={"name": page.id}):
                 pass
             self.escaped(page.title)
@@ -1938,6 +1938,12 @@ class HTMLBuilder(object):
             self.toc(page, self.toc_max_depth)
         for child in page.children:
             self.page(child, level+1)
+
+    def header_tag(self, level):
+        if level > 6:
+            return "b"
+        else:
+            return "h{}".format(level)
 
     def paragraph_text(self, text):
         with self.tag("p"):
