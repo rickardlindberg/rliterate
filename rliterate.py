@@ -233,6 +233,12 @@ class CompactScrolledWindow(wx.ScrolledWindow):
 
     def _calc_scroll_pos_vscroll(self, x, y, delta):
         return (x, y-delta*self.step)
+
+    def ScrollToBeginning(self):
+        self.Scroll(0, 0)
+
+    def ScrollToEnd(self):
+        self.Scroll(*self.Size)
 class MultilineTextCtrl(wx.TextCtrl):
 
     MIN_HEIGHT = 50
@@ -619,6 +625,7 @@ class Workspace(CompactScrolledWindow):
         for index, page_ids in enumerate(self.project.columns):
             self.columns[index].SetPages(self.project, page_ids)
         self.Parent.Layout()
+        self.ScrollToEnd()
 
     def _ensure_num_columns(self, num):
         while len(self.columns) > num:
@@ -705,7 +712,7 @@ class Column(CompactScrolledWindow):
                 )
                 self.containers.append(container)
         if page_ids != self._page_ids:
-            self.Scroll(0, 0)
+            self.ScrollToBeginning()
             self._page_ids = page_ids
 
     def FindClosestDropPoint(self, screen_pos):
