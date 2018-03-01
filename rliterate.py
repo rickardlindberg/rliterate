@@ -1907,13 +1907,13 @@ class HTMLBuilder(object):
         return "".join(self.parts)
 
     def toc(self, root_page, levels_left):
-        if levels_left > 0:
+        if levels_left > 0 and root_page.children:
             with self.tag("ul", newlines=False):
                 for page in root_page.children:
-                    with self.tag("li", newlines=False):
-                        with self.tag("a", newlines=False, args={"href": "#{}".format(page.id)}):
+                    with self.tag("li"):
+                        with self.tag("a", args={"href": "#{}".format(page.id)}):
                             self.escaped(page.title)
-                            self.toc(page, levels_left - 1)
+                        self.toc(page, levels_left - 1)
 
     def page(self, page, level=1):
         with self.tag("h{}".format(level)):
