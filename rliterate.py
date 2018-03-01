@@ -1992,7 +1992,8 @@ class HTMLBuilder(object):
 
     def fragment_reference(self, fragment):
         with self.tag("a", args={"href": "#{}".format(fragment.extra["page_id"])}, newlines=False):
-            self.escaped(fragment.text)
+            with self.tag("em", newlines=False):
+                self.escaped(fragment.text)
 
     def fragment_default(self, fragment):
         self.escaped(fragment.text)
