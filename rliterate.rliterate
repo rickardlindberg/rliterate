@@ -561,7 +561,7 @@
 },
 {
 "id":"fe799c6fd8484a9095d88a7f3faaf4bd",
-"text":"wx.CallAfter seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.",
+"text":"`wx.CallAfter` seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.",
 "type":"text"
 },
 {
@@ -1089,7 +1089,7 @@
 "paragraphs":[
 {
 "id":"e93d2e5b66864933ab1e184634965f9f",
-"text":"A drop target that can work with windows that supports FindClosestDropPoint.",
+"text":"A drop target that can work with windows that supports `FindClosestDropPoint`.",
 "type":"text"
 },
 {
