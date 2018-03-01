@@ -1319,7 +1319,7 @@ class Document(Observable):
         page_dict = self._pages.get(page_id, None)
         if page_dict is None:
             return None
-        return DictPage(page_dict)
+        return DictPage(self, page_dict)
 
     # Page operations
 
@@ -1413,7 +1413,8 @@ class Document(Observable):
             self._paragraphs[paragraph_id].update(data)
 class DictPage(object):
 
-    def __init__(self, page_dict):
+    def __init__(self, document, page_dict):
+        self._document = document
         self._page_dict = page_dict
 
     @property
@@ -1427,7 +1428,7 @@ class DictPage(object):
     @property
     def paragraphs(self):
         return [
-            DictParagraph.create(paragraph_dict)
+            DictParagraph.create(self._document, paragraph_dict)
             for paragraph_dict
             in self._page_dict["paragraphs"]
         ]
@@ -1435,22 +1436,23 @@ class DictPage(object):
     @property
     def children(self):
         return [
-            DictPage(child_dict)
+            DictPage(self._document, child_dict)
             for child_dict
             in self._page_dict["children"]
         ]
 class DictParagraph(object):
 
     @staticmethod
-    def create(paragraph_dict):
+    def create(document, paragraph_dict):
         return {
             "text": DictTextParagraph,
             "quote": DictQuoteParagraph,
             "list": DictListParagraph,
             "code": DictCodeParagraph,
-        }.get(paragraph_dict["type"], DictParagraph)(paragraph_dict)
+        }.get(paragraph_dict["type"], DictParagraph)(document, paragraph_dict)
 
-    def __init__(self, paragraph_dict):
+    def __init__(self, document, paragraph_dict):
+        self._document = document
         self._paragraph_dict = paragraph_dict
 
     @property
@@ -1472,14 +1474,14 @@ class DictTextParagraph(DictParagraph):
 
     @property
     def formatted_text(self):
-        return InlineTextParser().parse(self.text)
+        return InlineTextParser(self._document).parse(self.text)
 class DictQuoteParagraph(DictTextParagraph):
     pass
 class DictListParagraph(DictTextParagraph):
 
     @property
     def item(self):
-        items, list_type = ListParser(self.text.strip().split("\n")).parse_items()
+        items, list_type = ListParser(self._document, self.text.strip().split("\n")).parse_items()
         return ListItem("", items, list_type)
 
 
@@ -1487,7 +1489,8 @@ class ListParser(object):
 
     ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
 
-    def __init__(self, lines):
+    def __init__(self, document, lines):
+        self._document = document
         self.lines = lines
 
     def parse_items(self, level=0):
@@ -1522,7 +1525,7 @@ class ListParser(object):
                         item_type = "ordered"
         if parts:
             children, child_type = self.parse_items(next_level)
-            return ListItem(InlineTextParser().parse(" ".join(parts)), children, child_type), item_type
+            return ListItem(InlineTextParser(self._document).parse(" ".join(parts)), children, child_type), item_type
 
     def consume_bodies(self):
         bodies = []
@@ -1610,42 +1613,45 @@ class InlineTextParser(object):
     PATTERNS = [
         (
             re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
-            lambda match: Fragment(
+            lambda parser, match: Fragment(
                 match.group(1),
                 token=Token.RLiterate.Strong
             )
         ),
         (
             re.compile(r"\*(.+?)\*", flags=re.DOTALL),
-            lambda match: Fragment(
+            lambda parser, match: Fragment(
                 match.group(1),
                 token=Token.RLiterate.Emphasis
             )
         ),
         (
             re.compile(r"`(.+?)`", flags=re.DOTALL),
-            lambda match: Fragment(
+            lambda parser, match: Fragment(
                 match.group(1),
                 token=Token.RLiterate.Code
             )
         ),
         (
             re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
-            lambda match: Fragment(
-                match.group(3) or match.group(1),
+            lambda parser, match: Fragment(
+                parser._title(match.group(1), match.group(3)),
                 token=Token.RLiterate.Reference,
                 page_id=match.group(1)
             )
         ),
         (
             re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
-            lambda match: Fragment(
+            lambda parser, match: Fragment(
                 match.group(1) or match.group(2),
                 token=Token.RLiterate.Link,
                 url=match.group(2)
             )
         ),
     ]
+
+    def __init__(self, document):
+        self._document = document
 
     def parse(self, text):
         text = self._normalise_space(text)
@@ -1667,6 +1673,13 @@ class InlineTextParser(object):
             fragments.append(Fragment(partial))
         return fragments
 
+    def _title(self, page_id, custom_title):
+        if custom_title:
+            return custom_title
+        if self._document.get_page(page_id) is not None:
+            return self._document.get_page(page_id).title
+        return page_id
+
     def _normalise_space(self, text):
         return self.SPACE_RE.sub(" ", text).strip()
 
@@ -1674,7 +1687,7 @@ class InlineTextParser(object):
         for pattern, fn in self.PATTERNS:
             match = pattern.match(text)
             if match:
-                return match, fn(match)
+                return match, fn(self, match)
 class Layout(Observable):
     def __init__(self, path):
         Observable.__init__(self)
