@@ -621,17 +621,23 @@ class Workspace(CompactScrolledWindow):
         self._re_render()
 
     def _re_render(self):
-        self._ensure_num_columns(len(self.project.columns))
+        column_count_changed = self._ensure_num_columns(len(self.project.columns))
+        last_column_changed_pages = False
         for index, page_ids in enumerate(self.project.columns):
-            self.columns[index].SetPages(self.project, page_ids)
+            last_column_changed_pages = self.columns[index].SetPages(self.project, page_ids)
         self.Parent.Layout()
-        self.ScrollToEnd()
+        if column_count_changed or last_column_changed_pages:
+            self.ScrollToEnd()
 
     def _ensure_num_columns(self, num):
+        count_changed = False
         while len(self.columns) > num:
+            count_changed = True
             self.columns.pop(-1).Destroy()
         while len(self.columns) < num:
+            count_changed = True
             self.columns.append(self._add_column())
+        return count_changed
 
     def _add_column(self):
         column = Column(self, index=len(self.columns))
@@ -711,9 +717,12 @@ class Column(CompactScrolledWindow):
                     border=PAGE_PADDING
                 )
                 self.containers.append(container)
-        if page_ids != self._page_ids:
+        if page_ids == self._page_ids:
+            return False
+        else:
             self.ScrollToBeginning()
             self._page_ids = page_ids
+            return True
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
