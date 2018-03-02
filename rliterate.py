@@ -1210,7 +1210,7 @@ class ImageEdit(wx.Panel):
         if success:
             bitmap = image_data.GetBitmap()
             self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())
-            self.image_base64 = self.b64bitmap(bitmap)
+            self.image_base64 = bitmap_to_base64(bitmap)
             self.GetTopLevelParent().Layout()
 
     def _on_save(self, event):
