@@ -2047,6 +2047,7 @@ class HTMLBuilder(object):
                 "quote": self.paragraph_quote,
                 "list": self.paragraph_list,
                 "code": self.paragraph_code,
+                "image": self.paragraph_image,
             }.get(paragraph.type, self.paragraph_unknown)(paragraph)
         if level == 1 and self.generate_toc:
             self.toc(page, self.toc_max_depth)
@@ -2126,6 +2127,16 @@ class HTMLBuilder(object):
                         args={"class": STANDARD_TYPES.get(fragment.token, "")}
                     ):
                         self.escaped(fragment.text)
+
+    def paragraph_image(self, paragraph):
+        with self.tag("div", args={"class": "rliterate-image"}):
+            with self.tag("img", args={
+                "src": "data:image/png;base64,{}".format(paragraph.image_base64)
+            }):
+                pass
+        with self.tag("div", args={"class": "rliterate-image-text"}):
+            with self.tag("p"):
+                self.fragments(paragraph.formatted_text)
 
     def paragraph_unknown(self, paragraph):
         with self.tag("p"):
