@@ -12,6 +12,8 @@ import time
 import uuid
 import webbrowser
 import xml.sax.saxutils
+import StringIO
+import base64
 
 import pygments.lexers
 from pygments.token import Token, STANDARD_TYPES
@@ -785,6 +787,7 @@ class Page(wx.Panel):
                 "quote": Quote,
                 "list": List,
                 "code": Code,
+                "image": Image,
                 "factory": Factory,
             }[paragraph.type](self, self.project, self.page_id, paragraph))
         self.drop_points.append(PageDropPoint(
@@ -1139,6 +1142,85 @@ class CodeEditor(wx.Panel):
             "path": self.path.Value.split(" / "),
             "text": self.text.Value,
         })
+class Image(ParagraphBase):
+
+    PADDING = 30
+
+    def CreateView(self):
+        view = wx.Panel(self)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        bitmap = wx.StaticBitmap(
+            view,
+            bitmap=base64_to_bitmap(self.paragraph.image_base64)
+        )
+        sizer.Add(
+            bitmap,
+            flag=wx.ALIGN_CENTER
+        )
+        sizer.Add(
+            TextView(
+                view,
+                self.project,
+                self.paragraph.formatted_text,
+                self,
+                indented=2*self.PADDING
+            ),
+            flag=wx.ALIGN_CENTER
+        )
+        view.SetSizer(sizer)
+        MouseEventHelper.bind(
+            [view, bitmap],
+            double_click=lambda: post_edit_start(view),
+        )
+        return view
+
+    def CreateEdit(self):
+        return ImageEdit(
+            self,
+            self.project,
+            self.paragraph,
+            self.view
+        )
+class ImageEdit(wx.Panel):
+
+    def __init__(self, parent, project, paragraph, view):
+        wx.Panel.__init__(self, parent)
+        self.Font = create_font(monospace=True)
+        self.project = project
+        self.paragraph = paragraph
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))
+        sizer.Add(self.image, flag=wx.ALIGN_CENTER)
+        self.text = MultilineTextCtrl(self, value=paragraph.text)
+        sizer.Add(self.text, flag=wx.EXPAND)
+        paste_button = wx.Button(self, label="Paste")
+        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)
+        sizer.Add(paste_button)
+        save = wx.Button(self, label="Save")
+        save.Bind(wx.EVT_BUTTON, self._on_save)
+        sizer.Add(save)
+        self.SetSizer(sizer)
+        self.image_base64 = None
+
+    def _on_paste(self, event):
+        image_data = wx.BitmapDataObject()
+        if wx.TheClipboard.Open():
+            success = wx.TheClipboard.GetData(image_data)
+            wx.TheClipboard.Close()
+        if success:
+            bitmap = image_data.GetBitmap()
+            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())
+            self.image_base64 = self.b64bitmap(bitmap)
+            self.GetTopLevelParent().Layout()
+
+    def _on_save(self, event):
+        value = {"text": self.text.Value}
+        if self.image_base64:
+            value["image_base64"] = self.image_base64
+        self.project.edit_paragraph(
+            self.paragraph.id,
+            value
+        )
 class Factory(ParagraphBase):
 
     def CreateView(self):
@@ -1167,6 +1249,9 @@ class Factory(ParagraphBase):
         code_button = wx.Button(self, label="Code")
         code_button.Bind(wx.EVT_BUTTON, self._on_code_button)
         self.hsizer.Add(code_button, flag=wx.ALL, border=2)
+        image_button = wx.Button(self, label="Image")
+        image_button.Bind(wx.EVT_BUTTON, self._on_image_button)
+        self.hsizer.Add(image_button, flag=wx.ALL, border=2)
         self.vsizer.AddSpacer(PARAGRAPH_SPACE)
         view.SetSizer(self.vsizer)
         return view
@@ -1181,6 +1266,12 @@ class Factory(ParagraphBase):
         self.project.edit_paragraph(
             self.paragraph.id,
             {"type": "code", "path": [], "text": "Enter code here..."}
+        )
+
+    def _on_image_button(self, event):
+        self.project.edit_paragraph(
+            self.paragraph.id,
+            {"type": "image", "text": "Enter text here..."}
         )
 class ParagraphContextMenu(wx.Menu):
 
@@ -1465,6 +1556,7 @@ class DictParagraph(object):
             "quote": DictQuoteParagraph,
             "list": DictListParagraph,
             "code": DictCodeParagraph,
+            "image": DictImageParagraph,
         }.get(paragraph_dict["type"], DictParagraph)(document, paragraph_dict)
 
     def __init__(self, document, paragraph_dict):
@@ -1608,6 +1700,19 @@ class DictCodeParagraph(DictParagraph):
         for token, text in tokens:
             fragments.append(Fragment(text, token=token))
         return fragments
+class DictImageParagraph(DictParagraph):
+
+    @property
+    def text(self):
+        return self._paragraph_dict["text"]
+
+    @property
+    def formatted_text(self):
+        return InlineTextParser(self._document).parse(self.text)
+
+    @property
+    def image_base64(self):
+        return self._paragraph_dict.get("image_base64", None)
 class Fragment(object):
 
     def __init__(self, text, token=Token.RLiterate, **extra):
@@ -2147,6 +2252,33 @@ def insert_between(separator, items):
             result.append(separator)
         result.append(item)
     return result
+def base64_to_bitmap(data):
+    try:
+        image = fit_image(wx.ImageFromStream(
+            StringIO.StringIO(base64.b64decode(data)),
+            wx.BITMAP_TYPE_ANY
+        ), PAGE_BODY_WIDTH)
+        return image.ConvertToBitmap()
+    except:
+        return wx.ArtProvider.GetBitmap(
+            wx.ART_MISSING_IMAGE,
+            wx.ART_BUTTON,
+            (16, 16)
+        )
+def bitmap_to_base64(bitmap):
+    output = StringIO.StringIO()
+    image = wx.ImageFromBitmap(bitmap)
+    image.SaveStream(output, wx.BITMAP_TYPE_PNG)
+    return base64.b64encode(output.getvalue())
+def fit_image(image, width):
+    if image.Width <= width:
+        return image
+    factor = float(width) / image.Width
+    return image.Scale(
+        int(image.Width*factor),
+        int(image.Height*factor),
+        wx.IMAGE_QUALITY_HIGH
+    )
 def post_edit_start(control):
     wx.PostEvent(control, EditStart(0))
 def ensure_key(a_dict, key, default):

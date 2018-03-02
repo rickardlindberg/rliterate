@@ -719,7 +719,7 @@
 "<<classes>>",
 "<<Page>>"
 ],
-"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.sizer.Add(paragraph, flag=wx.EXPAND)\n    divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)\n    self.sizer.Add(divider, flag=wx.EXPAND)\n    return divider\n\ndef _render_add_button(self):\n    add_button = wx.BitmapButton(\n        self,\n        bitmap=wx.ArtProvider.GetBitmap(\n            wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON,\n            (16, 16)\n        ),\n        style=wx.NO_BORDER\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n    self.sizer.Add(\n        add_button,\n        flag=wx.TOP|wx.ALIGN_RIGHT,\n        border=PARAGRAPH_SPACE\n    )\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
+"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.sizer.Add(paragraph, flag=wx.EXPAND)\n    divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)\n    self.sizer.Add(divider, flag=wx.EXPAND)\n    return divider\n\ndef _render_add_button(self):\n    add_button = wx.BitmapButton(\n        self,\n        bitmap=wx.ArtProvider.GetBitmap(\n            wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON,\n            (16, 16)\n        ),\n        style=wx.NO_BORDER\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n    self.sizer.Add(\n        add_button,\n        flag=wx.TOP|wx.ALIGN_RIGHT,\n        border=PARAGRAPH_SPACE\n    )\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
 "type":"code"
 },
 {
@@ -971,6 +971,63 @@
 },
 {
 "children":[],
+"id":"481bf98c4af44f3e8fc6869d3c9b8a36",
+"paragraphs":[
+{
+"id":"03a0a27ff06a4a3592da6869b5afa212",
+"text":"Data is defined in [[0d0e076c5ebc4b338ab01229ef37a8ea]].",
+"type":"text"
+},
+{
+"id":"8856d2dc36b846f8a763ab7e2bdef323",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [view, bitmap],\n            double_click=lambda: post_edit_start(view),\n        )\n        return view\n\n    def CreateEdit(self):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
+"type":"code"
+},
+{
+"id":"5615fbbaed2c4cffa7b87de2617c6c11",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class ImageEdit(wx.Panel):\n\n    def __init__(self, parent, project, paragraph, view):\n        wx.Panel.__init__(self, parent)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))\n        sizer.Add(self.image, flag=wx.ALIGN_CENTER)\n        self.text = MultilineTextCtrl(self, value=paragraph.text)\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        save = wx.Button(self, label=\"Save\")\n        save.Bind(wx.EVT_BUTTON, self._on_save)\n        sizer.Add(save)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())\n            self.image_base64 = self.b64bitmap(bitmap)\n            self.GetTopLevelParent().Layout()\n\n    def _on_save(self, event):\n        value = {\"text\": self.text.Value}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            value\n        )\n",
+"type":"code"
+},
+{
+"id":"ff72ceb0dd194974bc63f3a74d4fdc08",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def base64_to_bitmap(data):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), PAGE_BODY_WIDTH)\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (16, 16)\n        )\n",
+"type":"code"
+},
+{
+"id":"8855df49bf1442729afa8a0a610a9453",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def bitmap_to_base64(bitmap):\n    output = StringIO.StringIO()\n    image = wx.ImageFromBitmap(bitmap)\n    image.SaveStream(output, wx.BITMAP_TYPE_PNG)\n    return base64.b64encode(output.getvalue())\n",
+"type":"code"
+},
+{
+"id":"cdf63272c72849e18d7b13394122e243",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def fit_image(image, width):\n    if image.Width <= width:\n        return image\n    factor = float(width) / image.Width\n    return image.Scale(\n        int(image.Width*factor),\n        int(image.Height*factor),\n        wx.IMAGE_QUALITY_HIGH\n    )\n",
+"type":"code"
+}
+],
+"title":"Image"
+},
+{
+"children":[],
 "id":"e0ecf028bb904931882c2fe4694d87e2",
 "paragraphs":[
 {
@@ -984,7 +1041,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Factory(ParagraphBase):\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        text_button = wx.Button(self, label=\"Text\")\n        text_button.Bind(wx.EVT_BUTTON, self._on_text_button)\n        self.hsizer.Add(text_button, flag=wx.ALL, border=2)\n        code_button = wx.Button(self, label=\"Code\")\n        code_button.Bind(wx.EVT_BUTTON, self._on_code_button)\n        self.hsizer.Add(code_button, flag=wx.ALL, border=2)\n        self.vsizer.AddSpacer(PARAGRAPH_SPACE)\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _on_text_button(self, event):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"type\": \"text\", \"text\": \"Enter text here...\"}\n        )\n\n    def _on_code_button(self, event):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"type\": \"code\", \"path\": [], \"text\": \"Enter code here...\"}\n        )\n",
+"text":"class Factory(ParagraphBase):\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        text_button = wx.Button(self, label=\"Text\")\n        text_button.Bind(wx.EVT_BUTTON, self._on_text_button)\n        self.hsizer.Add(text_button, flag=wx.ALL, border=2)\n        code_button = wx.Button(self, label=\"Code\")\n        code_button.Bind(wx.EVT_BUTTON, self._on_code_button)\n        self.hsizer.Add(code_button, flag=wx.ALL, border=2)\n        image_button = wx.Button(self, label=\"Image\")\n        image_button.Bind(wx.EVT_BUTTON, self._on_image_button)\n        self.hsizer.Add(image_button, flag=wx.ALL, border=2)\n        self.vsizer.AddSpacer(PARAGRAPH_SPACE)\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _on_text_button(self, event):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"type\": \"text\", \"text\": \"Enter text here...\"}\n        )\n\n    def _on_code_button(self, event):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"type\": \"code\", \"path\": [], \"text\": \"Enter code here...\"}\n        )\n\n    def _on_image_button(self, event):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"type\": \"image\", \"text\": \"Enter text here...\"}\n        )\n",
 "type":"code"
 }
 ],
@@ -1412,7 +1469,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(document, paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(document, paragraph_dict)\n\n    def __init__(self, document, paragraph_dict):\n        self._document = document\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n",
+"text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(document, paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n            \"image\": DictImageParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(document, paragraph_dict)\n\n    def __init__(self, document, paragraph_dict):\n        self._document = document\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n",
 "type":"code"
 }
 ],
@@ -1481,6 +1538,22 @@
 }
 ],
 "title":"Code"
+},
+{
+"children":[],
+"id":"0d0e076c5ebc4b338ab01229ef37a8ea",
+"paragraphs":[
+{
+"id":"299a34e6b9654d51a1d9e3d7ba0644e5",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class DictImageParagraph(DictParagraph):\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        return InlineTextParser(self._document).parse(self.text)\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n",
+"type":"code"
+}
+],
+"title":"Image"
 },
 {
 "children":[],
@@ -1966,7 +2039,7 @@
 "path":[
 "rliterate.py"
 ],
-"text":"# This file is automatically extracted from rliterate.rliterate.\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
+"text":"# This file is automatically extracted from rliterate.rliterate.\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
 "type":"code"
 }
 ],
