@@ -1418,7 +1418,10 @@ class Document(Observable):
         write_json_to_file(self.path, self.root_page)
 
     def _load(self):
-        self.root_page = load_json_from_file(self.path)
+        if os.path.exists(self.path):
+            self.root_page = load_json_from_file(self.path)
+        else:
+            self.root_page = self._empty_page()
 
     def get_page(self, page_id=None):
         if page_id is None:
@@ -1432,16 +1435,19 @@ class Document(Observable):
 
     def add_page(self, title="New page", parent_id=None):
         with self.notify():
-            page = {
-                "id": genid(),
-                "title": "New page...",
-                "children": [],
-                "paragraphs": [],
-            }
+            page = self._empty_page()
             parent_page = self._pages[parent_id]
             parent_page["children"].append(page)
             self._pages[page["id"]] = page
             self._parent_pages[page["id"]] = parent_page
+
+    def _empty_page(self):
+        return {
+            "id": genid(),
+            "title": "New page...",
+            "children": [],
+            "paragraphs": [],
+        }
 
     def delete_page(self, page_id):
         with self.notify():
