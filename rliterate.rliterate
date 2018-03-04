@@ -92,18 +92,41 @@
 "id":"cc3c314da5a944d18eec6628eb042ba0",
 "paragraphs":[
 {
+"id":"f5029036eb0347f5a82eef2977c5e4de",
+"text":"The source code for RLiterate is in a Git repository hosted on Github:",
+"type":"text"
+},
+{
+"id":"0fe88db54e06426c9ba1c0d56c805646",
+"text":"[](https://github.com/rickardlindberg/rliterate)",
+"type":"text"
+},
+{
+"id":"65e84cfe8d7c4cc4952e1bd7781fb0a7",
+"text":"Assuming you have Git installed, you can clone the repository like this:",
+"type":"text"
+},
+{
+"id":"a4c5fe6e80f145408404bb06dd744ee3",
+"path":[
+""
+],
+"text":"git clone git@github.com:rickardlindberg/rliterate.git",
+"type":"code"
+},
+{
 "id":"1779778497c3405ea45d42a56b83ea16",
-"text":"You need the following packages to run RLiterate:",
+"text":"Before you can run RLiterate, you need [Python](https://www.python.org/) with the following libraries installed:",
 "type":"text"
 },
 {
 "id":"aaf20f16695b4631b91c4be4603be57a",
-"text":"* [Python](https://www.python.org/)\n    * [wxPython](https://wxpython.org/)\n    * [pygments](http://pygments.org/)\n",
+"text":"* [wxPython](https://wxpython.org/)\n* [pygments](http://pygments.org/)\n",
 "type":"list"
 },
 {
 "id":"75359fa579334b61b95a06dd761ed58e",
-"text":"Here is how these dependencies can be installed on a Fedora system:",
+"text":"Here is how they can be installed on a Fedora system:",
 "type":"text"
 },
 {
@@ -116,7 +139,7 @@
 },
 {
 "id":"e74c1810431b42aaae8b65755e5ff313",
-"text":"Once the dependecnies are installed, run RLiterate like this:",
+"text":"Once the those are installed, you can run RLiterate like this:",
 "type":"text"
 },
 {
@@ -124,12 +147,12 @@
 "path":[
 ""
 ],
-"text":"python rliterate.py rliterate.rliterate",
+"text":"python rliterate.py rliterate.rliterate\n",
 "type":"code"
 },
 {
 "id":"f6da445ecc2549a0862270dfb2171ed6",
-"text":"You should now see the RLiterate GUI displaying.",
+"text":"This will open the RLiterate document. Enter a different filename as last parameter to create a new document.",
 "type":"text"
 }
 ],
