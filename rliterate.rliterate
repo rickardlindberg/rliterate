@@ -419,7 +419,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.SetBackgroundColour((255, 255, 255))\n    self._re_render()\n\ndef _re_render(self):\n    self.drop_points = []\n    self.sizer.Clear(True)\n    self._render_unhoist_button()\n    self._render_page_container()\n    self.Layout()",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        self.sizer.Clear(True)\n        self._render_unhoist_button()\n        self._render_page_container()\n        self.Layout()\n",
 "type":"code"
 },
 {
@@ -684,7 +684,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def _render(self):\n    self.SetBackgroundColour((200, 200, 200))\n    self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n    self.sizer.AddSpacer(PAGE_PADDING)\n    self.SetSizer(self.sizer)\n    self.columns = []\n    self._re_render()\n\ndef _re_render(self):\n    column_count_changed = self._ensure_num_columns(len(self.project.columns))\n    last_column_changed_pages = False\n    for index, page_ids in enumerate(self.project.columns):\n        last_column_changed_pages = self.columns[index].SetPages(self.project, page_ids)\n    self.Parent.Layout()\n    if column_count_changed or last_column_changed_pages:\n        self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = Column(self, index=len(self.columns))\n    self.sizer.Add(column, flag=wx.EXPAND)\n    return column\n",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(\n                self.project,\n                page_ids\n            )\n        self.Parent.Layout()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = Column(self, index=len(self.columns))\n    self.sizer.Add(column, flag=wx.EXPAND)\n    return column\n",
 "type":"code"
 },
 {
@@ -1241,7 +1241,7 @@
 "rliterate.py",
 "<<base classes 1>>"
 ],
-"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent):\n        wx.Panel.__init__(self, parent)\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        self.edit = self.CreateEdit()\n        self.edit.SetFocus()\n        self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n        self.sizer.Hide(self.view)\n        self.GetTopLevelParent().Layout()\n",
+"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent):\n        wx.Panel.__init__(self, parent)\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit()\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().Layout()\n",
 "type":"code"
 },
 {
@@ -1325,7 +1325,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Divider(wx.Panel):\n\n    def __init__(self, parent, padding=0, height=1):\n        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))\n        self.line = wx.Panel(self, size=(-1, height))\n        self.line.SetBackgroundColour((255, 100, 0))\n        self.line.Hide()\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.vsizer.AddStretchSpacer(1)\n        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)\n        self.vsizer.AddStretchSpacer(1)\n        self.SetSizer(self.vsizer)\n\n    def Show(self, left_space=0):\n        self.line.Show()\n        self.hsizer.Clear(False)\n        self.hsizer.Add((left_space, 1))\n        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n        self.Layout()\n\n    def Hide(self):\n        self.line.Hide()\n        self.Layout()",
+"text":"class Divider(wx.Panel):\n\n    def __init__(self, parent, padding=0, height=1):\n        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))\n        self.line = wx.Panel(self, size=(-1, height))\n        self.line.SetBackgroundColour((255, 100, 0))\n        self.line.Hide()\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.vsizer.AddStretchSpacer(1)\n        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)\n        self.vsizer.AddStretchSpacer(1)\n        self.SetSizer(self.vsizer)\n\n    def Show(self, left_space=0):\n        with flicker_free_drawing(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with flicker_free_drawing(self):\n            self.line.Hide()\n            self.Layout()\n",
 "type":"code"
 }
 ],
@@ -1518,6 +1518,27 @@
 }
 ],
 "title":"Multiline text control"
+},
+{
+"children":[],
+"id":"32b95f00956d4ea08e09d4a7d7fd4bb2",
+"paragraphs":[
+{
+"id":"8858d0bc4faa47aa971b47a969c87f5b",
+"text":"This code seems to be needed on Windows only, but does not harm on other platforms. If many layout operations are done, the GUI otherwise becomes slow and flickers.",
+"type":"text"
+},
+{
+"id":"a1614750c637409bb1f56849b5749e3f",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"@contextlib.contextmanager\ndef flicker_free_drawing(widget):\n    widget.Freeze()\n    yield\n    widget.Thaw()\n",
+"type":"code"
+}
+],
+"title":"Flicker free drawing"
 }
 ],
 "id":"5c3647a616b8495f8bebd268be84377d",

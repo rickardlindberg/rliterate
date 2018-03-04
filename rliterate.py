@@ -41,11 +41,12 @@ class Editable(wx.Panel):
         self.view.Bind(EVT_EDIT_START, self.OnEditStart)
 
     def OnEditStart(self, event):
-        self.edit = self.CreateEdit()
-        self.edit.SetFocus()
-        self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
-        self.sizer.Hide(self.view)
-        self.GetTopLevelParent().Layout()
+        with flicker_free_drawing(self):
+            self.edit = self.CreateEdit()
+            self.edit.SetFocus()
+            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
+            self.sizer.Hide(self.view)
+            self.GetTopLevelParent().Layout()
 class ParagraphBase(Editable):
 
     def __init__(self, parent, project, page_id, paragraph):
@@ -355,17 +356,19 @@ class TableOfContents(wx.Panel):
     def _re_render_from_event(self, event):
         wx.CallAfter(self._re_render)
     def _render(self):
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.sizer)
-        self.SetBackgroundColour((255, 255, 255))
-        self._re_render()
+        with flicker_free_drawing(self):
+            self.sizer = wx.BoxSizer(wx.VERTICAL)
+            self.SetSizer(self.sizer)
+            self.SetBackgroundColour((255, 255, 255))
+            self._re_render()
 
     def _re_render(self):
-        self.drop_points = []
-        self.sizer.Clear(True)
-        self._render_unhoist_button()
-        self._render_page_container()
-        self.Layout()
+        with flicker_free_drawing(self):
+            self.drop_points = []
+            self.sizer.Clear(True)
+            self._render_unhoist_button()
+            self._render_page_container()
+            self.Layout()
     def _render_unhoist_button(self):
         if self.project.get_hoisted_page() is not None:
             button = wx.Button(self, label="unhoist")
@@ -616,21 +619,26 @@ class Workspace(CompactScrolledWindow):
         self.project = project
         self.project_listener.set_observable(self.project)
     def _render(self):
-        self.SetBackgroundColour((200, 200, 200))
-        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.AddSpacer(PAGE_PADDING)
-        self.SetSizer(self.sizer)
-        self.columns = []
-        self._re_render()
+        with flicker_free_drawing(self):
+            self.SetBackgroundColour((200, 200, 200))
+            self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.sizer.AddSpacer(PAGE_PADDING)
+            self.SetSizer(self.sizer)
+            self.columns = []
+            self._re_render()
 
     def _re_render(self):
-        column_count_changed = self._ensure_num_columns(len(self.project.columns))
-        last_column_changed_pages = False
-        for index, page_ids in enumerate(self.project.columns):
-            last_column_changed_pages = self.columns[index].SetPages(self.project, page_ids)
-        self.Parent.Layout()
-        if column_count_changed or last_column_changed_pages:
-            self.ScrollToEnd()
+        with flicker_free_drawing(self):
+            column_count_changed = self._ensure_num_columns(len(self.project.columns))
+            last_column_changed_pages = False
+            for index, page_ids in enumerate(self.project.columns):
+                last_column_changed_pages = self.columns[index].SetPages(
+                    self.project,
+                    page_ids
+                )
+            self.Parent.Layout()
+            if column_count_changed or last_column_changed_pages:
+                self.ScrollToEnd()
 
     def _ensure_num_columns(self, num):
         count_changed = False
@@ -1309,15 +1317,17 @@ class Divider(wx.Panel):
         self.SetSizer(self.vsizer)
 
     def Show(self, left_space=0):
-        self.line.Show()
-        self.hsizer.Clear(False)
-        self.hsizer.Add((left_space, 1))
-        self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
-        self.Layout()
+        with flicker_free_drawing(self):
+            self.line.Show()
+            self.hsizer.Clear(False)
+            self.hsizer.Add((left_space, 1))
+            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
+            self.Layout()
 
     def Hide(self):
-        self.line.Hide()
-        self.Layout()
+        with flicker_free_drawing(self):
+            self.line.Hide()
+            self.Layout()
 class MouseEventHelper(object):
 
     @classmethod
@@ -2299,6 +2309,11 @@ def fit_image(image, width):
     )
 def post_edit_start(control):
     wx.PostEvent(control, EditStart(0))
+@contextlib.contextmanager
+def flicker_free_drawing(widget):
+    widget.Freeze()
+    yield
+    widget.Thaw()
 def ensure_key(a_dict, key, default):
     if key not in a_dict:
         a_dict[key] = default
