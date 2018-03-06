@@ -308,7 +308,7 @@
 },
 {
 "id":"a28ef005c5fb46f882d33121b9e94b3b",
-"text":"At this point I had all the functionality in place for doing writing documents and embedding code in them. I imported all the code into an RLiterate document (previously it was written as a single Python file) and started extracting pieces and adding prose to explain the program. This was a tremendously rewarding experience. RLiterate was now bootstrapped.",
+"text":"At this point I had all the functionality in place for writing documents and embedding code in them. I imported all the code into an RLiterate document (previously it was written as a single Python file) and started extracting pieces and adding prose to explain the program. This was a tremendously rewarding experience. RLiterate was now bootstrapped.",
 "type":"text"
 },
 {
