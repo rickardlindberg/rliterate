@@ -344,7 +344,7 @@ class TableOfContents(wx.Panel):
         wx.Panel.__init__(self, parent, size=(250, -1))
         self.project_listener = Listener(
             self._re_render_from_event,
-            "document", "layout.toc"
+            "document", "layout.toc", "layout.workspace"
         )
         self.SetProject(project)
         self.SetDropTarget(TableOfContentsDropTarget(self, self.project))
@@ -488,6 +488,8 @@ class TableOfContentsRow(wx.Panel):
             self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
         else:
             self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
+        if self.project.is_open(self.page.id):
+            self.Font = create_font(bold=True)
         text = wx.StaticText(self)
         text.SetLabelText(self.page.title)
         self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
@@ -496,17 +498,10 @@ class TableOfContentsRow(wx.Panel):
         self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
         for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
             helper.OnClick = self._on_click
-            helper.OnDoubleClick = self._on_double_click
             helper.OnRightClick = self._on_right_click
             helper.OnDrag = self._on_drag
     def _on_click(self):
         self.project.open_pages([self.page.id], column_index=0)
-
-    def _on_double_click(self):
-        page_ids = [self.page.id]
-        for child in self.project.get_page(self.page.id).children:
-            page_ids.append(child.id)
-        self.project.open_pages(page_ids, column_index=0)
 
     def _on_right_click(self):
         menu = PageContextMenu(self.project, self.page)
@@ -1874,6 +1869,12 @@ class Layout(Observable):
             if column_index is None:
                 column_index = len(self._workspace_columns)
             self._workspace_columns[column_index:] = [page_ids[:]]
+
+    def is_open(self, page_id):
+        for column in self.columns:
+            if page_id in column:
+                return True
+        return False
 class BaseTheme(object):
 
     def get_style(self, token_type):
@@ -1977,6 +1978,9 @@ class Project(Observable):
     @property
     def columns(self):
         return self.layout.columns
+
+    def is_open(self, *args, **kwargs):
+        return self.layout.is_open(*args, **kwargs)
 
     def open_pages(self, *args, **kwargs):
         return self.layout.open_pages(*args, **kwargs)
