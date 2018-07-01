@@ -359,29 +359,32 @@ class TableOfContents(wx.Panel):
         with flicker_free_drawing(self):
             self.sizer = wx.BoxSizer(wx.VERTICAL)
             self.SetSizer(self.sizer)
+            self.unhoist_button = None
+            self.page_sizer = wx.BoxSizer(wx.VERTICAL)
+            self.page_container = CompactScrolledWindow(self)
+            self.page_container.SetSizer(self.page_sizer)
+            self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)
             self.SetBackgroundColour((255, 255, 255))
             self._re_render()
 
     def _re_render(self):
         with flicker_free_drawing(self):
             self.drop_points = []
-            self.sizer.Clear(True)
+            if self.unhoist_button is not None:
+                self.unhoist_button.Destroy()
+            self.page_sizer.Clear(True)
             self._render_unhoist_button()
             self._render_page_container()
             self.Layout()
     def _render_unhoist_button(self):
         if self.project.get_hoisted_page() is not None:
-            button = wx.Button(self, label="unhoist")
-            button.Bind(
+            self.unhoist_button = wx.Button(self, label="unhoist")
+            self.unhoist_button.Bind(
                 wx.EVT_BUTTON,
                 lambda event: self.project.set_hoisted_page(None)
             )
-            self.sizer.Add(button, flag=wx.EXPAND)
+            self.sizer.Insert(0, self.unhoist_button, flag=wx.EXPAND)
     def _render_page_container(self):
-        self.page_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.page_container = CompactScrolledWindow(self)
-        self.page_container.SetSizer(self.page_sizer)
-        self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)
         self._render_page(self.project.get_page(self.project.get_hoisted_page()))
 
     def _render_page(self, page, indentation=0):
