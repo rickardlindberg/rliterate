@@ -1548,19 +1548,6 @@ class Document(Observable):
     def edit_paragraph(self, paragraph_id, data):
         with self.notify():
             self._paragraphs[paragraph_id].update(data)
-class InlineTextParser(object):
-
-    def __init__(self, document):
-        self._document = document
-
-    def parse(self, text):
-        return [
-            DictTextFragment.create(self._document, fragment).formatted_text
-            for fragment
-            in LegacyInlineTextParser().parse(text)
-        ]
-
-
 class LegacyInlineTextParser(object):
 
     SPACE_RE = re.compile(r"\s+")
@@ -1695,8 +1682,16 @@ class DictTextParagraph(DictParagraph):
         return self._paragraph_dict["text"]
 
     @property
+    def fragments(self):
+        return LegacyInlineTextParser().parse(self.text)
+
+    @property
     def formatted_text(self):
-        return InlineTextParser(self._document).parse(self.text)
+        return [
+            DictTextFragment.create(self._document, fragment).formatted_text
+            for fragment
+            in self.fragments
+        ]
 class DictQuoteParagraph(DictTextParagraph):
     pass
 class DictListParagraph(DictTextParagraph):
@@ -1704,7 +1699,7 @@ class DictListParagraph(DictTextParagraph):
     @property
     def item(self):
         items, list_type = ListParser(self._document, self.text.strip().split("\n")).parse_items()
-        return ListItem("", items, list_type)
+        return ListItem([], items, list_type)
 
 
 class ListParser(object):
@@ -1747,7 +1742,15 @@ class ListParser(object):
                         item_type = "ordered"
         if parts:
             children, child_type = self.parse_items(next_level)
-            return ListItem(InlineTextParser(self._document).parse(" ".join(parts)), children, child_type), item_type
+            return ListItem(
+                [
+                    DictTextFragment.create(self._document, fragment).formatted_text
+                    for fragment
+                    in LegacyInlineTextParser().parse(" ".join(parts))
+                ],
+                children,
+                child_type
+            ), item_type
 
     def consume_bodies(self):
         bodies = []
@@ -1821,8 +1824,16 @@ class DictImageParagraph(DictParagraph):
         return self._paragraph_dict["text"]
 
     @property
+    def fragments(self):
+        return LegacyInlineTextParser().parse(self.text)
+
+    @property
     def formatted_text(self):
-        return InlineTextParser(self._document).parse(self.text)
+        return [
+            DictTextFragment.create(self._document, fragment).formatted_text
+            for fragment
+            in self.fragments
+        ]
 
     @property
     def image_base64(self):
