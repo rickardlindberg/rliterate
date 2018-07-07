@@ -1548,6 +1548,90 @@ class Document(Observable):
     def edit_paragraph(self, paragraph_id, data):
         with self.notify():
             self._paragraphs[paragraph_id].update(data)
+class InlineTextParser(object):
+
+    def __init__(self, document):
+        self._document = document
+
+    def parse(self, text):
+        return [
+            DictTextFragment.create(self._document, fragment).formatted_text
+            for fragment
+            in LegacyInlineTextParser().parse(text)
+        ]
+
+
+class LegacyInlineTextParser(object):
+
+    SPACE_RE = re.compile(r"\s+")
+    PATTERNS = [
+        (
+            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "strong",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "emphasis",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"`(.+?)`", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "code",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "reference",
+                "text": match.group(3),
+                "page_id": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "link",
+                "text": match.group(1),
+                "url": match.group(2),
+            }
+        ),
+    ]
+
+    def parse(self, text):
+        text = self._normalise_space(text)
+        fragments = []
+        partial = ""
+        while text:
+            result = self._get_special_fragment(text)
+            if result is None:
+                partial += text[0]
+                text = text[1:]
+            else:
+                match, fragment = result
+                if partial:
+                    fragments.append({"type": "text", "text": partial})
+                    partial = ""
+                fragments.append(fragment)
+                text = text[match.end(0):]
+        if partial:
+            fragments.append({"type": "text", "text": partial})
+        return fragments
+
+    def _normalise_space(self, text):
+        return self.SPACE_RE.sub(" ", text).strip()
+
+    def _get_special_fragment(self, text):
+        for pattern, fn in self.PATTERNS:
+            match = pattern.match(text)
+            if match:
+                return match, fn(self, match)
 class DictPage(object):
 
     def __init__(self, document, page_dict):
@@ -1743,87 +1827,80 @@ class DictImageParagraph(DictParagraph):
     @property
     def image_base64(self):
         return self._paragraph_dict.get("image_base64", None)
-class InlineTextParser(object):
+class DictTextFragment(object):
 
-    SPACE_RE = re.compile(r"\s+")
-    PATTERNS = [
-        (
-            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
-            lambda parser, match: Fragment(
-                match.group(1),
-                token=Token.RLiterate.Strong
-            )
-        ),
-        (
-            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
-            lambda parser, match: Fragment(
-                match.group(1),
-                token=Token.RLiterate.Emphasis
-            )
-        ),
-        (
-            re.compile(r"`(.+?)`", flags=re.DOTALL),
-            lambda parser, match: Fragment(
-                match.group(1),
-                token=Token.RLiterate.Code
-            )
-        ),
-        (
-            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
-            lambda parser, match: Fragment(
-                parser._title(match.group(1), match.group(3)),
-                token=Token.RLiterate.Reference,
-                page_id=match.group(1)
-            )
-        ),
-        (
-            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
-            lambda parser, match: Fragment(
-                match.group(1) or match.group(2),
-                token=Token.RLiterate.Link,
-                url=match.group(2)
-            )
-        ),
-    ]
+    @staticmethod
+    def create(document, text_fragment_dict):
+        return {
+            "strong": DictStrongTextFragment,
+            "emphasis": DictEmphasisTextFragment,
+            "code": DictCodeTextFragment,
+            "reference": DictReferenceTextFragment,
+            "link": DictLinkTextFragment,
+        }.get(text_fragment_dict["type"], DictTextFragment)(document, text_fragment_dict)
 
-    def __init__(self, document):
+    def __init__(self, document, text_fragment_dict):
         self._document = document
+        self._text_fragment_dict = text_fragment_dict
 
-    def parse(self, text):
-        text = self._normalise_space(text)
-        fragments = []
-        partial = ""
-        while text:
-            result = self._get_special_fragment(text)
-            if result is None:
-                partial += text[0]
-                text = text[1:]
-            else:
-                match, fragment = result
-                if partial:
-                    fragments.append(Fragment(partial))
-                    partial = ""
-                fragments.append(fragment)
-                text = text[match.end(0):]
-        if partial:
-            fragments.append(Fragment(partial))
-        return fragments
+    @property
+    def type(self):
+        return self._text_fragment_dict["type"]
 
-    def _title(self, page_id, custom_title):
-        if custom_title:
-            return custom_title
-        if self._document.get_page(page_id) is not None:
-            return self._document.get_page(page_id).title
-        return page_id
+    @property
+    def text(self):
+        return self._text_fragment_dict["text"]
 
-    def _normalise_space(self, text):
-        return self.SPACE_RE.sub(" ", text).strip()
+    @property
+    def formatted_text(self):
+        return Fragment(self.text)
+class DictStrongTextFragment(DictTextFragment):
 
-    def _get_special_fragment(self, text):
-        for pattern, fn in self.PATTERNS:
-            match = pattern.match(text)
-            if match:
-                return match, fn(self, match)
+    @property
+    def formatted_text(self):
+        return Fragment(self.text, token=Token.RLiterate.Strong)
+class DictEmphasisTextFragment(DictTextFragment):
+
+    @property
+    def formatted_text(self):
+        return Fragment(self.text, token=Token.RLiterate.Emphasis)
+class DictCodeTextFragment(DictTextFragment):
+
+    @property
+    def formatted_text(self):
+        return Fragment(self.text, token=Token.RLiterate.Code)
+class DictReferenceTextFragment(DictTextFragment):
+
+    @property
+    def page_id(self):
+        return self._text_fragment_dict["page_id"]
+
+    @property
+    def title(self):
+        if self.text:
+            return self.text
+        if self._document.get_page(self.page_id) is not None:
+            return self._document.get_page(self.page_id).title
+        return self.page_id
+
+    @property
+    def formatted_text(self):
+        return Fragment(self.title, token=Token.RLiterate.Reference, page_id=self.page_id)
+class DictLinkTextFragment(DictTextFragment):
+
+    @property
+    def url(self):
+        return self._text_fragment_dict["url"]
+
+    @property
+    def title(self):
+        if self.text:
+            return self.text
+        return self.url
+
+    @property
+    def formatted_text(self):
+        return Fragment(self.title, token=Token.RLiterate.Link, url=self.url)
 class Layout(Observable):
     def __init__(self, path):
         Observable.__init__(self)

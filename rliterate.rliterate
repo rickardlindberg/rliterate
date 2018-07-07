@@ -1589,7 +1589,24 @@
 {
 "children":[
 {
+"children":[
+{
 "children":[],
+"id":"6d647124c8a04c018778a8efbe13acbf",
+"paragraphs":[
+{
+"id":"ada4b8410e994cbe99e4617f810011b6",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class InlineTextParser(object):\n\n    def __init__(self, document):\n        self._document = document\n\n    def parse(self, text):\n        return [\n            DictTextFragment.create(self._document, fragment).formatted_text\n            for fragment\n            in LegacyInlineTextParser().parse(text)\n        ]\n\n\nclass LegacyInlineTextParser(object):\n\n    SPACE_RE = re.compile(r\"\\s+\")\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"strong\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"emphasis\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"code\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[\\[(.+?)(:(.+?))?\\]\\]\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"reference\",\n                \"text\": match.group(3),\n                \"page_id\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"link\",\n                \"text\": match.group(1),\n                \"url\": match.group(2),\n            }\n        ),\n    ]\n\n    def parse(self, text):\n        text = self._normalise_space(text)\n        fragments = []\n        partial = \"\"\n        while text:\n            result = self._get_special_fragment(text)\n            if result is None:\n                partial += text[0]\n                text = text[1:]\n            else:\n                match, fragment = result\n                if partial:\n                    fragments.append({\"type\": \"text\", \"text\": partial})\n                    partial = \"\"\n                fragments.append(fragment)\n                text = text[match.end(0):]\n        if partial:\n            fragments.append({\"type\": \"text\", \"text\": partial})\n        return fragments\n\n    def _normalise_space(self, text):\n        return self.SPACE_RE.sub(\" \", text).strip()\n\n    def _get_special_fragment(self, text):\n        for pattern, fn in self.PATTERNS:\n            match = pattern.match(text)\n            if match:\n                return match, fn(self, match)\n",
+"type":"code"
+}
+],
+"title":"Legacy inline text parser"
+}
+],
 "id":"ce4dc071bada48bb9294c937631e0214",
 "paragraphs":[
 {
@@ -1730,20 +1747,101 @@
 "title":"Paragraph"
 },
 {
+"children":[
+{
 "children":[],
-"id":"6d647124c8a04c018778a8efbe13acbf",
+"id":"b641d595992543fc85687d7896220617",
 "paragraphs":[
 {
-"id":"ada4b8410e994cbe99e4617f810011b6",
+"id":"92b3f6cd19774f8a869d64d6faccde8f",
 "path":[
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class InlineTextParser(object):\n\n    SPACE_RE = re.compile(r\"\\s+\")\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda parser, match: Fragment(\n                match.group(1),\n                token=Token.RLiterate.Strong\n            )\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda parser, match: Fragment(\n                match.group(1),\n                token=Token.RLiterate.Emphasis\n            )\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda parser, match: Fragment(\n                match.group(1),\n                token=Token.RLiterate.Code\n            )\n        ),\n        (\n            re.compile(r\"\\[\\[(.+?)(:(.+?))?\\]\\]\", flags=re.DOTALL),\n            lambda parser, match: Fragment(\n                parser._title(match.group(1), match.group(3)),\n                token=Token.RLiterate.Reference,\n                page_id=match.group(1)\n            )\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda parser, match: Fragment(\n                match.group(1) or match.group(2),\n                token=Token.RLiterate.Link,\n                url=match.group(2)\n            )\n        ),\n    ]\n\n    def __init__(self, document):\n        self._document = document\n\n    def parse(self, text):\n        text = self._normalise_space(text)\n        fragments = []\n        partial = \"\"\n        while text:\n            result = self._get_special_fragment(text)\n            if result is None:\n                partial += text[0]\n                text = text[1:]\n            else:\n                match, fragment = result\n                if partial:\n                    fragments.append(Fragment(partial))\n                    partial = \"\"\n                fragments.append(fragment)\n                text = text[match.end(0):]\n        if partial:\n            fragments.append(Fragment(partial))\n        return fragments\n\n    def _title(self, page_id, custom_title):\n        if custom_title:\n            return custom_title\n        if self._document.get_page(page_id) is not None:\n            return self._document.get_page(page_id).title\n        return page_id\n\n    def _normalise_space(self, text):\n        return self.SPACE_RE.sub(\" \", text).strip()\n\n    def _get_special_fragment(self, text):\n        for pattern, fn in self.PATTERNS:\n            match = pattern.match(text)\n            if match:\n                return match, fn(self, match)\n",
+"text":"class DictStrongTextFragment(DictTextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Strong)",
 "type":"code"
 }
 ],
-"title":"Inline text parser"
+"title":"Strong"
+},
+{
+"children":[],
+"id":"9e0eca627a3d4f1b95334dca9d593a69",
+"paragraphs":[
+{
+"id":"048849cf0f904e68b58972e5d22d98c3",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class DictEmphasisTextFragment(DictTextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Emphasis)",
+"type":"code"
+}
+],
+"title":"Emphasis"
+},
+{
+"children":[],
+"id":"31c4f554dbb64b089a1912316d3d631c",
+"paragraphs":[
+{
+"id":"775c91cdff3d4977b1fd7dbc41642496",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class DictCodeTextFragment(DictTextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Code)",
+"type":"code"
+}
+],
+"title":"Code"
+},
+{
+"children":[],
+"id":"1cacb064ca4749ac9e6470dc14922deb",
+"paragraphs":[
+{
+"id":"d68e50f52bc14653bd56b333ae0f0c76",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class DictReferenceTextFragment(DictTextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self._document.get_page(self.page_id) is not None:\n            return self._document.get_page(self.page_id).title\n        return self.page_id\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Reference, page_id=self.page_id)",
+"type":"code"
+}
+],
+"title":"Reference"
+},
+{
+"children":[],
+"id":"5f86b5f969a642c08d1007b9dd71c242",
+"paragraphs":[
+{
+"id":"3b5cca7618a34a1f8dd87227da24643b",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class DictLinkTextFragment(DictTextFragment):\n\n    @property\n    def url(self):\n        return self._text_fragment_dict[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Link, url=self.url)",
+"type":"code"
+}
+],
+"title":"Link"
+}
+],
+"id":"1b9444dcfcb94065a9c98f672484695d",
+"paragraphs":[
+{
+"id":"dfa5a6b87808453888a9699ba0e62192",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class DictTextFragment(object):\n\n    @staticmethod\n    def create(document, text_fragment_dict):\n        return {\n            \"strong\": DictStrongTextFragment,\n            \"emphasis\": DictEmphasisTextFragment,\n            \"code\": DictCodeTextFragment,\n            \"reference\": DictReferenceTextFragment,\n            \"link\": DictLinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], DictTextFragment)(document, text_fragment_dict)\n\n    def __init__(self, document, text_fragment_dict):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text)\n",
+"type":"code"
+}
+],
+"title":"Text fragment"
 }
 ],
 "id":"9e63791b51374f2c924e871da5ddc5d7",
