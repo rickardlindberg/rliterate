@@ -1396,6 +1396,21 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
+class Fragment(object):
+
+    def __init__(self, text, token=Token.RLiterate, **extra):
+        self.text = text
+        self.token = token
+        self.extra = extra
+
+    def word_split(self):
+        fragments = []
+        text = self.text
+        while text:
+            match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
+            fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))
+            text = text[match.end(0):]
+        return fragments
 class Document(Observable):
 
     @classmethod
@@ -1728,21 +1743,6 @@ class DictImageParagraph(DictParagraph):
     @property
     def image_base64(self):
         return self._paragraph_dict.get("image_base64", None)
-class Fragment(object):
-
-    def __init__(self, text, token=Token.RLiterate, **extra):
-        self.text = text
-        self.token = token
-        self.extra = extra
-
-    def word_split(self):
-        fragments = []
-        text = self.text
-        while text:
-            match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
-            fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))
-            text = text[match.end(0):]
-        return fragments
 class InlineTextParser(object):
 
     SPACE_RE = re.compile(r"\s+")

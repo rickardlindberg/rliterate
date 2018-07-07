@@ -1453,6 +1453,15 @@
 ],
 "text":"def GetFragment(self, position):\n    for fragment, style, box in self.draw_fragments:\n        if box.Contains(position):\n            return fragment\n",
 "type":"code"
+},
+{
+"id":"75a8c2b60ac346e5be57b25dd5476f2d",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Fragment(object):\n\n    def __init__(self, text, token=Token.RLiterate, **extra):\n        self.text = text\n        self.token = token\n        self.extra = extra\n\n    def word_split(self):\n        fragments = []\n        text = self.text\n        while text:\n            match = re.match(r\".+?(\\s+|$)\", text, flags=re.DOTALL)\n            fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))\n            text = text[match.end(0):]\n        return fragments\n",
+"type":"code"
 }
 ],
 "title":"Rich text display"
@@ -1718,22 +1727,6 @@
 }
 ],
 "title":"Image"
-},
-{
-"children":[],
-"id":"36359ae8e32a440ca65f6359e91b214d",
-"paragraphs":[
-{
-"id":"75a8c2b60ac346e5be57b25dd5476f2d",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class Fragment(object):\n\n    def __init__(self, text, token=Token.RLiterate, **extra):\n        self.text = text\n        self.token = token\n        self.extra = extra\n\n    def word_split(self):\n        fragments = []\n        text = self.text\n        while text:\n            match = re.match(r\".+?(\\s+|$)\", text, flags=re.DOTALL)\n            fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))\n            text = text[match.end(0):]\n        return fragments\n",
-"type":"code"
-}
-],
-"title":"Fragment"
 },
 {
 "children":[],
