@@ -1633,21 +1633,7 @@
 "title":"Page"
 },
 {
-"children":[],
-"id":"00d70d4faee841deba24ba21564eb11b",
-"paragraphs":[
-{
-"id":"da88f3daf0d742e394fc3be9d21f522f",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(document, paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n            \"image\": DictImageParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(document, paragraph_dict)\n\n    def __init__(self, document, paragraph_dict):\n        self._document = document\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n",
-"type":"code"
-}
-],
-"title":"Paragraph base"
-},
+"children":[
 {
 "children":[],
 "id":"2572c635a4c04bcc97905362edc3aba2",
@@ -1727,6 +1713,21 @@
 }
 ],
 "title":"Image"
+}
+],
+"id":"00d70d4faee841deba24ba21564eb11b",
+"paragraphs":[
+{
+"id":"da88f3daf0d742e394fc3be9d21f522f",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(document, paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n            \"image\": DictImageParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(document, paragraph_dict)\n\n    def __init__(self, document, paragraph_dict):\n        self._document = document\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n",
+"type":"code"
+}
+],
+"title":"Paragraph"
 },
 {
 "children":[],
