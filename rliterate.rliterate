@@ -3892,8 +3892,12 @@
 "children":[],
 "fragments":[
 {
-"text":"Highlight placeholders in code fragments << .. >>",
+"text":"Highlight placeholders in code fragments ",
 "type":"text"
+},
+{
+"text":"<< .. >>",
+"type":"code"
 }
 ]
 },
@@ -3902,7 +3906,19 @@
 "children":[],
 "fragments":[
 {
-"text":"word_split should put white space in separate fragment and rich text display should have skip_leading_space option?",
+"text":"word_split",
+"type":"code"
+},
+{
+"text":" should put white space in separate fragment and rich text display should have ",
+"type":"text"
+},
+{
+"text":"skip_leading_space",
+"type":"code"
+},
+{
+"text":" option?",
 "type":"text"
 }
 ]
@@ -4198,7 +4214,11 @@
 "children":[],
 "fragments":[
 {
-"text":"os.rename does not work if file exists (",
+"text":"os.rename",
+"type":"code"
+},
+{
+"text":" does not work if file exists (",
 "type":"text"
 },
 {
@@ -4279,8 +4299,20 @@
 "children":[],
 "fragments":[
 {
-"text":"Probably incorrect usage of GetWheelRotation and GetWheelDelta",
+"text":"Probably incorrect usage of ",
 "type":"text"
+},
+{
+"text":"GetWheelRotation",
+"type":"code"
+},
+{
+"text":" and ",
+"type":"text"
+},
+{
+"text":"GetWheelDelta",
+"type":"code"
 }
 ]
 }
@@ -4306,7 +4338,19 @@
 "children":[],
 "fragments":[
 {
-"text":"\" and ' is replaced when writing code in textbox",
+"text":"\"",
+"type":"code"
+},
+{
+"text":" and ",
+"type":"text"
+},
+{
+"text":"'",
+"type":"code"
+},
+{
+"text":" is replaced when writing code in textbox",
 "type":"text"
 }
 ]
@@ -4319,8 +4363,16 @@
 "children":[],
 "fragments":[
 {
-"text":"defResult is never wx.DragMove",
+"text":"defResult",
+"type":"code"
+},
+{
+"text":" is never ",
 "type":"text"
+},
+{
+"text":"wx.DragMove",
+"type":"code"
 }
 ]
 },
@@ -4388,9 +4440,8 @@
 "type":"text"
 },
 {
-"page_id":"wxdoc",
-"text":"Sizer",
-"type":"reference"
+"text":"[[wxdoc:Sizer]]",
+"type":"code"
 },
 {
 "text":"?",
@@ -4413,7 +4464,15 @@
 "children":[],
 "fragments":[
 {
-"text":"HTML output should have <a name=... for all pages ",
+"text":"HTML output should have ",
+"type":"text"
+},
+{
+"text":"<a name=...",
+"type":"code"
+},
+{
+"text":" for all pages ",
 "type":"text"
 },
 {
