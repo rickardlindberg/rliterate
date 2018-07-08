@@ -4452,16 +4452,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Don't store syntax in data modell. Store json data. (Paragraph is not text, but a list of styled text fragments.)",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Deprecate scratch pages (",
 "type":"text"
 },
