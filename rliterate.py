@@ -455,8 +455,7 @@ class TableOfContentsDropTarget(DropPointDropTarget):
         self.project = project
 
     def OnDataDropped(self, dropped_page, drop_point):
-        self.project.move_page(
-            page_id=dropped_page["page_id"],
+        self.project.get_page(dropped_page["page_id"]).move(
             parent_page_id=drop_point.parent_page_id,
             before_page_id=drop_point.before_page_id
         )
@@ -1500,27 +1499,6 @@ class Document(Observable):
             "children": [],
             "paragraphs": [],
         }
-
-    def move_page(self, page_id, parent_page_id, before_page_id):
-        with self.new_state() as state:
-            if page_id == before_page_id:
-                return
-            parent = state["pages"][parent_page_id]
-            while parent is not None:
-                if parent["id"] == page_id:
-                    return
-                parent = state["parent_pages"][parent["id"]]
-            parent = state["parent_pages"][page_id]
-            page = parent["children"].pop(index_with_id(parent["children"], page_id))
-            new_parent = state["pages"][parent_page_id]
-            state["parent_pages"][page_id] = new_parent
-            if before_page_id is None:
-                new_parent["children"].append(page)
-            else:
-                new_parent["children"].insert(
-                    index_with_id(new_parent["children"], before_page_id),
-                    page
-                )
     def add_paragraph(self, page_id, before_id=None):
         with self.new_state() as state:
             paragraph = {
@@ -1727,6 +1705,27 @@ class DictPage(object):
             for child in reversed(page["children"]):
                 parent_page["children"].insert(index, child)
                 state["parent_pages"][child["id"]] = parent_page
+
+    def move(self, parent_page_id, before_page_id):
+        with self._document.new_state() as state:
+            if self.id == before_page_id:
+                return
+            parent = state["pages"][parent_page_id]
+            while parent is not None:
+                if parent["id"] == self.id:
+                    return
+                parent = state["parent_pages"][parent["id"]]
+            parent = state["parent_pages"][self.id]
+            page = parent["children"].pop(index_with_id(parent["children"], self.id))
+            new_parent = state["pages"][parent_page_id]
+            state["parent_pages"][self.id] = new_parent
+            if before_page_id is None:
+                new_parent["children"].append(page)
+            else:
+                new_parent["children"].insert(
+                    index_with_id(new_parent["children"], before_page_id),
+                    page
+                )
 class DictParagraph(object):
 
     @staticmethod
@@ -2070,9 +2069,6 @@ class Project(Observable):
 
     def add_page(self, *args, **kwargs):
         return self.document.add_page(*args, **kwargs)
-
-    def move_page(self, *args, **kwargs):
-        return self.document.move_page(*args, **kwargs)
 
     def add_paragraph(self, *args, **kwargs):
         return self.document.add_paragraph(*args, **kwargs)
