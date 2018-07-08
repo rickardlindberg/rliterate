@@ -878,7 +878,7 @@ class Title(Editable):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
         edit.Bind(
             wx.EVT_TEXT_ENTER,
-            lambda _: self.project.edit_page(self.page.id, {"title": self.edit.Value})
+            lambda _: self.page.set_title(self.edit.Value)
         )
         return edit
 class Text(ParagraphBase):
@@ -1536,10 +1536,6 @@ class Document(Observable):
                     index_with_id(new_parent["children"], before_page_id),
                     page
                 )
-
-    def edit_page(self, page_id, data):
-        with self.new_state() as state:
-            state["pages"][page_id].update(data)
     def add_paragraph(self, page_id, before_id=None):
         with self.new_state() as state:
             paragraph = {
@@ -1718,6 +1714,10 @@ class DictPage(object):
     @property
     def title(self):
         return self._page_dict["title"]
+
+    def set_title(self, title):
+        with self._document.new_state() as state:
+            state["pages"][self.id]["title"] = title
 
     @property
     def paragraphs(self):
@@ -2088,9 +2088,6 @@ class Project(Observable):
 
     def move_page(self, *args, **kwargs):
         return self.document.move_page(*args, **kwargs)
-
-    def edit_page(self, *args, **kwargs):
-        return self.document.edit_page(*args, **kwargs)
 
     def add_paragraph(self, *args, **kwargs):
         return self.document.add_paragraph(*args, **kwargs)

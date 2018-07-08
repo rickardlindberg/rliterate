@@ -56,7 +56,8 @@ def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):
         ],
     })
     doc = Document.from_file(tmpfile)
-    doc.edit_page("106af6f8665c45e8ab751993a6abc876", {})
+    with doc.notify():
+        pass
     assert load_json_from_file(tmpfile) == {
         "title": "Root",
         "children": [],
