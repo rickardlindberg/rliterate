@@ -2620,7 +2620,7 @@
 {
 "fragments":[
 {
-"text":"factory",
+"text":"Loading:",
 "type":"text"
 }
 ],
@@ -2640,7 +2640,7 @@
 {
 "fragments":[
 {
-"text":"factory",
+"text":"Creating new states (this exposes internals):",
 "type":"text"
 }
 ],
@@ -2660,7 +2660,7 @@
 {
 "fragments":[
 {
-"text":"factory",
+"text":"Page operations:",
 "type":"text"
 }
 ],
@@ -2680,7 +2680,7 @@
 {
 "fragments":[
 {
-"text":"factory",
+"text":"Paragraph operations:",
 "type":"text"
 }
 ],
@@ -2952,7 +2952,7 @@
 {
 "fragments":[
 {
-"text":"factory",
+"text":"Scratch pages where replaced by columns.",
 "type":"text"
 }
 ],
