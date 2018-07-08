@@ -15,6 +15,7 @@ import webbrowser
 import xml.sax.saxutils
 import StringIO
 import base64
+import copy
 
 import pygments.lexers
 from pygments.token import Token, STANDARD_TYPES
@@ -1458,58 +1459,54 @@ class Document(Observable):
 
     def __init__(self, path):
         Observable.__init__(self)
-        self.path = path
-        self._load()
-        self._cache()
-        for paragraph in self._paragraphs.values():
+        self._load(path)
+        self.listen(lambda event: write_json_to_file(path, self._state["root_page"]))
+
+    def _load(self, path):
+        if os.path.exists(path):
+            root_page = load_json_from_file(path)
+        else:
+            root_page = self._empty_page()
+        self._state = {
+            "root_page": root_page,
+            "pages": {},
+            "parent_pages": {},
+            "paragraphs": {},
+        }
+        self._new_state = None
+        self._cache_page(root_page)
+        for paragraph in self._state["paragraphs"].values():
             if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
                 paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
                 del paragraph["text"]
             elif paragraph["type"] in ["list"] and "text" in paragraph:
                 paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
                 del paragraph["text"]
-        self.listen(lambda event: self._save())
-
-    def _cache(self):
-        self._pages = {}
-        self._parent_pages = {}
-        self._paragraphs = {}
-        self._cache_page(self.root_page)
 
     def _cache_page(self, page, parent_page=None):
-        self._pages[page["id"]] = page
-        self._parent_pages[page["id"]] = parent_page
+        self._state["pages"][page["id"]] = page
+        self._state["parent_pages"][page["id"]] = parent_page
         for paragraph in page["paragraphs"]:
-            self._paragraphs[paragraph["id"]] = paragraph
+            self._state["paragraphs"][paragraph["id"]] = paragraph
         for child in page["children"]:
             self._cache_page(child, page)
-
-    def _save(self):
-        write_json_to_file(self.path, self.root_page)
-
-    def _load(self):
-        if os.path.exists(self.path):
-            self.root_page = load_json_from_file(self.path)
-        else:
-            self.root_page = self._empty_page()
-
-    def get_page(self, page_id=None):
-        if page_id is None:
-            page_id = self.root_page["id"]
-        page_dict = self._pages.get(page_id, None)
-        if page_dict is None:
-            return None
-        return DictPage(self, page_dict)
-
-    # Page operations
-
-    def add_page(self, title="New page", parent_id=None):
+    @contextlib.contextmanager
+    def new_state(self):
         with self.notify():
+            if self._new_state is None:
+                self._new_state = copy.deepcopy(self._state)
+                yield self._new_state
+                self._state = self._new_state
+                self._new_state = None
+            else:
+                yield self._new_state
+    def add_page(self, title="New page", parent_id=None):
+        with self.new_state() as state:
             page = self._empty_page()
-            parent_page = self._pages[parent_id]
+            parent_page = state["pages"][parent_id]
             parent_page["children"].append(page)
-            self._pages[page["id"]] = page
-            self._parent_pages[page["id"]] = parent_page
+            state["pages"][page["id"]] = page
+            state["parent_pages"][page["id"]] = parent_page
 
     def _empty_page(self):
         return {
@@ -1520,30 +1517,30 @@ class Document(Observable):
         }
 
     def delete_page(self, page_id):
-        with self.notify():
-            page = self._pages[page_id]
-            parent_page = self._parent_pages[page_id]
+        with self.new_state() as state:
+            page = state["pages"][page_id]
+            parent_page = state["parent_pages"][page_id]
             index = index_with_id(parent_page["children"], page_id)
             parent_page["children"].pop(index)
-            self._pages.pop(page_id)
-            self._parent_pages.pop(page_id)
+            state["pages"].pop(page_id)
+            state["parent_pages"].pop(page_id)
             for child in reversed(page["children"]):
                 parent_page["children"].insert(index, child)
-                self._parent_pages[child["id"]] = parent_page
+                state["parent_pages"][child["id"]] = parent_page
 
     def move_page(self, page_id, parent_page_id, before_page_id):
-        with self.notify():
+        with self.new_state() as state:
             if page_id == before_page_id:
                 return
-            parent = self._pages[parent_page_id]
+            parent = state["pages"][parent_page_id]
             while parent is not None:
                 if parent["id"] == page_id:
                     return
-                parent = self._parent_pages[parent["id"]]
-            parent = self._parent_pages[page_id]
+                parent = state["parent_pages"][parent["id"]]
+            parent = state["parent_pages"][page_id]
             page = parent["children"].pop(index_with_id(parent["children"], page_id))
-            new_parent = self._pages[parent_page_id]
-            self._parent_pages[page_id] = new_parent
+            new_parent = state["pages"][parent_page_id]
+            state["parent_pages"][page_id] = new_parent
             if before_page_id is None:
                 new_parent["children"].append(page)
             else:
@@ -1553,47 +1550,51 @@ class Document(Observable):
                 )
 
     def edit_page(self, page_id, data):
-        with self.notify():
-            self._pages[page_id].update(data)
-
-    # Paragraph operations
-
+        with self.new_state() as state:
+            state["pages"][page_id].update(data)
     def add_paragraph(self, page_id, before_id=None):
-        with self.notify():
+        with self.new_state() as state:
             paragraph = {
                 "id": genid(),
                 "type": "factory",
                 "text":
                 "factory",
             }
-            self._pages[page_id]["paragraphs"].append(paragraph)
-            self._paragraphs[paragraph["id"]] = paragraph
+            state["pages"][page_id]["paragraphs"].append(paragraph)
+            state["paragraphs"][paragraph["id"]] = paragraph
 
     def move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):
-        with self.notify():
+        with self.new_state() as state:
             if (source_page == target_page and
                 source_paragraph == before_paragraph):
                 return
             paragraph = self.delete_paragraph(source_page, source_paragraph)
-            self._add_paragraph(target_page, paragraph, before_id=before_paragraph)
+            self._add_paragraph(state, target_page, paragraph, before_id=before_paragraph)
 
-    def _add_paragraph(self, page_id, paragraph, before_id):
-        paragraphs = self._pages[page_id]["paragraphs"]
+    def _add_paragraph(self, state, page_id, paragraph, before_id):
+        paragraphs = state["pages"][page_id]["paragraphs"]
         if before_id is None:
             paragraphs.append(paragraph)
         else:
             paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)
-        self._paragraphs[paragraph["id"]] = paragraph
+        state["paragraphs"][paragraph["id"]] = paragraph
 
     def delete_paragraph(self, page_id, paragraph_id):
-        with self.notify():
-            paragraphs = self._pages[page_id]["paragraphs"]
+        with self.new_state() as state:
+            paragraphs = state["pages"][page_id]["paragraphs"]
             paragraphs.pop(index_with_id(paragraphs, paragraph_id))
-            return self._paragraphs.pop(paragraph_id)
+            return state["paragraphs"].pop(paragraph_id)
 
     def edit_paragraph(self, paragraph_id, data):
-        with self.notify():
-            self._paragraphs[paragraph_id].update(data)
+        with self.new_state() as state:
+            state["paragraphs"][paragraph_id].update(data)
+    def get_page(self, page_id=None):
+        if page_id is None:
+            page_id = self._state["root_page"]["id"]
+        page_dict = self._state["pages"].get(page_id, None)
+        if page_dict is None:
+            return None
+        return DictPage(self, page_dict)
 class LegacyInlineTextParser(object):
 
     SPACE_RE = re.compile(r"\s+")

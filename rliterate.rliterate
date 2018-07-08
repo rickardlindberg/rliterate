@@ -2569,9 +2569,10 @@
 "path":[
 "rliterate.py",
 "<<classes>>",
-"<<Document post load>>"
+"<<Document>>",
+"<<Post load>>"
 ],
-"text":"for paragraph in self._paragraphs.values():\n    if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n        paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n        del paragraph[\"text\"]\n    elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n        paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n        del paragraph[\"text\"]\n",
+"text":"for paragraph in self._state[\"paragraphs\"].values():\n    if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n        paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n        del paragraph[\"text\"]\n    elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n        paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n        del paragraph[\"text\"]\n",
 "type":"code"
 },
 {
@@ -2608,12 +2609,96 @@
 "id":"ce4dc071bada48bb9294c937631e0214",
 "paragraphs":[
 {
-"id":"377391e542c6475a85cb59faffecfa47",
+"id":"f488adc5a56f4b83bf43b66fef2c5545",
 "path":[
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Document(Observable):\n\n    @classmethod\n    def from_file(cls, path):\n        return cls(path)\n\n    def __init__(self, path):\n        Observable.__init__(self)\n        self.path = path\n        self._load()\n        self._cache()\n        <<Document post load>>\n        self.listen(lambda event: self._save())\n\n    def _cache(self):\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self.root_page)\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def _save(self):\n        write_json_to_file(self.path, self.root_page)\n\n    def _load(self):\n        if os.path.exists(self.path):\n            self.root_page = load_json_from_file(self.path)\n        else:\n            self.root_page = self._empty_page()\n\n    <<Document>>\n\n    # Page operations\n\n    def add_page(self, title=\"New page\", parent_id=None):\n        with self.notify():\n            page = self._empty_page()\n            parent_page = self._pages[parent_id]\n            parent_page[\"children\"].append(page)\n            self._pages[page[\"id\"]] = page\n            self._parent_pages[page[\"id\"]] = parent_page\n\n    def _empty_page(self):\n        return {\n            \"id\": genid(),\n            \"title\": \"New page...\",\n            \"children\": [],\n            \"paragraphs\": [],\n        }\n\n    def delete_page(self, page_id):\n        with self.notify():\n            page = self._pages[page_id]\n            parent_page = self._parent_pages[page_id]\n            index = index_with_id(parent_page[\"children\"], page_id)\n            parent_page[\"children\"].pop(index)\n            self._pages.pop(page_id)\n            self._parent_pages.pop(page_id)\n            for child in reversed(page[\"children\"]):\n                parent_page[\"children\"].insert(index, child)\n                self._parent_pages[child[\"id\"]] = parent_page\n\n    def move_page(self, page_id, parent_page_id, before_page_id):\n        with self.notify():\n            if page_id == before_page_id:\n                return\n            parent = self._pages[parent_page_id]\n            while parent is not None:\n                if parent[\"id\"] == page_id:\n                    return\n                parent = self._parent_pages[parent[\"id\"]]\n            parent = self._parent_pages[page_id]\n            page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n            new_parent = self._pages[parent_page_id]\n            self._parent_pages[page_id] = new_parent\n            if before_page_id is None:\n                new_parent[\"children\"].append(page)\n            else:\n                new_parent[\"children\"].insert(\n                    index_with_id(new_parent[\"children\"], before_page_id),\n                    page\n                )\n\n    def edit_page(self, page_id, data):\n        with self.notify():\n            self._pages[page_id].update(data)\n\n    # Paragraph operations\n\n    def add_paragraph(self, page_id, before_id=None):\n        with self.notify():\n            paragraph = {\n                \"id\": genid(),\n                \"type\": \"factory\",\n                \"text\":\n                \"factory\",\n            }\n            self._pages[page_id][\"paragraphs\"].append(paragraph)\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n\n    def move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):\n        with self.notify():\n            if (source_page == target_page and\n                source_paragraph == before_paragraph):\n                return\n            paragraph = self.delete_paragraph(source_page, source_paragraph)\n            self._add_paragraph(target_page, paragraph, before_id=before_paragraph)\n\n    def _add_paragraph(self, page_id, paragraph, before_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)\n        self._paragraphs[paragraph[\"id\"]] = paragraph\n\n    def delete_paragraph(self, page_id, paragraph_id):\n        with self.notify():\n            paragraphs = self._pages[page_id][\"paragraphs\"]\n            paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n            return self._paragraphs.pop(paragraph_id)\n\n    def edit_paragraph(self, paragraph_id, data):\n        with self.notify():\n            self._paragraphs[paragraph_id].update(data)\n",
+"text":"class Document(Observable):\n\n    @classmethod\n    def from_file(cls, path):\n        return cls(path)\n\n    def __init__(self, path):\n        Observable.__init__(self)\n        self._load(path)\n        self.listen(lambda event: write_json_to_file(path, self._state[\"root_page\"]))\n\n    <<Document>>\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Loading:",
+"type":"text"
+}
+],
+"id":"d3d1bf2a9df94766a6a9eadc099bd00b",
+"text":"factory",
+"type":"text"
+},
+{
+"id":"4b50dfd6dcd64c59b9d3a53346944a5d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._state = {\n        \"root_page\": root_page,\n        \"pages\": {},\n        \"parent_pages\": {},\n        \"paragraphs\": {},\n    }\n    self._new_state = None\n    self._cache_page(root_page)\n    <<Post load>>\n\ndef _cache_page(self, page, parent_page=None):\n    self._state[\"pages\"][page[\"id\"]] = page\n    self._state[\"parent_pages\"][page[\"id\"]] = parent_page\n    for paragraph in page[\"paragraphs\"]:\n        self._state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n    for child in page[\"children\"]:\n        self._cache_page(child, page)\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"New state:",
+"type":"text"
+}
+],
+"id":"a6745ee26db9461c80017c916c5d1348",
+"text":"factory",
+"type":"text"
+},
+{
+"id":"f2c5232417964cbabc4f03f310b3a0a4",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"@contextlib.contextmanager\ndef new_state(self):\n    with self.notify():\n        if self._new_state is None:\n            self._new_state = copy.deepcopy(self._state)\n            yield self._new_state\n            self._state = self._new_state\n            self._new_state = None\n        else:\n            yield self._new_state\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Page operations:",
+"type":"text"
+}
+],
+"id":"601230dd49d14629a0fec9cf1d3789e5",
+"text":"factory",
+"type":"text"
+},
+{
+"id":"176702fbbd7c4dd7a900d9cc06be0284",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"def add_page(self, title=\"New page\", parent_id=None):\n    with self.new_state() as state:\n        page = self._empty_page()\n        parent_page = state[\"pages\"][parent_id]\n        parent_page[\"children\"].append(page)\n        state[\"pages\"][page[\"id\"]] = page\n        state[\"parent_pages\"][page[\"id\"]] = parent_page\n\ndef _empty_page(self):\n    return {\n        \"id\": genid(),\n        \"title\": \"New page...\",\n        \"children\": [],\n        \"paragraphs\": [],\n    }\n\ndef delete_page(self, page_id):\n    with self.new_state() as state:\n        page = state[\"pages\"][page_id]\n        parent_page = state[\"parent_pages\"][page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        state[\"pages\"].pop(page_id)\n        state[\"parent_pages\"].pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            state[\"parent_pages\"][child[\"id\"]] = parent_page\n\ndef move_page(self, page_id, parent_page_id, before_page_id):\n    with self.new_state() as state:\n        if page_id == before_page_id:\n            return\n        parent = state[\"pages\"][parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = state[\"parent_pages\"][parent[\"id\"]]\n        parent = state[\"parent_pages\"][page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = state[\"pages\"][parent_page_id]\n        state[\"parent_pages\"][page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\ndef edit_page(self, page_id, data):\n    with self.new_state() as state:\n        state[\"pages\"][page_id].update(data)\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Paragraph operations:",
+"type":"text"
+}
+],
+"id":"fcb2eaddb6ad4e96b3fed43bfb1064a3",
+"text":"factory",
+"type":"text"
+},
+{
+"id":"377391e542c6475a85cb59faffecfa47",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n            \"text\":\n            \"factory\",\n        }\n        state[\"pages\"][page_id][\"paragraphs\"].append(paragraph)\n        state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):\n    with self.new_state() as state:\n        if (source_page == target_page and\n            source_paragraph == before_paragraph):\n            return\n        paragraph = self.delete_paragraph(source_page, source_paragraph)\n        self._add_paragraph(state, target_page, paragraph, before_id=before_paragraph)\n\ndef _add_paragraph(self, state, page_id, paragraph, before_id):\n    paragraphs = state[\"pages\"][page_id][\"paragraphs\"]\n    if before_id is None:\n        paragraphs.append(paragraph)\n    else:\n        paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)\n    state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef delete_paragraph(self, page_id, paragraph_id):\n    with self.new_state() as state:\n        paragraphs = state[\"pages\"][page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return state[\"paragraphs\"].pop(paragraph_id)\n\ndef edit_paragraph(self, paragraph_id, data):\n    with self.new_state() as state:\n        state[\"paragraphs\"][paragraph_id].update(data)\n",
 "type":"code"
 }
 ],
@@ -2632,7 +2717,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def get_page(self, page_id=None):\n    if page_id is None:\n        page_id = self.root_page[\"id\"]\n    page_dict = self._pages.get(page_id, None)\n    if page_dict is None:\n        return None\n    return DictPage(self, page_dict)\n",
+"text":"def get_page(self, page_id=None):\n    if page_id is None:\n        page_id = self._state[\"root_page\"][\"id\"]\n    page_dict = self._state[\"pages\"].get(page_id, None)\n    if page_dict is None:\n        return None\n    return DictPage(self, page_dict)\n",
 "type":"code"
 },
 {
@@ -3446,7 +3531,7 @@
 "path":[
 "rliterate.py"
 ],
-"text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
+"text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
 "type":"code"
 },
 {
