@@ -600,7 +600,7 @@ class PageContextMenu(wx.Menu):
         self.AppendSeparator()
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.delete_page(self.page.id),
+            lambda event: self.page.delete(),
             self.Append(wx.NewId(), "Delete")
         )
 class Workspace(CompactScrolledWindow):
@@ -1516,18 +1516,6 @@ class Document(Observable):
             "paragraphs": [],
         }
 
-    def delete_page(self, page_id):
-        with self.new_state() as state:
-            page = state["pages"][page_id]
-            parent_page = state["parent_pages"][page_id]
-            index = index_with_id(parent_page["children"], page_id)
-            parent_page["children"].pop(index)
-            state["pages"].pop(page_id)
-            state["parent_pages"].pop(page_id)
-            for child in reversed(page["children"]):
-                parent_page["children"].insert(index, child)
-                state["parent_pages"][child["id"]] = parent_page
-
     def move_page(self, page_id, parent_page_id, before_page_id):
         with self.new_state() as state:
             if page_id == before_page_id:
@@ -1746,6 +1734,18 @@ class DictPage(object):
             for child_dict
             in self._page_dict["children"]
         ]
+
+    def delete(self):
+        with self._document.new_state() as state:
+            page = state["pages"][self.id]
+            parent_page = state["parent_pages"][self.id]
+            index = index_with_id(parent_page["children"], self.id)
+            parent_page["children"].pop(index)
+            state["pages"].pop(self.id)
+            state["parent_pages"].pop(self.id)
+            for child in reversed(page["children"]):
+                parent_page["children"].insert(index, child)
+                state["parent_pages"][child["id"]] = parent_page
 class DictParagraph(object):
 
     @staticmethod
@@ -2085,9 +2085,6 @@ class Project(Observable):
 
     def add_page(self, *args, **kwargs):
         return self.document.add_page(*args, **kwargs)
-
-    def delete_page(self, *args, **kwargs):
-        return self.document.delete_page(*args, **kwargs)
 
     def move_page(self, *args, **kwargs):
         return self.document.move_page(*args, **kwargs)
