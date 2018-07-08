@@ -7,8 +7,13 @@
 "id":"7f14d9ec23c0425c89039ea68dfdac16",
 "paragraphs":[
 {
-"id":"b6e497d472eb452abac8b8dc8088299a",
+"fragments":[
+{
 "text":"The main GUI consists of the table of contents and the workspace.",
+"type":"text"
+}
+],
+"id":"b6e497d472eb452abac8b8dc8088299a",
 "type":"text"
 },
 {
@@ -18,8 +23,13 @@
 "type":"image"
 },
 {
-"id":"185944c233fe4e599ae37321ec100c37",
+"fragments":[
+{
 "text":"The table of contents shows the outline of the document, and from it, pages can be opened in the workspace. Each page is drawn with a border in the workspace.",
+"type":"text"
+}
+],
+"id":"185944c233fe4e599ae37321ec100c37",
 "type":"text"
 }
 ],
@@ -30,8 +40,13 @@
 "id":"6c34776183394824824be039e65de531",
 "paragraphs":[
 {
-"id":"65ead2c5a424420b8b5368c046f2af52",
+"fragments":[
+{
 "text":"Code paragraphs enable literate programming.",
+"type":"text"
+}
+],
+"id":"65ead2c5a424420b8b5368c046f2af52",
 "type":"text"
 }
 ],
@@ -42,13 +57,31 @@
 "id":"3ad55f274f724ebab8cea5d5c63d8dc0",
 "paragraphs":[
 {
-"id":"0e82720d665642f69b79b2e35234cf99",
+"fragments":[
+{
 "text":"RLiterate is not only a tool for authoring documents, but also a tool for reading documents. The following features support that.",
+"type":"text"
+}
+],
+"id":"0e82720d665642f69b79b2e35234cf99",
 "type":"text"
 },
 {
+"fragments":[
+{
+"text":"Hoisting a page in the table of contents allows you to ",
+"type":"text"
+},
+{
+"text":"focus on a subset",
+"type":"strong"
+},
+{
+"text":" of the document.",
+"type":"text"
+}
+],
 "id":"394402716d9b45e195298f16a6d4c8d5",
-"text":"Hoisting a page in the table of contents allows you to **focus on a subset** of the document.",
 "type":"text"
 },
 {
@@ -58,8 +91,21 @@
 "type":"image"
 },
 {
+"fragments":[
+{
+"text":"Openining a page and all immediate children allows you to read a subset of the document ",
+"type":"text"
+},
+{
+"text":"breath first",
+"type":"strong"
+},
+{
+"text":". It's like reading only the first section of each chapter in an entire book.",
+"type":"text"
+}
+],
 "id":"359a25b33d5645b69be21e54b5b78abe",
-"text":"Openining a page and all immediate children allows you to read a subset of the document **breath first**. It's like reading only the first section of each chapter in an entire book.",
 "type":"text"
 },
 {
@@ -75,13 +121,23 @@
 "id":"600aa145cf474a6aa732a4c4edb5f44b",
 "paragraphs":[
 {
-"id":"570a8f432f324f14a23db6ede35af90f",
+"fragments":[
+{
 "text":"This chapter gives an overview of what types of document you can create with RLiterate.",
+"type":"text"
+}
+],
+"id":"570a8f432f324f14a23db6ede35af90f",
 "type":"text"
 },
 {
+"fragments":[
+{
+"text":"RLiterate documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what make RLiterate documents special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documents can also be exported to different formats for display in different mediums.",
+"type":"text"
+}
+],
 "id":"fb1a6842fe1f4642a2aa21113a2ad179",
-"text":"RLiterate documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what make RLiterate documents special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documents can also be exported to different formats for display in different mediums.\n",
 "type":"text"
 }
 ],
@@ -92,18 +148,34 @@
 "id":"cc3c314da5a944d18eec6628eb042ba0",
 "paragraphs":[
 {
-"id":"f5029036eb0347f5a82eef2977c5e4de",
+"fragments":[
+{
 "text":"The source code for RLiterate is in a Git repository hosted on Github:",
 "type":"text"
-},
-{
-"id":"0fe88db54e06426c9ba1c0d56c805646",
-"text":"[](https://github.com/rickardlindberg/rliterate)",
+}
+],
+"id":"f5029036eb0347f5a82eef2977c5e4de",
 "type":"text"
 },
 {
-"id":"65e84cfe8d7c4cc4952e1bd7781fb0a7",
+"fragments":[
+{
+"text":"",
+"type":"link",
+"url":"https://github.com/rickardlindberg/rliterate"
+}
+],
+"id":"0fe88db54e06426c9ba1c0d56c805646",
+"type":"text"
+},
+{
+"fragments":[
+{
 "text":"Assuming you have Git installed, you can clone the repository like this:",
+"type":"text"
+}
+],
+"id":"65e84cfe8d7c4cc4952e1bd7781fb0a7",
 "type":"text"
 },
 {
@@ -115,8 +187,22 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"Before you can run RLiterate, you need ",
+"type":"text"
+},
+{
+"text":"Python",
+"type":"link",
+"url":"https://www.python.org/"
+},
+{
+"text":" with the following libraries installed:",
+"type":"text"
+}
+],
 "id":"1779778497c3405ea45d42a56b83ea16",
-"text":"Before you can run RLiterate, you need [Python](https://www.python.org/) with the following libraries installed:",
 "type":"text"
 },
 {
@@ -125,8 +211,13 @@
 "type":"list"
 },
 {
-"id":"75359fa579334b61b95a06dd761ed58e",
+"fragments":[
+{
 "text":"Here is how they can be installed on a Fedora system:",
+"type":"text"
+}
+],
+"id":"75359fa579334b61b95a06dd761ed58e",
 "type":"text"
 },
 {
@@ -138,8 +229,13 @@
 "type":"code"
 },
 {
-"id":"e74c1810431b42aaae8b65755e5ff313",
+"fragments":[
+{
 "text":"Once they are installed, you can run RLiterate like this:",
+"type":"text"
+}
+],
+"id":"e74c1810431b42aaae8b65755e5ff313",
 "type":"text"
 },
 {
@@ -151,8 +247,13 @@
 "type":"code"
 },
 {
-"id":"f6da445ecc2549a0862270dfb2171ed6",
+"fragments":[
+{
 "text":"This will open the RLiterate document. Enter a different filename as last parameter to create a new document.",
+"type":"text"
+}
+],
+"id":"f6da445ecc2549a0862270dfb2171ed6",
 "type":"text"
 }
 ],
@@ -165,13 +266,71 @@
 "id":"85bb3ad476d540bb8b6bfed905d158f0",
 "paragraphs":[
 {
-"id":"4cc12cc77623452782cf8a37f8ba6e52",
-"text":"When `*.rliterate` files are version controlled, the textual diff is hard to read. This problem can be sovled in Git by defining a textconv command that converts the `*.rliterate` file to text that is suitable for diffing. The `--diff` option to RLiterate outputs a file in a diff friendly format.",
+"fragments":[
+{
+"text":"When ",
 "type":"text"
 },
 {
+"text":"*.rliterate",
+"type":"code"
+},
+{
+"text":" files are version controlled, the textual diff is hard to read. This problem can be sovled in Git by defining a textconv command that converts the ",
+"type":"text"
+},
+{
+"text":"*.rliterate",
+"type":"code"
+},
+{
+"text":" file to text that is suitable for diffing. The ",
+"type":"text"
+},
+{
+"text":"--diff",
+"type":"code"
+},
+{
+"text":" option to RLiterate outputs a file in a diff friendly format.",
+"type":"text"
+}
+],
+"id":"4cc12cc77623452782cf8a37f8ba6e52",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"First associate ",
+"type":"text"
+},
+{
+"text":"*.rliterate",
+"type":"code"
+},
+{
+"text":" files with ",
+"type":"text"
+},
+{
+"text":"rliterate",
+"type":"code"
+},
+{
+"text":" using a Git attributes file. For example in ",
+"type":"text"
+},
+{
+"text":"$HOME/.config/git/attributes",
+"type":"code"
+},
+{
+"text":":",
+"type":"text"
+}
+],
 "id":"dbb16270187643a3978ee8aac0b16d8a",
-"text":"First associate `*.rliterate` files with `rliterate` using a Git attributes file. For example in `$HOME/.config/git/attributes`:",
 "type":"text"
 },
 {
@@ -183,8 +342,29 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"Then define the ",
+"type":"text"
+},
+{
+"text":"textconv",
+"type":"code"
+},
+{
+"text":" command in your git config (",
+"type":"text"
+},
+{
+"text":"$HOME/.gitconfig",
+"type":"code"
+},
+{
+"text":"):",
+"type":"text"
+}
+],
 "id":"c69258a42b6c449c95a310a041f1c6ec",
-"text":"Then define the `textconv` command in your git config (`$HOME/.gitconfig`):",
 "type":"text"
 },
 {
@@ -210,23 +390,61 @@
 "id":"9b46f6326dda497fabbc1ef7f5247422",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"So I decided to build a prototype to learn what such a program might be like.",
+"type":"text"
+}
+],
 "id":"de7976f7066f4ec598fc13ba35e4ac67",
-"text":"So I decided to build a prototype to learn what such a program might be like.\n",
 "type":"text"
 },
 {
+"fragments":[
+{
+"text":"First I came up with a document model where pages were organized in a hierarchy. Each page had paragraphs that could be of different types. This idea was stolen from ",
+"type":"text"
+},
+{
+"text":"Smallest Federated Wiki",
+"type":"link",
+"url":"https://en.wikipedia.org/wiki/Smallest_Federated_Wiki"
+},
+{
+"text":". The code paragraph would allow for literate programming, while the text paragraph would be for prose. I also envisioned other paragraph types that would allow for more interaction. Perhaps one paragraph type could be ",
+"type":"text"
+},
+{
+"text":"Graphviz",
+"type":"link",
+"url":"http://graphviz.org/"
+},
+{
+"text":" code, and when edited, a generated graph would appear instead of the code.",
+"type":"text"
+}
+],
 "id":"7bf0be74a55e42e4aa192f2b4d8df297",
-"text":"First I came up with a document model where pages were organized in a hierarchy. Each page had paragraphs that could be of different types. This idea was stolen from [Smallest Federated Wiki](https://en.wikipedia.org/wiki/Smallest_Federated_Wiki). The code paragraph would allow for literate programming, while the text paragraph would be for prose. I also envisioned other paragraph types that would allow for more interaction. Perhaps one paragraph type could be [Graphviz](http://graphviz.org/) code, and when edited, a generated graph would appear instead of the code.",
 "type":"text"
 },
 {
-"id":"45375c646cae41e5889e450c800ca1d3",
+"fragments":[
+{
 "text":"After coming up with a document model, I implement a GUI that would allow editing such documents. This GUI had to be first class as it would be the primary way author (and read) documents.",
 "type":"text"
+}
+],
+"id":"45375c646cae41e5889e450c800ca1d3",
+"type":"text"
 },
 {
-"id":"d61ca1d00cc24fc38342d582ec2b257a",
+"fragments":[
+{
 "text":"The first version of the GUI was not first class though. I started to experiment with a workspace for showing pages.",
+"type":"text"
+}
+],
+"id":"d61ca1d00cc24fc38342d582ec2b257a",
 "type":"text"
 },
 {
@@ -236,8 +454,13 @@
 "type":"image"
 },
 {
-"id":"ce0204d9df944d77971b7dd970681c97",
+"fragments":[
+{
 "text":"Then I contintued with a table of contents. At this point it was based on a tree control present in wxPython.",
+"type":"text"
+}
+],
+"id":"ce0204d9df944d77971b7dd970681c97",
 "type":"text"
 },
 {
@@ -252,8 +475,13 @@
 "type":"image"
 },
 {
-"id":"26177d74a28244ff92d3b184251cd94d",
+"fragments":[
+{
 "text":"All the data so far had been static and hard coded. I started to flesh out the document model and implement GUI controls for manipulating the document. Here is the add button on pages.",
+"type":"text"
+}
+],
+"id":"26177d74a28244ff92d3b184251cd94d",
 "type":"text"
 },
 {
@@ -263,8 +491,13 @@
 "type":"image"
 },
 {
-"id":"7f096a58f2d342caa99afd6ea6afa2af",
+"fragments":[
+{
 "text":"Drag and drop was implemented fairly early. I wanted good visual feedback. This was part of the first class idea.",
+"type":"text"
+}
+],
+"id":"7f096a58f2d342caa99afd6ea6afa2af",
 "type":"text"
 },
 {
@@ -274,8 +507,13 @@
 "type":"image"
 },
 {
-"id":"a2a7ada0fc5a4ddaa8cc7941301e43ed",
+"fragments":[
+{
 "text":"Drag and drop with good visual feedback was hard to achieve with the tree control from wxWidgets, so at this point I rewrote the table of contents widget as a custom widget.",
+"type":"text"
+}
+],
+"id":"a2a7ada0fc5a4ddaa8cc7941301e43ed",
 "type":"text"
 },
 {
@@ -285,8 +523,13 @@
 "type":"image"
 },
 {
-"id":"842f693dc9084575b284d1e8c16d76fe",
+"fragments":[
+{
 "text":"I added more operations for adding and deleting pages.",
+"type":"text"
+}
+],
+"id":"842f693dc9084575b284d1e8c16d76fe",
 "type":"text"
 },
 {
@@ -296,8 +539,13 @@
 "type":"image"
 },
 {
-"id":"0d02d349beef46db8517fa02e83ded67",
+"fragments":[
+{
 "text":"Then finally I added a second paragraph type: the code paragraph type that would enable literate programming.",
+"type":"text"
+}
+],
+"id":"0d02d349beef46db8517fa02e83ded67",
 "type":"text"
 },
 {
@@ -307,13 +555,23 @@
 "type":"image"
 },
 {
-"id":"a28ef005c5fb46f882d33121b9e94b3b",
+"fragments":[
+{
 "text":"At this point I had all the functionality in place for writing documents and embedding code in them. I imported all the code into an RLiterate document (previously it was written as a single Python file) and started extracting pieces and adding prose to explain the program. This was a tremendously rewarding experience. RLiterate was now bootstrapped.",
+"type":"text"
+}
+],
+"id":"a28ef005c5fb46f882d33121b9e94b3b",
 "type":"text"
 },
 {
-"id":"64341df7a91148ac8e11d1b55ed8fe0f",
+"fragments":[
+{
 "text":"As I continued to improve the RLiterate document, I noticed features I was lacking. I added them to the program and iterated.",
+"type":"text"
+}
+],
+"id":"64341df7a91148ac8e11d1b55ed8fe0f",
 "type":"text"
 }
 ],
@@ -324,18 +582,60 @@
 "id":"f496615acbe44223a64e1db1fc154b12",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"To me, the most central idea in literate programming is that we should write programs for other humans. Only secondary for the machine. I find code easier to understand if I can understand it in isolated pieces. One example where it is difficult to isolate a piece without literate programming is test code. Usually the test code is located in one file, and the implementation in another. To fully understand the piece it is useful to both read the tests and the implementation. To do this we have to find this related information in two unrelated files. I wrote about this problem in 2013 in ",
+"type":"text"
+},
+{
+"text":"Related things are not kept together",
+"type":"link",
+"url":"http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/"
+},
+{
+"text":". Literate programming allows us to present the test and the implementation in the same place, yet have the different pieces written to different files. The compiler might require that they are in separate files, but with literate programming, we care first about the other human that will read our code, and only second about the compiler.",
+"type":"text"
+}
+],
 "id":"fe04c847a4f54b3e80e49e60f650119e",
-"text":"To me, the most central idea in literate programming is that we should write programs for other humans. Only secondary for the machine. I find code easier to understand if I can understand it in isolated pieces. One example where it is difficult to isolate a piece without literate programming is test code. Usually the test code is located in one file, and the implementation in another. To fully understand the piece it is useful to both read the tests and the implementation. To do this we have to find this related information in two unrelated files. I wrote about this problem in 2013 in [Related things are not kept together](http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/). Literate programming allows us to present the test and the implementation in the same place, yet have the different pieces written to different files. The compiler might require that they are in separate files, but with literate programming, we care first about the other human that will read our code, and only second about the compiler.",
 "type":"text"
 },
 {
+"fragments":[
+{
+"text":"Another argument for literate programming is to express the \"why\". Why is this code here? Timothy Daly talks about it in his talk ",
+"type":"text"
+},
+{
+"text":"Literate Programming in the Large",
+"type":"link",
+"url":"https://www.youtube.com/watch?v=Av0PQDVTP4A"
+},
+{
+"text":". He also argues that programmers must change the mindset from wring a program to writing a book. Some more can be read here: ",
+"type":"text"
+},
+{
+"text":"",
+"type":"link",
+"url":"http://axiom-developer.org/axiom-website/litprog.html"
+},
+{
+"text":".",
+"type":"text"
+}
+],
 "id":"683d2cd7bded485cb4659cd40065ea93",
-"text":"Another argument for literate programming is to express the \"why\". Why is this code here? Timothy Daly talks about it in his talk [Literate Programming in the Large](https://www.youtube.com/watch?v=Av0PQDVTP4A). He also argues that programmers must change the mindset from wring a program to writing a book. Some more can be read here: [](http://axiom-developer.org/axiom-website/litprog.html).",
 "type":"text"
 },
 {
-"id":"ead08e336d8749f79b82f0093feeeb94",
+"fragments":[
+{
 "text":"Some more resources about literate programming:",
+"type":"text"
+}
+],
+"id":"ead08e336d8749f79b82f0093feeeb94",
 "type":"text"
 },
 {
@@ -351,8 +651,22 @@
 "id":"e836cd0edf4a4b66ab8dd1e5d7fbbea3",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"When researching ideas for RLiterate, I stumbled across ",
+"type":"text"
+},
+{
+"text":"ProjecturED",
+"type":"link",
+"url":"http://projectured.org/"
+},
+{
+"text":". It is similar to RLiterate in the sense that it is an editor for more structured documents. Not just text. The most interesting aspect for me was that a variable name exists in one place, but can be rendered in multiple. So a rename is really simple. With RLiterate, you have to do a search and replace. But with ProjecturED you just change the name and it replicates everywhere. This is an attractive feature and is made possible by the different document model.",
+"type":"text"
+}
+],
 "id":"624299d364c54ef9afeedd42e7cca57b",
-"text":"When researching ideas for RLiterate, I stumbled across [ProjecturED](http://projectured.org/). It is similar to RLiterate in the sense that it is an editor for more structured documents. Not just text. The most interesting aspect for me was that a variable name exists in one place, but can be rendered in multiple. So a rename is really simple. With RLiterate, you have to do a search and replace. But with ProjecturED you just change the name and it replicates everywhere. This is an attractive feature and is made possible by the different document model.",
 "type":"text"
 }
 ],
@@ -362,13 +676,50 @@
 "id":"95150c4f0d92428bbeef4ae5a865398d",
 "paragraphs":[
 {
-"id":"491cebce6de04e43a2695237c1359ca4",
-"text":"I started to think about what would become RLiterate when I read the paper [Active Essays on the Web](http://www.vpri.org/pdf/tr2009002_active_essays.pdf). In it they talk about embedding code in documents that the reader can interact with. They also mention [Literate programming](https://en.wikipedia.org/wiki/Literate_programming) as having a related goal.",
+"fragments":[
+{
+"text":"I started to think about what would become RLiterate when I read the paper ",
 "type":"text"
 },
 {
+"text":"Active Essays on the Web",
+"type":"link",
+"url":"http://www.vpri.org/pdf/tr2009002_active_essays.pdf"
+},
+{
+"text":". In it they talk about embedding code in documents that the reader can interact with. They also mention ",
+"type":"text"
+},
+{
+"text":"Literate programming",
+"type":"link",
+"url":"https://en.wikipedia.org/wiki/Literate_programming"
+},
+{
+"text":" as having a related goal.",
+"type":"text"
+}
+],
+"id":"491cebce6de04e43a2695237c1359ca4",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"At the time I was working on a program that I thought would be nice to write in this way. I wanted to write an article about the program and have the code for the program embedded in the article. I could have used a literate programming tool for this, but the interactive aspect of active essays made me think that a tool would be much more powerful if the document could be edited \"live\", similar to ",
+"type":"text"
+},
+{
+"text":"WYSIWYG",
+"type":"link",
+"url":"https://en.wikipedia.org/wiki/WYSIWYG"
+},
+{
+"text":" editors. Literate programming tools I were aware of worked by editing plain text files with a special syntax for code and documentation blocks, thus lacking the interactive aspect.",
+"type":"text"
+}
+],
 "id":"54adfab3c5a2436d95fda4bdd95849c7",
-"text":"At the time I was working on a program that I thought would be nice to write in this way. I wanted to write an article about the program and have the code for the program embedded in the article. I could have used a literate programming tool for this, but the interactive aspect of active essays made me think that a tool would be much more powerful if the document could be edited \"live\", similar to [WYSIWYG](https://en.wikipedia.org/wiki/WYSIWYG) editors. Literate programming tools I were aware of worked by editing plain text files with a special syntax for code and documentation blocks, thus lacking the interactive aspect.",
 "type":"text"
 }
 ],
@@ -383,8 +734,31 @@
 "id":"8ab608f28a5046548963649371cab5fe",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The main frame lays out two widgets horizontally: the table of contents (",
+"type":"text"
+},
+{
+"page_id":"c456e147b7b745ed80697c4faeb02bcb",
+"text":null,
+"type":"reference"
+},
+{
+"text":") and the workspace (",
+"type":"text"
+},
+{
+"page_id":"4dd60465575c4297a25813f0478f15f9",
+"text":null,
+"type":"reference"
+},
+{
+"text":"). It also creates the project from the specified file path.",
+"type":"text"
+}
+],
 "id":"4cea9ae964e344c990fcf98f9baa6bd0",
-"text":"The main frame lays out two widgets horizontally: the table of contents ([[c456e147b7b745ed80697c4faeb02bcb]]) and the workspace ([[4dd60465575c4297a25813f0478f15f9]]). It also creates the project from the specified file path.",
 "type":"text"
 },
 {
@@ -408,13 +782,23 @@
 "id":"49b2e6c578264b24a860b0172a9ac3a3",
 "paragraphs":[
 {
-"id":"77b6cddc2a2946249d6c2cbae7134ed1",
+"fragments":[
+{
 "text":"The table of contents widget lays out two components in a vertical container: the unhoist button and the page container.",
+"type":"text"
+}
+],
+"id":"77b6cddc2a2946249d6c2cbae7134ed1",
 "type":"text"
 },
 {
-"id":"e7aef630ee3b44f48a4538b9518a6b4d",
+"fragments":[
+{
 "text":"The scroll position of the page container is not preserved if it is destroyed and re-created. We therefore maintain the same instance across re-renders.",
+"type":"text"
+}
+],
+"id":"e7aef630ee3b44f48a4538b9518a6b4d",
 "type":"text"
 },
 {
@@ -428,8 +812,13 @@
 "type":"code"
 },
 {
-"id":"8cf1468ca45b41d4a2d0f2e8de91c35d",
+"fragments":[
+{
 "text":"The unhoist button (only shown if a page has been hoisted):",
+"type":"text"
+}
+],
+"id":"8cf1468ca45b41d4a2d0f2e8de91c35d",
 "type":"text"
 },
 {
@@ -443,8 +832,13 @@
 "type":"code"
 },
 {
-"id":"48e403ac69b5492bb09ff41381d77b8f",
+"fragments":[
+{
 "text":"The page container is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.",
+"type":"text"
+}
+],
+"id":"48e403ac69b5492bb09ff41381d77b8f",
 "type":"text"
 },
 {
@@ -474,8 +868,13 @@
 "id":"99a2a81b38164293b9ad9287b33bfbbb",
 "paragraphs":[
 {
-"id":"84b201f687224953ad89da562eb6b1cb",
+"fragments":[
+{
 "text":"Inside the table of contents, pages can be dragged and drop. The drag is initiated in the row widget and handled in the table of contents widget.",
+"type":"text"
+}
+],
+"id":"84b201f687224953ad89da562eb6b1cb",
 "type":"text"
 },
 {
@@ -499,8 +898,38 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"DropPointDropTarget",
+"type":"code"
+},
+{
+"text":" (",
+"type":"text"
+},
+{
+"page_id":"1d623dc7a566477786012227b9790d81",
+"text":null,
+"type":"reference"
+},
+{
+"text":") requires ",
+"type":"text"
+},
+{
+"text":"FindClosestDropPoint",
+"type":"code"
+},
+{
+"text":" to be defined on the target object. Here it is:",
+"type":"text"
+}
+],
 "id":"dc9eb0e4255e48c9999944caa48a60bd",
-"text":"The `DropPointDropTarget` ([[1d623dc7a566477786012227b9790d81]]) requires `FindClosestDropPoint` to be defined on the target object. Here it is:",
 "type":"text"
 },
 {
@@ -520,8 +949,13 @@
 "id":"f0c6aa103d2a45aa8737d7d964e860bc",
 "paragraphs":[
 {
-"id":"d7196568704f4228956b0166a06b2ab5",
+"fragments":[
+{
 "text":"The main table of contents widget listens for changes to a project (only events related to changes in the document and the layout of the table of contents) and then re-renders itself.",
+"type":"text"
+}
+],
+"id":"d7196568704f4228956b0166a06b2ab5",
 "type":"text"
 },
 {
@@ -544,8 +978,13 @@
 "type":"code"
 },
 {
-"id":"a1ec06a34b604de99e5102a82fe00f1b",
+"fragments":[
+{
 "text":"This seems to be needed for some reason:",
+"type":"text"
+}
+],
+"id":"a1ec06a34b604de99e5102a82fe00f1b",
 "type":"text"
 },
 {
@@ -566,8 +1005,13 @@
 "id":"116c471cbc1d41588168321c18c99386",
 "paragraphs":[
 {
-"id":"f0f947ef43f0460ab970e56b50dfb339",
+"fragments":[
+{
 "text":"The row widget renders the page title at the appropriate indentation. If the page has children, an expand/collapse widget is also rendered to the left of the title.",
+"type":"text"
+}
+],
+"id":"f0f947ef43f0460ab970e56b50dfb339",
 "type":"text"
 },
 {
@@ -580,8 +1024,13 @@
 "type":"code"
 },
 {
-"id":"0b017f41b129456d9969b8b4115f3b6c",
+"fragments":[
+{
 "text":"Rendering lays out the expand/collapse button (if the page has children) and the page title in a horizontal sizer. If the page is open, we highlight it with bold font. (For some reason, the font has to be set on the panel and not on the static text in order for size calculations to behave correctly.)",
+"type":"text"
+}
+],
+"id":"0b017f41b129456d9969b8b4115f3b6c",
 "type":"text"
 },
 {
@@ -595,8 +1044,13 @@
 "type":"code"
 },
 {
-"id":"2f458d6548464fc88dbde361469cfcba",
+"fragments":[
+{
 "text":"Event handlers:",
+"type":"text"
+}
+],
+"id":"2f458d6548464fc88dbde361469cfcba",
 "type":"text"
 },
 {
@@ -617,8 +1071,13 @@
 "id":"159632cc0cfd436ab33cb97a335306b4",
 "paragraphs":[
 {
-"id":"65ea1114c9de4bc4819558ac74188f17",
+"fragments":[
+{
 "text":"The expand/collapse widget draws a native looking expand/collapse symbol. When clicked, the corresponding page it toggled.",
+"type":"text"
+}
+],
+"id":"65ea1114c9de4bc4819558ac74188f17",
 "type":"text"
 },
 {
@@ -662,8 +1121,13 @@
 "id":"c456e147b7b745ed80697c4faeb02bcb",
 "paragraphs":[
 {
-"id":"7fa7bfb6863d487b9989cb454fed762d",
+"fragments":[
+{
 "text":"The table of contents shows the outline of the document. It allows only subtrees to be shown (hoisting) and allows subtrees to be expanded/collapsed. It also provides navigation functions to allow pages to be opened.",
+"type":"text"
+}
+],
+"id":"7fa7bfb6863d487b9989cb454fed762d",
 "type":"text"
 }
 ],
@@ -678,8 +1142,22 @@
 "id":"3f0fc44a9eba4a5cbcae5da3ee5d8925",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"Rendering a workspace means laying out a set of ",
+"type":"text"
+},
+{
+"page_id":"b5ccbbfc0b6445a3a19a5c3dc39daa81",
+"text":"column",
+"type":"reference"
+},
+{
+"text":" widgets horizontally. Columns are filled with page containers.",
+"type":"text"
+}
+],
 "id":"246a23a170164f1c91e73f877b824930",
-"text":"Rendering a workspace means laying out a set of [[b5ccbbfc0b6445a3a19a5c3dc39daa81:column]] widgets horizontally. Columns are filled with page containers.",
 "type":"text"
 },
 {
@@ -693,23 +1171,76 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"Layout",
+"type":"code"
+},
+{
+"text":" is called on the parent. Otherwise scrollbars don't seem to update appropriately.",
+"type":"text"
+}
+],
 "id":"db2d5c4540ff42baa0cc1232134f310b",
-"text":"`Layout` is called on the parent. Otherwise scrollbars don't seem to update appropriately.",
 "type":"text"
 },
 {
+"fragments":[
+{
+"text":"On removing widgets ",
+"type":"text"
+},
+{
+"text":"Removing a widget from its wxPython parent",
+"type":"link",
+"url":"https://stackoverflow.com/a/41064558"
+},
+{
+"text":":",
+"type":"text"
+}
+],
 "id":"859451cd2a664a1698affbc6ea11fa46",
-"text":"On removing widgets [Removing a widget from its wxPython parent](https://stackoverflow.com/a/41064558):",
 "type":"text"
 },
 {
+"fragments":[
+{
+"text":"Widgets will remove themselves from the sizer when they are destroyed, so yes, it is redundant. Also, widgets will remove themselves from the parent's child list, so calling ",
+"type":"text"
+},
+{
+"text":"RemoveChild",
+"type":"code"
+},
+{
+"text":" is also redundant. IOW, the call to ",
+"type":"text"
+},
+{
+"text":"window.Destroy()",
+"type":"code"
+},
+{
+"text":" will be sufficient to remove the widget and its resources, and to do the necessary clean-ups in the parent and the sizer.",
+"type":"text"
+}
+],
 "id":"c881d2542f834261b1060e001e991f85",
-"text":"Widgets will remove themselves from the sizer when they are destroyed, so yes, it is redundant. Also, widgets will remove themselves from the parent's child list, so calling `RemoveChild` is also redundant. IOW, the call to `window.Destroy()` will be sufficient to remove the widget and its resources, and to do the necessary clean-ups in the parent and the sizer.",
 "type":"quote"
 },
 {
+"fragments":[
+{
+"text":"wx.CallAfter",
+"type":"code"
+},
+{
+"text":" seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.",
+"type":"text"
+}
+],
 "id":"fe799c6fd8484a9095d88a7f3faaf4bd",
-"text":"`wx.CallAfter` seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.",
 "type":"text"
 },
 {
@@ -730,8 +1261,13 @@
 "id":"e056bc29d02647a0a67d03693ddc4c7d",
 "paragraphs":[
 {
-"id":"d983d5dcddcd4e67a5c68f77b22dff83",
+"fragments":[
+{
 "text":"Inside a workspace, paragraphs can be dragged and dropped. The drag is handled in the paragraph widget, but the drop is handled in the workspace widget.",
+"type":"text"
+}
+],
+"id":"d983d5dcddcd4e67a5c68f77b22dff83",
 "type":"text"
 },
 {
@@ -755,8 +1291,13 @@
 "type":"code"
 },
 {
-"id":"bd195234d44049b6b0073b835bce34ba",
+"fragments":[
+{
 "text":"The DropPointDropTarget requires FindClosestDropPoint to be defined on the target object. Here it is:",
+"type":"text"
+}
+],
+"id":"bd195234d44049b6b0073b835bce34ba",
 "type":"text"
 },
 {
@@ -776,13 +1317,32 @@
 "id":"e2de7fc557e542a7ac8fde91b7651736",
 "paragraphs":[
 {
-"id":"6a9ac9606ee5499694f3236ccabf1127",
-"text":"The main workspace widget is a horizontal [[94b57547a194415cb00feb2aaf486e27:scrolling container]] containing column widgets.",
+"fragments":[
+{
+"text":"The main workspace widget is a horizontal ",
 "type":"text"
 },
 {
-"id":"b5c9d88523ed45f1bf811a1d849f729b",
+"page_id":"94b57547a194415cb00feb2aaf486e27",
+"text":"scrolling container",
+"type":"reference"
+},
+{
+"text":" containing column widgets.",
+"type":"text"
+}
+],
+"id":"6a9ac9606ee5499694f3236ccabf1127",
+"type":"text"
+},
+{
+"fragments":[
+{
 "text":"The workspace is re-rendered whenever relevant parts of the project changes.",
+"type":"text"
+}
+],
+"id":"b5c9d88523ed45f1bf811a1d849f729b",
 "type":"text"
 },
 {
@@ -812,8 +1372,22 @@
 "id":"b5ccbbfc0b6445a3a19a5c3dc39daa81",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The column widget is a vertical ",
+"type":"text"
+},
+{
+"page_id":"94b57547a194415cb00feb2aaf486e27",
+"text":"scrolling container",
+"type":"reference"
+},
+{
+"text":" containing page containers.",
+"type":"text"
+}
+],
 "id":"5d9d79b33aa44d6ca21b8a760fd09dc3",
-"text":"The column widget is a vertical [[94b57547a194415cb00feb2aaf486e27:scrolling container]] containing page containers.",
 "type":"text"
 },
 {
@@ -833,8 +1407,13 @@
 "id":"1164b94ba82c476897ce18fc1b70a5b8",
 "paragraphs":[
 {
-"id":"bb9393f32b254e4c8d629a90e706a5a1",
+"fragments":[
+{
 "text":"The page container widget draws a box with border. Inside the box a page widget is rendered.",
+"type":"text"
+}
+],
+"id":"bb9393f32b254e4c8d629a90e706a5a1",
 "type":"text"
 },
 {
@@ -914,8 +1493,22 @@
 "id":"f1137543026a4319a6a9e2ce5d0f3d5e",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The title widget is an ",
+"type":"text"
+},
+{
+"page_id":"33398a32e9c0460d98d0ada485f19067",
+"text":"editable",
+"type":"reference"
+},
+{
+"text":" that displays the page title in bigger text.",
+"type":"text"
+}
+],
 "id":"da175bc1c650467c8ae17633c39ae50a",
-"text":"The title widget is an [[33398a32e9c0460d98d0ada485f19067:editable]] that displays the page title in bigger text.",
 "type":"text"
 },
 {
@@ -937,8 +1530,22 @@
 "id":"1688f5eee57645a68af81fa5f02a1560",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"This paragraph is of type ",
+"type":"text"
+},
+{
+"page_id":"2572c635a4c04bcc97905362edc3aba2",
+"text":"text",
+"type":"reference"
+},
+{
+"text":".",
+"type":"text"
+}
+],
 "id":"ad7205c2fdf24c87886bd053bcc87dab",
-"text":"This paragraph is of type [[2572c635a4c04bcc97905362edc3aba2:text]].",
 "type":"text"
 },
 {
@@ -951,8 +1558,13 @@
 "type":"code"
 },
 {
-"id":"7771215ada52498a87873fe98b069d66",
+"fragments":[
+{
 "text":"The view:",
+"type":"text"
+}
+],
+"id":"7771215ada52498a87873fe98b069d66",
 "type":"text"
 },
 {
@@ -1001,8 +1613,13 @@
 "type":"code"
 },
 {
-"id":"0dfb3ea73ab040ec9ce4a0c9eecaba27",
+"fragments":[
+{
 "text":"The editor:",
+"type":"text"
+}
+],
+"id":"0dfb3ea73ab040ec9ce4a0c9eecaba27",
 "type":"text"
 },
 {
@@ -1011,7 +1628,16 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"fragments\": LegacyInlineTextParser().parse(self.Value)}\n        )\n",
+"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=fragments_to_text(paragraph.fragments),\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.project.edit_paragraph(\n            self.paragraph.id,\n            {\"fragments\": text_to_fragments(self.Value)}\n        )\n",
+"type":"code"
+},
+{
+"id":"8b18fb0b9c4c49b0a2bd117d760f4d05",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def fragments_to_text(fragments):\n    formatters = {\n        \"emphasis\": lambda x: \"*{}*\".format(x.text),\n        \"strong\": lambda x: \"**{}**\".format(x.text),\n        \"reference\": lambda x: \"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"),\n        \"link\": lambda x: \"[{}]({})\".format(x.text, x.url),\n    }\n    return \"\".join([\n        formatters.get(fragment.type, lambda x: x.text)(fragment)\n        for fragment\n        in fragments\n    ])\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)\n",
 "type":"code"
 }
 ],
@@ -1022,8 +1648,13 @@
 "id":"7a79cf8e89e54505a3096182df3969de",
 "paragraphs":[
 {
-"id":"2f672cd613c84c2c9bbd113672956163",
+"fragments":[
+{
 "text":"A quote paragraph is the same as a text paragraph but the view is rendered indented.",
+"type":"text"
+}
+],
+"id":"2f672cd613c84c2c9bbd113672956163",
 "type":"text"
 },
 {
@@ -1043,8 +1674,13 @@
 "id":"f1a44b0e5e824e7baba3a2ca256b243b",
 "paragraphs":[
 {
-"id":"50911d0525dd4f38adc52e1108754007",
+"fragments":[
+{
 "text":"A list paragraph is the same as a text paragraph but renders differently. With bullets and indentation.",
+"type":"text"
+}
+],
+"id":"50911d0525dd4f38adc52e1108754007",
 "type":"text"
 },
 {
@@ -1073,8 +1709,13 @@
 "type":"code"
 },
 {
-"id":"0db2311ab3404ba0a7096f9f28d9a38e",
+"fragments":[
+{
 "text":"The view:",
+"type":"text"
+}
+],
+"id":"0db2311ab3404ba0a7096f9f28d9a38e",
 "type":"text"
 },
 {
@@ -1096,8 +1737,13 @@
 "type":"code"
 },
 {
-"id":"8d090339156c477e9d4e39c825412f6d",
+"fragments":[
+{
 "text":"The editor:",
+"type":"text"
+}
+],
+"id":"8d090339156c477e9d4e39c825412f6d",
 "type":"text"
 },
 {
@@ -1117,8 +1763,22 @@
 "id":"481bf98c4af44f3e8fc6869d3c9b8a36",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"Data is defined in ",
+"type":"text"
+},
+{
+"page_id":"0d0e076c5ebc4b338ab01229ef37a8ea",
+"text":null,
+"type":"reference"
+},
+{
+"text":".",
+"type":"text"
+}
+],
 "id":"03a0a27ff06a4a3592da6869b5afa212",
-"text":"Data is defined in [[0d0e076c5ebc4b338ab01229ef37a8ea]].",
 "type":"text"
 },
 {
@@ -1174,8 +1834,13 @@
 "id":"e0ecf028bb904931882c2fe4694d87e2",
 "paragraphs":[
 {
-"id":"e36c95740f9840f09b3819aa281fedd6",
+"fragments":[
+{
 "text":"A factory can not be edited, so only the view is provided.",
+"type":"text"
+}
+],
+"id":"e36c95740f9840f09b3819aa281fedd6",
 "type":"text"
 },
 {
@@ -1219,8 +1884,22 @@
 "id":"2280405b81c741cfa73d2629f1ef4b4b",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"All paragraphs are ",
+"type":"text"
+},
+{
+"page_id":"33398a32e9c0460d98d0ada485f19067",
+"text":"editables",
+"type":"reference"
+},
+{
+"text":".",
+"type":"text"
+}
+],
 "id":"d3cee89484754dec82eee787393cd916",
-"text":"All paragraphs are [[33398a32e9c0460d98d0ada485f19067:editables]].",
 "type":"text"
 }
 ],
@@ -1231,13 +1910,55 @@
 "id":"33398a32e9c0460d98d0ada485f19067",
 "paragraphs":[
 {
-"id":"e8f297cc43c84f3589a18191088fd308",
-"text":"Editables are widgets that contain a view and an editor. When the editor is opened, the view is hidden and the editor is shown in its place. The editor is opened by posting an `EditStart` event from the view. This is typically done from a double click event handler.",
+"fragments":[
+{
+"text":"Editables are widgets that contain a view and an editor. When the editor is opened, the view is hidden and the editor is shown in its place. The editor is opened by posting an ",
 "type":"text"
 },
 {
+"text":"EditStart",
+"type":"code"
+},
+{
+"text":" event from the view. This is typically done from a double click event handler.",
+"type":"text"
+}
+],
+"id":"e8f297cc43c84f3589a18191088fd308",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"This class should be inherited, and the ",
+"type":"text"
+},
+{
+"text":"CreateView",
+"type":"code"
+},
+{
+"text":" method should be implemented. ",
+"type":"text"
+},
+{
+"text":"CreateEdit",
+"type":"code"
+},
+{
+"text":" must also be inherited if ",
+"type":"text"
+},
+{
+"text":"EditStart",
+"type":"code"
+},
+{
+"text":" events are expected.",
+"type":"text"
+}
+],
 "id":"615380bc2ce240ada8493970597c68c8",
-"text":"This class should be inherited, and the `CreateView` method should be implemented. `CreateEdit` must also be inherited if `EditStart` events are expected.",
 "type":"text"
 },
 {
@@ -1274,8 +1995,13 @@
 "id":"4dd60465575c4297a25813f0478f15f9",
 "paragraphs":[
 {
-"id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
+"fragments":[
+{
 "text":"The workspace shows pages in the document. It is organized in columns, and each column can show multiple pages. The pages can also be edited from the workspace.",
+"type":"text"
+}
+],
+"id":"9c4aa635d5b841ff8cf2a0648a6aff6d",
 "type":"text"
 }
 ],
@@ -1304,8 +2030,21 @@
 "id":"1d623dc7a566477786012227b9790d81",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"A drop target that can work with windows that supports ",
+"type":"text"
+},
+{
+"text":"FindClosestDropPoint",
+"type":"code"
+},
+{
+"text":".",
+"type":"text"
+}
+],
 "id":"e93d2e5b66864933ab1e184634965f9f",
-"text":"A drop target that can work with windows that supports `FindClosestDropPoint`.",
 "type":"text"
 },
 {
@@ -1364,8 +2103,13 @@
 "id":"f2fd8440f526447fbcd4442951435021",
 "paragraphs":[
 {
-"id":"7286b9e86d644834b949ed82e6afb3ee",
+"fragments":[
+{
 "text":"The rich text display widget displayes styled text fragments. It does so by drawing text on a DC.",
+"type":"text"
+}
+],
+"id":"7286b9e86d644834b949ed82e6afb3ee",
 "type":"text"
 },
 {
@@ -1388,8 +2132,13 @@
 "type":"code"
 },
 {
-"id":"44cdc54053dc4136ab337a605d8d0de8",
+"fragments":[
+{
 "text":"First, the text fragment positions are calculated. For that a DC is needed. But the positions need to be calculated before we can draw on the panel, so a temporary memory DC is created.",
+"type":"text"
+}
+],
+"id":"44cdc54053dc4136ab337a605d8d0de8",
 "type":"text"
 },
 {
@@ -1414,8 +2163,13 @@
 "type":"code"
 },
 {
-"id":"e077531deeeb4cddbf5d03713a5232fe",
+"fragments":[
+{
 "text":"Drawing the rich text is just a matter of drawing all fragments at the pre-calculated positions:",
+"type":"text"
+}
+],
+"id":"e077531deeeb4cddbf5d03713a5232fe",
 "type":"text"
 },
 {
@@ -1440,8 +2194,13 @@
 "type":"code"
 },
 {
-"id":"388ab47120904655b45e8bab8c924eb2",
+"fragments":[
+{
 "text":"Some mouse move action:",
+"type":"text"
+}
+],
+"id":"388ab47120904655b45e8bab8c924eb2",
 "type":"text"
 },
 {
@@ -1471,8 +2230,22 @@
 "id":"94b57547a194415cb00feb2aaf486e27",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The default scrolling window gives extra space. See ",
+"type":"text"
+},
+{
+"text":"",
+"type":"link",
+"url":"https://stackoverflow.com/a/22817659"
+},
+{
+"text":". This custom control solves this problem.",
+"type":"text"
+}
+],
 "id":"77379e702560445c9fd31a8bb833cc65",
-"text":"The default scrolling window gives extra space. See [](https://stackoverflow.com/a/22817659). This custom control solves this problem.\n",
 "type":"text"
 },
 {
@@ -1485,13 +2258,23 @@
 "type":"code"
 },
 {
-"id":"9d06f89e91354cb68c08839512d0e156",
+"fragments":[
+{
 "text":"The minimum size is set to prevent the following error:",
+"type":"text"
+}
+],
+"id":"9d06f89e91354cb68c08839512d0e156",
 "type":"text"
 },
 {
-"id":"025b7cd450434c9c98468f9f8720edc3",
+"fragments":[
+{
 "text":"(rliterate.py:23983): Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar",
+"type":"text"
+}
+],
+"id":"025b7cd450434c9c98468f9f8720edc3",
 "type":"text"
 },
 {
@@ -1521,13 +2304,23 @@
 "type":"code"
 },
 {
-"id":"341dcda05dc442cea21d7dd6089318ad",
+"fragments":[
+{
 "text":"The minimum height is set to prevent the following error:",
+"type":"text"
+}
+],
+"id":"341dcda05dc442cea21d7dd6089318ad",
 "type":"text"
 },
 {
-"id":"3576819cf1444641a6f721127c50e4aa",
+"fragments":[
+{
 "text":"Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar",
+"type":"text"
+}
+],
+"id":"3576819cf1444641a6f721127c50e4aa",
 "type":"text"
 }
 ],
@@ -1538,8 +2331,13 @@
 "id":"32b95f00956d4ea08e09d4a7d7fd4bb2",
 "paragraphs":[
 {
-"id":"8858d0bc4faa47aa971b47a969c87f5b",
+"fragments":[
+{
 "text":"This code seems to be needed on Windows only, but does not harm on other platforms. If many layout operations are done, the GUI otherwise becomes slow and flickers.",
+"type":"text"
+}
+],
+"id":"8858d0bc4faa47aa971b47a969c87f5b",
 "type":"text"
 },
 {
@@ -1579,8 +2377,13 @@
 "id":"e418766e480b41b1844c8d754b3746fc",
 "paragraphs":[
 {
-"id":"a2e1e037cb3044b2a16bb15471199701",
+"fragments":[
+{
 "text":"The main GUI is written in wxPython.",
+"type":"text"
+}
+],
+"id":"a2e1e037cb3044b2a16bb15471199701",
 "type":"text"
 }
 ],
@@ -1680,7 +2483,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def text(self):\n        formatters = {\n            \"emphasis\": lambda x: \"*{}*\".format(x.text),\n            \"strong\": lambda x: \"**{}**\".format(x.text),\n            \"reference\": lambda x: \"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"),\n            \"link\": lambda x: \"[{}]({})\".format(x.text, x.url),\n        }\n        return \"\".join([\n            formatters.get(fragment.type, lambda x: x.text)(fragment)\n            for fragment\n            in self.fragments\n        ])\n\n    @property\n    def fragments(self):\n        return [\n            DictTextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n",
+"text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def fragments(self):\n        return [\n            DictTextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n",
 "type":"code"
 }
 ],
@@ -1866,8 +2669,13 @@
 "id":"9e63791b51374f2c924e871da5ddc5d7",
 "paragraphs":[
 {
-"id":"089ffcc884f348128bcba997655c9251",
+"fragments":[
+{
 "text":"Views provide a read only interface to a document. It is the only way to query a document.",
+"type":"text"
+}
+],
+"id":"089ffcc884f348128bcba997655c9251",
 "type":"text"
 }
 ],
@@ -1883,13 +2691,23 @@
 "id":"f7f16199492c4bad80567c3a960b8bc9",
 "paragraphs":[
 {
-"id":"9a3a290dceb54196a4d1b107d7634ce6",
+"fragments":[
+{
 "text":"A layout knows the visual state of the program. It for example knows what pages are expanded/collapsed in the table of contents and what is shown in the workspace.",
+"type":"text"
+}
+],
+"id":"9a3a290dceb54196a4d1b107d7634ce6",
 "type":"text"
 },
 {
-"id":"48d620f5656a4a3c9acc813a4ce656d9",
+"fragments":[
+{
 "text":"The layout is recorded in a JSON object that is serialized to disk as soon as something changes.",
+"type":"text"
+}
+],
+"id":"48d620f5656a4a3c9acc813a4ce656d9",
 "type":"text"
 },
 {
@@ -1912,13 +2730,39 @@
 "type":"code"
 },
 {
-"id":"e76db32a5b6c45d8a05e036d12cf0c6c",
-"text":"The rest of this class provides methods for reading and writing the `data` dict.",
+"fragments":[
+{
+"text":"The rest of this class provides methods for reading and writing the ",
 "type":"text"
 },
 {
+"text":"data",
+"type":"code"
+},
+{
+"text":" dict.",
+"type":"text"
+}
+],
+"id":"e76db32a5b6c45d8a05e036d12cf0c6c",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"The hoisted page is stored in ",
+"type":"text"
+},
+{
+"text":"toc.hoisted_page_id",
+"type":"code"
+},
+{
+"text":":",
+"type":"text"
+}
+],
 "id":"79a5b1ea5fa04b4db9e02ece3117e362",
-"text":"The hoisted page is stored in `toc.hoisted_page_id`:",
 "type":"text"
 },
 {
@@ -1943,8 +2787,21 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"The collapsed pages are stored in ",
+"type":"text"
+},
+{
+"text":"toc.collapsed",
+"type":"code"
+},
+{
+"text":":",
+"type":"text"
+}
+],
 "id":"3d25d132c5f04df6b70d39fc30c7065e",
-"text":"The collapsed pages are stored in `toc.collapsed`:",
 "type":"text"
 },
 {
@@ -1969,8 +2826,21 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"The scratch pages are stored in ",
+"type":"text"
+},
+{
+"text":"workspace.scratch",
+"type":"code"
+},
+{
+"text":":",
+"type":"text"
+}
+],
 "id":"a3a93f965d4349aba42893c4c7bba506",
-"text":"The scratch pages are stored in `workspace.scratch`:",
 "type":"text"
 },
 {
@@ -1995,8 +2865,21 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"The pages displayed in the columns in the workspace are stored in ",
+"type":"text"
+},
+{
+"text":"workspace.columns",
+"type":"code"
+},
+{
+"text":":",
+"type":"text"
+}
+],
 "id":"881b5b9cc3f54fe381aa7862b804887a",
-"text":"The pages displayed in the columns in the workspace are stored in `workspace.columns`:",
 "type":"text"
 },
 {
@@ -2021,8 +2904,13 @@
 "type":"code"
 },
 {
-"id":"dc91f34cfa6747119042fc7878702d88",
+"fragments":[
+{
 "text":"Finally we have a utility function for ensuring that a specific key exists in a dictionary.",
+"type":"text"
+}
+],
+"id":"dc91f34cfa6747119042fc7878702d88",
 "type":"text"
 },
 {
@@ -2042,8 +2930,13 @@
 "id":"192db0d4b96e4162b3cf19f870ee287d",
 "paragraphs":[
 {
-"id":"7ca054a5e8564724925b9af8044c94ad",
+"fragments":[
+{
 "text":"Some parts of the application can be themed. Token types from pygments denote different things that can be styled.",
+"type":"text"
+}
+],
+"id":"7ca054a5e8564724925b9af8044c94ad",
 "type":"text"
 },
 {
@@ -2065,8 +2958,22 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"Here is a theme based on solarized. Mostly stolen from ",
+"type":"text"
+},
+{
+"text":"",
+"type":"link",
+"url":"https://github.com/honza/solarized-pygments/blob/master/solarized.py"
+},
+{
+"text":".",
+"type":"text"
+}
+],
 "id":"ba6b0fa60e1042d9a1a7c90b02be31a8",
-"text":"Here is a theme based on solarized. Mostly stolen from [](https://github.com/honza/solarized-pygments/blob/master/solarized.py).",
 "type":"text"
 },
 {
@@ -2086,8 +2993,13 @@
 "id":"b376363cbd664a838d3bafb7bfae2281",
 "paragraphs":[
 {
-"id":"af5fcddf1a684827aba22cb5ef8c2256",
+"fragments":[
+{
 "text":"A project is a container for a few other objects:",
+"type":"text"
+}
+],
+"id":"af5fcddf1a684827aba22cb5ef8c2256",
 "type":"text"
 },
 {
@@ -2100,8 +3012,13 @@
 "type":"code"
 },
 {
-"id":"d88d38993f69435a955b4e3280dd28f0",
+"fragments":[
+{
 "text":"Wrapper methods for document:",
+"type":"text"
+}
+],
+"id":"d88d38993f69435a955b4e3280dd28f0",
 "type":"text"
 },
 {
@@ -2115,8 +3032,13 @@
 "type":"code"
 },
 {
-"id":"b08235caad29483791eaab31b81fb215",
+"fragments":[
+{
 "text":"Wrapper methods for layout:",
+"type":"text"
+}
+],
+"id":"b08235caad29483791eaab31b81fb215",
 "type":"text"
 },
 {
@@ -2130,8 +3052,13 @@
 "type":"code"
 },
 {
-"id":"19a259c02d384479917bd03d8bd9a461",
+"fragments":[
+{
 "text":"Wrapper for theme:",
+"type":"text"
+}
+],
+"id":"19a259c02d384479917bd03d8bd9a461",
 "type":"text"
 },
 {
@@ -2186,8 +3113,13 @@
 "id":"427cb0d170a04b9898b5b744cd15b263",
 "paragraphs":[
 {
-"id":"324a5ebb37a44ec49c685670205356a5",
+"fragments":[
+{
 "text":"This generates a file that is suitable for textual diffing.",
+"type":"text"
+}
+],
+"id":"324a5ebb37a44ec49c685670205356a5",
 "type":"text"
 },
 {
@@ -2196,7 +3128,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DiffBuilder(object):\n\n    def __init__(self, document):\n        self.document = document\n\n    def build(self):\n        self.parts = []\n        self._foo()\n        return \"\".join(self.parts)\n\n    def _foo(self):\n        self.pages = []\n        self._collect_pages(self.document.get_page())\n        self._render_pages()\n\n    def _collect_pages(self, page):\n        self.pages.append(page)\n        for child in page.children:\n            self._collect_pages(child)\n\n    def _render_pages(self):\n        for page in sorted(self.pages, key=lambda page: page.id):\n            self._write(page.id)\n            self._write(\": \")\n            self._write(page.title)\n            for child in page.children:\n                self._write(\"\\n\")\n                self._write(\"    \")\n                self._write(child.id)\n                self._write(\": \")\n                self._write(child.title)\n            self._write(\"\\n\\n\")\n            for paragraph in page.paragraphs:\n                {\n                    \"text\": self._render_text,\n                    \"quote\": self._render_quote,\n                    \"list\": self._render_list,\n                    \"code\": self._render_code,\n                }.get(paragraph.type, self._render_unknown)(paragraph)\n\n    def _render_text(self, text):\n        self._wrapped_text(text.text)\n\n    def _render_quote(self, paragraph):\n        self._wrapped_text(paragraph.text, indent=4)\n\n    def _render_list(self, paragraph):\n        for line in paragraph.text.splitlines():\n            self._wrapped_text(line)\n\n    def _wrapped_text(self, text, indent=0):\n        current_line = []\n        for part in text.replace(\"\\n\", \" \").split(\" \"):\n            if len(\" \".join(current_line)) > 60-indent:\n                self._write(\" \"*indent+\" \".join(current_line))\n                self._write(\"\\n\")\n                current_line = []\n            if part.strip():\n                current_line.append(part.strip())\n        if current_line:\n            self._write(\" \"*indent+\" \".join(current_line))\n            self._write(\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_code(self, code):\n        self._write(\" / \".join(code.path)+\":\\n\\n\")\n        for line in code.text.splitlines():\n            self._write(\"    \"+line+\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_unknown(self, paragraph):\n        self._write(\"Unknown type = \"+paragraph.type+\"\\n\\n\")\n\n    def _write(self, text):\n        self.parts.append(text)\n",
+"text":"class DiffBuilder(object):\n\n    def __init__(self, document):\n        self.document = document\n\n    def build(self):\n        self.parts = []\n        self._foo()\n        return \"\".join(self.parts)\n\n    def _foo(self):\n        self.pages = []\n        self._collect_pages(self.document.get_page())\n        self._render_pages()\n\n    def _collect_pages(self, page):\n        self.pages.append(page)\n        for child in page.children:\n            self._collect_pages(child)\n\n    def _render_pages(self):\n        for page in sorted(self.pages, key=lambda page: page.id):\n            self._write(page.id)\n            self._write(\": \")\n            self._write(page.title)\n            for child in page.children:\n                self._write(\"\\n\")\n                self._write(\"    \")\n                self._write(child.id)\n                self._write(\": \")\n                self._write(child.title)\n            self._write(\"\\n\\n\")\n            for paragraph in page.paragraphs:\n                {\n                    \"text\": self._render_text,\n                    \"quote\": self._render_quote,\n                    \"list\": self._render_list,\n                    \"code\": self._render_code,\n                }.get(paragraph.type, self._render_unknown)(paragraph)\n\n    def _render_text(self, text):\n        self._wrapped_text(fragments_to_text(text.fragments))\n\n    def _render_quote(self, paragraph):\n        self._wrapped_text(fragments_to_text(paragraph.fragments), indent=4)\n\n    def _render_list(self, paragraph):\n        for line in paragraph.text.splitlines():\n            self._wrapped_text(line)\n\n    def _wrapped_text(self, text, indent=0):\n        current_line = []\n        for part in text.replace(\"\\n\", \" \").split(\" \"):\n            if len(\" \".join(current_line)) > 60-indent:\n                self._write(\" \"*indent+\" \".join(current_line))\n                self._write(\"\\n\")\n                current_line = []\n            if part.strip():\n                current_line.append(part.strip())\n        if current_line:\n            self._write(\" \"*indent+\" \".join(current_line))\n            self._write(\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_code(self, code):\n        self._write(\" / \".join(code.path)+\":\\n\\n\")\n        for line in code.text.splitlines():\n            self._write(\"    \"+line+\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_unknown(self, paragraph):\n        self._write(\"Unknown type = \"+paragraph.type+\"\\n\\n\")\n\n    def _write(self, text):\n        self.parts.append(text)\n",
 "type":"code"
 }
 ],
@@ -2264,8 +3196,13 @@
 "type":"code"
 },
 {
-"id":"650c09f63833430891ca9b67e3dd2db9",
+"fragments":[
+{
 "text":"This functions tries to write safely to a file. The file will either be completely written or not modified at all. It is achieved by first writing to a temporary file and then performing a rename.",
+"type":"text"
+}
+],
+"id":"650c09f63833430891ca9b67e3dd2db9",
 "type":"text"
 },
 {
@@ -2310,8 +3247,13 @@
 "id":"745dcf0d093a4f179dc7fbe1dc8b7bdd",
 "paragraphs":[
 {
-"id":"918c58768ee3442da6bc41cbeba8d211",
+"fragments":[
+{
 "text":"RLiterate ouputs one file for the program, one file for the test code, and a Makefile for various operations.",
+"type":"text"
+}
+],
+"id":"918c58768ee3442da6bc41cbeba8d211",
 "type":"text"
 },
 {
@@ -2345,8 +3287,13 @@
 "id":"4d689acb540d40ecb8b828701bb5bf74",
 "paragraphs":[
 {
-"id":"658e04c3d7394bca90f06344f85dfd24",
+"fragments":[
+{
 "text":"RLiterate is implemented in Python. This chapter gives a complete description of all the code.",
+"type":"text"
+}
+],
+"id":"658e04c3d7394bca90f06344f85dfd24",
 "type":"text"
 }
 ],
@@ -2357,18 +3304,33 @@
 "id":"cc36000ed12f4bfe88cefa2987fdb5cd",
 "paragraphs":[
 {
-"id":"fda934bcd2ed4bb9b24a22fde654ded5",
+"fragments":[
+{
 "text":"DoDragDrop must be called from within an event handler. (Not custom event handler, but actually like mouse down?)",
 "type":"text"
-},
-{
-"id":"aea413d004a34a7b8afeb35129a82cb6",
-"text":"Font must be assigned before setting a label, otherwise size calculations will be wrong? Must investigate further.",
+}
+],
+"id":"fda934bcd2ed4bb9b24a22fde654ded5",
 "type":"text"
 },
 {
-"id":"9c3fa82371204ca6af17631545166854",
+"fragments":[
+{
+"text":"Font must be assigned before setting a label, otherwise size calculations will be wrong? Must investigate further.",
+"type":"text"
+}
+],
+"id":"aea413d004a34a7b8afeb35129a82cb6",
+"type":"text"
+},
+{
+"fragments":[
+{
 "text":"sizer.AddSpacer adding space in both directions",
+"type":"text"
+}
+],
+"id":"9c3fa82371204ca6af17631545166854",
 "type":"text"
 }
 ],
@@ -2379,8 +3341,13 @@
 "id":"0a165f3042ee4350b9bebb61213b44c5",
 "paragraphs":[
 {
-"id":"de3589c301134bd88a37a3836dfd330e",
+"fragments":[
+{
 "text":"Random notes of what I might want to work on in the future.",
+"type":"text"
+}
+],
+"id":"de3589c301134bd88a37a3836dfd330e",
 "type":"text"
 },
 {
@@ -2395,8 +3362,13 @@
 "id":"956ae4613f144e3581d420995a7ef046",
 "paragraphs":[
 {
-"id":"ac1a9e2eb407424ca16713de927e0796",
+"fragments":[
+{
 "text":"RLiterate is a tool for authoring documents. You can think of it as a programmer's version of a word processor. This book describes RLiterate and also includes the complete implementation of the program.",
+"type":"text"
+}
+],
+"id":"ac1a9e2eb407424ca16713de927e0796",
 "type":"text"
 },
 {

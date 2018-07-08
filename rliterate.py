@@ -936,7 +936,7 @@ class TextEdit(MultilineTextCtrl):
         MultilineTextCtrl.__init__(
             self,
             parent,
-            value=paragraph.text,
+            value=fragments_to_text(paragraph.fragments),
             size=(-1, view.Size[1])
         )
         self.Font = create_font(monospace=True)
@@ -955,7 +955,7 @@ class TextEdit(MultilineTextCtrl):
     def _save(self):
         self.project.edit_paragraph(
             self.paragraph.id,
-            {"fragments": LegacyInlineTextParser().parse(self.Value)}
+            {"fragments": text_to_fragments(self.Value)}
         )
 class Quote(Text):
 
@@ -1722,20 +1722,6 @@ class DictTextParagraph(DictParagraph):
         return "paragraph.txt"
 
     @property
-    def text(self):
-        formatters = {
-            "emphasis": lambda x: "*{}*".format(x.text),
-            "strong": lambda x: "**{}**".format(x.text),
-            "reference": lambda x: "[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""),
-            "link": lambda x: "[{}]({})".format(x.text, x.url),
-        }
-        return "".join([
-            formatters.get(fragment.type, lambda x: x.text)(fragment)
-            for fragment
-            in self.fragments
-        ])
-
-    @property
     def fragments(self):
         return [
             DictTextFragment.create(self._document, fragment)
@@ -2377,10 +2363,10 @@ class DiffBuilder(object):
                 }.get(paragraph.type, self._render_unknown)(paragraph)
 
     def _render_text(self, text):
-        self._wrapped_text(text.text)
+        self._wrapped_text(fragments_to_text(text.fragments))
 
     def _render_quote(self, paragraph):
-        self._wrapped_text(paragraph.text, indent=4)
+        self._wrapped_text(fragments_to_text(paragraph.fragments), indent=4)
 
     def _render_list(self, paragraph):
         for line in paragraph.text.splitlines():
@@ -2434,6 +2420,22 @@ def post_fragment_click(widget, fragment):
     wx.PostEvent(widget, FragmentClick(0, widget=widget, fragment=fragment))
 def post_hovered_fragment_changed(widget, fragment):
     wx.PostEvent(widget, HoveredFragmentChanged(0, widget=widget, fragment=fragment))
+def fragments_to_text(fragments):
+    formatters = {
+        "emphasis": lambda x: "*{}*".format(x.text),
+        "strong": lambda x: "**{}**".format(x.text),
+        "reference": lambda x: "[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""),
+        "link": lambda x: "[{}]({})".format(x.text, x.url),
+    }
+    return "".join([
+        formatters.get(fragment.type, lambda x: x.text)(fragment)
+        for fragment
+        in fragments
+    ])
+
+
+def text_to_fragments(text):
+    return LegacyInlineTextParser().parse(text)
 def insert_between(separator, items):
     result = []
     for i, item in enumerate(items):
