@@ -81,32 +81,22 @@ class ParagraphBase(Editable):
         )
         menu.AppendItem(
             "Edit in gvim",
-            lambda: self.project.edit_paragraph(
-                self.paragraph.id,
-                {"text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)}
-            )
+            lambda: self.paragraph.update({
+                "text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)
+            })
         )
         menu.AppendSeparator()
         menu.AppendItem(
             "To quote",
-            lambda: self.project.edit_paragraph(
-                self.paragraph.id,
-                {"type": "quote"}
-            )
+            lambda: self.paragraph.update({"type": "quote"})
         )
         menu.AppendItem(
             "To text",
-            lambda: self.project.edit_paragraph(
-                self.paragraph.id,
-                {"type": "text"}
-            )
+            lambda: self.paragraph.update({"type": "text"})
         )
         menu.AppendItem(
             "To list",
-            lambda: self.project.edit_paragraph(
-                self.paragraph.id,
-                {"type": "list"}
-            )
+            lambda: self.paragraph.update({"type": "list"})
         )
 class DropPointDropTarget(wx.DropTarget):
 
@@ -955,10 +945,7 @@ class TextEdit(MultilineTextCtrl):
             event.Skip()
 
     def _save(self):
-        self.project.edit_paragraph(
-            self.paragraph.id,
-            {"fragments": text_to_fragments(self.Value)}
-        )
+        self.paragraph.update({"fragments": text_to_fragments(self.Value)})
 class Quote(Text):
 
     INDENT = 20
@@ -1056,10 +1043,10 @@ class ListTextEdit(MultilineTextCtrl):
 
     def _save(self):
         child_type, children = text_to_list(self.Value)
-        self.project.edit_paragraph(
-            self.paragraph.id,
-            {"child_type": child_type, "children": children}
-        )
+        self.paragraph.update({
+            "child_type": child_type,
+            "children": children
+        })
 class Code(ParagraphBase):
 
     def CreateView(self):
@@ -1185,7 +1172,7 @@ class CodeEditor(wx.Panel):
         return button
 
     def _on_save(self, event):
-        self.project.edit_paragraph(self.paragraph.id, {
+        self.paragraph.update({
             "path": self.path.Value.split(" / "),
             "text": self.text.Value,
         })
@@ -1264,10 +1251,7 @@ class ImageEdit(wx.Panel):
         value = {"fragments": text_to_fragments(self.text.Value)}
         if self.image_base64:
             value["image_base64"] = self.image_base64
-        self.project.edit_paragraph(
-            self.paragraph.id,
-            value
-        )
+        self.paragraph.update(value)
 class Factory(ParagraphBase):
 
     def CreateView(self):
@@ -1304,22 +1288,23 @@ class Factory(ParagraphBase):
         return view
 
     def _on_text_button(self, event):
-        self.project.edit_paragraph(
-            self.paragraph.id,
-            {"type": "text", "fragments": [{"type": "text", "text": "Enter text here..."}]}
-        )
+        self.paragraph.update({
+            "type": "text",
+            "fragments": [{"type": "text", "text": "Enter text here..."}],
+        })
 
     def _on_code_button(self, event):
-        self.project.edit_paragraph(
-            self.paragraph.id,
-            {"type": "code", "path": [], "text": "Enter code here..."}
-        )
+        self.paragraph.update({
+            "type": "code",
+            "path": [],
+            "text": "Enter code here...",
+        })
 
     def _on_image_button(self, event):
-        self.project.edit_paragraph(
-            self.paragraph.id,
-            {"type": "image", "fragments": [{"type": "text", "text": "Enter text here..."}]}
-        )
+        self.paragraph.update({
+            "type": "image",
+            "fragments": [{"type": "text", "text": "Enter text here..."}],
+        })
 class ParagraphContextMenu(wx.Menu):
 
     def AppendItem(self, text, fn):
@@ -1566,10 +1551,6 @@ class Document(Observable):
             paragraphs = state["pages"][page_id]["paragraphs"]
             paragraphs.pop(index_with_id(paragraphs, paragraph_id))
             return state["paragraphs"].pop(paragraph_id)
-
-    def edit_paragraph(self, paragraph_id, data):
-        with self.new_state() as state:
-            state["paragraphs"][paragraph_id].update(data)
     def get_page(self, page_id=None):
         if page_id is None:
             page_id = self._state["root_page"]["id"]
@@ -1769,6 +1750,10 @@ class DictParagraph(object):
     @property
     def type(self):
         return self._paragraph_dict["type"]
+
+    def update(self, data):
+        with self._document.new_state() as state:
+            state["paragraphs"][self.id].update(data)
 class DictTextParagraph(DictParagraph):
 
     @property
@@ -2097,9 +2082,6 @@ class Project(Observable):
 
     def delete_paragraph(self, *args, **kwargs):
         return self.document.delete_paragraph(*args, **kwargs)
-
-    def edit_paragraph(self, *args, **kwargs):
-        return self.document.edit_paragraph(*args, **kwargs)
     def toggle_collapsed(self, *args, **kwargs):
         return self.layout.toggle_collapsed(*args, **kwargs)
 
