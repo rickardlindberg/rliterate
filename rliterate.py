@@ -372,6 +372,7 @@ class TableOfContents(wx.Panel):
             self.drop_points = []
             if self.unhoist_button is not None:
                 self.unhoist_button.Destroy()
+                self.unhoist_button = None
             self.page_sizer.Clear(True)
             self._render_unhoist_button()
             self._render_page_container()

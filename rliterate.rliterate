@@ -966,7 +966,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n        self.unhoist_button = None\n        self.page_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.page_container = CompactScrolledWindow(self)\n        self.page_container.SetSizer(self.page_sizer)\n        self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        if self.unhoist_button is not None:\n            self.unhoist_button.Destroy()\n        self.page_sizer.Clear(True)\n        self._render_unhoist_button()\n        self._render_page_container()\n        self.Layout()\n",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n        self.unhoist_button = None\n        self.page_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.page_container = CompactScrolledWindow(self)\n        self.page_container.SetSizer(self.page_sizer)\n        self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        if self.unhoist_button is not None:\n            self.unhoist_button.Destroy()\n            self.unhoist_button = None\n        self.page_sizer.Clear(True)\n        self._render_unhoist_button()\n        self._render_page_container()\n        self.Layout()\n",
 "type":"code"
 },
 {
@@ -2871,12 +2871,11 @@
 {
 "fragments":[
 {
-"text":"Scratch pages were replaced by columns. If we open an old layouts file, we replace it.",
+"text":"factory",
 "type":"text"
 }
 ],
 "id":"f7c7996646934b3ab24e208dc9d72ac9",
-"text":"factory",
 "type":"text"
 },
 {
