@@ -1,3 +1,16 @@
+def test_reads_legacy_scratch_pages(tmpfile):
+    write_json_to_file(tmpfile, {
+        "workspace": {
+            "scratch": ["abc"],
+        }
+    })
+    layout = Layout(tmpfile)
+    layout.set_hoisted_page(None)
+    assert load_json_from_file(tmpfile)["workspace"] == {
+        "columns": [
+            ["abc"],
+        ]
+    }
 # This file is automatically extracted from rliterate.rliterate.
 
 

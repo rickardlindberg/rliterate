@@ -1983,8 +1983,11 @@ class Layout(Observable):
         self._toc = ensure_key(self.data, "toc", {})
         self._toc_collapsed = ensure_key(self._toc, "collapsed", [])
         self._workspace = ensure_key(self.data, "workspace", {})
-        self._workspace_scratch = ensure_key(self._workspace, "scratch", [])
         self._workspace_columns = ensure_key(self._workspace, "columns", [])
+        if "scratch" in self._workspace:
+            if not self._workspace["columns"]:
+                self._workspace["columns"] = [self._workspace["scratch"]]
+            del self._workspace["scratch"]
     def get_hoisted_page(self):
         return self._toc.get("hoisted_page_id", None)
 
@@ -2000,17 +2003,9 @@ class Layout(Observable):
                 self._toc_collapsed.remove(page_id)
             else:
                 self._toc_collapsed.append(page_id)
-    def get_scratch_pages(self):
-        return self._workspace_scratch[:]
-
-    def set_scratch_pages(self, page_ids):
-        self.set_pages(page_ids, column_index=0)
     @property
     def columns(self):
-        if self._workspace_columns:
-            return [column[:] for column in self._workspace_columns]
-        else:
-            return [self.get_scratch_pages()]
+        return [column[:] for column in self._workspace_columns]
 
     def open_pages(self, page_ids, column_index=None):
         with self.notify("workspace"):
@@ -2116,12 +2111,6 @@ class Project(Observable):
 
     def is_collapsed(self, *args, **kwargs):
         return self.layout.is_collapsed(*args, **kwargs)
-
-    def get_scratch_pages(self, *args, **kwargs):
-        return self.layout.get_scratch_pages(*args, **kwargs)
-
-    def set_scratch_pages(self, *args, **kwargs):
-        return self.layout.set_scratch_pages(*args, **kwargs)
 
     @property
     def columns(self):

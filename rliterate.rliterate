@@ -2863,7 +2863,45 @@
 "title":"Document model"
 },
 {
+"children":[
+{
 "children":[],
+"id":"de04e2c0e4d241fd8c5e3d180099f27a",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"Scratch pages were replaced by columns. If we open an old layouts file, we replace it.",
+"type":"text"
+}
+],
+"id":"f7c7996646934b3ab24e208dc9d72ac9",
+"text":"factory",
+"type":"text"
+},
+{
+"id":"046324b15fa5412a9fad2bc72e35bec5",
+"path":[
+"test_rliterate.py"
+],
+"text":"def test_reads_legacy_scratch_pages(tmpfile):\n    write_json_to_file(tmpfile, {\n        \"workspace\": {\n            \"scratch\": [\"abc\"],\n        }\n    })\n    layout = Layout(tmpfile)\n    layout.set_hoisted_page(None)\n    assert load_json_from_file(tmpfile)[\"workspace\"] == {\n        \"columns\": [\n            [\"abc\"],\n        ]\n    }\n",
+"type":"code"
+},
+{
+"id":"aa0db3fc90134e42ad571cbcc560730d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Layout>>",
+"<<__init__>>"
+],
+"text":"if \"scratch\" in self._workspace:\n    if not self._workspace[\"columns\"]:\n        self._workspace[\"columns\"] = [self._workspace[\"scratch\"]]\n    del self._workspace[\"scratch\"]\n",
+"type":"code"
+}
+],
+"title":"Legacy scratch pages"
+}
+],
 "id":"f7f16199492c4bad80567c3a960b8bc9",
 "paragraphs":[
 {
@@ -3004,45 +3042,6 @@
 {
 "fragments":[
 {
-"text":"The scratch pages are stored in ",
-"type":"text"
-},
-{
-"text":"workspace.scratch",
-"type":"code"
-},
-{
-"text":":",
-"type":"text"
-}
-],
-"id":"a3a93f965d4349aba42893c4c7bba506",
-"type":"text"
-},
-{
-"id":"aa0db3fc90134e42ad571cbcc560730d",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Layout>>",
-"<<__init__>>"
-],
-"text":"self._workspace = ensure_key(self.data, \"workspace\", {})\nself._workspace_scratch = ensure_key(self._workspace, \"scratch\", [])\n",
-"type":"code"
-},
-{
-"id":"b891da6a2e5641219278cb7f4a535f5e",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Layout>>"
-],
-"text":"def get_scratch_pages(self):\n    return self._workspace_scratch[:]\n\ndef set_scratch_pages(self, page_ids):\n    self.set_pages(page_ids, column_index=0)\n",
-"type":"code"
-},
-{
-"fragments":[
-{
 "text":"The pages displayed in the columns in the workspace are stored in ",
 "type":"text"
 },
@@ -3057,6 +3056,17 @@
 ],
 "id":"881b5b9cc3f54fe381aa7862b804887a",
 "type":"text"
+},
+{
+"id":"1d659258e6534f148dfbada0dce21578",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Layout>>",
+"<<__init__>>"
+],
+"text":"self._workspace = ensure_key(self.data, \"workspace\", {})",
+"type":"code"
 },
 {
 "id":"0d83575340f24f67af49175cb0a1db83",
@@ -3076,7 +3086,7 @@
 "<<classes>>",
 "<<Layout>>"
 ],
-"text":"@property\ndef columns(self):\n    if self._workspace_columns:\n        return [column[:] for column in self._workspace_columns]\n    else:\n        return [self.get_scratch_pages()]\n\ndef open_pages(self, page_ids, column_index=None):\n    with self.notify(\"workspace\"):\n        if column_index is None:\n            column_index = len(self._workspace_columns)\n        self._workspace_columns[column_index:] = [page_ids[:]]\n\ndef is_open(self, page_id):\n    for column in self.columns:\n        if page_id in column:\n            return True\n    return False\n",
+"text":"@property\ndef columns(self):\n    return [column[:] for column in self._workspace_columns]\n\ndef open_pages(self, page_ids, column_index=None):\n    with self.notify(\"workspace\"):\n        if column_index is None:\n            column_index = len(self._workspace_columns)\n        self._workspace_columns[column_index:] = [page_ids[:]]\n\ndef is_open(self, page_id):\n    for column in self.columns:\n        if page_id in column:\n            return True\n    return False\n",
 "type":"code"
 },
 {
@@ -3224,7 +3234,7 @@
 "<<classes>>",
 "<<Project>>"
 ],
-"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\ndef get_scratch_pages(self, *args, **kwargs):\n    return self.layout.get_scratch_pages(*args, **kwargs)\n\ndef set_scratch_pages(self, *args, **kwargs):\n    return self.layout.set_scratch_pages(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    return self.layout.open_pages(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
+"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    return self.layout.open_pages(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
 "type":"code"
 },
 {
@@ -4443,25 +4453,6 @@
 "fragments":[
 {
 "text":"Use panel in top level window (otherwise no tab cycling (reference?))",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Deprecate scratch pages (",
-"type":"text"
-},
-{
-"page_id":"f7f16199492c4bad80567c3a960b8bc9",
-"text":null,
-"type":"reference"
-},
-{
-"text":")?",
 "type":"text"
 }
 ]
