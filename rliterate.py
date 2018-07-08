@@ -955,7 +955,7 @@ class TextEdit(MultilineTextCtrl):
     def _save(self):
         self.project.edit_paragraph(
             self.paragraph.id,
-            {"text": self.Value}
+            {"fragments": LegacyInlineTextParser().parse(self.Value)}
         )
 class Quote(Text):
 
@@ -978,7 +978,7 @@ class Quote(Text):
         )
         view.SetSizer(sizer)
         return view
-class List(Text):
+class List(ParagraphBase):
 
     INDENT = 20
 
@@ -988,6 +988,14 @@ class List(Text):
         self.add_items(view, sizer, self.paragraph.item.children, self.paragraph.item.child_type)
         view.SetSizer(sizer)
         return view
+
+    def CreateEdit(self):
+        return ListTextEdit(
+            self,
+            self.project,
+            self.paragraph,
+            self.view
+        )
 
     def add_items(self, view, sizer, items, child_type, indent=0):
         for index, item in enumerate(items):
@@ -1020,6 +1028,35 @@ class List(Text):
             return "{}. ".format(index + 1)
         else:
             return u"\u2022 "
+
+
+class ListTextEdit(MultilineTextCtrl):
+
+    def __init__(self, parent, project, paragraph, view):
+        MultilineTextCtrl.__init__(
+            self,
+            parent,
+            value=paragraph.text,
+            size=(-1, view.Size[1])
+        )
+        self.Font = create_font(monospace=True)
+        self.project = project
+        self.paragraph = paragraph
+        self.Bind(wx.EVT_CHAR, self._on_char)
+
+    def _on_char(self, event):
+        if event.KeyCode == wx.WXK_CONTROL_S:
+            self._save()
+        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
+            self._save()
+        else:
+            event.Skip()
+
+    def _save(self):
+        self.project.edit_paragraph(
+            self.paragraph.id,
+            {"text": self.Value}
+        )
 class Code(ParagraphBase):
 
     def CreateView(self):
@@ -1266,7 +1303,7 @@ class Factory(ParagraphBase):
     def _on_text_button(self, event):
         self.project.edit_paragraph(
             self.paragraph.id,
-            {"type": "text", "text": "Enter text here..."}
+            {"type": "text", "fragments": [{"type": "text", "text": "Enter text here..."}]}
         )
 
     def _on_code_button(self, event):
@@ -1422,6 +1459,13 @@ class Document(Observable):
         self.path = path
         self._load()
         self._cache()
+        for paragraph in self._paragraphs.values():
+            if paragraph["type"] == "text" and "text" in paragraph:
+                paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
+                del paragraph["text"]
+            if paragraph["type"] == "quote" and "text" in paragraph:
+                paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
+                del paragraph["text"]
         self.listen(lambda event: self._save())
 
     def _cache(self):
@@ -1679,22 +1723,44 @@ class DictTextParagraph(DictParagraph):
 
     @property
     def text(self):
-        return self._paragraph_dict["text"]
+        formatters = {
+            "emphasis": lambda x: "*{}*".format(x.text),
+            "strong": lambda x: "**{}**".format(x.text),
+            "reference": lambda x: "[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""),
+            "link": lambda x: "[{}]({})".format(x.text, x.url),
+        }
+        return "".join([
+            formatters.get(fragment.type, lambda x: x.text)(fragment)
+            for fragment
+            in self.fragments
+        ])
 
     @property
     def fragments(self):
-        return LegacyInlineTextParser().parse(self.text)
+        return [
+            DictTextFragment.create(self._document, fragment)
+            for fragment
+            in self._paragraph_dict["fragments"]
+        ]
 
     @property
     def formatted_text(self):
         return [
-            DictTextFragment.create(self._document, fragment).formatted_text
+            fragment.formatted_text
             for fragment
             in self.fragments
         ]
 class DictQuoteParagraph(DictTextParagraph):
     pass
-class DictListParagraph(DictTextParagraph):
+class DictListParagraph(DictParagraph):
+
+    @property
+    def filename(self):
+        return "paragraph.txt"
+
+    @property
+    def text(self):
+        return self._paragraph_dict["text"]
 
     @property
     def item(self):

@@ -2,7 +2,7 @@
 
 .PHONY: test
 test:
-	py.test
+	py.test -vv
 
 .PHONY: watch-test
 watch-test:
