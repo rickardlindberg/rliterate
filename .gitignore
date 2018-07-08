@@ -4,3 +4,5 @@
 /example.html
 /example.py
 .*.layout
+/.cache
+/__pycache__

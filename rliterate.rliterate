@@ -2291,15 +2291,36 @@
 "id":"745dcf0d093a4f179dc7fbe1dc8b7bdd",
 "paragraphs":[
 {
+"id":"918c58768ee3442da6bc41cbeba8d211",
+"text":"RLiterate ouputs one file for the program, one file for the test code, and a Makefile for various operations.",
+"type":"text"
+},
+{
 "id":"93f40cf2b3364e0ca390f5cb0239ce0a",
 "path":[
 "rliterate.py"
 ],
 "text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
 "type":"code"
+},
+{
+"id":"35c0170810bd4f31987da0b5a2e947ba",
+"path":[
+"test_rliterate.py"
+],
+"text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nimport pytest\n\n\n<<test cases>>\n\n\ndef test():\n    assert True\n",
+"type":"code"
+},
+{
+"id":"2ed62af3aae04c9395038d989826c4af",
+"path":[
+"Makefile"
+],
+"text":"# This file is automatically extracted from rliterate.rliterate.\n\n.PHONY: test\ntest:\n\tpy.test\n\n.PHONY: watch-test\nwatch-test:\n\tinotifywait -m -e close_write *rliterate.py 2>&1 | while read x; do tput reset && make test; done\n",
+"type":"code"
 }
 ],
-"title":"Main Python file"
+"title":"Main files"
 }
 ],
 "id":"4d689acb540d40ecb8b828701bb5bf74",
