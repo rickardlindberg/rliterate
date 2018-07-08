@@ -2620,12 +2620,11 @@
 {
 "fragments":[
 {
-"text":"Loading:",
+"text":"factory",
 "type":"text"
 }
 ],
 "id":"d3d1bf2a9df94766a6a9eadc099bd00b",
-"text":"factory",
 "type":"text"
 },
 {
@@ -2641,12 +2640,11 @@
 {
 "fragments":[
 {
-"text":"New state:",
+"text":"factory",
 "type":"text"
 }
 ],
 "id":"a6745ee26db9461c80017c916c5d1348",
-"text":"factory",
 "type":"text"
 },
 {
@@ -2662,12 +2660,11 @@
 {
 "fragments":[
 {
-"text":"Page operations:",
+"text":"factory",
 "type":"text"
 }
 ],
 "id":"601230dd49d14629a0fec9cf1d3789e5",
-"text":"factory",
 "type":"text"
 },
 {
@@ -2683,12 +2680,11 @@
 {
 "fragments":[
 {
-"text":"Paragraph operations:",
+"text":"factory",
 "type":"text"
 }
 ],
 "id":"fcb2eaddb6ad4e96b3fed43bfb1064a3",
-"text":"factory",
 "type":"text"
 },
 {
@@ -2698,7 +2694,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n            \"text\":\n            \"factory\",\n        }\n        state[\"pages\"][page_id][\"paragraphs\"].append(paragraph)\n        state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):\n    with self.new_state() as state:\n        if (source_page == target_page and\n            source_paragraph == before_paragraph):\n            return\n        paragraph = self.delete_paragraph(source_page, source_paragraph)\n        self._add_paragraph(state, target_page, paragraph, before_id=before_paragraph)\n\ndef _add_paragraph(self, state, page_id, paragraph, before_id):\n    paragraphs = state[\"pages\"][page_id][\"paragraphs\"]\n    if before_id is None:\n        paragraphs.append(paragraph)\n    else:\n        paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)\n    state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef delete_paragraph(self, page_id, paragraph_id):\n    with self.new_state() as state:\n        paragraphs = state[\"pages\"][page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return state[\"paragraphs\"].pop(paragraph_id)\n\ndef edit_paragraph(self, paragraph_id, data):\n    with self.new_state() as state:\n        state[\"paragraphs\"][paragraph_id].update(data)\n",
+"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        state[\"pages\"][page_id][\"paragraphs\"].append(paragraph)\n        state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):\n    with self.new_state() as state:\n        if (source_page == target_page and\n            source_paragraph == before_paragraph):\n            return\n        paragraph = self.delete_paragraph(source_page, source_paragraph)\n        self._add_paragraph(state, target_page, paragraph, before_id=before_paragraph)\n\ndef _add_paragraph(self, state, page_id, paragraph, before_id):\n    paragraphs = state[\"pages\"][page_id][\"paragraphs\"]\n    if before_id is None:\n        paragraphs.append(paragraph)\n    else:\n        paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)\n    state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef delete_paragraph(self, page_id, paragraph_id):\n    with self.new_state() as state:\n        paragraphs = state[\"pages\"][page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return state[\"paragraphs\"].pop(paragraph_id)\n\ndef edit_paragraph(self, paragraph_id, data):\n    with self.new_state() as state:\n        state[\"paragraphs\"][paragraph_id].update(data)\n",
 "type":"code"
 }
 ],

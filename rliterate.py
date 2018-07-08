@@ -1557,8 +1557,6 @@ class Document(Observable):
             paragraph = {
                 "id": genid(),
                 "type": "factory",
-                "text":
-                "factory",
             }
             state["pages"][page_id]["paragraphs"].append(paragraph)
             state["paragraphs"][paragraph["id"]] = paragraph
