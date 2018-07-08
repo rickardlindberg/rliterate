@@ -33,6 +33,7 @@ def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):
         "paragraphs": [
             {"id": "abc1", "type": "text", "text": text},
             {"id": "abc2", "type": "quote", "text": text},
+            {"id": "abc3", "type": "image", "text": text, "image_base64": "data"},
         ],
     })
     doc = Document.from_file(tmpfile)
@@ -44,5 +45,6 @@ def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):
         "paragraphs": [
             {"id": "abc1", "type": "text", "fragments": fragments},
             {"id": "abc2", "type": "quote", "fragments": fragments},
+            {"id": "abc3", "type": "image", "fragments": fragments, "image_base64": "data"},
         ],
     }

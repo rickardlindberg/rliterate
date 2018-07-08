@@ -1235,7 +1235,7 @@ class ImageEdit(wx.Panel):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))
         sizer.Add(self.image, flag=wx.ALIGN_CENTER)
-        self.text = MultilineTextCtrl(self, value=paragraph.text)
+        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments))
         sizer.Add(self.text, flag=wx.EXPAND)
         paste_button = wx.Button(self, label="Paste")
         paste_button.Bind(wx.EVT_BUTTON, self._on_paste)
@@ -1258,7 +1258,7 @@ class ImageEdit(wx.Panel):
             self.GetTopLevelParent().Layout()
 
     def _on_save(self, event):
-        value = {"text": self.text.Value}
+        value = {"fragments": text_to_fragments(self.text.Value)}
         if self.image_base64:
             value["image_base64"] = self.image_base64
         self.project.edit_paragraph(
@@ -1315,7 +1315,7 @@ class Factory(ParagraphBase):
     def _on_image_button(self, event):
         self.project.edit_paragraph(
             self.paragraph.id,
-            {"type": "image", "text": "Enter text here..."}
+            {"type": "image", "fragments": [{"type": "text", "text": "Enter text here..."}]}
         )
 class ParagraphContextMenu(wx.Menu):
 
@@ -1460,10 +1460,7 @@ class Document(Observable):
         self._load()
         self._cache()
         for paragraph in self._paragraphs.values():
-            if paragraph["type"] == "text" and "text" in paragraph:
-                paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
-                del paragraph["text"]
-            if paragraph["type"] == "quote" and "text" in paragraph:
+            if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
                 paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
                 del paragraph["text"]
         self.listen(lambda event: self._save())
@@ -1872,17 +1869,17 @@ class DictCodeParagraph(DictParagraph):
 class DictImageParagraph(DictParagraph):
 
     @property
-    def text(self):
-        return self._paragraph_dict["text"]
-
-    @property
     def fragments(self):
-        return LegacyInlineTextParser().parse(self.text)
+        return [
+            DictTextFragment.create(self._document, fragment)
+            for fragment
+            in self._paragraph_dict["fragments"]
+        ]
 
     @property
     def formatted_text(self):
         return [
-            DictTextFragment.create(self._document, fragment).formatted_text
+            fragment.formatted_text
             for fragment
             in self.fragments
         ]
