@@ -1795,7 +1795,7 @@
 "rliterate.py",
 "<<functions>>"
 ],
-"text":"def fragments_to_text(fragments):\n    formatters = {\n        \"emphasis\": lambda x: \"*{}*\".format(x.text),\n        \"strong\": lambda x: \"**{}**\".format(x.text),\n        \"reference\": lambda x: \"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"),\n        \"link\": lambda x: \"[{}]({})\".format(x.text, x.url),\n    }\n    return \"\".join([\n        formatters.get(fragment.type, lambda x: x.text)(fragment)\n        for fragment\n        in fragments\n    ])\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)\n",
+"text":"def fragments_to_text(fragments):\n    formatters = {\n        \"emphasis\": lambda x: \"*{}*\".format(x.text),\n        \"code\": lambda x: \"`{}`\".format(x.text),\n        \"strong\": lambda x: \"**{}**\".format(x.text),\n        \"reference\": lambda x: \"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"),\n        \"link\": lambda x: \"[{}]({})\".format(x.text, x.url),\n    }\n    return \"\".join([\n        formatters.get(fragment.type, lambda x: x.text)(fragment)\n        for fragment\n        in fragments\n    ])\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)\n",
 "type":"code"
 }
 ],
@@ -4461,7 +4461,11 @@
 "children":[],
 "fragments":[
 {
-"text":"x.update({\"fragments\": ...}) leaks an internal data structure reference",
+"text":"x.update({\"fragments\": ...})",
+"type":"code"
+},
+{
+"text":" leaks an internal data structure reference",
 "type":"text"
 }
 ]

@@ -2420,6 +2420,7 @@ def post_hovered_fragment_changed(widget, fragment):
 def fragments_to_text(fragments):
     formatters = {
         "emphasis": lambda x: "*{}*".format(x.text),
+        "code": lambda x: "`{}`".format(x.text),
         "strong": lambda x: "**{}**".format(x.text),
         "reference": lambda x: "[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""),
         "link": lambda x: "[{}]({})".format(x.text, x.url),
