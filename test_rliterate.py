@@ -34,6 +34,12 @@ def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):
             {"id": "abc1", "type": "text", "text": text},
             {"id": "abc2", "type": "quote", "text": text},
             {"id": "abc3", "type": "image", "text": text, "image_base64": "data"},
+            {"id": "abc4", "type": "list", "text": "\n".join([
+                "* **a**{}".format(text),
+                "* **b**{}".format(text),
+                "    1. **c**{}".format(text),
+                "    1. **d**{}".format(text),
+            ])},
         ],
     })
     doc = Document.from_file(tmpfile)
@@ -46,5 +52,12 @@ def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):
             {"id": "abc1", "type": "text", "fragments": fragments},
             {"id": "abc2", "type": "quote", "fragments": fragments},
             {"id": "abc3", "type": "image", "fragments": fragments, "image_base64": "data"},
+            {"id": "abc4", "type": "list", "child_type": "unordered", "children": [
+                {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "a"}]+fragments},
+                {"child_type": "ordered", "children": [
+                    {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "c"}]+fragments},
+                    {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "d"}]+fragments},
+                ], "fragments": [{"type": "strong", "text": "b"}]+fragments},
+            ]},
         ],
     }

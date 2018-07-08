@@ -985,7 +985,7 @@ class List(ParagraphBase):
     def CreateView(self):
         view = wx.Panel(self)
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.add_items(view, sizer, self.paragraph.item.children, self.paragraph.item.child_type)
+        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)
         view.SetSizer(sizer)
         return view
 
@@ -1036,7 +1036,7 @@ class ListTextEdit(MultilineTextCtrl):
         MultilineTextCtrl.__init__(
             self,
             parent,
-            value=paragraph.text,
+            value=list_to_text(paragraph),
             size=(-1, view.Size[1])
         )
         self.Font = create_font(monospace=True)
@@ -1053,9 +1053,10 @@ class ListTextEdit(MultilineTextCtrl):
             event.Skip()
 
     def _save(self):
+        child_type, children = text_to_list(self.Value)
         self.project.edit_paragraph(
             self.paragraph.id,
-            {"text": self.Value}
+            {"child_type": child_type, "children": children}
         )
 class Code(ParagraphBase):
 
@@ -1463,6 +1464,9 @@ class Document(Observable):
             if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
                 paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
                 del paragraph["text"]
+            elif paragraph["type"] in ["list"] and "text" in paragraph:
+                paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
+                del paragraph["text"]
         self.listen(lambda event: self._save())
 
     def _cache(self):
@@ -1660,6 +1664,59 @@ class LegacyInlineTextParser(object):
             match = pattern.match(text)
             if match:
                 return match, fn(self, match)
+class LegacyListParser(object):
+
+    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
+
+    def __init__(self, text):
+        self.lines = text.strip().split("\n")
+
+    def parse_items(self, level=0):
+        items = []
+        list_type = None
+        while True:
+            type_and_item = self.parse_item(level)
+            if type_and_item is None:
+                return list_type, items
+            else:
+                item_type, item = type_and_item
+                if list_type is None:
+                    list_type = item_type
+                items.append(item)
+
+    def parse_item(self, level):
+        parts = self.consume_bodies()
+        next_level = level + 1
+        item_type = None
+        if self.lines:
+            match = self.ITEM_START_RE.match(self.lines[0])
+            if match:
+                matched_level = len(match.group(1))
+                if matched_level >= level:
+                    parts.append(match.group(3))
+                    self.lines.pop(0)
+                    parts.extend(self.consume_bodies())
+                    next_level = matched_level + 1
+                    if "*" in match.group(2):
+                        item_type = "unordered"
+                    else:
+                        item_type = "ordered"
+        if parts:
+            child_type, children = self.parse_items(next_level)
+            return (item_type, {
+                "fragments": LegacyInlineTextParser().parse(" ".join(parts)),
+                "children": children,
+                "child_type": child_type,
+            })
+
+    def consume_bodies(self):
+        bodies = []
+        while self.lines:
+            if self.ITEM_START_RE.match(self.lines[0]):
+                break
+            else:
+                bodies.append(self.lines.pop(0))
+        return bodies
 class DictPage(object):
 
     def __init__(self, document, page_dict):
@@ -1738,85 +1795,39 @@ class DictQuoteParagraph(DictTextParagraph):
 class DictListParagraph(DictParagraph):
 
     @property
-    def filename(self):
-        return "paragraph.txt"
+    def child_type(self):
+        return self._paragraph_dict["child_type"]
 
     @property
-    def text(self):
-        return self._paragraph_dict["text"]
-
-    @property
-    def item(self):
-        items, list_type = ListParser(self._document, self.text.strip().split("\n")).parse_items()
-        return ListItem([], items, list_type)
-
-
-class ListParser(object):
-
-    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
-
-    def __init__(self, document, lines):
-        self._document = document
-        self.lines = lines
-
-    def parse_items(self, level=0):
-        items = []
-        list_type = None
-        while True:
-            item_and_type = self.parse_item(level)
-            if item_and_type is None:
-                return items, list_type
-            else:
-                item, item_type = item_and_type
-                if list_type is None:
-                    list_type = item_type
-                items.append(item)
-
-    def parse_item(self, level):
-        parts = self.consume_bodies()
-        next_level = level + 1
-        item_type = None
-        if self.lines:
-            match = self.ITEM_START_RE.match(self.lines[0])
-            if match:
-                matched_level = len(match.group(1))
-                if matched_level >= level:
-                    parts.append(match.group(3))
-                    self.lines.pop(0)
-                    parts.extend(self.consume_bodies())
-                    next_level = matched_level + 1
-                    if "*" in match.group(2):
-                        item_type = "unordered"
-                    else:
-                        item_type = "ordered"
-        if parts:
-            children, child_type = self.parse_items(next_level)
-            return ListItem(
-                [
-                    DictTextFragment.create(self._document, fragment).formatted_text
-                    for fragment
-                    in LegacyInlineTextParser().parse(" ".join(parts))
-                ],
-                children,
-                child_type
-            ), item_type
-
-    def consume_bodies(self):
-        bodies = []
-        while self.lines:
-            if self.ITEM_START_RE.match(self.lines[0]):
-                break
-            else:
-                bodies.append(self.lines.pop(0))
-        return bodies
+    def children(self):
+        return [ListItem(self._document, x) for x in self._paragraph_dict["children"]]
 
 
 class ListItem(object):
 
-    def __init__(self, formatted_text, children, child_type):
-        self.formatted_text = formatted_text
-        self.children = children
-        self.child_type = child_type
+    def __init__(self, document, item_dict):
+        self._document = document
+        self._item_dict = item_dict
+
+    @property
+    def fragments(self):
+        return [
+            DictTextFragment.create(self._document, fragment)
+            for fragment
+            in self._item_dict["fragments"]
+        ]
+
+    @property
+    def child_type(self):
+        return self._item_dict["child_type"]
+
+    @property
+    def children(self):
+        return [ListItem(self._document, x) for x in self._item_dict["children"]]
+
+    @property
+    def formatted_text(self):
+        return [x.formatted_text for x in self.fragments]
 class DictCodeParagraph(DictParagraph):
 
     @property
@@ -2230,7 +2241,7 @@ class HTMLBuilder(object):
             self.fragments(text.formatted_text)
 
     def paragraph_list(self, paragraph):
-        self.list(paragraph.item)
+        self.list(paragraph)
 
     def list(self, a_list):
         if a_list.children:
@@ -2366,8 +2377,7 @@ class DiffBuilder(object):
         self._wrapped_text(fragments_to_text(paragraph.fragments), indent=4)
 
     def _render_list(self, paragraph):
-        for line in paragraph.text.splitlines():
-            self._wrapped_text(line)
+        self._write(list_to_text(paragraph))
 
     def _wrapped_text(self, text, indent=0):
         current_line = []
@@ -2433,6 +2443,27 @@ def fragments_to_text(fragments):
 
 def text_to_fragments(text):
     return LegacyInlineTextParser().parse(text)
+def list_to_text(paragraph):
+    def list_item_to_text(child_type, item, indent=0, index=0):
+        text = "    "*indent
+        if child_type == "ordered":
+            text += "{}. ".format(index+1)
+        else:
+            text += "* "
+        text += fragments_to_text(item.fragments)
+        text += "\n"
+        for index, child in enumerate(item.children):
+            text += list_item_to_text(item.child_type, child, index=index, indent=indent+1)
+        return text
+    res = ""
+    for index, child in enumerate(paragraph.children):
+        res += list_item_to_text(paragraph.child_type, child, index=index)
+    return res
+
+
+def text_to_list(text):
+    return LegacyListParser(text).parse_items()
+
 def insert_between(separator, items):
     result = []
     for i, item in enumerate(items):
