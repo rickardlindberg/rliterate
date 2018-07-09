@@ -1445,7 +1445,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace, project):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.project = project\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.project.move_paragraph(\n            source_page=dropped_paragraph[\"page_id\"],\n            source_paragraph=dropped_paragraph[\"paragraph_id\"],\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
+"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace, project):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.project = project\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.project.get_paragraph(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
 "type":"code"
 },
 {
@@ -2694,7 +2694,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        state[\"pages\"][page_id][\"paragraphs\"].append(paragraph)\n        state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):\n    with self.new_state() as state:\n        if (source_page == target_page and\n            source_paragraph == before_paragraph):\n            return\n        paragraph = self.get_paragraph(source_page, source_paragraph).delete()\n        self._add_paragraph(state, target_page, paragraph, before_id=before_paragraph)\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef _add_paragraph(self, state, page_id, paragraph, before_id):\n    paragraphs = state[\"pages\"][page_id][\"paragraphs\"]\n    if before_id is None:\n        paragraphs.append(paragraph)\n    else:\n        paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)\n    state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n",
+"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        state[\"pages\"][page_id][\"paragraphs\"].append(paragraph)\n        state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
 "type":"code"
 }
 ],
@@ -2819,7 +2819,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n            \"image\": DictImageParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(document, page, paragraph_dict)\n\n    def __init__(self, document, page, paragraph_dict):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.new_state() as state:\n            state[\"paragraphs\"][self.id].update(data)\n\n    def delete(self):\n        with self._document.new_state() as state:\n            paragraphs = state[\"pages\"][self._page.id][\"paragraphs\"]\n            paragraphs.pop(index_with_id(paragraphs, self.id))\n            return state[\"paragraphs\"].pop(self.id)\n",
+"text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n            \"image\": DictImageParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(document, page, paragraph_dict)\n\n    def __init__(self, document, page, paragraph_dict):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.new_state() as state:\n            state[\"paragraphs\"][self.id].update(data)\n\n    def delete(self):\n        with self._document.new_state() as state:\n            paragraphs = state[\"pages\"][self._page.id][\"paragraphs\"]\n            paragraphs.pop(index_with_id(paragraphs, self.id))\n            return state[\"paragraphs\"].pop(self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.new_state() as state:\n            if (self._page.id == target_page and\n                self.id == before_paragraph):\n                return\n            paragraph_dict = self.delete()\n            paragraphs = state[\"pages\"][target_page][\"paragraphs\"]\n            if before_paragraph is None:\n                paragraphs.append(paragraph_dict)\n            else:\n                paragraphs.insert(index_with_id(paragraphs, before_paragraph), paragraph_dict)\n            state[\"paragraphs\"][paragraph_dict[\"id\"]] = paragraph_dict\n",
 "type":"code"
 }
 ],
@@ -3294,7 +3294,7 @@
 "<<classes>>",
 "<<Project>>"
 ],
-"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef move_paragraph(self, *args, **kwargs):\n    return self.document.move_paragraph(*args, **kwargs)\n",
+"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n",
 "type":"code"
 },
 {

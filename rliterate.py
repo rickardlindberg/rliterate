@@ -654,9 +654,10 @@ class WorkspaceDropTarget(DropPointDropTarget):
         self.project = project
 
     def OnDataDropped(self, dropped_paragraph, drop_point):
-        self.project.move_paragraph(
-            source_page=dropped_paragraph["page_id"],
-            source_paragraph=dropped_paragraph["paragraph_id"],
+        self.project.get_paragraph(
+            dropped_paragraph["page_id"],
+            dropped_paragraph["paragraph_id"]
+        ).move(
             target_page=drop_point.page_id,
             before_paragraph=drop_point.next_paragraph_id
         )
@@ -1505,26 +1506,10 @@ class Document(Observable):
             state["pages"][page_id]["paragraphs"].append(paragraph)
             state["paragraphs"][paragraph["id"]] = paragraph
 
-    def move_paragraph(self, source_page, source_paragraph, target_page, before_paragraph):
-        with self.new_state() as state:
-            if (source_page == target_page and
-                source_paragraph == before_paragraph):
-                return
-            paragraph = self.get_paragraph(source_page, source_paragraph).delete()
-            self._add_paragraph(state, target_page, paragraph, before_id=before_paragraph)
-
     def get_paragraph(self, page_id, paragraph_id):
         for paragraph in self.get_page(page_id).paragraphs:
             if paragraph.id == paragraph_id:
                 return paragraph
-
-    def _add_paragraph(self, state, page_id, paragraph, before_id):
-        paragraphs = state["pages"][page_id]["paragraphs"]
-        if before_id is None:
-            paragraphs.append(paragraph)
-        else:
-            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)
-        state["paragraphs"][paragraph["id"]] = paragraph
     def get_page(self, page_id=None):
         if page_id is None:
             page_id = self._state["root_page"]["id"]
@@ -1756,6 +1741,19 @@ class DictParagraph(object):
             paragraphs = state["pages"][self._page.id]["paragraphs"]
             paragraphs.pop(index_with_id(paragraphs, self.id))
             return state["paragraphs"].pop(self.id)
+
+    def move(self, target_page, before_paragraph):
+        with self._document.new_state() as state:
+            if (self._page.id == target_page and
+                self.id == before_paragraph):
+                return
+            paragraph_dict = self.delete()
+            paragraphs = state["pages"][target_page]["paragraphs"]
+            if before_paragraph is None:
+                paragraphs.append(paragraph_dict)
+            else:
+                paragraphs.insert(index_with_id(paragraphs, before_paragraph), paragraph_dict)
+            state["paragraphs"][paragraph_dict["id"]] = paragraph_dict
 class DictTextParagraph(DictParagraph):
 
     @property
@@ -2070,14 +2068,14 @@ class Project(Observable):
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
+    def get_paragraph(self, *args, **kwargs):
+        return self.document.get_paragraph(*args, **kwargs)
+
     def add_page(self, *args, **kwargs):
         return self.document.add_page(*args, **kwargs)
 
     def add_paragraph(self, *args, **kwargs):
         return self.document.add_paragraph(*args, **kwargs)
-
-    def move_paragraph(self, *args, **kwargs):
-        return self.document.move_paragraph(*args, **kwargs)
     def toggle_collapsed(self, *args, **kwargs):
         return self.layout.toggle_collapsed(*args, **kwargs)
 
