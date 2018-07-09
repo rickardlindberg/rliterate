@@ -74,10 +74,7 @@ class ParagraphBase(Editable):
     def _add_base(self, menu):
         menu.AppendItem(
             "Delete",
-            lambda: self.project.delete_paragraph(
-                page_id=self.page_id,
-                paragraph_id=self.paragraph.id
-            )
+            lambda: self.paragraph.delete()
         )
         menu.AppendItem(
             "Edit in gvim",
@@ -1513,8 +1510,13 @@ class Document(Observable):
             if (source_page == target_page and
                 source_paragraph == before_paragraph):
                 return
-            paragraph = self.delete_paragraph(source_page, source_paragraph)
+            paragraph = self.get_paragraph(source_page, source_paragraph).delete()
             self._add_paragraph(state, target_page, paragraph, before_id=before_paragraph)
+
+    def get_paragraph(self, page_id, paragraph_id):
+        for paragraph in self.get_page(page_id).paragraphs:
+            if paragraph.id == paragraph_id:
+                return paragraph
 
     def _add_paragraph(self, state, page_id, paragraph, before_id):
         paragraphs = state["pages"][page_id]["paragraphs"]
@@ -1523,12 +1525,6 @@ class Document(Observable):
         else:
             paragraphs.insert(index_with_id(paragraphs, before_id), paragraph)
         state["paragraphs"][paragraph["id"]] = paragraph
-
-    def delete_paragraph(self, page_id, paragraph_id):
-        with self.new_state() as state:
-            paragraphs = state["pages"][page_id]["paragraphs"]
-            paragraphs.pop(index_with_id(paragraphs, paragraph_id))
-            return state["paragraphs"].pop(paragraph_id)
     def get_page(self, page_id=None):
         if page_id is None:
             page_id = self._state["root_page"]["id"]
@@ -1681,7 +1677,7 @@ class DictPage(object):
     @property
     def paragraphs(self):
         return [
-            DictParagraph.create(self._document, paragraph_dict)
+            DictParagraph.create(self._document, self, paragraph_dict)
             for paragraph_dict
             in self._page_dict["paragraphs"]
         ]
@@ -1729,17 +1725,18 @@ class DictPage(object):
 class DictParagraph(object):
 
     @staticmethod
-    def create(document, paragraph_dict):
+    def create(document, page, paragraph_dict):
         return {
             "text": DictTextParagraph,
             "quote": DictQuoteParagraph,
             "list": DictListParagraph,
             "code": DictCodeParagraph,
             "image": DictImageParagraph,
-        }.get(paragraph_dict["type"], DictParagraph)(document, paragraph_dict)
+        }.get(paragraph_dict["type"], DictParagraph)(document, page, paragraph_dict)
 
-    def __init__(self, document, paragraph_dict):
+    def __init__(self, document, page, paragraph_dict):
         self._document = document
+        self._page = page
         self._paragraph_dict = paragraph_dict
 
     @property
@@ -1753,6 +1750,12 @@ class DictParagraph(object):
     def update(self, data):
         with self._document.new_state() as state:
             state["paragraphs"][self.id].update(data)
+
+    def delete(self):
+        with self._document.new_state() as state:
+            paragraphs = state["pages"][self._page.id]["paragraphs"]
+            paragraphs.pop(index_with_id(paragraphs, self.id))
+            return state["paragraphs"].pop(self.id)
 class DictTextParagraph(DictParagraph):
 
     @property
@@ -2075,9 +2078,6 @@ class Project(Observable):
 
     def move_paragraph(self, *args, **kwargs):
         return self.document.move_paragraph(*args, **kwargs)
-
-    def delete_paragraph(self, *args, **kwargs):
-        return self.document.delete_paragraph(*args, **kwargs)
     def toggle_collapsed(self, *args, **kwargs):
         return self.layout.toggle_collapsed(*args, **kwargs)
 
