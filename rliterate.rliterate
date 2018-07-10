@@ -2559,114 +2559,9 @@
 {
 "children":[
 {
-"children":[
-{
 "children":[],
-"id":"6d647124c8a04c018778a8efbe13acbf",
+"id":"95df0269255943f297d3ffc6de48874f",
 "paragraphs":[
-{
-"id":"961d16934f0b4e7eaadc6b15885ac8c1",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Document>>",
-"<<Post load>>"
-],
-"text":"for paragraph in self._state[\"paragraphs\"].values():\n    if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n        paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n        del paragraph[\"text\"]\n    elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n        paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n        del paragraph[\"text\"]\n",
-"type":"code"
-},
-{
-"id":"ada4b8410e994cbe99e4617f810011b6",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class LegacyInlineTextParser(object):\n\n    SPACE_RE = re.compile(r\"\\s+\")\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"strong\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"emphasis\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"code\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[\\[(.+?)(:(.+?))?\\]\\]\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"reference\",\n                \"text\": match.group(3),\n                \"page_id\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"link\",\n                \"text\": match.group(1),\n                \"url\": match.group(2),\n            }\n        ),\n    ]\n\n    def parse(self, text):\n        text = self._normalise_space(text)\n        fragments = []\n        partial = \"\"\n        while text:\n            result = self._get_special_fragment(text)\n            if result is None:\n                partial += text[0]\n                text = text[1:]\n            else:\n                match, fragment = result\n                if partial:\n                    fragments.append({\"type\": \"text\", \"text\": partial})\n                    partial = \"\"\n                fragments.append(fragment)\n                text = text[match.end(0):]\n        if partial:\n            fragments.append({\"type\": \"text\", \"text\": partial})\n        return fragments\n\n    def _normalise_space(self, text):\n        return self.SPACE_RE.sub(\" \", text).strip()\n\n    def _get_special_fragment(self, text):\n        for pattern, fn in self.PATTERNS:\n            match = pattern.match(text)\n            if match:\n                return match, fn(self, match)\n",
-"type":"code"
-},
-{
-"id":"a9b66d3999c54833914377afb301bb57",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class LegacyListParser(object):\n\n    ITEM_START_RE = re.compile(r\"( *)([*]|\\d+[.]) (.*)\")\n\n    def __init__(self, text):\n        self.lines = text.strip().split(\"\\n\")\n\n    def parse_items(self, level=0):\n        items = []\n        list_type = None\n        while True:\n            type_and_item = self.parse_item(level)\n            if type_and_item is None:\n                return list_type, items\n            else:\n                item_type, item = type_and_item\n                if list_type is None:\n                    list_type = item_type\n                items.append(item)\n\n    def parse_item(self, level):\n        parts = self.consume_bodies()\n        next_level = level + 1\n        item_type = None\n        if self.lines:\n            match = self.ITEM_START_RE.match(self.lines[0])\n            if match:\n                matched_level = len(match.group(1))\n                if matched_level >= level:\n                    parts.append(match.group(3))\n                    self.lines.pop(0)\n                    parts.extend(self.consume_bodies())\n                    next_level = matched_level + 1\n                    if \"*\" in match.group(2):\n                        item_type = \"unordered\"\n                    else:\n                        item_type = \"ordered\"\n        if parts:\n            child_type, children = self.parse_items(next_level)\n            return (item_type, {\n                \"fragments\": LegacyInlineTextParser().parse(\" \".join(parts)),\n                \"children\": children,\n                \"child_type\": child_type,\n            })\n\n    def consume_bodies(self):\n        bodies = []\n        while self.lines:\n            if self.ITEM_START_RE.match(self.lines[0]):\n                break\n            else:\n                bodies.append(self.lines.pop(0))\n        return bodies\n",
-"type":"code"
-},
-{
-"id":"7075da194716490f8b586c811cbe6bb5",
-"path":[
-"test_rliterate.py",
-"<<test cases>>"
-],
-"text":"def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):\n    text = \"This **is** very *cool*. [[106af6f8665c45e8ab751993a6abc876:page]] is it. Some `code`. [link](http://example.com).\"\n    fragments = [\n        {\"type\": \"text\",      \"text\": \"This \"},\n        {\"type\": \"strong\",    \"text\": \"is\"},\n        {\"type\": \"text\",      \"text\": \" very \"},\n        {\"type\": \"emphasis\",  \"text\": \"cool\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"reference\", \"text\": \"page\", \"page_id\": \"106af6f8665c45e8ab751993a6abc876\"},\n        {\"type\": \"text\",      \"text\": \" is it. Some \"},\n        {\"type\": \"code\",      \"text\": \"code\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"link\",      \"text\": \"link\", \"url\": \"http://example.com\"},\n        {\"type\": \"text\",      \"text\": \".\"},\n    ]\n    write_json_to_file(tmpfile, {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"text\": text},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"text\": text},\n            {\"id\": \"abc3\", \"type\": \"image\", \"text\": text, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"text\": \"\\n\".join([\n                \"* **a**{}\".format(text),\n                \"* **b**{}\".format(text),\n                \"    1. **c**{}\".format(text),\n                \"    1. **d**{}\".format(text),\n            ])},\n        ],\n    })\n    doc = Document.from_file(tmpfile)\n    with doc.notify():\n        pass\n    assert load_json_from_file(tmpfile) == {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"fragments\": fragments},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"fragments\": fragments},\n            {\"id\": \"abc3\", \"type\": \"image\", \"fragments\": fragments, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"child_type\": \"unordered\", \"children\": [\n                {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"a\"}]+fragments},\n                {\"child_type\": \"ordered\", \"children\": [\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"c\"}]+fragments},\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"d\"}]+fragments},\n                ], \"fragments\": [{\"type\": \"strong\", \"text\": \"b\"}]+fragments},\n            ]},\n        ],\n    }\n",
-"type":"code"
-}
-],
-"title":"Legacy inline text parser"
-}
-],
-"id":"ce4dc071bada48bb9294c937631e0214",
-"paragraphs":[
-{
-"id":"f488adc5a56f4b83bf43b66fef2c5545",
-"path":[
-"rliterate.py",
-"<<classes>>"
-],
-"text":"class Document(Observable):\n\n    @classmethod\n    def from_file(cls, path):\n        return cls(path)\n\n    def __init__(self, path):\n        Observable.__init__(self)\n        self._load(path)\n        self.listen(lambda event: write_json_to_file(path, self._state[\"root_page\"]))\n\n    <<Document>>\n",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Loading:",
-"type":"text"
-}
-],
-"id":"d3d1bf2a9df94766a6a9eadc099bd00b",
-"type":"text"
-},
-{
-"id":"4b50dfd6dcd64c59b9d3a53346944a5d",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Document>>"
-],
-"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._state = {\n        \"root_page\": root_page,\n        \"pages\": {},\n        \"parent_pages\": {},\n        \"paragraphs\": {},\n    }\n    self._new_state = None\n    self._cache_page(root_page)\n    <<Post load>>\n\ndef _cache_page(self, page, parent_page=None):\n    self._state[\"pages\"][page[\"id\"]] = page\n    self._state[\"parent_pages\"][page[\"id\"]] = parent_page\n    for paragraph in page[\"paragraphs\"]:\n        self._state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n    for child in page[\"children\"]:\n        self._cache_page(child, page)\n",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Creating new states (this exposes internals):",
-"type":"text"
-}
-],
-"id":"a6745ee26db9461c80017c916c5d1348",
-"type":"text"
-},
-{
-"id":"f2c5232417964cbabc4f03f310b3a0a4",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Document>>"
-],
-"text":"@contextlib.contextmanager\ndef new_state(self):\n    with self.notify():\n        if self._new_state is None:\n            self._new_state = copy.deepcopy(self._state)\n            yield self._new_state\n            self._state = self._new_state\n            self._new_state = None\n        else:\n            yield self._new_state\n",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Page operations:",
-"type":"text"
-}
-],
-"id":"601230dd49d14629a0fec9cf1d3789e5",
-"type":"text"
-},
 {
 "id":"176702fbbd7c4dd7a900d9cc06be0284",
 "path":[
@@ -2677,35 +2572,6 @@
 "text":"def add_page(self, title=\"New page\", parent_id=None):\n    with self.new_state() as state:\n        page = self._empty_page()\n        parent_page = state[\"pages\"][parent_id]\n        parent_page[\"children\"].append(page)\n        state[\"pages\"][page[\"id\"]] = page\n        state[\"parent_pages\"][page[\"id\"]] = parent_page\n\ndef _empty_page(self):\n    return {\n        \"id\": genid(),\n        \"title\": \"New page...\",\n        \"children\": [],\n        \"paragraphs\": [],\n    }\n",
 "type":"code"
 },
-{
-"fragments":[
-{
-"text":"Paragraph operations:",
-"type":"text"
-}
-],
-"id":"fcb2eaddb6ad4e96b3fed43bfb1064a3",
-"type":"text"
-},
-{
-"id":"377391e542c6475a85cb59faffecfa47",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<Document>>"
-],
-"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        state[\"pages\"][page_id][\"paragraphs\"].append(paragraph)\n        state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
-"type":"code"
-}
-],
-"title":"Document"
-},
-{
-"children":[
-{
-"children":[],
-"id":"95df0269255943f297d3ffc6de48874f",
-"paragraphs":[
 {
 "id":"eca45154b3f141c794c1cf1e56f273ee",
 "path":[
@@ -2814,6 +2680,16 @@
 "id":"00d70d4faee841deba24ba21564eb11b",
 "paragraphs":[
 {
+"id":"377391e542c6475a85cb59faffecfa47",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        state[\"pages\"][page_id][\"paragraphs\"].append(paragraph)\n        state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
+"type":"code"
+},
+{
 "id":"da88f3daf0d742e394fc3be9d21f522f",
 "path":[
 "rliterate.py",
@@ -2921,27 +2797,212 @@
 }
 ],
 "title":"Text fragment"
+},
+{
+"children":[],
+"id":"6d647124c8a04c018778a8efbe13acbf",
+"paragraphs":[
+{
+"id":"961d16934f0b4e7eaadc6b15885ac8c1",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>",
+"<<Post load>>"
+],
+"text":"for paragraph in self._state[\"paragraphs\"].values():\n    if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n        paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n        del paragraph[\"text\"]\n    elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n        paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n        del paragraph[\"text\"]\n",
+"type":"code"
+},
+{
+"id":"ada4b8410e994cbe99e4617f810011b6",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class LegacyInlineTextParser(object):\n\n    SPACE_RE = re.compile(r\"\\s+\")\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"strong\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"emphasis\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"code\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[\\[(.+?)(:(.+?))?\\]\\]\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"reference\",\n                \"text\": match.group(3),\n                \"page_id\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"link\",\n                \"text\": match.group(1),\n                \"url\": match.group(2),\n            }\n        ),\n    ]\n\n    def parse(self, text):\n        text = self._normalise_space(text)\n        fragments = []\n        partial = \"\"\n        while text:\n            result = self._get_special_fragment(text)\n            if result is None:\n                partial += text[0]\n                text = text[1:]\n            else:\n                match, fragment = result\n                if partial:\n                    fragments.append({\"type\": \"text\", \"text\": partial})\n                    partial = \"\"\n                fragments.append(fragment)\n                text = text[match.end(0):]\n        if partial:\n            fragments.append({\"type\": \"text\", \"text\": partial})\n        return fragments\n\n    def _normalise_space(self, text):\n        return self.SPACE_RE.sub(\" \", text).strip()\n\n    def _get_special_fragment(self, text):\n        for pattern, fn in self.PATTERNS:\n            match = pattern.match(text)\n            if match:\n                return match, fn(self, match)\n",
+"type":"code"
+},
+{
+"id":"a9b66d3999c54833914377afb301bb57",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class LegacyListParser(object):\n\n    ITEM_START_RE = re.compile(r\"( *)([*]|\\d+[.]) (.*)\")\n\n    def __init__(self, text):\n        self.lines = text.strip().split(\"\\n\")\n\n    def parse_items(self, level=0):\n        items = []\n        list_type = None\n        while True:\n            type_and_item = self.parse_item(level)\n            if type_and_item is None:\n                return list_type, items\n            else:\n                item_type, item = type_and_item\n                if list_type is None:\n                    list_type = item_type\n                items.append(item)\n\n    def parse_item(self, level):\n        parts = self.consume_bodies()\n        next_level = level + 1\n        item_type = None\n        if self.lines:\n            match = self.ITEM_START_RE.match(self.lines[0])\n            if match:\n                matched_level = len(match.group(1))\n                if matched_level >= level:\n                    parts.append(match.group(3))\n                    self.lines.pop(0)\n                    parts.extend(self.consume_bodies())\n                    next_level = matched_level + 1\n                    if \"*\" in match.group(2):\n                        item_type = \"unordered\"\n                    else:\n                        item_type = \"ordered\"\n        if parts:\n            child_type, children = self.parse_items(next_level)\n            return (item_type, {\n                \"fragments\": LegacyInlineTextParser().parse(\" \".join(parts)),\n                \"children\": children,\n                \"child_type\": child_type,\n            })\n\n    def consume_bodies(self):\n        bodies = []\n        while self.lines:\n            if self.ITEM_START_RE.match(self.lines[0]):\n                break\n            else:\n                bodies.append(self.lines.pop(0))\n        return bodies\n",
+"type":"code"
+},
+{
+"id":"7075da194716490f8b586c811cbe6bb5",
+"path":[
+"test_rliterate.py",
+"<<test cases>>"
+],
+"text":"def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):\n    text = \"This **is** very *cool*. [[106af6f8665c45e8ab751993a6abc876:page]] is it. Some `code`. [link](http://example.com).\"\n    fragments = [\n        {\"type\": \"text\",      \"text\": \"This \"},\n        {\"type\": \"strong\",    \"text\": \"is\"},\n        {\"type\": \"text\",      \"text\": \" very \"},\n        {\"type\": \"emphasis\",  \"text\": \"cool\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"reference\", \"text\": \"page\", \"page_id\": \"106af6f8665c45e8ab751993a6abc876\"},\n        {\"type\": \"text\",      \"text\": \" is it. Some \"},\n        {\"type\": \"code\",      \"text\": \"code\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"link\",      \"text\": \"link\", \"url\": \"http://example.com\"},\n        {\"type\": \"text\",      \"text\": \".\"},\n    ]\n    write_json_to_file(tmpfile, {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"text\": text},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"text\": text},\n            {\"id\": \"abc3\", \"type\": \"image\", \"text\": text, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"text\": \"\\n\".join([\n                \"* **a**{}\".format(text),\n                \"* **b**{}\".format(text),\n                \"    1. **c**{}\".format(text),\n                \"    1. **d**{}\".format(text),\n            ])},\n        ],\n    })\n    doc = Document.from_file(tmpfile)\n    with doc.notify():\n        pass\n    assert load_json_from_file(tmpfile) == {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"fragments\": fragments},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"fragments\": fragments},\n            {\"id\": \"abc3\", \"type\": \"image\", \"fragments\": fragments, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"child_type\": \"unordered\", \"children\": [\n                {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"a\"}]+fragments},\n                {\"child_type\": \"ordered\", \"children\": [\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"c\"}]+fragments},\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"d\"}]+fragments},\n                ], \"fragments\": [{\"type\": \"strong\", \"text\": \"b\"}]+fragments},\n            ]},\n        ],\n    }\n",
+"type":"code"
 }
 ],
-"id":"9e63791b51374f2c924e871da5ddc5d7",
+"title":"Legacy inline text parser"
+}
+],
+"id":"ce4dc071bada48bb9294c937631e0214",
 "paragraphs":[
 {
 "fragments":[
 {
-"text":"Views provide a read only interface to a document. It is the only way to query a document.",
+"text":"An RLiterate document is a JSON object stored in a file. It's structure looks like this:",
 "type":"text"
 }
 ],
-"id":"089ffcc884f348128bcba997655c9251",
+"id":"1f1c6f42d2ad47229c4411c0f1a824c8",
+"type":"text"
+},
+{
+"id":"60501b1422714246b4aa8cf33866c0ea",
+"path":[
+""
+],
+"text":"{\n  \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n  \"title\": \"Root\",\n  \"paragraphs\": [\n    {\n      \"id\": \"8f0a9f84821540e89d7c9ca93ed0fbe7\",\n      \"type\": \"text\",\n      \"fragments\": [\n        {\"text\": \"This \", \"type\": \"text\" },\n        {\"text\": \"is\",    \"type\": \"strong\" },\n        {\"text\": \"cool\",  \"type\": \"emphasis\" }\n      ]\n    },\n    ...\n  ],\n  \"children\": [ ... ]\n}\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"The root object represents a page. It has a unique id, a title, paragraphs and child pages. Paragraphs also have unique ids and different data depending on type. (The text paragraph has a list of text fragments with different styles.)",
 "type":"text"
 }
 ],
-"title":"Views"
+"id":"80730ed23d8849329c521c7d42af624d",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"Document",
+"type":"code"
+},
+{
+"text":" class provides a friendly interface for working with RLiterate documents.",
+"type":"text"
 }
 ],
-"id":"276ff8047f7e46dea723c1822078ac26",
-"paragraphs":[],
-"title":"Document model"
+"id":"3ead8c7f41df4980aa059fba6d715c3c",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"First of all, a ",
+"type":"text"
+},
+{
+"text":"Document",
+"type":"code"
+},
+{
+"text":" is a",
+"type":"text"
+}
+],
+"id":"145b840478324f23ab96625341ebddd6",
+"type":"text"
+},
+{
+"id":"f488adc5a56f4b83bf43b66fef2c5545",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Document(Observable):\n    <<Document>>\n",
+"type":"code"
+},
+{
+"id":"8116a556f10f45ef9a46cd72be34e0af",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"@classmethod\ndef from_file(cls, path):\n    return cls(path)\n\ndef __init__(self, path):\n    Observable.__init__(self)\n    <<__init__>>\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Loading:",
+"type":"text"
+}
+],
+"id":"d46a68d807374208bfe62ab0014d955f",
+"type":"text"
+},
+{
+"id":"1b08f81f956d4a07bcf9bb5bd035227e",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>",
+"<<__init__>>"
+],
+"text":"self._load(path)\n",
+"type":"code"
+},
+{
+"id":"4b50dfd6dcd64c59b9d3a53346944a5d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._state = {\n        \"root_page\": root_page,\n        \"pages\": {},\n        \"parent_pages\": {},\n        \"paragraphs\": {},\n    }\n    self._new_state = None\n    self._cache_page(root_page)\n    <<Post load>>\n\ndef _cache_page(self, page, parent_page=None):\n    self._state[\"pages\"][page[\"id\"]] = page\n    self._state[\"parent_pages\"][page[\"id\"]] = parent_page\n    for paragraph in page[\"paragraphs\"]:\n        self._state[\"paragraphs\"][paragraph[\"id\"]] = paragraph\n    for child in page[\"children\"]:\n        self._cache_page(child, page)\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Modifying:",
+"type":"text"
+}
+],
+"id":"495763d06d964a2aab268548311d0ad9",
+"type":"text"
+},
+{
+"id":"f2c5232417964cbabc4f03f310b3a0a4",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>"
+],
+"text":"@contextlib.contextmanager\ndef new_state(self):\n    with self.notify():\n        if self._new_state is None:\n            self._new_state = copy.deepcopy(self._state)\n            yield self._new_state\n            self._state = self._new_state\n            self._new_state = None\n        else:\n            yield self._new_state\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Saving:",
+"type":"text"
+}
+],
+"id":"01abd458b8a04bd7957621e8b3bc70c4",
+"type":"text"
+},
+{
+"id":"b3b9797ca57548e68c19f895842842eb",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Document>>",
+"<<__init__>>"
+],
+"text":"self.listen(lambda event: write_json_to_file(path, self._state[\"root_page\"]))",
+"type":"code"
+}
+],
+"title":"Document"
 },
 {
 "children":[
@@ -4616,6 +4677,16 @@
 "fragments":[
 {
 "text":"\"Edit in gvim\" does no longer work for text paragraphs",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"\"To X\" functions no longer work",
 "type":"text"
 }
 ]

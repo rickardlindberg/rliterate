@@ -1434,7 +1434,6 @@ class Fragment(object):
             text = text[match.end(0):]
         return fragments
 class Document(Observable):
-
     @classmethod
     def from_file(cls, path):
         return cls(path)
@@ -1443,7 +1442,6 @@ class Document(Observable):
         Observable.__init__(self)
         self._load(path)
         self.listen(lambda event: write_json_to_file(path, self._state["root_page"]))
-
     def _load(self, path):
         if os.path.exists(path):
             root_page = load_json_from_file(path)
@@ -1497,6 +1495,13 @@ class Document(Observable):
             "children": [],
             "paragraphs": [],
         }
+    def get_page(self, page_id=None):
+        if page_id is None:
+            page_id = self._state["root_page"]["id"]
+        page_dict = self._state["pages"].get(page_id, None)
+        if page_dict is None:
+            return None
+        return DictPage(self, page_dict)
     def add_paragraph(self, page_id, before_id=None):
         with self.new_state() as state:
             paragraph = {
@@ -1510,137 +1515,6 @@ class Document(Observable):
         for paragraph in self.get_page(page_id).paragraphs:
             if paragraph.id == paragraph_id:
                 return paragraph
-    def get_page(self, page_id=None):
-        if page_id is None:
-            page_id = self._state["root_page"]["id"]
-        page_dict = self._state["pages"].get(page_id, None)
-        if page_dict is None:
-            return None
-        return DictPage(self, page_dict)
-class LegacyInlineTextParser(object):
-
-    SPACE_RE = re.compile(r"\s+")
-    PATTERNS = [
-        (
-            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "strong",
-                "text": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "emphasis",
-                "text": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"`(.+?)`", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "code",
-                "text": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "reference",
-                "text": match.group(3),
-                "page_id": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "link",
-                "text": match.group(1),
-                "url": match.group(2),
-            }
-        ),
-    ]
-
-    def parse(self, text):
-        text = self._normalise_space(text)
-        fragments = []
-        partial = ""
-        while text:
-            result = self._get_special_fragment(text)
-            if result is None:
-                partial += text[0]
-                text = text[1:]
-            else:
-                match, fragment = result
-                if partial:
-                    fragments.append({"type": "text", "text": partial})
-                    partial = ""
-                fragments.append(fragment)
-                text = text[match.end(0):]
-        if partial:
-            fragments.append({"type": "text", "text": partial})
-        return fragments
-
-    def _normalise_space(self, text):
-        return self.SPACE_RE.sub(" ", text).strip()
-
-    def _get_special_fragment(self, text):
-        for pattern, fn in self.PATTERNS:
-            match = pattern.match(text)
-            if match:
-                return match, fn(self, match)
-class LegacyListParser(object):
-
-    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
-
-    def __init__(self, text):
-        self.lines = text.strip().split("\n")
-
-    def parse_items(self, level=0):
-        items = []
-        list_type = None
-        while True:
-            type_and_item = self.parse_item(level)
-            if type_and_item is None:
-                return list_type, items
-            else:
-                item_type, item = type_and_item
-                if list_type is None:
-                    list_type = item_type
-                items.append(item)
-
-    def parse_item(self, level):
-        parts = self.consume_bodies()
-        next_level = level + 1
-        item_type = None
-        if self.lines:
-            match = self.ITEM_START_RE.match(self.lines[0])
-            if match:
-                matched_level = len(match.group(1))
-                if matched_level >= level:
-                    parts.append(match.group(3))
-                    self.lines.pop(0)
-                    parts.extend(self.consume_bodies())
-                    next_level = matched_level + 1
-                    if "*" in match.group(2):
-                        item_type = "unordered"
-                    else:
-                        item_type = "ordered"
-        if parts:
-            child_type, children = self.parse_items(next_level)
-            return (item_type, {
-                "fragments": LegacyInlineTextParser().parse(" ".join(parts)),
-                "children": children,
-                "child_type": child_type,
-            })
-
-    def consume_bodies(self):
-        bodies = []
-        while self.lines:
-            if self.ITEM_START_RE.match(self.lines[0]):
-                break
-            else:
-                bodies.append(self.lines.pop(0))
-        return bodies
 class DictPage(object):
 
     def __init__(self, document, page_dict):
@@ -1957,6 +1831,130 @@ class DictLinkTextFragment(DictTextFragment):
     @property
     def formatted_text(self):
         return Fragment(self.title, token=Token.RLiterate.Link, url=self.url)
+class LegacyInlineTextParser(object):
+
+    SPACE_RE = re.compile(r"\s+")
+    PATTERNS = [
+        (
+            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "strong",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "emphasis",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"`(.+?)`", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "code",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "reference",
+                "text": match.group(3),
+                "page_id": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "link",
+                "text": match.group(1),
+                "url": match.group(2),
+            }
+        ),
+    ]
+
+    def parse(self, text):
+        text = self._normalise_space(text)
+        fragments = []
+        partial = ""
+        while text:
+            result = self._get_special_fragment(text)
+            if result is None:
+                partial += text[0]
+                text = text[1:]
+            else:
+                match, fragment = result
+                if partial:
+                    fragments.append({"type": "text", "text": partial})
+                    partial = ""
+                fragments.append(fragment)
+                text = text[match.end(0):]
+        if partial:
+            fragments.append({"type": "text", "text": partial})
+        return fragments
+
+    def _normalise_space(self, text):
+        return self.SPACE_RE.sub(" ", text).strip()
+
+    def _get_special_fragment(self, text):
+        for pattern, fn in self.PATTERNS:
+            match = pattern.match(text)
+            if match:
+                return match, fn(self, match)
+class LegacyListParser(object):
+
+    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
+
+    def __init__(self, text):
+        self.lines = text.strip().split("\n")
+
+    def parse_items(self, level=0):
+        items = []
+        list_type = None
+        while True:
+            type_and_item = self.parse_item(level)
+            if type_and_item is None:
+                return list_type, items
+            else:
+                item_type, item = type_and_item
+                if list_type is None:
+                    list_type = item_type
+                items.append(item)
+
+    def parse_item(self, level):
+        parts = self.consume_bodies()
+        next_level = level + 1
+        item_type = None
+        if self.lines:
+            match = self.ITEM_START_RE.match(self.lines[0])
+            if match:
+                matched_level = len(match.group(1))
+                if matched_level >= level:
+                    parts.append(match.group(3))
+                    self.lines.pop(0)
+                    parts.extend(self.consume_bodies())
+                    next_level = matched_level + 1
+                    if "*" in match.group(2):
+                        item_type = "unordered"
+                    else:
+                        item_type = "ordered"
+        if parts:
+            child_type, children = self.parse_items(next_level)
+            return (item_type, {
+                "fragments": LegacyInlineTextParser().parse(" ".join(parts)),
+                "children": children,
+                "child_type": child_type,
+            })
+
+    def consume_bodies(self):
+        bodies = []
+        while self.lines:
+            if self.ITEM_START_RE.match(self.lines[0]):
+                break
+            else:
+                bodies.append(self.lines.pop(0))
+        return bodies
 class Layout(Observable):
     def __init__(self, path):
         Observable.__init__(self)
