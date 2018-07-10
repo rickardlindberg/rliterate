@@ -2565,7 +2565,7 @@
 {
 "fragments":[
 {
-"text":"The document state is a helper for working with a document dict.",
+"text":"The document dict wrapper is a helper for working with a document dict.",
 "type":"text"
 }
 ],
@@ -2578,7 +2578,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DocumentDictWrapper(object):\n\n    def __init__(self, document_dict):\n        self._document_dict = document_dict\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(document_dict)\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self._document_dict[\"id\"]\n        return self._pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(data)\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        self._pages[page_id][\"paragraphs\"].append(paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        paragraph_dict = self.delete_paragraph_dict(page_id, paragraph_id)\n        paragraphs = self._pages[target_page][\"paragraphs\"]\n        if before_paragraph is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_paragraph), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(data)\n\n    @property\n    def document_dict(self):\n        return self._document_dict\n\n    def clone(self):\n        return copy.deepcopy(self)\n",
+"text":"class DocumentDictWrapper(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self)\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self[\"id\"]\n        return self._pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(copy.deepcopy(data))\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        self._pages[page_id][\"paragraphs\"].append(paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        paragraph_dict = self.delete_paragraph_dict(page_id, paragraph_id)\n        paragraphs = self._pages[target_page][\"paragraphs\"]\n        if before_paragraph is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_paragraph), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n\n    def clone(self):\n        return copy.deepcopy(self)\n",
 "type":"code"
 }
 ],
@@ -2605,7 +2605,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def get_page(self, page_id=None):\n    page_dict = self._state.get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return DictPage(self, page_dict)\n",
+"text":"def get_page(self, page_id=None):\n    page_dict = self._document_dict.get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return DictPage(self, page_dict)\n",
 "type":"code"
 },
 {
@@ -2836,7 +2836,7 @@
 "<<Document>>",
 "<<Post load>>"
 ],
-"text":"for paragraph in self._state.paragraph_dict_iterator():\n    if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n        paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n        del paragraph[\"text\"]\n    elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n        paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n        del paragraph[\"text\"]\n",
+"text":"for paragraph in self._document_dict.paragraph_dict_iterator():\n    if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n        paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n        del paragraph[\"text\"]\n    elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n        paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n        del paragraph[\"text\"]\n",
 "type":"code"
 },
 {
@@ -2893,7 +2893,7 @@
 {
 "fragments":[
 {
-"text":"The root object represents a page. It has a unique id, a title, paragraphs and child pages. Paragraphs also have unique ids and different data depending on type. (The text paragraph has a list of text fragments with different styles.)",
+"text":"The root object represents a page. It has a unique id, a title, paragraphs and child pages. Paragraphs also have unique ids and different attributes depending on type. (The text paragraph has a list of text fragments with different styles.)",
 "type":"text"
 }
 ],
@@ -2965,7 +2965,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def _load(self, path):\n    if os.path.exists(path):\n        document_dict = load_json_from_file(path)\n    else:\n        document_dict = self._empty_page()\n    self._state = DocumentDictWrapper(document_dict)\n    self._new_state = None\n    <<Post load>>\n",
+"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._document_dict = DocumentDictWrapper(root_page)\n    self._new_document_dict = None\n    <<Post load>>\n",
 "type":"code"
 },
 {
@@ -2985,7 +2985,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"@contextlib.contextmanager\ndef new_state(self):\n    with self.notify():\n        if self._new_state is None:\n            self._new_state = self._state.clone()\n            yield self._new_state\n            self._state = self._new_state\n            self._new_state = None\n        else:\n            yield self._new_state\n",
+"text":"@contextlib.contextmanager\ndef new_state(self):\n    with self.notify():\n        if self._new_document_dict is None:\n            self._new_document_dict = self._document_dict.clone()\n            yield self._new_document_dict\n            self._document_dict = self._new_document_dict\n            self._new_document_dict = None\n        else:\n            yield self._new_document_dict\n",
 "type":"code"
 },
 {
@@ -3006,7 +3006,7 @@
 "<<Document>>",
 "<<__init__>>"
 ],
-"text":"self.listen(lambda event: write_json_to_file(path, self._state.document_dict))",
+"text":"self.listen(lambda event: write_json_to_file(path, self._document_dict))",
 "type":"code"
 }
 ],

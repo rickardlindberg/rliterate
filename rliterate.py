@@ -1441,15 +1441,15 @@ class Document(Observable):
     def __init__(self, path):
         Observable.__init__(self)
         self._load(path)
-        self.listen(lambda event: write_json_to_file(path, self._state.document_dict))
+        self.listen(lambda event: write_json_to_file(path, self._document_dict))
     def _load(self, path):
         if os.path.exists(path):
-            document_dict = load_json_from_file(path)
+            root_page = load_json_from_file(path)
         else:
-            document_dict = self._empty_page()
-        self._state = DocumentDictWrapper(document_dict)
-        self._new_state = None
-        for paragraph in self._state.paragraph_dict_iterator():
+            root_page = self._empty_page()
+        self._document_dict = DocumentDictWrapper(root_page)
+        self._new_document_dict = None
+        for paragraph in self._document_dict.paragraph_dict_iterator():
             if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
                 paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
                 del paragraph["text"]
@@ -1459,13 +1459,13 @@ class Document(Observable):
     @contextlib.contextmanager
     def new_state(self):
         with self.notify():
-            if self._new_state is None:
-                self._new_state = self._state.clone()
-                yield self._new_state
-                self._state = self._new_state
-                self._new_state = None
+            if self._new_document_dict is None:
+                self._new_document_dict = self._document_dict.clone()
+                yield self._new_document_dict
+                self._document_dict = self._new_document_dict
+                self._new_document_dict = None
             else:
-                yield self._new_state
+                yield self._new_document_dict
     def add_page(self, title="New page", parent_id=None):
         with self.new_state() as state:
             state.add_page_dict(self._empty_page(), parent_id=parent_id)
@@ -1478,7 +1478,7 @@ class Document(Observable):
             "paragraphs": [],
         }
     def get_page(self, page_id=None):
-        page_dict = self._state.get_page_dict(page_id)
+        page_dict = self._document_dict.get_page_dict(page_id)
         if page_dict is None:
             return None
         return DictPage(self, page_dict)
@@ -1494,14 +1494,14 @@ class Document(Observable):
         for paragraph in self.get_page(page_id).paragraphs:
             if paragraph.id == paragraph_id:
                 return paragraph
-class DocumentDictWrapper(object):
+class DocumentDictWrapper(dict):
 
     def __init__(self, document_dict):
-        self._document_dict = document_dict
+        dict.__init__(self, document_dict)
         self._pages = {}
         self._parent_pages = {}
         self._paragraphs = {}
-        self._cache_page(document_dict)
+        self._cache_page(self)
 
     def _cache_page(self, page, parent_page=None):
         self._pages[page["id"]] = page
@@ -1519,7 +1519,7 @@ class DocumentDictWrapper(object):
 
     def get_page_dict(self, page_id=None):
         if page_id is None:
-            page_id = self._document_dict["id"]
+            page_id = self["id"]
         return self._pages.get(page_id, None)
 
     def delete_page_dict(self, page_id):
@@ -1534,7 +1534,7 @@ class DocumentDictWrapper(object):
             self._parent_pages[child["id"]] = parent_page
 
     def update_page_dict(self, page_id, data):
-        self._pages[page_id].update(data)
+        self._pages[page_id].update(copy.deepcopy(data))
 
     def move_page_dict(self, page_id, parent_page_id, before_page_id):
         if page_id == before_page_id:
@@ -1581,11 +1581,7 @@ class DocumentDictWrapper(object):
         self._paragraphs[paragraph_dict["id"]] = paragraph_dict
 
     def update_paragraph_dict(self, paragraph_id, data):
-        self._paragraphs[paragraph_id].update(data)
-
-    @property
-    def document_dict(self):
-        return self._document_dict
+        self._paragraphs[paragraph_id].update(copy.deepcopy(data))
 
     def clone(self):
         return copy.deepcopy(self)
