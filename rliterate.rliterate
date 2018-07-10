@@ -4088,16 +4088,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Undo? (use immutable data types (pyrsistent?))",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Diff/Merge of RLiterate documents for collaboration?",
 "type":"text"
 }
