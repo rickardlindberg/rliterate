@@ -1890,7 +1890,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
+"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: self.paragraph.update({\n                \"fragments\": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), \"text.txt\"))\n            })\n        )\n",
 "type":"code"
 },
 {
@@ -1999,7 +1999,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )",
+"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: self.paragraph.update({\n                \"fragments\": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), \"quote.txt\"))\n            })\n        )",
 "type":"code"
 }
 ],
@@ -2025,7 +2025,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self):\n        return ListTextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def add_items(self, view, sizer, items, child_type, indent=0):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*indent, 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    item.formatted_text,\n                    self,\n                    indented=self.INDENT*indent+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indent+1)\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return RichTextDisplay(\n            view,\n            self.project,\n            [Fragment(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n\n\nclass ListTextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=list_to_text(paragraph),\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        child_type, children = text_to_list(self.Value)\n        self.paragraph.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n",
+"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self):\n        return ListTextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        def edit_fn():\n            child_type, children = text_to_list(edit_in_gvim(list_to_text(self.paragraph), \"list.txt\"))\n            self.paragraph.update({\n                \"child_type\": child_type,\n                \"children\": children\n            })\n        menu.AppendItem(\n            \"Edit in gvim\",\n            edit_fn\n        )\n\n    def add_items(self, view, sizer, items, child_type, indent=0):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*indent, 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    item.formatted_text,\n                    self,\n                    indented=self.INDENT*indent+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indent+1)\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return RichTextDisplay(\n            view,\n            self.project,\n            [Fragment(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n\n\nclass ListTextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=list_to_text(paragraph),\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        child_type, children = text_to_list(self.Value)\n        self.paragraph.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n",
 "type":"code"
 },
 {
@@ -2810,7 +2810,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextParagraph(Paragraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n",
+"text":"class TextParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n",
 "type":"code"
 }
 ],
@@ -4889,6 +4889,16 @@
 },
 {
 "text":" really needed in paragraph? Can it be removed?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"\"Edit in gvim\" should automatically work for all paragraphs that supports to/from text conversion",
 "type":"text"
 }
 ]

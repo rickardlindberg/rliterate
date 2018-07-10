@@ -949,6 +949,12 @@ class Text(ParagraphBase):
             "To quote",
             lambda: self.paragraph.update({"type": "quote"})
         )
+        menu.AppendItem(
+            "Edit in gvim",
+            lambda: self.paragraph.update({
+                "fragments": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), "text.txt"))
+            })
+        )
 class TextView(RichTextDisplay):
 
     def __init__(self, parent, project, fragments, base, indented=0):
@@ -1034,6 +1040,12 @@ class Quote(Text):
             "To text",
             lambda: self.paragraph.update({"type": "text"})
         )
+        menu.AppendItem(
+            "Edit in gvim",
+            lambda: self.paragraph.update({
+                "fragments": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), "quote.txt"))
+            })
+        )
 class List(ParagraphBase):
 
     INDENT = 20
@@ -1051,6 +1063,18 @@ class List(ParagraphBase):
             self.project,
             self.paragraph,
             self.view
+        )
+
+    def AddContextMenuItems(self, menu):
+        def edit_fn():
+            child_type, children = text_to_list(edit_in_gvim(list_to_text(self.paragraph), "list.txt"))
+            self.paragraph.update({
+                "child_type": child_type,
+                "children": children
+            })
+        menu.AppendItem(
+            "Edit in gvim",
+            edit_fn
         )
 
     def add_items(self, view, sizer, items, child_type, indent=0):
@@ -1753,10 +1777,6 @@ class Paragraph(object):
         with self._document.modify("Move paragraph") as document_dict:
             document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
 class TextParagraph(Paragraph):
-
-    @property
-    def filename(self):
-        return "paragraph.txt"
 
     @property
     def fragments(self):
