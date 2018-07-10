@@ -67,6 +67,11 @@ class ParagraphBase(Editable):
 
     def ShowContextMenu(self):
         menu = ParagraphContextMenu()
+        menu.AppendItem(
+            "New paragraph before",
+            lambda: self.project.add_paragraph(self.page_id, before_id=self.paragraph.id)
+        )
+        menu.AppendSeparator()
         self.AddContextMenuItems(menu)
         menu.AppendSeparator()
         menu.AppendItem(
@@ -1677,7 +1682,11 @@ class DocumentDictWrapper(dict):
         return self._paragraphs.values()
 
     def add_paragraph_dict(self, paragraph_dict, page_id, before_id):
-        self._pages[page_id]["paragraphs"].append(paragraph_dict)
+        paragraphs = self._pages[page_id]["paragraphs"]
+        if before_id is None:
+            paragraphs.append(paragraph_dict)
+        else:
+            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)
         self._paragraphs[paragraph_dict["id"]] = paragraph_dict
 
     def delete_paragraph_dict(self, page_id, paragraph_id):
@@ -1689,13 +1698,11 @@ class DocumentDictWrapper(dict):
         if (page_id == target_page and
             paragraph_id == before_paragraph):
             return
-        paragraph_dict = self.delete_paragraph_dict(page_id, paragraph_id)
-        paragraphs = self._pages[target_page]["paragraphs"]
-        if before_paragraph is None:
-            paragraphs.append(paragraph_dict)
-        else:
-            paragraphs.insert(index_with_id(paragraphs, before_paragraph), paragraph_dict)
-        self._paragraphs[paragraph_dict["id"]] = paragraph_dict
+        self.add_paragraph_dict(
+            self.delete_paragraph_dict(page_id, paragraph_id),
+            target_page,
+            before_paragraph
+        )
 
     def update_paragraph_dict(self, paragraph_id, data):
         self._paragraphs[paragraph_id].update(copy.deepcopy(data))
