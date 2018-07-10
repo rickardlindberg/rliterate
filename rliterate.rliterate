@@ -4313,8 +4313,19 @@
 ]
 },
 {
+"child_type":"unordered",
+"children":[
+{
 "child_type":null,
 "children":[],
+"fragments":[
+{
+"text":"Extract undo-behavior to class and use here as well",
+"type":"text"
+}
+]
+}
+],
 "fragments":[
 {
 "text":"Implement \"browser history\" for workspace (remember previous columns in ",
@@ -4727,20 +4738,6 @@
 "fragments":[
 {
 "text":"Use panel in top level window (otherwise no tab cycling (reference?))",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"x.update({\"fragments\": ...})",
-"type":"code"
-},
-{
-"text":" leaks an internal data structure reference",
 "type":"text"
 }
 ]
