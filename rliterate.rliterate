@@ -1048,7 +1048,7 @@
 "<<classes>>",
 "<<ToolBar/Update document>>"
 ],
-"text":"self._undo_operation = self.project.get_undo_operation()\nself.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)\nif self._undo_operation is not None:\n    self.SetToolShortHelp(self._undo_tool.GetId(), \"Undo '{}'\".format(self._undo_operation[0]))\n",
+"text":"self._undo_operation = self.project.get_undo_operation()\nself.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)\nself.SetToolShortHelp(\n    self._undo_tool.GetId(),\n    \"Undo\" if self._undo_operation is None else \"Undo '{}'\".format(self._undo_operation[0])\n)\n",
 "type":"code"
 },
 {
@@ -1078,7 +1078,7 @@
 "<<classes>>",
 "<<ToolBar/Update document>>"
 ],
-"text":"self._redo_operation = self.project.get_redo_operation()\nself.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)\nif self._redo_operation is not None:\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"Redo '{}'\".format(self._redo_operation[0]))\n",
+"text":"self._redo_operation = self.project.get_redo_operation()\nself.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)\nself.SetToolShortHelp(\n    self._redo_tool.GetId(),\n    \"Redo\" if self._redo_operation is None else \"Redo '{}'\".format(self._redo_operation[0])\n)\n",
 "type":"code"
 }
 ],
@@ -1093,7 +1093,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\"):\n            <<ToolBar/Update document>>\n        elif event.startswith(\"layout\"):\n            <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\") or event == \"\":\n            <<ToolBar/Update document>>\n        if event.startswith(\"layout\") or event == \"\":\n            <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
 "type":"code"
 }
 ],

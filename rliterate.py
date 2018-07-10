@@ -364,16 +364,20 @@ class ToolBar(wx.ToolBar):
         self.project_listener.set_observable(self.project)
 
     def _update(self, event):
-        if event.startswith("document"):
+        if event.startswith("document") or event == "":
             self._undo_operation = self.project.get_undo_operation()
             self.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)
-            if self._undo_operation is not None:
-                self.SetToolShortHelp(self._undo_tool.GetId(), "Undo '{}'".format(self._undo_operation[0]))
+            self.SetToolShortHelp(
+                self._undo_tool.GetId(),
+                "Undo" if self._undo_operation is None else "Undo '{}'".format(self._undo_operation[0])
+            )
             self._redo_operation = self.project.get_redo_operation()
             self.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)
-            if self._redo_operation is not None:
-                self.SetToolShortHelp(self._redo_tool.GetId(), "Redo '{}'".format(self._redo_operation[0]))
-        elif event.startswith("layout"):
+            self.SetToolShortHelp(
+                self._redo_tool.GetId(),
+                "Redo" if self._redo_operation is None else "Redo '{}'".format(self._redo_operation[0])
+            )
+        if event.startswith("layout") or event == "":
             self.EnableTool(self._back_tool.GetId(), self.project.can_back())
             self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())
 
