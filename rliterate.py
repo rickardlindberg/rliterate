@@ -67,34 +67,17 @@ class ParagraphBase(Editable):
 
     def ShowContextMenu(self):
         menu = ParagraphContextMenu()
-        self._add_base(menu)
-        self.PopupMenu(menu)
-        menu.Destroy()
-
-    def _add_base(self, menu):
+        self.AddContextMenuItems(menu)
+        menu.AppendSeparator()
         menu.AppendItem(
             "Delete",
             lambda: self.paragraph.delete()
         )
-        menu.AppendItem(
-            "Edit in gvim",
-            lambda: self.paragraph.update({
-                "text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)
-            })
-        )
-        menu.AppendSeparator()
-        menu.AppendItem(
-            "To quote",
-            lambda: self.paragraph.update({"type": "quote"})
-        )
-        menu.AppendItem(
-            "To text",
-            lambda: self.paragraph.update({"type": "text"})
-        )
-        menu.AppendItem(
-            "To list",
-            lambda: self.paragraph.update({"type": "list"})
-        )
+        self.PopupMenu(menu)
+        menu.Destroy()
+
+    def AddContextMenuItems(self, menu):
+        pass
 class DropPointDropTarget(wx.DropTarget):
 
     def __init__(self, window, kind):
@@ -960,6 +943,12 @@ class Text(ParagraphBase):
             self.paragraph,
             self.view
         )
+
+    def AddContextMenuItems(self, menu):
+        menu.AppendItem(
+            "To quote",
+            lambda: self.paragraph.update({"type": "quote"})
+        )
 class TextView(RichTextDisplay):
 
     def __init__(self, parent, project, fragments, base, indented=0):
@@ -1039,6 +1028,12 @@ class Quote(Text):
         )
         view.SetSizer(sizer)
         return view
+
+    def AddContextMenuItems(self, menu):
+        menu.AppendItem(
+            "To text",
+            lambda: self.paragraph.update({"type": "text"})
+        )
 class List(ParagraphBase):
 
     INDENT = 20
@@ -1126,6 +1121,14 @@ class Code(ParagraphBase):
 
     def CreateEdit(self):
         return CodeEditor(self, self.project, self.paragraph, self.view)
+
+    def AddContextMenuItems(self, menu):
+        menu.AppendItem(
+            "Edit in gvim",
+            lambda: self.paragraph.update({
+                "text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)
+            })
+        )
 class CodeView(wx.Panel):
 
     BORDER = 0
@@ -1346,37 +1349,40 @@ class Factory(ParagraphBase):
             flag=wx.TOP|wx.ALIGN_CENTER,
             border=PARAGRAPH_SPACE
         )
-        text_button = wx.Button(self, label="Text")
-        text_button.Bind(wx.EVT_BUTTON, self._on_text_button)
-        self.hsizer.Add(text_button, flag=wx.ALL, border=2)
-        code_button = wx.Button(self, label="Code")
-        code_button.Bind(wx.EVT_BUTTON, self._on_code_button)
-        self.hsizer.Add(code_button, flag=wx.ALL, border=2)
-        image_button = wx.Button(self, label="Image")
-        image_button.Bind(wx.EVT_BUTTON, self._on_image_button)
-        self.hsizer.Add(image_button, flag=wx.ALL, border=2)
-        self.vsizer.AddSpacer(PARAGRAPH_SPACE)
-        view.SetSizer(self.vsizer)
-        return view
-
-    def _on_text_button(self, event):
-        self.paragraph.update({
+        self._add_button("Text", {
             "type": "text",
             "fragments": [{"type": "text", "text": "Enter text here..."}],
         })
-
-    def _on_code_button(self, event):
-        self.paragraph.update({
+        self._add_button("Quote", {
+            "type": "quote",
+            "fragments": [{"type": "text", "text": "Enter quote here..."}],
+        })
+        self._add_button("List", {
+            "type": "list",
+            "child_type": "unordered",
+            "children": [{
+                "child_type": None,
+                "children": [],
+                "fragments": [{"type": "text", "text": "Enter list item here..."}],
+            }],
+        })
+        self._add_button("Code", {
             "type": "code",
             "path": [],
             "text": "Enter code here...",
         })
-
-    def _on_image_button(self, event):
-        self.paragraph.update({
+        self._add_button("Image", {
             "type": "image",
-            "fragments": [{"type": "text", "text": "Enter text here..."}],
+            "fragments": [{"type": "text", "text": "Enter image text here..."}],
         })
+        self.vsizer.AddSpacer(PARAGRAPH_SPACE)
+        view.SetSizer(self.vsizer)
+        return view
+
+    def _add_button(self, text, value):
+        button = wx.Button(self, label=text)
+        button.Bind(wx.EVT_BUTTON, lambda event: self.paragraph.update(value))
+        self.hsizer.Add(button, flag=wx.ALL, border=2)
 class ParagraphContextMenu(wx.Menu):
 
     def AppendItem(self, text, fn):

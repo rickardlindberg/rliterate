@@ -1890,7 +1890,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
+"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
 "type":"code"
 },
 {
@@ -1999,7 +1999,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n",
+"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )",
 "type":"code"
 }
 ],
@@ -2050,7 +2050,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Code(ParagraphBase):\n\n    def CreateView(self):\n        return CodeView(self, self.project, self.paragraph, self)\n\n    def CreateEdit(self):\n        return CodeEditor(self, self.project, self.paragraph, self.view)\n",
+"text":"class Code(ParagraphBase):\n\n    def CreateView(self):\n        return CodeView(self, self.project, self.paragraph, self)\n\n    def CreateEdit(self):\n        return CodeEditor(self, self.project, self.paragraph, self.view)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: self.paragraph.update({\n                \"text\": edit_in_gvim(self.paragraph.text, self.paragraph.filename)\n            })\n        )\n",
 "type":"code"
 },
 {
@@ -2194,7 +2194,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Factory(ParagraphBase):\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        text_button = wx.Button(self, label=\"Text\")\n        text_button.Bind(wx.EVT_BUTTON, self._on_text_button)\n        self.hsizer.Add(text_button, flag=wx.ALL, border=2)\n        code_button = wx.Button(self, label=\"Code\")\n        code_button.Bind(wx.EVT_BUTTON, self._on_code_button)\n        self.hsizer.Add(code_button, flag=wx.ALL, border=2)\n        image_button = wx.Button(self, label=\"Image\")\n        image_button.Bind(wx.EVT_BUTTON, self._on_image_button)\n        self.hsizer.Add(image_button, flag=wx.ALL, border=2)\n        self.vsizer.AddSpacer(PARAGRAPH_SPACE)\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _on_text_button(self, event):\n        self.paragraph.update({\n            \"type\": \"text\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter text here...\"}],\n        })\n\n    def _on_code_button(self, event):\n        self.paragraph.update({\n            \"type\": \"code\",\n            \"path\": [],\n            \"text\": \"Enter code here...\",\n        })\n\n    def _on_image_button(self, event):\n        self.paragraph.update({\n            \"type\": \"image\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter text here...\"}],\n        })\n",
+"text":"class Factory(ParagraphBase):\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter text here...\"}],\n        })\n        self._add_button(\"Quote\", {\n            \"type\": \"quote\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter quote here...\"}],\n        })\n        self._add_button(\"List\", {\n            \"type\": \"list\",\n            \"child_type\": \"unordered\",\n            \"children\": [{\n                \"child_type\": None,\n                \"children\": [],\n                \"fragments\": [{\"type\": \"text\", \"text\": \"Enter list item here...\"}],\n            }],\n        })\n        self._add_button(\"Code\", {\n            \"type\": \"code\",\n            \"path\": [],\n            \"text\": \"Enter code here...\",\n        })\n        self._add_button(\"Image\", {\n            \"type\": \"image\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter image text here...\"}],\n        })\n        self.vsizer.AddSpacer(PARAGRAPH_SPACE)\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _add_button(self, text, value):\n        button = wx.Button(self, label=text)\n        button.Bind(wx.EVT_BUTTON, lambda event: self.paragraph.update(value))\n        self.hsizer.Add(button, flag=wx.ALL, border=2)\n",
 "type":"code"
 }
 ],
@@ -2210,7 +2210,7 @@
 "rliterate.py",
 "<<base classes>>"
 ],
-"text":"class ParagraphBase(Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.project = project\n        self.page_id = page_id\n        self.paragraph = paragraph\n        Editable.__init__(self, parent)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        self._add_base(menu)\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def _add_base(self, menu):\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: self.paragraph.update({\n                \"text\": edit_in_gvim(self.paragraph.text, self.paragraph.filename)\n            })\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n        menu.AppendItem(\n            \"To list\",\n            lambda: self.paragraph.update({\"type\": \"list\"})\n        )\n",
+"text":"class ParagraphBase(Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.project = project\n        self.page_id = page_id\n        self.paragraph = paragraph\n        Editable.__init__(self, parent)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
 "type":"code"
 },
 {
@@ -4384,16 +4384,6 @@
 ]
 },
 {
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Factory lacks buttons for quote and list paragraphs",
-"type":"text"
-}
-]
-},
-{
 "child_type":"unordered",
 "children":[
 {
@@ -4855,26 +4845,6 @@
 ]
 },
 {
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"\"Edit in gvim\" does no longer work for text paragraphs",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"\"To X\" functions no longer work",
-"type":"text"
-}
-]
-},
-{
 "child_type":"unordered",
 "children":[
 {
@@ -4901,6 +4871,24 @@
 "fragments":[
 {
 "text":"Keep a list of variables so than renames can easily be done",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Is ",
+"type":"text"
+},
+{
+"text":"page_id",
+"type":"code"
+},
+{
+"text":" really needed in paragraph? Can it be removed?",
 "type":"text"
 }
 ]
