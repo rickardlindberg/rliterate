@@ -749,7 +749,7 @@ class PageContainer(wx.Panel):
         )
         self.SetSizer(self.sizer)
         self.inner_sizer.AddSpacer(CONTAINER_BORDER)
-        self.page = Page(self.inner_container, self.project, self.page_id)
+        self.page = PagePanel(self.inner_container, self.project, self.page_id)
         self.inner_sizer.Add(
             self.page,
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
@@ -758,7 +758,7 @@ class PageContainer(wx.Panel):
 
     def FindClosestDropPoint(self, screen_pos):
         return self.page.FindClosestDropPoint(screen_pos)
-class Page(wx.Panel):
+class PagePanel(wx.Panel):
 
     def __init__(self, parent, project, page_id):
         wx.Panel.__init__(self, parent)
@@ -1481,7 +1481,7 @@ class Document(Observable):
         page_dict = self._document_dict.get_page_dict(page_id)
         if page_dict is None:
             return None
-        return DictPage(self, page_dict)
+        return Page(self, page_dict)
     def add_paragraph(self, page_id, before_id=None):
         with self.new_state() as state:
             paragraph = {
@@ -1585,7 +1585,7 @@ class DocumentDictWrapper(dict):
 
     def clone(self):
         return copy.deepcopy(self)
-class DictPage(object):
+class Page(object):
 
     def __init__(self, document, page_dict):
         self._document = document
@@ -1606,7 +1606,7 @@ class DictPage(object):
     @property
     def paragraphs(self):
         return [
-            DictParagraph.create(self._document, self, paragraph_dict)
+            Paragraph.create(self._document, self, paragraph_dict)
             for paragraph_dict
             in self._page_dict["paragraphs"]
         ]
@@ -1614,7 +1614,7 @@ class DictPage(object):
     @property
     def children(self):
         return [
-            DictPage(self._document, child_dict)
+            Page(self._document, child_dict)
             for child_dict
             in self._page_dict["children"]
         ]
@@ -1626,17 +1626,17 @@ class DictPage(object):
     def move(self, parent_page_id, before_page_id):
         with self._document.new_state() as state:
             state.move_page_dict(self.id, parent_page_id, before_page_id)
-class DictParagraph(object):
+class Paragraph(object):
 
     @staticmethod
     def create(document, page, paragraph_dict):
         return {
-            "text": DictTextParagraph,
-            "quote": DictQuoteParagraph,
-            "list": DictListParagraph,
-            "code": DictCodeParagraph,
-            "image": DictImageParagraph,
-        }.get(paragraph_dict["type"], DictParagraph)(document, page, paragraph_dict)
+            "text": TextParagraph,
+            "quote": QuoteParagraph,
+            "list": ListParagraph,
+            "code": CodeParagraph,
+            "image": ImageParagraph,
+        }.get(paragraph_dict["type"], Paragraph)(document, page, paragraph_dict)
 
     def __init__(self, document, page, paragraph_dict):
         self._document = document
@@ -1662,7 +1662,7 @@ class DictParagraph(object):
     def move(self, target_page, before_paragraph):
         with self._document.new_state() as state:
             state.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
-class DictTextParagraph(DictParagraph):
+class TextParagraph(Paragraph):
 
     @property
     def filename(self):
@@ -1671,7 +1671,7 @@ class DictTextParagraph(DictParagraph):
     @property
     def fragments(self):
         return [
-            DictTextFragment.create(self._document, fragment)
+            TextFragment.create(self._document, fragment)
             for fragment
             in self._paragraph_dict["fragments"]
         ]
@@ -1683,9 +1683,9 @@ class DictTextParagraph(DictParagraph):
             for fragment
             in self.fragments
         ]
-class DictQuoteParagraph(DictTextParagraph):
+class QuoteParagraph(TextParagraph):
     pass
-class DictListParagraph(DictParagraph):
+class ListParagraph(Paragraph):
 
     @property
     def child_type(self):
@@ -1705,7 +1705,7 @@ class ListItem(object):
     @property
     def fragments(self):
         return [
-            DictTextFragment.create(self._document, fragment)
+            TextFragment.create(self._document, fragment)
             for fragment
             in self._item_dict["fragments"]
         ]
@@ -1721,7 +1721,7 @@ class ListItem(object):
     @property
     def formatted_text(self):
         return [x.formatted_text for x in self.fragments]
-class DictCodeParagraph(DictParagraph):
+class CodeParagraph(Paragraph):
 
     @property
     def text(self):
@@ -1770,12 +1770,12 @@ class DictCodeParagraph(DictParagraph):
         for token, text in tokens:
             fragments.append(Fragment(text, token=token))
         return fragments
-class DictImageParagraph(DictParagraph):
+class ImageParagraph(Paragraph):
 
     @property
     def fragments(self):
         return [
-            DictTextFragment.create(self._document, fragment)
+            TextFragment.create(self._document, fragment)
             for fragment
             in self._paragraph_dict["fragments"]
         ]
@@ -1791,17 +1791,17 @@ class DictImageParagraph(DictParagraph):
     @property
     def image_base64(self):
         return self._paragraph_dict.get("image_base64", None)
-class DictTextFragment(object):
+class TextFragment(object):
 
     @staticmethod
     def create(document, text_fragment_dict):
         return {
-            "strong": DictStrongTextFragment,
-            "emphasis": DictEmphasisTextFragment,
-            "code": DictCodeTextFragment,
-            "reference": DictReferenceTextFragment,
-            "link": DictLinkTextFragment,
-        }.get(text_fragment_dict["type"], DictTextFragment)(document, text_fragment_dict)
+            "strong": StrongTextFragment,
+            "emphasis": EmphasisTextFragment,
+            "code": CodeTextFragment,
+            "reference": ReferenceTextFragment,
+            "link": LinkTextFragment,
+        }.get(text_fragment_dict["type"], TextFragment)(document, text_fragment_dict)
 
     def __init__(self, document, text_fragment_dict):
         self._document = document
@@ -1818,22 +1818,22 @@ class DictTextFragment(object):
     @property
     def formatted_text(self):
         return Fragment(self.text)
-class DictStrongTextFragment(DictTextFragment):
+class StrongTextFragment(TextFragment):
 
     @property
     def formatted_text(self):
         return Fragment(self.text, token=Token.RLiterate.Strong)
-class DictEmphasisTextFragment(DictTextFragment):
+class EmphasisTextFragment(TextFragment):
 
     @property
     def formatted_text(self):
         return Fragment(self.text, token=Token.RLiterate.Emphasis)
-class DictCodeTextFragment(DictTextFragment):
+class CodeTextFragment(TextFragment):
 
     @property
     def formatted_text(self):
         return Fragment(self.text, token=Token.RLiterate.Code)
-class DictReferenceTextFragment(DictTextFragment):
+class ReferenceTextFragment(TextFragment):
 
     @property
     def page_id(self):
@@ -1850,7 +1850,7 @@ class DictReferenceTextFragment(DictTextFragment):
     @property
     def formatted_text(self):
         return Fragment(self.title, token=Token.RLiterate.Reference, page_id=self.page_id)
-class DictLinkTextFragment(DictTextFragment):
+class LinkTextFragment(TextFragment):
 
     @property
     def url(self):

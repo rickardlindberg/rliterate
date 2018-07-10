@@ -1580,7 +1580,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class PageContainer(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    def _render(self):\n        self.SetBackgroundColour((150, 150, 150))\n        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.inner_container = wx.Panel(self)\n        self.inner_container.SetBackgroundColour((255, 255, 255))\n        self.inner_container.SetSizer(self.inner_sizer)\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(\n            self.inner_container,\n            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n            border=SHADOW_SIZE\n        )\n        self.SetSizer(self.sizer)\n        self.inner_sizer.AddSpacer(CONTAINER_BORDER)\n        self.page = Page(self.inner_container, self.project, self.page_id)\n        self.inner_sizer.Add(\n            self.page,\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n            border=CONTAINER_BORDER\n        )\n\n    def FindClosestDropPoint(self, screen_pos):\n        return self.page.FindClosestDropPoint(screen_pos)\n",
+"text":"class PageContainer(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    def _render(self):\n        self.SetBackgroundColour((150, 150, 150))\n        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.inner_container = wx.Panel(self)\n        self.inner_container.SetBackgroundColour((255, 255, 255))\n        self.inner_container.SetSizer(self.inner_sizer)\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(\n            self.inner_container,\n            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n            border=SHADOW_SIZE\n        )\n        self.SetSizer(self.sizer)\n        self.inner_sizer.AddSpacer(CONTAINER_BORDER)\n        self.page = PagePanel(self.inner_container, self.project, self.page_id)\n        self.inner_sizer.Add(\n            self.page,\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n            border=CONTAINER_BORDER\n        )\n\n    def FindClosestDropPoint(self, screen_pos):\n        return self.page.FindClosestDropPoint(screen_pos)\n",
 "type":"code"
 }
 ],
@@ -1640,7 +1640,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Page(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    <<Page>>\n",
+"text":"class PagePanel(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    <<Page>>\n",
 "type":"code"
 }
 ],
@@ -2605,7 +2605,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def get_page(self, page_id=None):\n    page_dict = self._document_dict.get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return DictPage(self, page_dict)\n",
+"text":"def get_page(self, page_id=None):\n    page_dict = self._document_dict.get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n",
 "type":"code"
 },
 {
@@ -2614,7 +2614,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictPage(object):\n\n    def __init__(self, document, page_dict):\n        self._document = document\n        self._page_dict = page_dict\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        with self._document.new_state() as state:\n            state.update_page_dict(self.id, {\"title\": title})\n\n    @property\n    def paragraphs(self):\n        return [\n            DictParagraph.create(self._document, self, paragraph_dict)\n            for paragraph_dict\n            in self._page_dict[\"paragraphs\"]\n        ]\n\n    @property\n    def children(self):\n        return [\n            DictPage(self._document, child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n\n    def delete(self):\n        with self._document.new_state() as state:\n            state.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.new_state() as state:\n            state.move_page_dict(self.id, parent_page_id, before_page_id)\n",
+"text":"class Page(object):\n\n    def __init__(self, document, page_dict):\n        self._document = document\n        self._page_dict = page_dict\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        with self._document.new_state() as state:\n            state.update_page_dict(self.id, {\"title\": title})\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(self._document, self, paragraph_dict)\n            for paragraph_dict\n            in self._page_dict[\"paragraphs\"]\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n\n    def delete(self):\n        with self._document.new_state() as state:\n            state.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.new_state() as state:\n            state.move_page_dict(self.id, parent_page_id, before_page_id)\n",
 "type":"code"
 }
 ],
@@ -2632,7 +2632,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictTextParagraph(DictParagraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def fragments(self):\n        return [\n            DictTextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n",
+"text":"class TextParagraph(Paragraph):\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n",
 "type":"code"
 }
 ],
@@ -2648,7 +2648,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictQuoteParagraph(DictTextParagraph):\n    pass",
+"text":"class QuoteParagraph(TextParagraph):\n    pass",
 "type":"code"
 }
 ],
@@ -2664,7 +2664,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictListParagraph(DictParagraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._paragraph_dict[\"children\"]]\n\n\nclass ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return [\n            DictTextFragment.create(self._document, fragment)\n            for fragment\n            in self._item_dict[\"fragments\"]\n        ]\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def formatted_text(self):\n        return [x.formatted_text for x in self.fragments]\n",
+"text":"class ListParagraph(Paragraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._paragraph_dict[\"children\"]]\n\n\nclass ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._item_dict[\"fragments\"]\n        ]\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def formatted_text(self):\n        return [x.formatted_text for x in self.fragments]\n",
 "type":"code"
 }
 ],
@@ -2680,7 +2680,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictCodeParagraph(DictParagraph):\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._tokens_to_fragments(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(\"\".join(self.path)) > 0\n\n    @property\n    def path(self):\n        return tuple(self._paragraph_dict[\"path\"])\n\n    @property\n    def filename(self):\n        last_part = \"\"\n        for part in self.path:\n            if part.startswith(\"<<\"):\n                break\n            last_part = part\n        return last_part\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _tokens_to_fragments(self, tokens):\n        fragments = []\n        for token, text in tokens:\n            fragments.append(Fragment(text, token=token))\n        return fragments\n",
+"text":"class CodeParagraph(Paragraph):\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._tokens_to_fragments(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(\"\".join(self.path)) > 0\n\n    @property\n    def path(self):\n        return tuple(self._paragraph_dict[\"path\"])\n\n    @property\n    def filename(self):\n        last_part = \"\"\n        for part in self.path:\n            if part.startswith(\"<<\"):\n                break\n            last_part = part\n        return last_part\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _tokens_to_fragments(self, tokens):\n        fragments = []\n        for token, text in tokens:\n            fragments.append(Fragment(text, token=token))\n        return fragments\n",
 "type":"code"
 }
 ],
@@ -2696,7 +2696,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictImageParagraph(DictParagraph):\n\n    @property\n    def fragments(self):\n        return [\n            DictTextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n",
+"text":"class ImageParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n",
 "type":"code"
 }
 ],
@@ -2721,7 +2721,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictParagraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict):\n        return {\n            \"text\": DictTextParagraph,\n            \"quote\": DictQuoteParagraph,\n            \"list\": DictListParagraph,\n            \"code\": DictCodeParagraph,\n            \"image\": DictImageParagraph,\n        }.get(paragraph_dict[\"type\"], DictParagraph)(document, page, paragraph_dict)\n\n    def __init__(self, document, page, paragraph_dict):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.new_state() as state:\n            state.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.new_state() as state:\n            state.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.new_state() as state:\n            state.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n",
+"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict)\n\n    def __init__(self, document, page, paragraph_dict):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.new_state() as state:\n            state.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.new_state() as state:\n            state.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.new_state() as state:\n            state.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n",
 "type":"code"
 }
 ],
@@ -2739,7 +2739,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictStrongTextFragment(DictTextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Strong)",
+"text":"class StrongTextFragment(TextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Strong)",
 "type":"code"
 }
 ],
@@ -2755,7 +2755,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictEmphasisTextFragment(DictTextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Emphasis)",
+"text":"class EmphasisTextFragment(TextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Emphasis)",
 "type":"code"
 }
 ],
@@ -2771,7 +2771,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictCodeTextFragment(DictTextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Code)",
+"text":"class CodeTextFragment(TextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Code)",
 "type":"code"
 }
 ],
@@ -2787,7 +2787,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictReferenceTextFragment(DictTextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self._document.get_page(self.page_id) is not None:\n            return self._document.get_page(self.page_id).title\n        return self.page_id\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Reference, page_id=self.page_id)",
+"text":"class ReferenceTextFragment(TextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self._document.get_page(self.page_id) is not None:\n            return self._document.get_page(self.page_id).title\n        return self.page_id\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Reference, page_id=self.page_id)",
 "type":"code"
 }
 ],
@@ -2803,7 +2803,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictLinkTextFragment(DictTextFragment):\n\n    @property\n    def url(self):\n        return self._text_fragment_dict[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Link, url=self.url)",
+"text":"class LinkTextFragment(TextFragment):\n\n    @property\n    def url(self):\n        return self._text_fragment_dict[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Link, url=self.url)",
 "type":"code"
 }
 ],
@@ -2818,7 +2818,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DictTextFragment(object):\n\n    @staticmethod\n    def create(document, text_fragment_dict):\n        return {\n            \"strong\": DictStrongTextFragment,\n            \"emphasis\": DictEmphasisTextFragment,\n            \"code\": DictCodeTextFragment,\n            \"reference\": DictReferenceTextFragment,\n            \"link\": DictLinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], DictTextFragment)(document, text_fragment_dict)\n\n    def __init__(self, document, text_fragment_dict):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text)\n",
+"text":"class TextFragment(object):\n\n    @staticmethod\n    def create(document, text_fragment_dict):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict)\n\n    def __init__(self, document, text_fragment_dict):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text)\n",
 "type":"code"
 }
 ],
