@@ -920,12 +920,22 @@
 "type":"text"
 },
 {
+"fragments":[
+{
+"text":"We put all components in a panel, and let the panel be the only child of the top level window. Otherwise tab cycling will not work properly. Reference?",
+"type":"text"
+}
+],
+"id":"3c4256b981ae435ea615666b5c16f057",
+"type":"text"
+},
+{
 "id":"1184388e07e149eea4b71458b275b38b",
 "path":[
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(self, project))\n        workspace = Workspace(self, project)\n        toc = TableOfContents(self, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self.SetSizerAndFit(sizer)\n\n    <<MainFrame>>\n",
+"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None)\n        self.main_panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(self.main_panel, project))\n        workspace = Workspace(self.main_panel, project)\n        toc = TableOfContents(self.main_panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self.main_panel.SetSizerAndFit(sizer)\n\n    <<MainFrame>>\n",
 "type":"code"
 }
 ],
@@ -4840,16 +4850,6 @@
 "fragments":[
 {
 "text":"Decouple styled text control from RLiterate internals?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Use panel in top level window (otherwise no tab cycling (reference?))",
 "type":"text"
 }
 ]

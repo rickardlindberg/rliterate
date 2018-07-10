@@ -320,14 +320,15 @@ class MainFrame(wx.Frame):
 
     def __init__(self, filepath):
         wx.Frame.__init__(self, None)
+        self.main_panel = wx.Panel(self)
         project = Project(filepath)
-        self.SetToolBar(ToolBar(self, project))
-        workspace = Workspace(self, project)
-        toc = TableOfContents(self, project)
+        self.SetToolBar(ToolBar(self.main_panel, project))
+        workspace = Workspace(self.main_panel, project)
+        toc = TableOfContents(self.main_panel, project)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
-        self.SetSizerAndFit(sizer)
+        self.main_panel.SetSizerAndFit(sizer)
 
 class ToolBar(wx.ToolBar):
 
