@@ -2595,7 +2595,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def add_page(self, title=\"New page\", parent_id=None):\n    with self.new_state() as state:\n        state.add_page_dict(self._empty_page(), parent_id=parent_id)\n\ndef _empty_page(self):\n    return {\n        \"id\": genid(),\n        \"title\": \"New page...\",\n        \"children\": [],\n        \"paragraphs\": [],\n    }\n",
+"text":"def add_page(self, title=\"New page\", parent_id=None):\n    with self.modify(\"Add page\") as document_dict:\n        document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)\n\ndef _empty_page(self):\n    return {\n        \"id\": genid(),\n        \"title\": \"New page...\",\n        \"children\": [],\n        \"paragraphs\": [],\n    }\n",
 "type":"code"
 },
 {
@@ -2614,7 +2614,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Page(object):\n\n    def __init__(self, document, page_dict):\n        self._document = document\n        self._page_dict = page_dict\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        with self._document.new_state() as state:\n            state.update_page_dict(self.id, {\"title\": title})\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(self._document, self, paragraph_dict)\n            for paragraph_dict\n            in self._page_dict[\"paragraphs\"]\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n\n    def delete(self):\n        with self._document.new_state() as state:\n            state.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.new_state() as state:\n            state.move_page_dict(self.id, parent_page_id, before_page_id)\n",
+"text":"class Page(object):\n\n    def __init__(self, document, page_dict):\n        self._document = document\n        self._page_dict = page_dict\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        with self._document.modify(\"Change title\") as document_dict:\n            document_dict.update_page_dict(self.id, {\"title\": title})\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(self._document, self, paragraph_dict)\n            for paragraph_dict\n            in self._page_dict[\"paragraphs\"]\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n\n    def delete(self):\n        with self._document.modify(\"Delete page\") as document_dict:\n            document_dict.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.modify(\"Move page\") as document_dict:\n            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)\n",
 "type":"code"
 }
 ],
@@ -2712,7 +2712,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.new_state() as state:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        state.add_paragraph_dict(paragraph, page_id, before_id=before_id)\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
+"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.modify(\"Add paragraph\") as document_dict:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        document_dict.add_paragraph_dict(paragraph, page_id, before_id=before_id)\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
 "type":"code"
 },
 {
@@ -2721,7 +2721,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict)\n\n    def __init__(self, document, page, paragraph_dict):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.new_state() as state:\n            state.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.new_state() as state:\n            state.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.new_state() as state:\n            state.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n",
+"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict)\n\n    def __init__(self, document, page, paragraph_dict):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n",
 "type":"code"
 }
 ],
@@ -2875,7 +2875,7 @@
 {
 "fragments":[
 {
-"text":"An RLiterate document is a JSON object stored in a file. It's structure looks like this:",
+"text":"An RLiterate document is a JSON object stored in a file. Its structure looks like this:",
 "type":"text"
 }
 ],
@@ -2893,7 +2893,7 @@
 {
 "fragments":[
 {
-"text":"The root object represents a page. It has a unique id, a title, paragraphs and child pages. Paragraphs also have unique ids and different attributes depending on type. (The text paragraph has a list of text fragments with different styles.)",
+"text":"The root object represents a page. It has a unique id, a title, paragraphs, and child pages. Paragraphs also have unique ids and different attributes depending on type. (The text paragraph has a list of text fragments with different styles.)",
 "type":"text"
 }
 ],
@@ -2985,7 +2985,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"@contextlib.contextmanager\ndef new_state(self):\n    with self.notify():\n        if self._new_document_dict is None:\n            self._new_document_dict = self._document_dict.clone()\n            yield self._new_document_dict\n            self._document_dict = self._new_document_dict\n            self._new_document_dict = None\n        else:\n            yield self._new_document_dict\n",
+"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.notify():\n        if self._new_document_dict is None:\n            self._new_document_dict = self._document_dict.clone()\n            yield self._new_document_dict\n            self._document_dict = self._new_document_dict\n            self._new_document_dict = None\n        else:\n            yield self._new_document_dict\n",
 "type":"code"
 },
 {

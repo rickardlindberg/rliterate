@@ -1457,7 +1457,7 @@ class Document(Observable):
                 paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
                 del paragraph["text"]
     @contextlib.contextmanager
-    def new_state(self):
+    def modify(self, name):
         with self.notify():
             if self._new_document_dict is None:
                 self._new_document_dict = self._document_dict.clone()
@@ -1467,8 +1467,8 @@ class Document(Observable):
             else:
                 yield self._new_document_dict
     def add_page(self, title="New page", parent_id=None):
-        with self.new_state() as state:
-            state.add_page_dict(self._empty_page(), parent_id=parent_id)
+        with self.modify("Add page") as document_dict:
+            document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)
 
     def _empty_page(self):
         return {
@@ -1483,12 +1483,12 @@ class Document(Observable):
             return None
         return Page(self, page_dict)
     def add_paragraph(self, page_id, before_id=None):
-        with self.new_state() as state:
+        with self.modify("Add paragraph") as document_dict:
             paragraph = {
                 "id": genid(),
                 "type": "factory",
             }
-            state.add_paragraph_dict(paragraph, page_id, before_id=before_id)
+            document_dict.add_paragraph_dict(paragraph, page_id, before_id=before_id)
 
     def get_paragraph(self, page_id, paragraph_id):
         for paragraph in self.get_page(page_id).paragraphs:
@@ -1600,8 +1600,8 @@ class Page(object):
         return self._page_dict["title"]
 
     def set_title(self, title):
-        with self._document.new_state() as state:
-            state.update_page_dict(self.id, {"title": title})
+        with self._document.modify("Change title") as document_dict:
+            document_dict.update_page_dict(self.id, {"title": title})
 
     @property
     def paragraphs(self):
@@ -1620,12 +1620,12 @@ class Page(object):
         ]
 
     def delete(self):
-        with self._document.new_state() as state:
-            state.delete_page_dict(self.id)
+        with self._document.modify("Delete page") as document_dict:
+            document_dict.delete_page_dict(self.id)
 
     def move(self, parent_page_id, before_page_id):
-        with self._document.new_state() as state:
-            state.move_page_dict(self.id, parent_page_id, before_page_id)
+        with self._document.modify("Move page") as document_dict:
+            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)
 class Paragraph(object):
 
     @staticmethod
@@ -1652,16 +1652,16 @@ class Paragraph(object):
         return self._paragraph_dict["type"]
 
     def update(self, data):
-        with self._document.new_state() as state:
-            state.update_paragraph_dict(self.id, data)
+        with self._document.modify("Edit paragraph") as document_dict:
+            document_dict.update_paragraph_dict(self.id, data)
 
     def delete(self):
-        with self._document.new_state() as state:
-            state.delete_paragraph_dict(self._page.id, self.id)
+        with self._document.modify("Delete paragraph") as document_dict:
+            document_dict.delete_paragraph_dict(self._page.id, self.id)
 
     def move(self, target_page, before_paragraph):
-        with self._document.new_state() as state:
-            state.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
+        with self._document.modify("Move paragraph") as document_dict:
+            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
 class TextParagraph(Paragraph):
 
     @property
