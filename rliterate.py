@@ -341,10 +341,18 @@ class ToolBar(wx.ToolBar):
             wx.ART_REDO,
             lambda: self._redo_operation[1]()
         )
+        self._back_tool = self._add_bitmap_tool(
+            wx.ART_GO_BACK,
+            lambda: self.project.back()
+        )
+        self._forward_tool = self._add_bitmap_tool(
+            wx.ART_GO_FORWARD,
+            lambda: self.project.forward()
+        )
         self.Realize()
         self.project_listener = Listener(
             lambda x: self._update(),
-            "document"
+            "document", "layout"
         )
         self.SetProject(project)
 
@@ -367,6 +375,18 @@ class ToolBar(wx.ToolBar):
         else:
             self.EnableTool(self._redo_tool.GetId(), True)
             self.SetToolShortHelp(self._redo_tool.GetId(), "Redo '{}'".format(self._redo_operation[0]))
+        if self.project.can_back():
+            self.EnableTool(self._back_tool.GetId(), True)
+            self.SetToolShortHelp(self._back_tool.GetId(), "Go back")
+        else:
+            self.EnableTool(self._back_tool.GetId(), False)
+            self.SetToolShortHelp(self._back_tool.GetId(), "")
+        if self.project.can_forward():
+            self.EnableTool(self._forward_tool.GetId(), True)
+            self.SetToolShortHelp(self._forward_tool.GetId(), "Go forward")
+        else:
+            self.EnableTool(self._forward_tool.GetId(), False)
+            self.SetToolShortHelp(self._forward_tool.GetId(), "")
 
     def _add_bitmap_tool(self, art, fn):
         tool = self.AddSimpleTool(
@@ -2062,6 +2082,7 @@ class Layout(Observable):
         self._toc_collapsed = ensure_key(self._toc, "collapsed", [])
         self._workspace = ensure_key(self.data, "workspace", {})
         self._workspace_columns = ensure_key(self._workspace, "columns", [])
+        self._workspace_columns_history = History(copy.deepcopy(self._workspace_columns), size=20)
         if "scratch" in self._workspace:
             if not self._workspace["columns"]:
                 self._workspace["columns"] = [self._workspace["scratch"]]
@@ -2087,9 +2108,27 @@ class Layout(Observable):
 
     def open_pages(self, page_ids, column_index=None):
         with self.notify("workspace"):
-            if column_index is None:
-                column_index = len(self._workspace_columns)
-            self._workspace_columns[column_index:] = [page_ids[:]]
+            with self._workspace_columns_history.new_value() as value:
+                if column_index is None:
+                    column_index = len(self._workspace_columns)
+                value[column_index:] = [page_ids[:]]
+                self._workspace_columns[:] = value
+
+    def can_back(self):
+        return self._workspace_columns_history.can_back()
+
+    def back(self):
+        with self.notify("workspace"):
+            self._workspace_columns_history.back()
+            self._workspace_columns[:] = self._workspace_columns_history.value
+
+    def can_forward(self):
+        return self._workspace_columns_history.can_forward()
+
+    def forward(self):
+        with self.notify("workspace"):
+            self._workspace_columns_history.forward()
+            self._workspace_columns[:] = self._workspace_columns_history.value
 
     def is_open(self, page_id):
         for column in self.columns:
@@ -2190,6 +2229,18 @@ class Project(Observable):
 
     def open_pages(self, *args, **kwargs):
         return self.layout.open_pages(*args, **kwargs)
+
+    def can_back(self, *args, **kwargs):
+        return self.layout.can_back(*args, **kwargs)
+
+    def back(self, *args, **kwargs):
+        return self.layout.back(*args, **kwargs)
+
+    def can_forward(self, *args, **kwargs):
+        return self.layout.can_forward(*args, **kwargs)
+
+    def forward(self, *args, **kwargs):
+        return self.layout.forward(*args, **kwargs)
 
     def get_hoisted_page(self, *args, **kwargs):
         return self.layout.get_hoisted_page(*args, **kwargs)
@@ -2488,7 +2539,7 @@ class History(object):
         return self._history[self._history_index][1]
 
     @contextlib.contextmanager
-    def new_value(self, name):
+    def new_value(self, name=""):
         if self._new_history_entry is None:
             self._new_history_entry = (name, copy.deepcopy(self.value))
             yield self._new_history_entry[1]

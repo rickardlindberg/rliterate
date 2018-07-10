@@ -941,7 +941,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            lambda x: self._update(),\n            \"document\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self):\n        <<ToolBar/_update>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            lambda x: self._update(),\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self):\n        <<ToolBar/_update>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
 "type":"code"
 },
 {
@@ -1002,6 +1002,66 @@
 "<<ToolBar/_update>>"
 ],
 "text":"self._redo_operation = self.project.get_redo_operation()\nif self._redo_operation is None:\n    self.EnableTool(self._redo_tool.GetId(), False)\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"\")\nelse:\n    self.EnableTool(self._redo_tool.GetId(), True)\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"Redo '{}'\".format(self._redo_operation[0]))\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Back:",
+"type":"text"
+}
+],
+"id":"ececa6e054d04b74af2a7678e202cc29",
+"type":"text"
+},
+{
+"id":"5150de92b16546099500af99ff1bb132",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self._back_tool = self._add_bitmap_tool(\n    wx.ART_GO_BACK,\n    lambda: self.project.back()\n)",
+"type":"code"
+},
+{
+"id":"61fc194063354da6a0ea620a14e06294",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/_update>>"
+],
+"text":"if self.project.can_back():\n    self.EnableTool(self._back_tool.GetId(), True)\n    self.SetToolShortHelp(self._back_tool.GetId(), \"Go back\")\nelse:\n    self.EnableTool(self._back_tool.GetId(), False)\n    self.SetToolShortHelp(self._back_tool.GetId(), \"\")\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Forward:",
+"type":"text"
+}
+],
+"id":"77ca49e949a34c019e0b0cc6253ccb39",
+"type":"text"
+},
+{
+"id":"f4bf7ab2e04a42cb8cbdb2056b9831f9",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self._forward_tool = self._add_bitmap_tool(\n    wx.ART_GO_FORWARD,\n    lambda: self.project.forward()\n)",
+"type":"code"
+},
+{
+"id":"6adc4a798f0b46c4adee1122ff1d2c59",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/_update>>"
+],
+"text":"if self.project.can_forward():\n    self.EnableTool(self._forward_tool.GetId(), True)\n    self.SetToolShortHelp(self._forward_tool.GetId(), \"Go forward\")\nelse:\n    self.EnableTool(self._forward_tool.GetId(), False)\n    self.SetToolShortHelp(self._forward_tool.GetId(), \"\")\n",
 "type":"code"
 }
 ],
@@ -3301,7 +3361,7 @@
 "<<Layout>>",
 "<<__init__>>"
 ],
-"text":"self._workspace_columns = ensure_key(self._workspace, \"columns\", [])",
+"text":"self._workspace_columns = ensure_key(self._workspace, \"columns\", [])\nself._workspace_columns_history = History(copy.deepcopy(self._workspace_columns), size=20)\n",
 "type":"code"
 },
 {
@@ -3311,7 +3371,7 @@
 "<<classes>>",
 "<<Layout>>"
 ],
-"text":"@property\ndef columns(self):\n    return [column[:] for column in self._workspace_columns]\n\ndef open_pages(self, page_ids, column_index=None):\n    with self.notify(\"workspace\"):\n        if column_index is None:\n            column_index = len(self._workspace_columns)\n        self._workspace_columns[column_index:] = [page_ids[:]]\n\ndef is_open(self, page_id):\n    for column in self.columns:\n        if page_id in column:\n            return True\n    return False\n",
+"text":"@property\ndef columns(self):\n    return [column[:] for column in self._workspace_columns]\n\ndef open_pages(self, page_ids, column_index=None):\n    with self.notify(\"workspace\"):\n        with self._workspace_columns_history.new_value() as value:\n            if column_index is None:\n                column_index = len(self._workspace_columns)\n            value[column_index:] = [page_ids[:]]\n            self._workspace_columns[:] = value\n\ndef can_back(self):\n    return self._workspace_columns_history.can_back()\n\ndef back(self):\n    with self.notify(\"workspace\"):\n        self._workspace_columns_history.back()\n        self._workspace_columns[:] = self._workspace_columns_history.value\n\ndef can_forward(self):\n    return self._workspace_columns_history.can_forward()\n\ndef forward(self):\n    with self.notify(\"workspace\"):\n        self._workspace_columns_history.forward()\n        self._workspace_columns[:] = self._workspace_columns_history.value\n\ndef is_open(self, page_id):\n    for column in self.columns:\n        if page_id in column:\n            return True\n    return False\n",
 "type":"code"
 },
 {
@@ -3459,7 +3519,7 @@
 "<<classes>>",
 "<<Project>>"
 ],
-"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    return self.layout.open_pages(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
+"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    return self.layout.open_pages(*args, **kwargs)\n\ndef can_back(self, *args, **kwargs):\n    return self.layout.can_back(*args, **kwargs)\n\ndef back(self, *args, **kwargs):\n    return self.layout.back(*args, **kwargs)\n\ndef can_forward(self, *args, **kwargs):\n    return self.layout.can_forward(*args, **kwargs)\n\ndef forward(self, *args, **kwargs):\n    return self.layout.forward(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
 "type":"code"
 },
 {
@@ -3672,7 +3732,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class History(object):\n\n    def __init__(self, initial_value, size=10):\n        self._history = [(\"\", initial_value)]\n        self._history_index = 0\n        self._new_history_entry = None\n        self._size = size\n\n    @property\n    def value(self):\n        return self._history[self._history_index][1]\n\n    @contextlib.contextmanager\n    def new_value(self, name):\n        if self._new_history_entry is None:\n            self._new_history_entry = (name, copy.deepcopy(self.value))\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-self._size:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\n    def can_back(self):\n        return self._history_index > 0\n\n    def back_name(self):\n        if self.can_back():\n            return self._history[self._history_index][0]\n\n    def back(self):\n        if self.can_back():\n            self._history_index -= 1\n\n    def can_forward(self):\n        return self._history_index < (len(self._history) - 1)\n\n    def forward_name(self):\n        return self._history[self._history_index+1][0]\n\n    def forward(self):\n        if self.can_forward():\n            self._history_index += 1\n",
+"text":"class History(object):\n\n    def __init__(self, initial_value, size=10):\n        self._history = [(\"\", initial_value)]\n        self._history_index = 0\n        self._new_history_entry = None\n        self._size = size\n\n    @property\n    def value(self):\n        return self._history[self._history_index][1]\n\n    @contextlib.contextmanager\n    def new_value(self, name=\"\"):\n        if self._new_history_entry is None:\n            self._new_history_entry = (name, copy.deepcopy(self.value))\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-self._size:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\n    def can_back(self):\n        return self._history_index > 0\n\n    def back_name(self):\n        if self.can_back():\n            return self._history[self._history_index][0]\n\n    def back(self):\n        if self.can_back():\n            self._history_index -= 1\n\n    def can_forward(self):\n        return self._history_index < (len(self._history) - 1)\n\n    def forward_name(self):\n        return self._history[self._history_index+1][0]\n\n    def forward(self):\n        if self.can_forward():\n            self._history_index += 1\n",
 "type":"code"
 }
 ],
@@ -4358,36 +4418,6 @@
 "fragments":[
 {
 "text":"Clone paragraph would be really useful",
-"type":"text"
-}
-]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Extract undo-behavior to class and use here as well",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Implement \"browser history\" for workspace (remember previous columns in ",
-"type":"text"
-},
-{
-"page_id":"f7f16199492c4bad80567c3a960b8bc9",
-"text":null,
-"type":"reference"
-},
-{
-"text":")",
 "type":"text"
 }
 ]
