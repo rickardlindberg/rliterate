@@ -1646,9 +1646,6 @@ class DocumentDictWrapper(dict):
 
     def update_paragraph_dict(self, paragraph_id, data):
         self._paragraphs[paragraph_id].update(copy.deepcopy(data))
-
-    def clone(self):
-        return copy.deepcopy(self)
 class Page(object):
 
     def __init__(self, document, page_dict):
@@ -2493,7 +2490,7 @@ class History(object):
     @contextlib.contextmanager
     def new_value(self, name):
         if self._new_history_entry is None:
-            self._new_history_entry = (name, self.value.clone())
+            self._new_history_entry = (name, copy.deepcopy(self.value))
             yield self._new_history_entry[1]
             self._history = self._history[:self._history_index+1]
             self._history.append(self._new_history_entry)
