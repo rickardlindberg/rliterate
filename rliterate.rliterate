@@ -1275,7 +1275,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = self.page_container.ScreenToClient(screen_pos)\n    if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        scroll_pos = (scroll_x, scroll_y) = self.page_container.CalcUnscrolledPosition(client_pos)\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(scroll_x)\n            )\n",
+"text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = (client_x, client_y) = self.page_container.ScreenToClient(screen_pos)\n    if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(client_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(client_x)\n            )\n",
 "type":"code"
 }
 ],
@@ -4870,16 +4870,6 @@
 "fragments":[
 {
 "text":"\"To X\" functions no longer work",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Move page does not work well in GUI if TOC is scrolled",
 "type":"text"
 }
 ]

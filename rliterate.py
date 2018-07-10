@@ -484,16 +484,15 @@ class TableOfContents(wx.Panel):
                 ))
         return divider
     def FindClosestDropPoint(self, screen_pos):
-        client_pos = self.page_container.ScreenToClient(screen_pos)
+        client_pos = (client_x, client_y) = self.page_container.ScreenToClient(screen_pos)
         if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
-            scroll_pos = (scroll_x, scroll_y) = self.page_container.CalcUnscrolledPosition(client_pos)
             y_distances = defaultdict(list)
             for drop_point in self.drop_points:
-                y_distances[drop_point.y_distance_to(scroll_y)].append(drop_point)
+                y_distances[drop_point.y_distance_to(client_y)].append(drop_point)
             if y_distances:
                 return min(
                     y_distances[min(y_distances.keys())],
-                    key=lambda drop_point: drop_point.x_distance_to(scroll_x)
+                    key=lambda drop_point: drop_point.x_distance_to(client_x)
                 )
 class TableOfContentsDropPoint(object):
 
