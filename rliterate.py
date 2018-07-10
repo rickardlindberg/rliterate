@@ -1499,9 +1499,7 @@ class Document(Observable):
             root_page = load_json_from_file(path)
         else:
             root_page = self._empty_page()
-        self._history = [("", DocumentDictWrapper(root_page))]
-        self._history_index = 0
-        self._new_history_entry = None
+        self._history = History(DocumentDictWrapper(root_page), size=10)
         for paragraph in self._document_dict.paragraph_dict_iterator():
             if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
                 paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
@@ -1512,46 +1510,26 @@ class Document(Observable):
 
     @property
     def _document_dict(self):
-        return self._history[self._history_index][1]
+        return self._history.value
     @contextlib.contextmanager
     def modify(self, name):
         with self.notify():
-            if self._new_history_entry is None:
-                self._new_history_entry = (name, self._document_dict.clone())
-                yield self._new_history_entry[1]
-                self._history = self._history[:self._history_index+1]
-                self._history.append(self._new_history_entry)
-                self._history = self._history[-10:]
-                self._history_index = len(self._history) - 1
-                self._new_history_entry = None
-            else:
-                yield self._new_history_entry[1]
+            with self._history.new_value(name) as value:
+                yield value
 
     def get_undo_operation(self):
-        if self._can_undo():
-            def undo():
-                if self._can_undo():
-                    with self.notify():
-                        self._history_index -= 1
-            return (self._history[self._history_index][0], undo)
-        else:
-            return None
-
-    def _can_undo(self):
-        return self._history_index > 0
+        def undo():
+            with self.notify():
+                self._history.back()
+        if self._history.can_back():
+            return (self._history.back_name(), undo)
 
     def get_redo_operation(self):
-        if self._can_redo():
-            def redo():
-                if self._can_redo():
-                    with self.notify():
-                        self._history_index += 1
-            return (self._history[self._history_index+1][0], redo)
-        else:
-            return None
-
-    def _can_redo(self):
-        return self._history_index < (len(self._history) - 1)
+        def redo():
+            with self.notify():
+                self._history.forward()
+        if self._history.can_forward():
+            return (self._history.forward_name(), redo)
     def add_page(self, title="New page", parent_id=None):
         with self.modify("Add page") as document_dict:
             document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)
@@ -2500,6 +2478,51 @@ class Listener(object):
         self.observable = observable
         self.observable.listen(self.fn, *self.events)
         self.fn("")
+class History(object):
+
+    def __init__(self, initial_value, size=10):
+        self._history = [("", initial_value)]
+        self._history_index = 0
+        self._new_history_entry = None
+        self._size = size
+
+    @property
+    def value(self):
+        return self._history[self._history_index][1]
+
+    @contextlib.contextmanager
+    def new_value(self, name):
+        if self._new_history_entry is None:
+            self._new_history_entry = (name, self.value.clone())
+            yield self._new_history_entry[1]
+            self._history = self._history[:self._history_index+1]
+            self._history.append(self._new_history_entry)
+            self._history = self._history[-self._size:]
+            self._history_index = len(self._history) - 1
+            self._new_history_entry = None
+        else:
+            yield self._new_history_entry[1]
+
+    def can_back(self):
+        return self._history_index > 0
+
+    def back_name(self):
+        if self.can_back():
+            return self._history[self._history_index][0]
+
+    def back(self):
+        if self.can_back():
+            self._history_index -= 1
+
+    def can_forward(self):
+        return self._history_index < (len(self._history) - 1)
+
+    def forward_name(self):
+        return self._history[self._history_index+1][0]
+
+    def forward(self):
+        if self.can_forward():
+            self._history_index += 1
 def set_clipboard_text(text):
     if wx.TheClipboard.Open():
         try:

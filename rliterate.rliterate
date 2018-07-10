@@ -3041,7 +3041,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._history = [(\"\", DocumentDictWrapper(root_page))]\n    self._history_index = 0\n    self._new_history_entry = None\n    <<Post load>>\n\n@property\ndef _document_dict(self):\n    return self._history[self._history_index][1]\n",
+"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._history = History(DocumentDictWrapper(root_page), size=10)\n    <<Post load>>\n\n@property\ndef _document_dict(self):\n    return self._history.value\n",
 "type":"code"
 },
 {
@@ -3061,7 +3061,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.notify():\n        if self._new_history_entry is None:\n            self._new_history_entry = (name, self._document_dict.clone())\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-10:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\ndef get_undo_operation(self):\n    if self._can_undo():\n        def undo():\n            if self._can_undo():\n                with self.notify():\n                    self._history_index -= 1\n        return (self._history[self._history_index][0], undo)\n    else:\n        return None\n\ndef _can_undo(self):\n    return self._history_index > 0\n\ndef get_redo_operation(self):\n    if self._can_redo():\n        def redo():\n            if self._can_redo():\n                with self.notify():\n                    self._history_index += 1\n        return (self._history[self._history_index+1][0], redo)\n    else:\n        return None\n\ndef _can_redo(self):\n    return self._history_index < (len(self._history) - 1)\n",
+"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.notify():\n        with self._history.new_value(name) as value:\n            yield value\n\ndef get_undo_operation(self):\n    def undo():\n        with self.notify():\n            self._history.back()\n    if self._history.can_back():\n        return (self._history.back_name(), undo)\n\ndef get_redo_operation(self):\n    def redo():\n        with self.notify():\n            self._history.forward()\n    if self._history.can_forward():\n        return (self._history.forward_name(), redo)\n",
 "type":"code"
 },
 {
@@ -3627,6 +3627,64 @@
 }
 ],
 "title":"JSON serialization mechanisms"
+},
+{
+"children":[],
+"id":"b4d5859adcd8416fb3a9fc13b9329db8",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"History",
+"type":"code"
+},
+{
+"text":" class maintains a list of values. The current value can be changed with the ",
+"type":"text"
+},
+{
+"text":"back",
+"type":"code"
+},
+{
+"text":" and ",
+"type":"text"
+},
+{
+"text":"forward",
+"type":"code"
+},
+{
+"text":" methods. The only requirement on the value is that it has a ",
+"type":"text"
+},
+{
+"text":"clone",
+"type":"code"
+},
+{
+"text":" method. This is used to implement undo/redo behavior.",
+"type":"text"
+}
+],
+"id":"b6c8fbcd8ba547cca74c2e7531dea043",
+"type":"text"
+},
+{
+"id":"93c4e5d9698b472abf0ddca35e897bc5",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class History(object):\n\n    def __init__(self, initial_value, size=10):\n        self._history = [(\"\", initial_value)]\n        self._history_index = 0\n        self._new_history_entry = None\n        self._size = size\n\n    @property\n    def value(self):\n        return self._history[self._history_index][1]\n\n    @contextlib.contextmanager\n    def new_value(self, name):\n        if self._new_history_entry is None:\n            self._new_history_entry = (name, self.value.clone())\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-self._size:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\n    def can_back(self):\n        return self._history_index > 0\n\n    def back_name(self):\n        if self.can_back():\n            return self._history[self._history_index][0]\n\n    def back(self):\n        if self.can_back():\n            self._history_index -= 1\n\n    def can_forward(self):\n        return self._history_index < (len(self._history) - 1)\n\n    def forward_name(self):\n        return self._history[self._history_index+1][0]\n\n    def forward(self):\n        if self.can_forward():\n            self._history_index += 1\n",
+"type":"code"
+}
+],
+"title":"History"
 },
 {
 "children":[],
