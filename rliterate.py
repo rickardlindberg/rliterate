@@ -321,12 +321,64 @@ class MainFrame(wx.Frame):
     def __init__(self, filepath):
         wx.Frame.__init__(self, None)
         project = Project(filepath)
+        self.SetToolBar(ToolBar(self, project))
         workspace = Workspace(self, project)
         toc = TableOfContents(self, project)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
         self.SetSizerAndFit(sizer)
+
+class ToolBar(wx.ToolBar):
+
+    def __init__(self, parent, project, *args, **kwargs):
+        wx.ToolBar.__init__(self, parent, *args, **kwargs)
+        self._undo_tool = self._add_bitmap_tool(
+            wx.ART_UNDO,
+            lambda: self._undo_operation[1]()
+        )
+        self._redo_tool = self._add_bitmap_tool(
+            wx.ART_REDO,
+            lambda: self._redo_operation[1]()
+        )
+        self.Realize()
+        self.project_listener = Listener(
+            lambda x: self._update(),
+            "document"
+        )
+        self.SetProject(project)
+
+    def SetProject(self, project):
+        self.project = project
+        self.project_listener.set_observable(self.project)
+
+    def _update(self):
+        self._undo_operation = self.project.get_undo_operation()
+        if self._undo_operation is None:
+            self.EnableTool(self._undo_tool.GetId(), False)
+            self.SetToolShortHelp(self._undo_tool.GetId(), "")
+        else:
+            self.EnableTool(self._undo_tool.GetId(), True)
+            self.SetToolShortHelp(self._undo_tool.GetId(), "Undo '{}'".format(self._undo_operation[0]))
+        self._redo_operation = self.project.get_redo_operation()
+        if self._redo_operation is None:
+            self.EnableTool(self._redo_tool.GetId(), False)
+            self.SetToolShortHelp(self._redo_tool.GetId(), "")
+        else:
+            self.EnableTool(self._redo_tool.GetId(), True)
+            self.SetToolShortHelp(self._redo_tool.GetId(), "Redo '{}'".format(self._redo_operation[0]))
+
+    def _add_bitmap_tool(self, art, fn):
+        tool = self.AddSimpleTool(
+            wx.ID_ANY,
+            wx.ArtProvider.GetBitmap(
+                art,
+                wx.ART_BUTTON,
+                (24, 24)
+            )
+        )
+        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)
+        return tool
 class TableOfContents(wx.Panel):
     def __init__(self, parent, project):
         wx.Panel.__init__(self, parent, size=(250, -1))
@@ -1447,8 +1499,9 @@ class Document(Observable):
             root_page = load_json_from_file(path)
         else:
             root_page = self._empty_page()
-        self._document_dict = DocumentDictWrapper(root_page)
-        self._new_document_dict = None
+        self._history = [("", DocumentDictWrapper(root_page))]
+        self._history_index = 0
+        self._new_history_entry = None
         for paragraph in self._document_dict.paragraph_dict_iterator():
             if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
                 paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
@@ -1456,16 +1509,49 @@ class Document(Observable):
             elif paragraph["type"] in ["list"] and "text" in paragraph:
                 paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
                 del paragraph["text"]
+
+    @property
+    def _document_dict(self):
+        return self._history[self._history_index][1]
     @contextlib.contextmanager
     def modify(self, name):
         with self.notify():
-            if self._new_document_dict is None:
-                self._new_document_dict = self._document_dict.clone()
-                yield self._new_document_dict
-                self._document_dict = self._new_document_dict
-                self._new_document_dict = None
+            if self._new_history_entry is None:
+                self._new_history_entry = (name, self._document_dict.clone())
+                yield self._new_history_entry[1]
+                self._history = self._history[:self._history_index+1]
+                self._history.append(self._new_history_entry)
+                self._history = self._history[-10:]
+                self._history_index = len(self._history) - 1
+                self._new_history_entry = None
             else:
-                yield self._new_document_dict
+                yield self._new_history_entry[1]
+
+    def get_undo_operation(self):
+        if self._can_undo():
+            def undo():
+                if self._can_undo():
+                    with self.notify():
+                        self._history_index -= 1
+            return (self._history[self._history_index][0], undo)
+        else:
+            return None
+
+    def _can_undo(self):
+        return self._history_index > 0
+
+    def get_redo_operation(self):
+        if self._can_redo():
+            def redo():
+                if self._can_redo():
+                    with self.notify():
+                        self._history_index += 1
+            return (self._history[self._history_index+1][0], redo)
+        else:
+            return None
+
+    def _can_redo(self):
+        return self._history_index < (len(self._history) - 1)
     def add_page(self, title="New page", parent_id=None):
         with self.modify("Add page") as document_dict:
             document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)
@@ -2108,6 +2194,12 @@ class Project(Observable):
 
     def add_paragraph(self, *args, **kwargs):
         return self.document.add_paragraph(*args, **kwargs)
+
+    def get_undo_operation(self, *args, **kwargs):
+        return self.document.get_undo_operation(*args, **kwargs)
+
+    def get_redo_operation(self, *args, **kwargs):
+        return self.document.get_redo_operation(*args, **kwargs)
     def toggle_collapsed(self, *args, **kwargs):
         return self.layout.toggle_collapsed(*args, **kwargs)
 

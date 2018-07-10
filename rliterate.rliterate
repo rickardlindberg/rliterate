@@ -925,11 +925,87 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None)\n        project = Project(filepath)\n        workspace = Workspace(self, project)\n        toc = TableOfContents(self, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self.SetSizerAndFit(sizer)\n",
+"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(self, project))\n        workspace = Workspace(self, project)\n        toc = TableOfContents(self, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self.SetSizerAndFit(sizer)\n\n    <<MainFrame>>\n",
 "type":"code"
 }
 ],
 "title":"Main frame"
+},
+{
+"children":[],
+"id":"b311a34073564bc99fc72d44b3c74369",
+"paragraphs":[
+{
+"id":"c5e0fb1941dc421592abf8ccc5588916",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            lambda x: self._update(),\n            \"document\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self):\n        <<ToolBar/_update>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Undo:",
+"type":"text"
+}
+],
+"id":"40429b0e5d2b40fcbd4e9a0f2795c87a",
+"type":"text"
+},
+{
+"id":"c0b506740e8e4e09a3e05ff92b27ff0d",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self._undo_tool = self._add_bitmap_tool(\n    wx.ART_UNDO,\n    lambda: self._undo_operation[1]()\n)\n",
+"type":"code"
+},
+{
+"id":"1fd0ec1058b54c4cacc80d6c9e89db10",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/_update>>"
+],
+"text":"self._undo_operation = self.project.get_undo_operation()\nif self._undo_operation is None:\n    self.EnableTool(self._undo_tool.GetId(), False)\n    self.SetToolShortHelp(self._undo_tool.GetId(), \"\")\nelse:\n    self.EnableTool(self._undo_tool.GetId(), True)\n    self.SetToolShortHelp(self._undo_tool.GetId(), \"Undo '{}'\".format(self._undo_operation[0]))\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Redo:",
+"type":"text"
+}
+],
+"id":"e168c151f1864115ba8c9bbeb09f1d3f",
+"type":"text"
+},
+{
+"id":"9baa1a7a666943db85996c86f4f98caf",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self._redo_tool = self._add_bitmap_tool(\n    wx.ART_REDO,\n    lambda: self._redo_operation[1]()\n)\n",
+"type":"code"
+},
+{
+"id":"2b2e6b1a0fb5422eab62daeade19c189",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/_update>>"
+],
+"text":"self._redo_operation = self.project.get_redo_operation()\nif self._redo_operation is None:\n    self.EnableTool(self._redo_tool.GetId(), False)\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"\")\nelse:\n    self.EnableTool(self._redo_tool.GetId(), True)\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"Redo '{}'\".format(self._redo_operation[0]))\n",
+"type":"code"
+}
+],
+"title":"Toolbar"
 },
 {
 "children":[
@@ -2965,7 +3041,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._document_dict = DocumentDictWrapper(root_page)\n    self._new_document_dict = None\n    <<Post load>>\n",
+"text":"def _load(self, path):\n    if os.path.exists(path):\n        root_page = load_json_from_file(path)\n    else:\n        root_page = self._empty_page()\n    self._history = [(\"\", DocumentDictWrapper(root_page))]\n    self._history_index = 0\n    self._new_history_entry = None\n    <<Post load>>\n\n@property\ndef _document_dict(self):\n    return self._history[self._history_index][1]\n",
 "type":"code"
 },
 {
@@ -2985,7 +3061,7 @@
 "<<classes>>",
 "<<Document>>"
 ],
-"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.notify():\n        if self._new_document_dict is None:\n            self._new_document_dict = self._document_dict.clone()\n            yield self._new_document_dict\n            self._document_dict = self._new_document_dict\n            self._new_document_dict = None\n        else:\n            yield self._new_document_dict\n",
+"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.notify():\n        if self._new_history_entry is None:\n            self._new_history_entry = (name, self._document_dict.clone())\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-10:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\ndef get_undo_operation(self):\n    if self._can_undo():\n        def undo():\n            if self._can_undo():\n                with self.notify():\n                    self._history_index -= 1\n        return (self._history[self._history_index][0], undo)\n    else:\n        return None\n\ndef _can_undo(self):\n    return self._history_index > 0\n\ndef get_redo_operation(self):\n    if self._can_redo():\n        def redo():\n            if self._can_redo():\n                with self.notify():\n                    self._history_index += 1\n        return (self._history[self._history_index+1][0], redo)\n    else:\n        return None\n\ndef _can_redo(self):\n    return self._history_index < (len(self._history) - 1)\n",
 "type":"code"
 },
 {
@@ -3363,7 +3439,7 @@
 "<<classes>>",
 "<<Project>>"
 ],
-"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n",
+"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n",
 "type":"code"
 },
 {
