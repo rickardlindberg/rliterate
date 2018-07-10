@@ -333,6 +333,17 @@ class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
         wx.ToolBar.__init__(self, parent, *args, **kwargs)
+        self._back_tool = self._add_bitmap_tool(
+            wx.ART_GO_BACK,
+            lambda: self.project.back()
+        )
+        self.SetToolShortHelp(self._back_tool.GetId(), "Go back")
+        self._forward_tool = self._add_bitmap_tool(
+            wx.ART_GO_FORWARD,
+            lambda: self.project.forward()
+        )
+        self.SetToolShortHelp(self._forward_tool.GetId(), "Go forward")
+        self.AddSeparator()
         self._undo_tool = self._add_bitmap_tool(
             wx.ART_UNDO,
             lambda: self._undo_operation[1]()
@@ -341,17 +352,9 @@ class ToolBar(wx.ToolBar):
             wx.ART_REDO,
             lambda: self._redo_operation[1]()
         )
-        self._back_tool = self._add_bitmap_tool(
-            wx.ART_GO_BACK,
-            lambda: self.project.back()
-        )
-        self._forward_tool = self._add_bitmap_tool(
-            wx.ART_GO_FORWARD,
-            lambda: self.project.forward()
-        )
         self.Realize()
         self.project_listener = Listener(
-            lambda x: self._update(),
+            self._update,
             "document", "layout"
         )
         self.SetProject(project)
@@ -360,33 +363,19 @@ class ToolBar(wx.ToolBar):
         self.project = project
         self.project_listener.set_observable(self.project)
 
-    def _update(self):
-        self._undo_operation = self.project.get_undo_operation()
-        if self._undo_operation is None:
-            self.EnableTool(self._undo_tool.GetId(), False)
-            self.SetToolShortHelp(self._undo_tool.GetId(), "")
-        else:
-            self.EnableTool(self._undo_tool.GetId(), True)
-            self.SetToolShortHelp(self._undo_tool.GetId(), "Undo '{}'".format(self._undo_operation[0]))
-        self._redo_operation = self.project.get_redo_operation()
-        if self._redo_operation is None:
-            self.EnableTool(self._redo_tool.GetId(), False)
-            self.SetToolShortHelp(self._redo_tool.GetId(), "")
-        else:
-            self.EnableTool(self._redo_tool.GetId(), True)
-            self.SetToolShortHelp(self._redo_tool.GetId(), "Redo '{}'".format(self._redo_operation[0]))
-        if self.project.can_back():
-            self.EnableTool(self._back_tool.GetId(), True)
-            self.SetToolShortHelp(self._back_tool.GetId(), "Go back")
-        else:
-            self.EnableTool(self._back_tool.GetId(), False)
-            self.SetToolShortHelp(self._back_tool.GetId(), "")
-        if self.project.can_forward():
-            self.EnableTool(self._forward_tool.GetId(), True)
-            self.SetToolShortHelp(self._forward_tool.GetId(), "Go forward")
-        else:
-            self.EnableTool(self._forward_tool.GetId(), False)
-            self.SetToolShortHelp(self._forward_tool.GetId(), "")
+    def _update(self, event):
+        if event.startswith("document"):
+            self._undo_operation = self.project.get_undo_operation()
+            self.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)
+            if self._undo_operation is not None:
+                self.SetToolShortHelp(self._undo_tool.GetId(), "Undo '{}'".format(self._undo_operation[0]))
+            self._redo_operation = self.project.get_redo_operation()
+            self.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)
+            if self._redo_operation is not None:
+                self.SetToolShortHelp(self._redo_tool.GetId(), "Redo '{}'".format(self._redo_operation[0]))
+        elif event.startswith("layout"):
+            self.EnableTool(self._back_tool.GetId(), self.project.can_back())
+            self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())
 
     def _add_bitmap_tool(self, art, fn):
         tool = self.AddSimpleTool(

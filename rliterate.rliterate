@@ -932,18 +932,95 @@
 "title":"Main frame"
 },
 {
+"children":[
+{
 "children":[],
-"id":"b311a34073564bc99fc72d44b3c74369",
+"id":"75b0b360e86f4160bf1187d9cdb8787e",
 "paragraphs":[
 {
-"id":"c5e0fb1941dc421592abf8ccc5588916",
+"fragments":[
+{
+"text":"Back:",
+"type":"text"
+}
+],
+"id":"ececa6e054d04b74af2a7678e202cc29",
+"type":"text"
+},
+{
+"id":"5150de92b16546099500af99ff1bb132",
 "path":[
 "rliterate.py",
-"<<classes>>"
+"<<classes>>",
+"<<ToolBar/__init__>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            lambda x: self._update(),\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self):\n        <<ToolBar/_update>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
+"text":"self._back_tool = self._add_bitmap_tool(\n    wx.ART_GO_BACK,\n    lambda: self.project.back()\n)\nself.SetToolShortHelp(self._back_tool.GetId(), \"Go back\")",
 "type":"code"
 },
+{
+"id":"61fc194063354da6a0ea620a14e06294",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/Update layout>>"
+],
+"text":"self.EnableTool(self._back_tool.GetId(), self.project.can_back())\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Forward:",
+"type":"text"
+}
+],
+"id":"77ca49e949a34c019e0b0cc6253ccb39",
+"type":"text"
+},
+{
+"id":"f4bf7ab2e04a42cb8cbdb2056b9831f9",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self._forward_tool = self._add_bitmap_tool(\n    wx.ART_GO_FORWARD,\n    lambda: self.project.forward()\n)\nself.SetToolShortHelp(self._forward_tool.GetId(), \"Go forward\")",
+"type":"code"
+},
+{
+"id":"6adc4a798f0b46c4adee1122ff1d2c59",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/Update layout>>"
+],
+"text":"self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())\n",
+"type":"code"
+}
+],
+"title":"Navigation"
+},
+{
+"children":[],
+"id":"03e14859f4f0480bb5c83eed962b4a2e",
+"paragraphs":[
+{
+"id":"ea40532a6bdd49e089aff92efc6fc62e",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self.AddSeparator()",
+"type":"code"
+}
+],
+"title":"Separator"
+},
+{
+"children":[],
+"id":"3852ed8c8eb648fdb651bc5da6cbfece",
+"paragraphs":[
 {
 "fragments":[
 {
@@ -969,9 +1046,9 @@
 "path":[
 "rliterate.py",
 "<<classes>>",
-"<<ToolBar/_update>>"
+"<<ToolBar/Update document>>"
 ],
-"text":"self._undo_operation = self.project.get_undo_operation()\nif self._undo_operation is None:\n    self.EnableTool(self._undo_tool.GetId(), False)\n    self.SetToolShortHelp(self._undo_tool.GetId(), \"\")\nelse:\n    self.EnableTool(self._undo_tool.GetId(), True)\n    self.SetToolShortHelp(self._undo_tool.GetId(), \"Undo '{}'\".format(self._undo_operation[0]))\n",
+"text":"self._undo_operation = self.project.get_undo_operation()\nself.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)\nif self._undo_operation is not None:\n    self.SetToolShortHelp(self._undo_tool.GetId(), \"Undo '{}'\".format(self._undo_operation[0]))\n",
 "type":"code"
 },
 {
@@ -999,69 +1076,24 @@
 "path":[
 "rliterate.py",
 "<<classes>>",
-"<<ToolBar/_update>>"
+"<<ToolBar/Update document>>"
 ],
-"text":"self._redo_operation = self.project.get_redo_operation()\nif self._redo_operation is None:\n    self.EnableTool(self._redo_tool.GetId(), False)\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"\")\nelse:\n    self.EnableTool(self._redo_tool.GetId(), True)\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"Redo '{}'\".format(self._redo_operation[0]))\n",
+"text":"self._redo_operation = self.project.get_redo_operation()\nself.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)\nif self._redo_operation is not None:\n    self.SetToolShortHelp(self._redo_tool.GetId(), \"Redo '{}'\".format(self._redo_operation[0]))\n",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"Back:",
-"type":"text"
 }
 ],
-"id":"ececa6e054d04b74af2a7678e202cc29",
-"type":"text"
-},
-{
-"id":"5150de92b16546099500af99ff1bb132",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/__init__>>"
-],
-"text":"self._back_tool = self._add_bitmap_tool(\n    wx.ART_GO_BACK,\n    lambda: self.project.back()\n)",
-"type":"code"
-},
-{
-"id":"61fc194063354da6a0ea620a14e06294",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/_update>>"
-],
-"text":"if self.project.can_back():\n    self.EnableTool(self._back_tool.GetId(), True)\n    self.SetToolShortHelp(self._back_tool.GetId(), \"Go back\")\nelse:\n    self.EnableTool(self._back_tool.GetId(), False)\n    self.SetToolShortHelp(self._back_tool.GetId(), \"\")\n",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Forward:",
-"type":"text"
+"title":"Undo"
 }
 ],
-"id":"77ca49e949a34c019e0b0cc6253ccb39",
-"type":"text"
-},
+"id":"b311a34073564bc99fc72d44b3c74369",
+"paragraphs":[
 {
-"id":"f4bf7ab2e04a42cb8cbdb2056b9831f9",
+"id":"c5e0fb1941dc421592abf8ccc5588916",
 "path":[
 "rliterate.py",
-"<<classes>>",
-"<<ToolBar/__init__>>"
+"<<classes>>"
 ],
-"text":"self._forward_tool = self._add_bitmap_tool(\n    wx.ART_GO_FORWARD,\n    lambda: self.project.forward()\n)",
-"type":"code"
-},
-{
-"id":"6adc4a798f0b46c4adee1122ff1d2c59",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/_update>>"
-],
-"text":"if self.project.can_forward():\n    self.EnableTool(self._forward_tool.GetId(), True)\n    self.SetToolShortHelp(self._forward_tool.GetId(), \"Go forward\")\nelse:\n    self.EnableTool(self._forward_tool.GetId(), False)\n    self.SetToolShortHelp(self._forward_tool.GetId(), \"\")\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\"):\n            <<ToolBar/Update document>>\n        elif event.startswith(\"layout\"):\n            <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
 "type":"code"
 }
 ],
