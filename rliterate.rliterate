@@ -935,7 +935,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None, size=(920, 500))\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        main_panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(main_panel, project))\n        workspace = Workspace(main_panel, project)\n        toc = TableOfContents(main_panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        main_panel.SetSizer(sizer)\n        return main_panel\n\n    <<MainFrame>>\n\n\n\n\n",
+"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None, size=(920, 500))\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        main_panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(main_panel, self, project))\n        workspace = Workspace(main_panel, project)\n        toc = TableOfContents(main_panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        main_panel.SetSizer(sizer)\n        return main_panel\n\n    <<MainFrame>>\n\n\n\n\n",
 "type":"code"
 }
 ],
@@ -1006,14 +1006,17 @@
 ],
 "text":"self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())\n",
 "type":"code"
-}
-],
-"title":"Navigation"
 },
 {
-"children":[],
-"id":"03e14859f4f0480bb5c83eed962b4a2e",
-"paragraphs":[
+"fragments":[
+{
+"text":"End section with separator:",
+"type":"text"
+}
+],
+"id":"a560ffcd21ab46e395dfabe00b0159ce",
+"type":"text"
+},
 {
 "id":"ea40532a6bdd49e089aff92efc6fc62e",
 "path":[
@@ -1025,7 +1028,7 @@
 "type":"code"
 }
 ],
-"title":"Separator"
+"title":"Navigation"
 },
 {
 "children":[],
@@ -1090,9 +1093,46 @@
 ],
 "text":"self._redo_operation = self.project.get_redo_operation()\nself.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)\nself.SetToolShortHelp(\n    self._redo_tool.GetId(),\n    \"Redo\" if self._redo_operation is None else \"Redo '{}'\".format(self._redo_operation[0])\n)\n",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"End section with separator:",
+"type":"text"
+}
+],
+"id":"f8edce1e338d44f09f59e84cabe98d3b",
+"type":"text"
+},
+{
+"id":"daef4b29e6034cada510ba0f2307ecb7",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self.AddSeparator()",
+"type":"code"
 }
 ],
 "title":"Undo"
+},
+{
+"children":[],
+"id":"5829ea156b114d31875e20ad4e032b1e",
+"paragraphs":[
+{
+"id":"01a5da47a6cb4843b382cb51994a2e81",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"self._add_bitmap_tool(\n    wx.ART_QUIT,\n    lambda: self._main_frame.Close()\n)\nself.SetToolShortHelp(self._forward_tool.GetId(), \"Quit\")",
+"type":"code"
+}
+],
+"title":"Quit"
 }
 ],
 "id":"b311a34073564bc99fc72d44b3c74369",
@@ -1103,7 +1143,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\") or event == \"\":\n            <<ToolBar/Update document>>\n        if event.startswith(\"layout\") or event == \"\":\n            <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self._main_frame = main_frame\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\") or event == \"\":\n            <<ToolBar/Update document>>\n        if event.startswith(\"layout\") or event == \"\":\n            <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn, id=wx.ID_ANY):\n        tool = self.AddSimpleTool(\n            id,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
 "type":"code"
 }
 ],

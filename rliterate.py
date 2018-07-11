@@ -341,7 +341,7 @@ class MainFrame(wx.Frame):
     def _create_main_panel(self, filepath):
         main_panel = wx.Panel(self)
         project = Project(filepath)
-        self.SetToolBar(ToolBar(main_panel, project))
+        self.SetToolBar(ToolBar(main_panel, self, project))
         workspace = Workspace(main_panel, project)
         toc = TableOfContents(main_panel, project)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -356,7 +356,7 @@ class MainFrame(wx.Frame):
 
 class ToolBar(wx.ToolBar):
 
-    def __init__(self, parent, project, *args, **kwargs):
+    def __init__(self, parent, main_frame, project, *args, **kwargs):
         wx.ToolBar.__init__(self, parent, *args, **kwargs)
         self._back_tool = self._add_bitmap_tool(
             wx.ART_GO_BACK,
@@ -377,7 +377,14 @@ class ToolBar(wx.ToolBar):
             wx.ART_REDO,
             lambda: self._redo_operation[1]()
         )
+        self.AddSeparator()
+        self._add_bitmap_tool(
+            wx.ART_QUIT,
+            lambda: self._main_frame.Close()
+        )
+        self.SetToolShortHelp(self._forward_tool.GetId(), "Quit")
         self.Realize()
+        self._main_frame = main_frame
         self.project_listener = Listener(
             self._update,
             "document", "layout"
@@ -406,9 +413,9 @@ class ToolBar(wx.ToolBar):
             self.EnableTool(self._back_tool.GetId(), self.project.can_back())
             self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())
 
-    def _add_bitmap_tool(self, art, fn):
+    def _add_bitmap_tool(self, art, fn, id=wx.ID_ANY):
         tool = self.AddSimpleTool(
-            wx.ID_ANY,
+            id,
             wx.ArtProvider.GetBitmap(
                 art,
                 wx.ART_BUTTON,
