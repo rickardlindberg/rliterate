@@ -964,7 +964,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._back_tool = self._add_bitmap_tool(\n    wx.ART_GO_BACK,\n    lambda: self.project.back()\n)\nself.SetToolShortHelp(self._back_tool.GetId(), \"Go back\")",
+"text":"self._back_tool = self._add_bitmap_tool(\n    wx.ART_GO_BACK,\n    lambda: self.project.back(),\n    short_help=\"Go back\"\n)\n",
 "type":"code"
 },
 {
@@ -994,7 +994,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._forward_tool = self._add_bitmap_tool(\n    wx.ART_GO_FORWARD,\n    lambda: self.project.forward()\n)\nself.SetToolShortHelp(self._forward_tool.GetId(), \"Go forward\")",
+"text":"self._forward_tool = self._add_bitmap_tool(\n    wx.ART_GO_FORWARD,\n    lambda: self.project.forward(),\n    short_help=\"Go forward\"\n)\n",
 "type":"code"
 },
 {
@@ -1128,7 +1128,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._add_bitmap_tool(\n    wx.ART_QUIT,\n    lambda: self._main_frame.Close()\n)\nself.SetToolShortHelp(self._forward_tool.GetId(), \"Quit\")",
+"text":"self._add_bitmap_tool(\n    wx.ART_QUIT,\n    lambda: self._main_frame.Close(),\n    short_help=\"Quit\"\n)\n",
 "type":"code"
 }
 ],
@@ -1143,7 +1143,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self._main_frame = main_frame\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\") or event == \"\":\n            <<ToolBar/Update document>>\n        if event.startswith(\"layout\") or event == \"\":\n            <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn, id=wx.ID_ANY):\n        tool = self.AddSimpleTool(\n            id,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        return tool\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self._main_frame = main_frame\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\") or event == \"\":\n            <<ToolBar/Update document>>\n        if event.startswith(\"layout\") or event == \"\":\n            <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn, short_help=\"\"):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        self.SetToolShortHelp(tool.GetId(), short_help)\n        return tool\n",
 "type":"code"
 }
 ],

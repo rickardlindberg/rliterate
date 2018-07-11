@@ -360,14 +360,14 @@ class ToolBar(wx.ToolBar):
         wx.ToolBar.__init__(self, parent, *args, **kwargs)
         self._back_tool = self._add_bitmap_tool(
             wx.ART_GO_BACK,
-            lambda: self.project.back()
+            lambda: self.project.back(),
+            short_help="Go back"
         )
-        self.SetToolShortHelp(self._back_tool.GetId(), "Go back")
         self._forward_tool = self._add_bitmap_tool(
             wx.ART_GO_FORWARD,
-            lambda: self.project.forward()
+            lambda: self.project.forward(),
+            short_help="Go forward"
         )
-        self.SetToolShortHelp(self._forward_tool.GetId(), "Go forward")
         self.AddSeparator()
         self._undo_tool = self._add_bitmap_tool(
             wx.ART_UNDO,
@@ -380,9 +380,9 @@ class ToolBar(wx.ToolBar):
         self.AddSeparator()
         self._add_bitmap_tool(
             wx.ART_QUIT,
-            lambda: self._main_frame.Close()
+            lambda: self._main_frame.Close(),
+            short_help="Quit"
         )
-        self.SetToolShortHelp(self._forward_tool.GetId(), "Quit")
         self.Realize()
         self._main_frame = main_frame
         self.project_listener = Listener(
@@ -413,9 +413,9 @@ class ToolBar(wx.ToolBar):
             self.EnableTool(self._back_tool.GetId(), self.project.can_back())
             self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())
 
-    def _add_bitmap_tool(self, art, fn, id=wx.ID_ANY):
+    def _add_bitmap_tool(self, art, fn, short_help=""):
         tool = self.AddSimpleTool(
-            id,
+            wx.ID_ANY,
             wx.ArtProvider.GetBitmap(
                 art,
                 wx.ART_BUTTON,
@@ -423,6 +423,7 @@ class ToolBar(wx.ToolBar):
             )
         )
         self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)
+        self.SetToolShortHelp(tool.GetId(), short_help)
         return tool
 class TableOfContents(wx.Panel):
     def __init__(self, parent, project):
