@@ -935,7 +935,17 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None, size=(920, 500))\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        main_panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(main_panel, self, project))\n        workspace = Workspace(main_panel, project)\n        toc = TableOfContents(main_panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        main_panel.SetSizer(sizer)\n        return main_panel\n\n    <<MainFrame>>\n\n\n\n\n",
+"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None, size=(920, 500))\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        self._panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(self._panel, self, project))\n        workspace = Workspace(self._panel, project)\n        toc = TableOfContents(self._panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self._panel.SetSizer(sizer)\n        return self._panel\n\n    <<MainFrame>>\n",
+"type":"code"
+},
+{
+"id":"ecd0d38324a74c9ba453317c417e46ce",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<MainFrame>>"
+],
+"text":"def ChildReRendered(self):\n    self.Layout()\n    if wx.Window.FindFocus() is None:\n        self._panel.SetFocus()\n",
 "type":"code"
 }
 ],
@@ -1128,7 +1138,17 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._add_bitmap_tool(\n    wx.ART_QUIT,\n    lambda: self._main_frame.Close(),\n    short_help=\"Quit\"\n)\n",
+"text":"quit_tool = self._add_bitmap_tool(\n    wx.ART_QUIT,\n    lambda: self._main_frame.Close(),\n    short_help=\"Quit\"\n)\n",
+"type":"code"
+},
+{
+"id":"6af11e91c0cc4bedaac95f550aa72005",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/Accelerators>>"
+],
+"text":"(wx.ACCEL_CTRL, ord('Q'), quit_tool.GetId()),",
 "type":"code"
 }
 ],
@@ -1143,7 +1163,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        <<ToolBar/__init__>>\n        self.Realize()\n        self._main_frame = main_frame\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n        self._update_document()\n        self._update_layout()\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\"):\n            self._update_document()\n        if event.startswith(\"layout\"):\n            self._update_layout()\n\n    def _update_document(self):\n        <<ToolBar/Update document>>\n\n    def _update_layout(self):\n        <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn, short_help=\"\"):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)\n        self.SetToolShortHelp(tool.GetId(), short_help)\n        return tool\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._main_frame = main_frame\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n        self._update_document()\n        self._update_layout()\n        self._main_frame.SetAcceleratorTable(wx.AcceleratorTable([\n            <<ToolBar/Accelerators>>\n        ]))\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\"):\n            self._update_document()\n        if event.startswith(\"layout\"):\n            self._update_layout()\n\n    def _update_document(self):\n        <<ToolBar/Update document>>\n\n    def _update_layout(self):\n        <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn, short_help=\"\"):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self._main_frame.Bind(wx.EVT_MENU, lambda x: fn(), tool)\n        self.SetToolShortHelp(tool.GetId(), short_help)\n        return tool\n",
 "type":"code"
 }
 ],
@@ -1184,7 +1204,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n        self.unhoist_button = None\n        self.page_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.page_container = CompactScrolledWindow(self)\n        self.page_container.SetSizer(self.page_sizer)\n        self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        if self.unhoist_button is not None:\n            self.unhoist_button.Destroy()\n            self.unhoist_button = None\n        self.page_sizer.Clear(True)\n        self._render_unhoist_button()\n        self._render_page_container()\n        self.Layout()\n",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n        self.unhoist_button = None\n        self.page_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.page_container = CompactScrolledWindow(self)\n        self.page_container.SetSizer(self.page_sizer)\n        self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        if self.unhoist_button is not None:\n            self.unhoist_button.Destroy()\n            self.unhoist_button = None\n        self.page_sizer.Clear(True)\n        self._render_unhoist_button()\n        self._render_page_container()\n        self.GetTopLevelParent().ChildReRendered()\n",
 "type":"code"
 },
 {
@@ -1370,7 +1390,7 @@
 "<<classes>>",
 "<<TableOfContents>>"
 ],
-"text":"def _re_render_from_event(self, event):\n    wx.CallAfter(self._re_render)",
+"text":"def _re_render_from_event(self, event):\n    wx.CallAfter(self._re_render)\n",
 "type":"code"
 }
 ],
@@ -1543,7 +1563,7 @@
 "<<classes>>",
 "<<Workspace>>"
 ],
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(\n                self.project,\n                page_ids\n            )\n        self.Parent.Layout()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = Column(self, index=len(self.columns))\n    self.sizer.Add(column, flag=wx.EXPAND)\n    return column\n",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(\n                self.project,\n                page_ids\n            )\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = Column(self, index=len(self.columns))\n    self.sizer.Add(column, flag=wx.EXPAND)\n    return column\n",
 "type":"code"
 },
 {
@@ -2163,7 +2183,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ImageEdit(wx.Panel):\n\n    def __init__(self, parent, project, paragraph, view):\n        wx.Panel.__init__(self, parent)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))\n        sizer.Add(self.image, flag=wx.ALIGN_CENTER)\n        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        save = wx.Button(self, label=\"Save\")\n        save.Bind(wx.EVT_BUTTON, self._on_save)\n        sizer.Add(save)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().Layout()\n\n    def _on_save(self, event):\n        value = {\"fragments\": text_to_fragments(self.text.Value)}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.paragraph.update(value)\n",
+"text":"class ImageEdit(wx.Panel):\n\n    def __init__(self, parent, project, paragraph, view):\n        wx.Panel.__init__(self, parent)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))\n        sizer.Add(self.image, flag=wx.ALIGN_CENTER)\n        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        save = wx.Button(self, label=\"Save\")\n        save.Bind(wx.EVT_BUTTON, self._on_save)\n        sizer.Add(save)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def _on_save(self, event):\n        value = {\"fragments\": text_to_fragments(self.text.Value)}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.paragraph.update(value)\n",
 "type":"code"
 },
 {
@@ -2334,7 +2354,7 @@
 "rliterate.py",
 "<<base classes 1>>"
 ],
-"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent):\n        wx.Panel.__init__(self, parent)\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit()\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().Layout()\n",
+"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent):\n        wx.Panel.__init__(self, parent)\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit()\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n",
 "type":"code"
 },
 {

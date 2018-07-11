@@ -47,7 +47,7 @@ class Editable(wx.Panel):
             self.edit.SetFocus()
             self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
             self.sizer.Hide(self.view)
-            self.GetTopLevelParent().Layout()
+            self.GetTopLevelParent().ChildReRendered()
 class ParagraphBase(Editable):
 
     def __init__(self, parent, project, page_id, paragraph):
@@ -339,25 +339,26 @@ class MainFrame(wx.Frame):
         self.SetSizer(sizer)
 
     def _create_main_panel(self, filepath):
-        main_panel = wx.Panel(self)
+        self._panel = wx.Panel(self)
         project = Project(filepath)
-        self.SetToolBar(ToolBar(main_panel, self, project))
-        workspace = Workspace(main_panel, project)
-        toc = TableOfContents(main_panel, project)
+        self.SetToolBar(ToolBar(self._panel, self, project))
+        workspace = Workspace(self._panel, project)
+        toc = TableOfContents(self._panel, project)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
-        main_panel.SetSizer(sizer)
-        return main_panel
+        self._panel.SetSizer(sizer)
+        return self._panel
 
-
-
-
-
+    def ChildReRendered(self):
+        self.Layout()
+        if wx.Window.FindFocus() is None:
+            self._panel.SetFocus()
 class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, main_frame, project, *args, **kwargs):
         wx.ToolBar.__init__(self, parent, *args, **kwargs)
+        self._main_frame = main_frame
         self._back_tool = self._add_bitmap_tool(
             wx.ART_GO_BACK,
             lambda: self.project.back(),
@@ -378,13 +379,12 @@ class ToolBar(wx.ToolBar):
             lambda: self._redo_operation[1]()
         )
         self.AddSeparator()
-        self._add_bitmap_tool(
+        quit_tool = self._add_bitmap_tool(
             wx.ART_QUIT,
             lambda: self._main_frame.Close(),
             short_help="Quit"
         )
         self.Realize()
-        self._main_frame = main_frame
         self.project_listener = Listener(
             self._update,
             "document", "layout"
@@ -392,6 +392,9 @@ class ToolBar(wx.ToolBar):
         self.SetProject(project)
         self._update_document()
         self._update_layout()
+        self._main_frame.SetAcceleratorTable(wx.AcceleratorTable([
+            (wx.ACCEL_CTRL, ord('Q'), quit_tool.GetId()),
+        ]))
 
     def SetProject(self, project):
         self.project = project
@@ -430,7 +433,7 @@ class ToolBar(wx.ToolBar):
                 (24, 24)
             )
         )
-        self.Bind(wx.EVT_TOOL, lambda x: fn(), tool)
+        self._main_frame.Bind(wx.EVT_MENU, lambda x: fn(), tool)
         self.SetToolShortHelp(tool.GetId(), short_help)
         return tool
 class TableOfContents(wx.Panel):
@@ -470,7 +473,7 @@ class TableOfContents(wx.Panel):
             self.page_sizer.Clear(True)
             self._render_unhoist_button()
             self._render_page_container()
-            self.Layout()
+            self.GetTopLevelParent().ChildReRendered()
     def _render_unhoist_button(self):
         if self.project.get_hoisted_page() is not None:
             self.unhoist_button = wx.Button(self, label="unhoist")
@@ -727,7 +730,7 @@ class Workspace(CompactScrolledWindow):
                     self.project,
                     page_ids
                 )
-            self.Parent.Layout()
+            self.GetTopLevelParent().ChildReRendered()
             if column_count_changed or last_column_changed_pages:
                 self.ScrollToEnd()
 
@@ -1329,7 +1332,7 @@ class ImageEdit(wx.Panel):
             bitmap = image_data.GetBitmap()
             self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())
             self.image_base64 = bitmap_to_base64(bitmap)
-            self.GetTopLevelParent().Layout()
+            self.GetTopLevelParent().ChildReRendered()
 
     def _on_save(self, event):
         value = {"fragments": text_to_fragments(self.text.Value)}
