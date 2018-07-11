@@ -965,8 +965,75 @@
 "children":[
 {
 "children":[],
+"id":"6cefdf62f0ca4cd38d051513d753a614",
+"paragraphs":[
+{
+"id":"01064e87235e4715acfe9bc33b7c36b2",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"editor_group = self._tool_groups.add_group(lambda: self.project.active_editor is not None)",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Save:",
+"type":"text"
+}
+],
+"id":"90bf51ecb4d8486fa50b4f516ac0a25b",
+"type":"text"
+},
+{
+"id":"52cd0083225f42ce94a0676e17e99cd5",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"editor_group.add_tool(\n    wx.ART_FILE_SAVE,\n    lambda: self.project.active_editor.Save(),\n    short_help=\"Save\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('S')),\n        (wx.ACCEL_CTRL, wx.WXK_RETURN),\n    ]\n)\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Cancel:",
+"type":"text"
+}
+],
+"id":"905e31bff5d24a6da6311cd9178ab95a",
+"type":"text"
+},
+{
+"id":"9b79b890a7d04820897952a5fcd33df4",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.active_editor.Cancel(),\n    short_help=\"Cancel\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('C')),\n        (wx.ACCEL_CTRL, ord('G')),\n        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),\n    ]\n)\n",
+"type":"code"
+}
+],
+"title":"Editor"
+},
+{
+"children":[],
 "id":"75b0b360e86f4160bf1187d9cdb8787e",
 "paragraphs":[
+{
+"id":"ea40532a6bdd49e089aff92efc6fc62e",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"navigation_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)",
+"type":"code"
+},
 {
 "fragments":[
 {
@@ -984,17 +1051,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._back_tool = self._add_bitmap_tool(\n    wx.ART_GO_BACK,\n    lambda: self.project.back(),\n    short_help=\"Go back\"\n)\n",
-"type":"code"
-},
-{
-"id":"61fc194063354da6a0ea620a14e06294",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/Update layout>>"
-],
-"text":"self.EnableTool(self._back_tool.GetId(), self.project.can_back())\n",
+"text":"navigation_group.add_tool(\n    wx.ART_GO_BACK,\n    lambda: self.project.back(),\n    short_help=\"Go back\",\n    enabled_fn=lambda: self.project.can_back()\n)\n",
 "type":"code"
 },
 {
@@ -1014,37 +1071,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._forward_tool = self._add_bitmap_tool(\n    wx.ART_GO_FORWARD,\n    lambda: self.project.forward(),\n    short_help=\"Go forward\"\n)\n",
-"type":"code"
-},
-{
-"id":"6adc4a798f0b46c4adee1122ff1d2c59",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/Update layout>>"
-],
-"text":"self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())\n",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"End section with separator:",
-"type":"text"
-}
-],
-"id":"a560ffcd21ab46e395dfabe00b0159ce",
-"type":"text"
-},
-{
-"id":"ea40532a6bdd49e089aff92efc6fc62e",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/__init__>>"
-],
-"text":"self.AddSeparator()",
+"text":"navigation_group.add_tool(\n    wx.ART_GO_FORWARD,\n    lambda: self.project.forward(),\n    short_help=\"Go forward\",\n    enabled_fn=lambda: self.project.can_forward()\n)\n",
 "type":"code"
 }
 ],
@@ -1054,6 +1081,16 @@
 "children":[],
 "id":"3852ed8c8eb648fdb651bc5da6cbfece",
 "paragraphs":[
+{
+"id":"8c03a094ee7c497485d256ef13024a02",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"undo_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)",
+"type":"code"
+},
 {
 "fragments":[
 {
@@ -1071,17 +1108,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._undo_tool = self._add_bitmap_tool(\n    wx.ART_UNDO,\n    lambda: self._undo_operation[1]()\n)\n",
-"type":"code"
-},
-{
-"id":"1fd0ec1058b54c4cacc80d6c9e89db10",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/Update document>>"
-],
-"text":"self._undo_operation = self.project.get_undo_operation()\nself.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)\nself.SetToolShortHelp(\n    self._undo_tool.GetId(),\n    \"Undo\" if self._undo_operation is None else \"Undo '{}'\".format(self._undo_operation[0])\n)\n",
+"text":"undo_group.add_tool(\n    wx.ART_UNDO,\n    lambda: self.project.get_undo_operation()[1](),\n    short_help=lambda: \"Undo\" if self.project.get_undo_operation() is None else \"Undo '{}'\".format(self.project.get_undo_operation()[0]),\n    enabled_fn=lambda: self.project.get_undo_operation() is not None\n)\n",
 "type":"code"
 },
 {
@@ -1101,37 +1128,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"self._redo_tool = self._add_bitmap_tool(\n    wx.ART_REDO,\n    lambda: self._redo_operation[1]()\n)\n",
-"type":"code"
-},
-{
-"id":"2b2e6b1a0fb5422eab62daeade19c189",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/Update document>>"
-],
-"text":"self._redo_operation = self.project.get_redo_operation()\nself.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)\nself.SetToolShortHelp(\n    self._redo_tool.GetId(),\n    \"Redo\" if self._redo_operation is None else \"Redo '{}'\".format(self._redo_operation[0])\n)\n",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"End section with separator:",
-"type":"text"
-}
-],
-"id":"f8edce1e338d44f09f59e84cabe98d3b",
-"type":"text"
-},
-{
-"id":"daef4b29e6034cada510ba0f2307ecb7",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/__init__>>"
-],
-"text":"self.AddSeparator()",
+"text":"undo_group.add_tool(\n    wx.ART_REDO,\n    lambda: self.project.get_redo_operation()[1](),\n    short_help=lambda: \"Redo\" if self.project.get_redo_operation() is None else \"Redo '{}'\".format(self.project.get_redo_operation()[0]),\n    enabled_fn=lambda: self.project.get_redo_operation() is not None\n)\n",
 "type":"code"
 }
 ],
@@ -1142,23 +1139,23 @@
 "id":"5829ea156b114d31875e20ad4e032b1e",
 "paragraphs":[
 {
+"id":"45f0244cdca14b6da6953745fc67b311",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<ToolBar/__init__>>"
+],
+"text":"quit_group = self._tool_groups.add_group()",
+"type":"code"
+},
+{
 "id":"01a5da47a6cb4843b382cb51994a2e81",
 "path":[
 "rliterate.py",
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"quit_tool = self._add_bitmap_tool(\n    wx.ART_QUIT,\n    lambda: self._main_frame.Close(),\n    short_help=\"Quit\"\n)\n",
-"type":"code"
-},
-{
-"id":"6af11e91c0cc4bedaac95f550aa72005",
-"path":[
-"rliterate.py",
-"<<classes>>",
-"<<ToolBar/Accelerators>>"
-],
-"text":"(wx.ACCEL_CTRL, ord('Q'), quit_tool.GetId()),",
+"text":"quit_group.add_tool(\n    wx.ART_QUIT,\n    lambda: main_frame.Close(),\n    short_help=\"Quit\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('Q')),\n    ]\n)\n",
 "type":"code"
 }
 ],
@@ -1173,7 +1170,34 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._main_frame = main_frame\n        <<ToolBar/__init__>>\n        self.Realize()\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\"\n        )\n        self.SetProject(project)\n        self._update_document()\n        self._update_layout()\n        self._main_frame.SetAcceleratorTable(wx.AcceleratorTable([\n            <<ToolBar/Accelerators>>\n        ]))\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        if event.startswith(\"document\"):\n            self._update_document()\n        if event.startswith(\"layout\"):\n            self._update_layout()\n\n    def _update_document(self):\n        <<ToolBar/Update document>>\n\n    def _update_layout(self):\n        <<ToolBar/Update layout>>\n\n    def _add_bitmap_tool(self, art, fn, short_help=\"\"):\n        tool = self.AddSimpleTool(\n            wx.ID_ANY,\n            wx.ArtProvider.GetBitmap(\n                art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        self._main_frame.Bind(wx.EVT_MENU, lambda x: fn(), tool)\n        self.SetToolShortHelp(tool.GetId(), short_help)\n        return tool\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._tool_groups = ToolGroups(main_frame)\n        <<ToolBar/__init__>>\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\", \"editor\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        self._tool_groups.update(self)\n",
+"type":"code"
+},
+{
+"id":"89f873d06e9042dd89e3e559503aa733",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def update(self, toolbar):\n        items = []\n        toolbar.ClearTools()\n        first = True\n        for group in self._tool_groups:\n            if group.is_active():\n                if not first:\n                    toolbar.AddSeparator()\n                first = False\n                group.create(toolbar)\n                items.extend(group.accelerator_entries())\n        toolbar.Realize()\n        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n",
+"type":"code"
+},
+{
+"id":"4c0f55d407844142a68600b960dac1aa",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class ToolGroup(object):\n\n    def __init__(self, frame, active_fn=None):\n        self._tools = []\n        self._frame = frame\n        self._active_fn = active_fn\n\n    def add_tool(self, *args, **kwargs):\n        self._tools.append(Tool(self._frame, *args, **kwargs))\n\n    def is_active(self):\n        if self._active_fn is None:\n            return True\n        else:\n            return self._active_fn()\n\n    def accelerator_entries(self):\n        entries = []\n        for tool in self._tools:\n            entries.extend(tool.accelerator_entries())\n        return entries\n\n    def create(self, toolbar):\n        for tool in self._tools:\n            tool.create(toolbar)\n",
+"type":"code"
+},
+{
+"id":"7a0d10485c864d4582976b7d919e7c36",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Tool(object):\n\n    def __init__(self, frame, art, action_fn, short_help=\"\", enabled_fn=None, shortcuts=[]):\n        self.id = wx.NewId()\n        frame.Bind(wx.EVT_MENU, self._on_action, id=self.id)\n        self.art = art\n        self.short_help = short_help\n        self.action_fn = action_fn\n        self.enabled_fn = enabled_fn\n        self.shortcuts = shortcuts\n\n    def _on_action(self, event):\n        if self.action_fn is not None:\n            self.action_fn()\n\n    def _is_enabled(self):\n        if self.enabled_fn is None:\n            return True\n        else:\n            return self.enabled_fn()\n\n    def accelerator_entries(self):\n        return [(a, b, self.id) for (a, b) in self.shortcuts]\n\n    def create(self, toolbar):\n        toolbar.AddSimpleTool(\n            self.id,\n            wx.ArtProvider.GetBitmap(\n                self.art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        toolbar.EnableTool(self.id, self._is_enabled())\n        if callable(self.short_help):\n            text = self.short_help()\n        else:\n            text = self.short_help\n        toolbar.SetToolShortHelp(self.id, text)\n",
 "type":"code"
 }
 ],
@@ -1923,7 +1947,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.project = project\n        self.page = page\n        Editable.__init__(self, parent)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = RichTextDisplay(\n            self,\n            self.project,\n            [Fragment(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda: post_edit_start(view)\n        )\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Bind(\n            wx.EVT_TEXT_ENTER,\n            lambda _: self.page.set_title(self.edit.Value)\n        )\n        return edit\n",
+"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = RichTextDisplay(\n            self,\n            self.project,\n            [Fragment(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda: post_edit_start(view)\n        )\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        return edit\n",
 "type":"code"
 }
 ],
@@ -2034,7 +2058,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.paragraph.text_version = self.Value\n",
+"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
 "type":"code"
 }
 ],
@@ -2149,7 +2173,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class CodeEditor(wx.Panel):\n\n    BORDER = 1\n    PADDING = 3\n\n    def __init__(self, parent, project, paragraph, view):\n        wx.Panel.__init__(self, parent)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.view = view\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.vsizer.Add(\n            self._create_path(paragraph),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n        self.vsizer.Add(\n            self._create_code(paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.vsizer.Add(\n            self._create_save(),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n\n    def _create_path(self, paragraph):\n        self.path = wx.TextCtrl(\n            self,\n            value=\" / \".join(paragraph.path)\n        )\n        return self.path\n\n    def _create_code(self, paragraph):\n        self.text = MultilineTextCtrl(\n            self,\n            value=paragraph.text,\n            size=(-1, self.view.Size[1])\n        )\n        return self.text\n\n    def _create_save(self):\n        button = wx.Button(\n            self,\n            label=\"Save\"\n        )\n        self.Bind(wx.EVT_BUTTON, self._on_save)\n        return button\n\n    def _on_save(self, event):\n        self.paragraph.update({\n            \"path\": self.path.Value.split(\" / \"),\n            \"text\": self.text.Value,\n        })\n",
+"text":"class CodeEditor(wx.Panel):\n\n    BORDER = 1\n    PADDING = 3\n\n    def __init__(self, parent, project, paragraph, view):\n        wx.Panel.__init__(self, parent)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.view = view\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.vsizer.Add(\n            self._create_path(paragraph),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n        self.vsizer.Add(\n            self._create_code(paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n\n    def _create_path(self, paragraph):\n        self.path = wx.TextCtrl(\n            self,\n            value=\" / \".join(paragraph.path)\n        )\n        return self.path\n\n    def _create_code(self, paragraph):\n        self.text = MultilineTextCtrl(\n            self,\n            value=paragraph.text,\n            size=(-1, self.view.Size[1])\n        )\n        return self.text\n\n    def Save(self):\n        self.paragraph.update({\n            \"path\": self.path.Value.split(\" / \"),\n            \"text\": self.text.Value,\n        })\n",
 "type":"code"
 }
 ],
@@ -2193,7 +2217,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ImageEdit(wx.Panel):\n\n    def __init__(self, parent, project, paragraph, view):\n        wx.Panel.__init__(self, parent)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))\n        sizer.Add(self.image, flag=wx.ALIGN_CENTER)\n        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        save = wx.Button(self, label=\"Save\")\n        save.Bind(wx.EVT_BUTTON, self._on_save)\n        sizer.Add(save)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def _on_save(self, event):\n        value = {\"fragments\": text_to_fragments(self.text.Value)}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.paragraph.update(value)\n",
+"text":"class ImageEdit(wx.Panel):\n\n    def __init__(self, parent, project, paragraph, view):\n        wx.Panel.__init__(self, parent)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))\n        sizer.Add(self.image, flag=wx.ALIGN_CENTER)\n        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def Save(self):\n        value = {\"fragments\": text_to_fragments(self.text.Value)}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.paragraph.update(value)\n",
 "type":"code"
 },
 {
@@ -2262,7 +2286,7 @@
 "rliterate.py",
 "<<base classes>>"
 ],
-"text":"class ParagraphBase(Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.project = project\n        self.page_id = page_id\n        self.paragraph = paragraph\n        Editable.__init__(self, parent)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"New paragraph before\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.id\n            )\n        )\n        menu.AppendItem(\n            \"New paragraph after\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id\n            )\n        )\n        menu.AppendItem(\n            \"Duplicate\",\n            lambda: self.paragraph.duplicate()\n        )\n        if hasattr(self.paragraph, \"text_version\"):\n            menu.AppendItem(\n                \"Edit in gvim\",\n                lambda: setattr(\n                    self.paragraph,\n                    \"text_version\",\n                    edit_in_gvim(\n                        self.paragraph.text_version,\n                        self.paragraph.filename\n                    )\n                )\n            )\n        menu.AppendSeparator()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
+"text":"class ParagraphBase(Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.page_id = page_id\n        self.paragraph = paragraph\n        Editable.__init__(self, parent, project)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"New paragraph before\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.id\n            )\n        )\n        menu.AppendItem(\n            \"New paragraph after\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id\n            )\n        )\n        menu.AppendItem(\n            \"Duplicate\",\n            lambda: self.paragraph.duplicate()\n        )\n        if hasattr(self.paragraph, \"text_version\"):\n            menu.AppendItem(\n                \"Edit in gvim\",\n                lambda: setattr(\n                    self.paragraph,\n                    \"text_version\",\n                    edit_in_gvim(\n                        self.paragraph.text_version,\n                        self.paragraph.filename\n                    )\n                )\n            )\n        menu.AppendSeparator()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
 "type":"code"
 },
 {
@@ -2364,7 +2388,7 @@
 "rliterate.py",
 "<<base classes 1>>"
 ],
-"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent):\n        wx.Panel.__init__(self, parent)\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit()\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n",
+"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.active_editor is not None:\n            print(\"njeeheee\")\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit()\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def Cancel(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
 "type":"code"
 },
 {
@@ -3600,7 +3624,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n\n    <<Project>>\n",
+"text":"class Project(Observable):\n\n    def __init__(self, filepath):\n        Observable.__init__(self)\n        <<Project/__init__>>\n        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n\n    <<Project>>\n",
 "type":"code"
 },
 {
@@ -3661,6 +3685,36 @@
 "<<Project>>"
 ],
 "text":"def get_style(self, *args, **kwargs):\n    return self.theme.get_style(*args, **kwargs)\n",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Wrapper for theme:",
+"type":"text"
+}
+],
+"id":"41eddf3dbbad490391013abb3fbd0b47",
+"type":"text"
+},
+{
+"id":"a8697eb2058e418aa310a9dfbc11723c",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Project/__init__>>"
+],
+"text":"self._active_editor = None\n",
+"type":"code"
+},
+{
+"id":"d18b28ee44ea4fffbd9c2ecf75f0e938",
+"path":[
+"rliterate.py",
+"<<classes>>",
+"<<Project>>"
+],
+"text":"@property\ndef active_editor(self):\n    return self._active_editor\n\n@active_editor.setter\ndef active_editor(self, editor):\n    with self.notify(\"editor\"):\n        self._active_editor = editor\n",
 "type":"code"
 }
 ],
@@ -4000,16 +4054,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Multiple editors can be opened but only last saved is saved",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Factory should drop right into edit mode when button is clicked?",
 "type":"text"
 }
@@ -4117,16 +4161,6 @@
 "fragments":[
 {
 "text":"Shift+Tab deletes: should dedent?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Save button is very far down if there is lots of code and only top is edited",
 "type":"text"
 }
 ]
@@ -4507,16 +4541,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Clone paragraph would be really useful",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Better explain \"architecture of drag and drop\"",
 "type":"text"
 }
@@ -4527,7 +4551,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Make convertion functions between paragraph types more complete",
+"text":"Make conversion functions between paragraph types more complete",
 "type":"text"
 }
 ]
@@ -4589,7 +4613,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Expalin how code paragraphs enable literate programming (",
+"text":"Explain how code paragraphs enable literate programming (",
 "type":"text"
 },
 {
@@ -4957,6 +4981,26 @@
 },
 {
 "text":" needed? It should be an implementation detail.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Stuck in edit mode if navigating while editing",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Show error message when trying to edit/navigate while editing",
 "type":"text"
 }
 ]

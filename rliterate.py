@@ -33,8 +33,9 @@ PARAGRAPH_SPACE = 15
 CONTAINER_BORDER = PARAGRAPH_SPACE
 class Editable(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, project):
         wx.Panel.__init__(self, parent)
+        self.project = project
         self.view = self.CreateView()
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
@@ -42,19 +43,33 @@ class Editable(wx.Panel):
         self.view.Bind(EVT_EDIT_START, self.OnEditStart)
 
     def OnEditStart(self, event):
+        if self.project.active_editor is not None:
+            print("njeeheee")
+            return
         with flicker_free_drawing(self):
             self.edit = self.CreateEdit()
             self.edit.SetFocus()
             self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
             self.sizer.Hide(self.view)
             self.GetTopLevelParent().ChildReRendered()
+            self.project.active_editor = self
+
+    def Save(self):
+        self.edit.Save()
+        self.project.active_editor = None
+
+    def Cancel(self):
+        with flicker_free_drawing(self):
+            self.edit.Destroy()
+            self.sizer.Show(self.view)
+            self.GetTopLevelParent().ChildReRendered()
+            self.project.active_editor = None
 class ParagraphBase(Editable):
 
     def __init__(self, parent, project, page_id, paragraph):
-        self.project = project
         self.page_id = page_id
         self.paragraph = paragraph
-        Editable.__init__(self, parent)
+        Editable.__init__(self, parent, project)
 
     def DoDragDrop(self):
         data = RliterateDataObject("paragraph", {
@@ -358,84 +373,162 @@ class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, main_frame, project, *args, **kwargs):
         wx.ToolBar.__init__(self, parent, *args, **kwargs)
-        self._main_frame = main_frame
-        self._back_tool = self._add_bitmap_tool(
+        self._tool_groups = ToolGroups(main_frame)
+        editor_group = self._tool_groups.add_group(lambda: self.project.active_editor is not None)
+        editor_group.add_tool(
+            wx.ART_FILE_SAVE,
+            lambda: self.project.active_editor.Save(),
+            short_help="Save",
+            shortcuts=[
+                (wx.ACCEL_CTRL, ord('S')),
+                (wx.ACCEL_CTRL, wx.WXK_RETURN),
+            ]
+        )
+        editor_group.add_tool(
+            wx.ART_CROSS_MARK,
+            lambda: self.project.active_editor.Cancel(),
+            short_help="Cancel",
+            shortcuts=[
+                (wx.ACCEL_CTRL, ord('C')),
+                (wx.ACCEL_CTRL, ord('G')),
+                (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),
+            ]
+        )
+        navigation_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)
+        navigation_group.add_tool(
             wx.ART_GO_BACK,
             lambda: self.project.back(),
-            short_help="Go back"
+            short_help="Go back",
+            enabled_fn=lambda: self.project.can_back()
         )
-        self._forward_tool = self._add_bitmap_tool(
+        navigation_group.add_tool(
             wx.ART_GO_FORWARD,
             lambda: self.project.forward(),
-            short_help="Go forward"
+            short_help="Go forward",
+            enabled_fn=lambda: self.project.can_forward()
         )
-        self.AddSeparator()
-        self._undo_tool = self._add_bitmap_tool(
+        undo_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)
+        undo_group.add_tool(
             wx.ART_UNDO,
-            lambda: self._undo_operation[1]()
+            lambda: self.project.get_undo_operation()[1](),
+            short_help=lambda: "Undo" if self.project.get_undo_operation() is None else "Undo '{}'".format(self.project.get_undo_operation()[0]),
+            enabled_fn=lambda: self.project.get_undo_operation() is not None
         )
-        self._redo_tool = self._add_bitmap_tool(
+        undo_group.add_tool(
             wx.ART_REDO,
-            lambda: self._redo_operation[1]()
+            lambda: self.project.get_redo_operation()[1](),
+            short_help=lambda: "Redo" if self.project.get_redo_operation() is None else "Redo '{}'".format(self.project.get_redo_operation()[0]),
+            enabled_fn=lambda: self.project.get_redo_operation() is not None
         )
-        self.AddSeparator()
-        quit_tool = self._add_bitmap_tool(
+        quit_group = self._tool_groups.add_group()
+        quit_group.add_tool(
             wx.ART_QUIT,
-            lambda: self._main_frame.Close(),
-            short_help="Quit"
+            lambda: main_frame.Close(),
+            short_help="Quit",
+            shortcuts=[
+                (wx.ACCEL_CTRL, ord('Q')),
+            ]
         )
-        self.Realize()
         self.project_listener = Listener(
             self._update,
-            "document", "layout"
+            "document", "layout", "editor"
         )
         self.SetProject(project)
-        self._update_document()
-        self._update_layout()
-        self._main_frame.SetAcceleratorTable(wx.AcceleratorTable([
-            (wx.ACCEL_CTRL, ord('Q'), quit_tool.GetId()),
-        ]))
 
     def SetProject(self, project):
         self.project = project
         self.project_listener.set_observable(self.project)
 
     def _update(self, event):
-        if event.startswith("document"):
-            self._update_document()
-        if event.startswith("layout"):
-            self._update_layout()
+        self._tool_groups.update(self)
+class ToolGroups(object):
 
-    def _update_document(self):
-        self._undo_operation = self.project.get_undo_operation()
-        self.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)
-        self.SetToolShortHelp(
-            self._undo_tool.GetId(),
-            "Undo" if self._undo_operation is None else "Undo '{}'".format(self._undo_operation[0])
-        )
-        self._redo_operation = self.project.get_redo_operation()
-        self.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)
-        self.SetToolShortHelp(
-            self._redo_tool.GetId(),
-            "Redo" if self._redo_operation is None else "Redo '{}'".format(self._redo_operation[0])
-        )
+    def __init__(self, frame):
+        self._frame = frame
+        self._tool_groups = []
 
-    def _update_layout(self):
-        self.EnableTool(self._back_tool.GetId(), self.project.can_back())
-        self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())
+    def add_group(self, *args, **kwargs):
+        group = ToolGroup(self._frame, *args, **kwargs)
+        self._tool_groups.append(group)
+        return group
 
-    def _add_bitmap_tool(self, art, fn, short_help=""):
-        tool = self.AddSimpleTool(
-            wx.ID_ANY,
+    def update(self, toolbar):
+        items = []
+        toolbar.ClearTools()
+        first = True
+        for group in self._tool_groups:
+            if group.is_active():
+                if not first:
+                    toolbar.AddSeparator()
+                first = False
+                group.create(toolbar)
+                items.extend(group.accelerator_entries())
+        toolbar.Realize()
+        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))
+class ToolGroup(object):
+
+    def __init__(self, frame, active_fn=None):
+        self._tools = []
+        self._frame = frame
+        self._active_fn = active_fn
+
+    def add_tool(self, *args, **kwargs):
+        self._tools.append(Tool(self._frame, *args, **kwargs))
+
+    def is_active(self):
+        if self._active_fn is None:
+            return True
+        else:
+            return self._active_fn()
+
+    def accelerator_entries(self):
+        entries = []
+        for tool in self._tools:
+            entries.extend(tool.accelerator_entries())
+        return entries
+
+    def create(self, toolbar):
+        for tool in self._tools:
+            tool.create(toolbar)
+class Tool(object):
+
+    def __init__(self, frame, art, action_fn, short_help="", enabled_fn=None, shortcuts=[]):
+        self.id = wx.NewId()
+        frame.Bind(wx.EVT_MENU, self._on_action, id=self.id)
+        self.art = art
+        self.short_help = short_help
+        self.action_fn = action_fn
+        self.enabled_fn = enabled_fn
+        self.shortcuts = shortcuts
+
+    def _on_action(self, event):
+        if self.action_fn is not None:
+            self.action_fn()
+
+    def _is_enabled(self):
+        if self.enabled_fn is None:
+            return True
+        else:
+            return self.enabled_fn()
+
+    def accelerator_entries(self):
+        return [(a, b, self.id) for (a, b) in self.shortcuts]
+
+    def create(self, toolbar):
+        toolbar.AddSimpleTool(
+            self.id,
             wx.ArtProvider.GetBitmap(
-                art,
+                self.art,
                 wx.ART_BUTTON,
                 (24, 24)
             )
         )
-        self._main_frame.Bind(wx.EVT_MENU, lambda x: fn(), tool)
-        self.SetToolShortHelp(tool.GetId(), short_help)
-        return tool
+        toolbar.EnableTool(self.id, self._is_enabled())
+        if callable(self.short_help):
+            text = self.short_help()
+        else:
+            text = self.short_help
+        toolbar.SetToolShortHelp(self.id, text)
 class TableOfContents(wx.Panel):
     def __init__(self, parent, project):
         wx.Panel.__init__(self, parent, size=(250, -1))
@@ -951,9 +1044,8 @@ class PageDropPoint(object):
 class Title(Editable):
 
     def __init__(self, parent, project, page):
-        self.project = project
         self.page = page
-        Editable.__init__(self, parent)
+        Editable.__init__(self, parent, project)
 
     def CreateView(self):
         self.Font = create_font(size=16)
@@ -971,10 +1063,7 @@ class Title(Editable):
 
     def CreateEdit(self):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
-        edit.Bind(
-            wx.EVT_TEXT_ENTER,
-            lambda _: self.page.set_title(self.edit.Value)
-        )
+        edit.Save = lambda: self.page.set_title(self.edit.Value)
         return edit
 class Text(ParagraphBase):
 
@@ -1045,17 +1134,8 @@ class TextEdit(MultilineTextCtrl):
         self.Font = create_font(monospace=True)
         self.project = project
         self.paragraph = paragraph
-        self.Bind(wx.EVT_CHAR, self._on_char)
 
-    def _on_char(self, event):
-        if event.KeyCode == wx.WXK_CONTROL_S:
-            self._save()
-        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
-            self._save()
-        else:
-            event.Skip()
-
-    def _save(self):
+    def Save(self):
         self.paragraph.text_version = self.Value
 class Quote(Text):
 
@@ -1229,10 +1309,6 @@ class CodeEditor(wx.Panel):
             self._create_code(paragraph),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
-        self.vsizer.Add(
-            self._create_save(),
-            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
-        )
         self.SetSizer(self.vsizer)
 
     def _create_path(self, paragraph):
@@ -1250,15 +1326,7 @@ class CodeEditor(wx.Panel):
         )
         return self.text
 
-    def _create_save(self):
-        button = wx.Button(
-            self,
-            label="Save"
-        )
-        self.Bind(wx.EVT_BUTTON, self._on_save)
-        return button
-
-    def _on_save(self, event):
+    def Save(self):
         self.paragraph.update({
             "path": self.path.Value.split(" / "),
             "text": self.text.Value,
@@ -1317,9 +1385,6 @@ class ImageEdit(wx.Panel):
         paste_button = wx.Button(self, label="Paste")
         paste_button.Bind(wx.EVT_BUTTON, self._on_paste)
         sizer.Add(paste_button)
-        save = wx.Button(self, label="Save")
-        save.Bind(wx.EVT_BUTTON, self._on_save)
-        sizer.Add(save)
         self.SetSizer(sizer)
         self.image_base64 = None
 
@@ -1334,7 +1399,7 @@ class ImageEdit(wx.Panel):
             self.image_base64 = bitmap_to_base64(bitmap)
             self.GetTopLevelParent().ChildReRendered()
 
-    def _on_save(self, event):
+    def Save(self):
         value = {"fragments": text_to_fragments(self.text.Value)}
         if self.image_base64:
             value["image_base64"] = self.image_base64
@@ -2270,6 +2335,7 @@ class Project(Observable):
 
     def __init__(self, filepath):
         Observable.__init__(self)
+        self._active_editor = None
         self.theme = SolarizedTheme()
         self.document = Document.from_file(filepath)
         self.document.listen(self.notify_forwarder("document"))
@@ -2329,6 +2395,14 @@ class Project(Observable):
         return self.layout.set_hoisted_page(*args, **kwargs)
     def get_style(self, *args, **kwargs):
         return self.theme.get_style(*args, **kwargs)
+    @property
+    def active_editor(self):
+        return self._active_editor
+
+    @active_editor.setter
+    def active_editor(self, editor):
+        with self.notify("editor"):
+            self._active_editor = editor
 class FileGenerator(object):
 
     def __init__(self):
