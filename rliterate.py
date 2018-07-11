@@ -333,10 +333,10 @@ class Observable(object):
 class MainFrame(wx.Frame):
 
     def __init__(self, filepath):
-        wx.Frame.__init__(self, None)
+        wx.Frame.__init__(self, None, size=(920, 500))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)
-        self.SetSizerAndFit(sizer)
+        self.SetSizer(sizer)
 
     def _create_main_panel(self, filepath):
         main_panel = wx.Panel(self)

@@ -935,7 +935,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizerAndFit(sizer)\n\n    def _create_main_panel(self, filepath):\n        main_panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(main_panel, project))\n        workspace = Workspace(main_panel, project)\n        toc = TableOfContents(main_panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        main_panel.SetSizer(sizer)\n        return main_panel\n\n    <<MainFrame>>\n\n\n\n\n",
+"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None, size=(920, 500))\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        main_panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(main_panel, project))\n        workspace = Workspace(main_panel, project)\n        toc = TableOfContents(main_panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        main_panel.SetSizer(sizer)\n        return main_panel\n\n    <<MainFrame>>\n\n\n\n\n",
 "type":"code"
 }
 ],
