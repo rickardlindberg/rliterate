@@ -578,7 +578,7 @@ class TableOfContents(wx.Panel):
             self._render_page_container()
             self.GetTopLevelParent().ChildReRendered()
     def _render_unhoist_button(self):
-        if self.project.get_hoisted_page() is not None:
+        if self._get_hoisted_page() is not None:
             self.unhoist_button = wx.Button(self, label="unhoist")
             self.unhoist_button.Bind(
                 wx.EVT_BUTTON,
@@ -586,7 +586,16 @@ class TableOfContents(wx.Panel):
             )
             self.sizer.Insert(0, self.unhoist_button, flag=wx.EXPAND)
     def _render_page_container(self):
-        self._render_page(self.project.get_page(self.project.get_hoisted_page()))
+        if self._get_hoisted_page() is None:
+            self._render_page(self.project.get_page())
+        else:
+            self._render_page(self._get_hoisted_page())
+
+    def _get_hoisted_page(self):
+        if self.project.get_hoisted_page() is None:
+            return None
+        else:
+            return self.project.get_page(self.project.get_hoisted_page())
 
     def _render_page(self, page, indentation=0):
         is_collapsed = self.project.is_collapsed(page.id)
@@ -795,10 +804,12 @@ class PageContextMenu(wx.Menu):
             self.Append(wx.NewId(), "Copy id")
         )
         self.AppendSeparator()
+        delete_item = self.Append(wx.NewId(), "Delete")
+        delete_item.Enable(self.page.id != self.project.get_page().id)
         self.Bind(
             wx.EVT_MENU,
             lambda event: self.page.delete(),
-            self.Append(wx.NewId(), "Delete")
+            delete_item
         )
 class Workspace(CompactScrolledWindow):
     def __init__(self, parent, project):
@@ -1709,6 +1720,8 @@ class DocumentDictWrapper(dict):
         return self._pages.get(page_id, None)
 
     def delete_page_dict(self, page_id):
+        if page_id == self["id"]:
+            return
         page = self._pages[page_id]
         parent_page = self._parent_pages[page_id]
         index = index_with_id(parent_page["children"], page_id)
