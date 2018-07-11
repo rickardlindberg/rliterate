@@ -168,6 +168,7 @@ class RichTextDisplay(wx.Panel):
         self.fragments = fragments
         self.line_height = kwargs.get("line_height", 1)
         self.max_width = kwargs.get("max_width", 100)
+        self.skip_extra_space = kwargs.get("skip_extra_space", False)
         self._set_fragments()
         self.Bind(wx.EVT_PAINT, self._on_paint)
     def _set_fragments(self):
@@ -183,36 +184,29 @@ class RichTextDisplay(wx.Panel):
         y = 0
         max_x, max_y = dc.GetTextExtent("M")
         line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self.line_height))
-        for fragment in self._newline_fragments():
-            if fragment is None:
-                x = 0
-                y += line_height_pixels
-                max_y = max(max_y, y)
-                continue
-            style = self.project.get_style(fragment.token)
-            style.apply_to_wx_dc(dc, self.GetFont())
-            w, h = dc.GetTextExtent(fragment.text)
-            if x > 0 and x+w > self.max_width:
-                x = 0
-                y += line_height_pixels
-            self.draw_fragments.append((fragment, style, wx.Rect(x, y, w, h)))
-            max_x = max(max_x, x+w)
-            max_y = max(max_y, y+line_height_pixels)
-            x += w
-        return (max_x, max_y)
-
-    def _newline_fragments(self):
         for fragment in self.fragments:
-            if "\n" in fragment.text:
-                for x in insert_between(None, fragment.text.split("\n")):
-                    if x is None:
-                        yield x
-                    else:
-                        for subfragment in Fragment(x, token=fragment.token, **fragment.extra).word_split():
-                            yield subfragment
-            else:
-                for subfragment in fragment.word_split():
-                    yield subfragment
+            for subfragment in fragment.split():
+                if subfragment.is_newline():
+                    x = 0
+                    y += line_height_pixels
+                    max_y = max(max_y, y)
+                    continue
+                style = self.project.get_style(subfragment.token)
+                style.apply_to_wx_dc(dc, self.GetFont())
+                w, h = dc.GetTextExtent(subfragment.text)
+                if x > 0 and x+w > self.max_width:
+                    x = 0
+                    y += line_height_pixels
+                if x == 0 and self.skip_extra_space:
+                    if self.draw_fragments and self.draw_fragments[-1][0].is_space():
+                        self.draw_fragments.pop(-1)
+                    if subfragment.is_space():
+                        continue
+                self.draw_fragments.append((subfragment, style, wx.Rect(x, y, w, h)))
+                max_x = max(max_x, x+w)
+                max_y = max(max_y, y+line_height_pixels)
+                x += w
+        return (max_x, max_y)
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
         for fragment, style, box in self.draw_fragments:
@@ -1126,7 +1120,8 @@ class TextView(RichTextDisplay):
             project,
             fragments,
             line_height=1.2,
-            max_width=PAGE_BODY_WIDTH-indented
+            max_width=PAGE_BODY_WIDTH-indented,
+            skip_extra_space=True
         )
         MouseEventHelper.bind(
             [self],
@@ -1612,19 +1607,36 @@ class MouseEventHelper(object):
         self.OnRightClick()
 class Fragment(object):
 
+    SPLIT_PATTERNS = [
+        re.compile(r"\n"),
+        re.compile(r"\s+"),
+        re.compile(r"\S+"),
+    ]
+
     def __init__(self, text, token=Token.RLiterate, **extra):
         self.text = text
         self.token = token
         self.extra = extra
 
-    def word_split(self):
+    def is_newline(self):
+        return self.text == "\n"
+
+    def is_space(self):
+        return re.match(r"^\s+$", self.text)
+
+    def split(self):
         fragments = []
         text = self.text
         while text:
-            match = re.match(r".+?(\s+|$)", text, flags=re.DOTALL)
-            fragments.append(Fragment(text=match.group(0), token=self.token, **self.extra))
-            text = text[match.end(0):]
+            for split_pattern in self.SPLIT_PATTERNS:
+                match = split_pattern.match(text)
+                if match:
+                    fragments.append(self._replace_text(match.group(0)))
+                    text = text[match.end(0):]
         return fragments
+
+    def _replace_text(self, text):
+        return Fragment(text=text, token=self.token, **self.extra)
 class Document(Observable):
     @classmethod
     def from_file(cls, path):
