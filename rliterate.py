@@ -348,7 +348,15 @@ class Observable(object):
 class MainFrame(wx.Frame):
 
     def __init__(self, filepath):
-        wx.Frame.__init__(self, None, size=(920, 500))
+        wx.Frame.__init__(
+            self,
+            None,
+            size=(920, 500),
+            title="{} ({}) - RLiterate".format(
+                os.path.basename(filepath),
+                os.path.dirname(os.path.abspath(filepath))
+            )
+        )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
