@@ -69,7 +69,17 @@ class ParagraphBase(Editable):
         menu = ParagraphContextMenu()
         menu.AppendItem(
             "New paragraph before",
-            lambda: self.project.add_paragraph(self.page_id, before_id=self.paragraph.id)
+            lambda: self.project.add_paragraph(
+                self.page_id,
+                before_id=self.paragraph.id
+            )
+        )
+        menu.AppendItem(
+            "New paragraph after",
+            lambda: self.project.add_paragraph(
+                self.page_id,
+                before_id=self.paragraph.next_id
+            )
         )
         menu.AppendSeparator()
         self.AddContextMenuItems(menu)
@@ -1727,9 +1737,17 @@ class Page(object):
     @property
     def paragraphs(self):
         return [
-            Paragraph.create(self._document, self, paragraph_dict)
-            for paragraph_dict
-            in self._page_dict["paragraphs"]
+            Paragraph.create(
+                self._document,
+                self,
+                paragraph_dict,
+                next_paragraph_dict["id"] if next_paragraph_dict is not None else None
+            )
+            for paragraph_dict, next_paragraph_dict
+            in zip(
+                self._page_dict["paragraphs"],
+                self._page_dict["paragraphs"][1:]+[None]
+            )
         ]
 
     @property
@@ -1750,23 +1768,28 @@ class Page(object):
 class Paragraph(object):
 
     @staticmethod
-    def create(document, page, paragraph_dict):
+    def create(document, page, paragraph_dict, next_id):
         return {
             "text": TextParagraph,
             "quote": QuoteParagraph,
             "list": ListParagraph,
             "code": CodeParagraph,
             "image": ImageParagraph,
-        }.get(paragraph_dict["type"], Paragraph)(document, page, paragraph_dict)
+        }.get(paragraph_dict["type"], Paragraph)(document, page, paragraph_dict, next_id)
 
-    def __init__(self, document, page, paragraph_dict):
+    def __init__(self, document, page, paragraph_dict, next_id):
         self._document = document
         self._page = page
         self._paragraph_dict = paragraph_dict
+        self._next_id = next_id
 
     @property
     def id(self):
         return self._paragraph_dict["id"]
+
+    @property
+    def next_id(self):
+        return self._next_id
 
     @property
     def type(self):
