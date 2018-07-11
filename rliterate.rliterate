@@ -1890,7 +1890,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: self.paragraph.update({\n                \"fragments\": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), \"text.txt\"))\n            })\n        )\n",
+"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
 "type":"code"
 },
 {
@@ -1964,16 +1964,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=fragments_to_text(paragraph.fragments),\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.paragraph.update({\"fragments\": text_to_fragments(self.Value)})\n",
-"type":"code"
-},
-{
-"id":"8b18fb0b9c4c49b0a2bd117d760f4d05",
-"path":[
-"rliterate.py",
-"<<functions>>"
-],
-"text":"def fragments_to_text(fragments):\n    formatters = {\n        \"emphasis\": lambda x: \"*{}*\".format(x.text),\n        \"code\": lambda x: \"`{}`\".format(x.text),\n        \"strong\": lambda x: \"**{}**\".format(x.text),\n        \"reference\": lambda x: \"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"),\n        \"link\": lambda x: \"[{}]({})\".format(x.text, x.url),\n    }\n    return \"\".join([\n        formatters.get(fragment.type, lambda x: x.text)(fragment)\n        for fragment\n        in fragments\n    ])\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)\n",
+"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        self.paragraph.text_version = self.Value\n",
 "type":"code"
 }
 ],
@@ -1999,7 +1990,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: self.paragraph.update({\n                \"fragments\": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), \"quote.txt\"))\n            })\n        )",
+"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
@@ -2025,16 +2016,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self):\n        return ListTextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        def edit_fn():\n            child_type, children = text_to_list(edit_in_gvim(list_to_text(self.paragraph), \"list.txt\"))\n            self.paragraph.update({\n                \"child_type\": child_type,\n                \"children\": children\n            })\n        menu.AppendItem(\n            \"Edit in gvim\",\n            edit_fn\n        )\n\n    def add_items(self, view, sizer, items, child_type, indent=0):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*indent, 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    item.formatted_text,\n                    self,\n                    indented=self.INDENT*indent+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indent+1)\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return RichTextDisplay(\n            view,\n            self.project,\n            [Fragment(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n\n\nclass ListTextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=list_to_text(paragraph),\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        self.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _on_char(self, event):\n        if event.KeyCode == wx.WXK_CONTROL_S:\n            self._save()\n        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():\n            self._save()\n        else:\n            event.Skip()\n\n    def _save(self):\n        child_type, children = text_to_list(self.Value)\n        self.paragraph.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n",
-"type":"code"
-},
-{
-"id":"126fbee10f774ea5a325a8ee855d4ae9",
-"path":[
-"rliterate.py",
-"<<functions>>"
-],
-"text":"def list_to_text(paragraph):\n    def list_item_to_text(child_type, item, indent=0, index=0):\n        text = \"    \"*indent\n        if child_type == \"ordered\":\n            text += \"{}. \".format(index+1)\n        else:\n            text += \"* \"\n        text += fragments_to_text(item.fragments)\n        text += \"\\n\"\n        for index, child in enumerate(item.children):\n            text += list_item_to_text(item.child_type, child, index=index, indent=indent+1)\n        return text\n    res = \"\"\n    for index, child in enumerate(paragraph.children):\n        res += list_item_to_text(paragraph.child_type, child, index=index)\n    return res\n\n\ndef text_to_list(text):\n    return LegacyListParser(text).parse_items()\n\n",
+"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def add_items(self, view, sizer, items, child_type, indent=0):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*indent, 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    item.formatted_text,\n                    self,\n                    indented=self.INDENT*indent+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indent+1)\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return RichTextDisplay(\n            view,\n            self.project,\n            [Fragment(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
 "type":"code"
 }
 ],
@@ -2050,7 +2032,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Code(ParagraphBase):\n\n    def CreateView(self):\n        return CodeView(self, self.project, self.paragraph, self)\n\n    def CreateEdit(self):\n        return CodeEditor(self, self.project, self.paragraph, self.view)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: self.paragraph.update({\n                \"text\": edit_in_gvim(self.paragraph.text, self.paragraph.filename)\n            })\n        )\n",
+"text":"class Code(ParagraphBase):\n\n    def CreateView(self):\n        return CodeView(self, self.project, self.paragraph, self)\n\n    def CreateEdit(self):\n        return CodeEditor(self, self.project, self.paragraph, self.view)\n",
 "type":"code"
 },
 {
@@ -2210,7 +2192,7 @@
 "rliterate.py",
 "<<base classes>>"
 ],
-"text":"class ParagraphBase(Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.project = project\n        self.page_id = page_id\n        self.paragraph = paragraph\n        Editable.__init__(self, parent)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"New paragraph before\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.id\n            )\n        )\n        menu.AppendItem(\n            \"New paragraph after\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id\n            )\n        )\n        menu.AppendItem(\n            \"Duplicate\",\n            lambda: self.paragraph.duplicate()\n        )\n        menu.AppendSeparator()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
+"text":"class ParagraphBase(Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.project = project\n        self.page_id = page_id\n        self.paragraph = paragraph\n        Editable.__init__(self, parent)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"New paragraph before\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.id\n            )\n        )\n        menu.AppendItem(\n            \"New paragraph after\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id\n            )\n        )\n        menu.AppendItem(\n            \"Duplicate\",\n            lambda: self.paragraph.duplicate()\n        )\n        if hasattr(self.paragraph, \"text_version\"):\n            menu.AppendItem(\n                \"Edit in gvim\",\n                lambda: setattr(\n                    self.paragraph,\n                    \"text_version\",\n                    edit_in_gvim(\n                        self.paragraph.text_version,\n                        self.paragraph.filename\n                    )\n                )\n            )\n        menu.AppendSeparator()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
 "type":"code"
 },
 {
@@ -2810,7 +2792,16 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n",
+"text":"class TextParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})\n",
+"type":"code"
+},
+{
+"id":"8b18fb0b9c4c49b0a2bd117d760f4d05",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def fragments_to_text(fragments):\n    formatters = {\n        \"emphasis\": lambda x: \"*{}*\".format(x.text),\n        \"code\": lambda x: \"`{}`\".format(x.text),\n        \"strong\": lambda x: \"**{}**\".format(x.text),\n        \"reference\": lambda x: \"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"),\n        \"link\": lambda x: \"[{}]({})\".format(x.text, x.url),\n    }\n    return \"\".join([\n        formatters.get(fragment.type, lambda x: x.text)(fragment)\n        for fragment\n        in fragments\n    ])\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)\n",
 "type":"code"
 }
 ],
@@ -2842,7 +2833,25 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ListParagraph(Paragraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._paragraph_dict[\"children\"]]\n\n\nclass ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._item_dict[\"fragments\"]\n        ]\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def formatted_text(self):\n        return [x.formatted_text for x in self.fragments]\n",
+"text":"class ListParagraph(Paragraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._paragraph_dict[\"children\"]]\n\n    @property\n    def text_version(self):\n        return list_to_text(self)\n\n    @text_version.setter\n    def text_version(self, value):\n        child_type, children = text_to_list(value)\n        self.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n",
+"type":"code"
+},
+{
+"id":"b1df900b20ce4fd195ba8b9e6040ab24",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._item_dict[\"fragments\"]\n        ]\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def formatted_text(self):\n        return [x.formatted_text for x in self.fragments]\n",
+"type":"code"
+},
+{
+"id":"126fbee10f774ea5a325a8ee855d4ae9",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def list_to_text(paragraph):\n    def list_item_to_text(child_type, item, indent=0, index=0):\n        text = \"    \"*indent\n        if child_type == \"ordered\":\n            text += \"{}. \".format(index+1)\n        else:\n            text += \"* \"\n        text += fragments_to_text(item.fragments)\n        text += \"\\n\"\n        for index, child in enumerate(item.children):\n            text += list_item_to_text(item.child_type, child, index=index, indent=indent+1)\n        return text\n    res = \"\"\n    for index, child in enumerate(paragraph.children):\n        res += list_item_to_text(paragraph.child_type, child, index=index)\n    return res\n\n\ndef text_to_list(text):\n    return LegacyListParser(text).parse_items()\n",
 "type":"code"
 }
 ],
@@ -2858,7 +2867,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class CodeParagraph(Paragraph):\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._tokens_to_fragments(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(\"\".join(self.path)) > 0\n\n    @property\n    def path(self):\n        return tuple(self._paragraph_dict[\"path\"])\n\n    @property\n    def filename(self):\n        last_part = \"\"\n        for part in self.path:\n            if part.startswith(\"<<\"):\n                break\n            last_part = part\n        return last_part\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _tokens_to_fragments(self, tokens):\n        fragments = []\n        for token, text in tokens:\n            fragments.append(Fragment(text, token=token))\n        return fragments\n",
+"text":"class CodeParagraph(Paragraph):\n\n    @property\n    def text_version(self):\n        return self.text\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"text\": value})\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._tokens_to_fragments(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(\"\".join(self.path)) > 0\n\n    @property\n    def path(self):\n        return tuple(self._paragraph_dict[\"path\"])\n\n    @property\n    def filename(self):\n        last_part = \"\"\n        for part in self.path:\n            if part.startswith(\"<<\"):\n                break\n            last_part = part\n        return os.path.basename(last_part)\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _tokens_to_fragments(self, tokens):\n        fragments = []\n        for token, text in tokens:\n            fragments.append(Fragment(text, token=token))\n        return fragments\n",
 "type":"code"
 }
 ],
@@ -2874,7 +2883,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ImageParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n",
+"text":"class ImageParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})\n",
 "type":"code"
 }
 ],
@@ -2899,7 +2908,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(self._paragraph_dict, id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n",
+"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(self._paragraph_dict, id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n",
 "type":"code"
 }
 ],
@@ -3641,7 +3650,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class DiffBuilder(object):\n\n    def __init__(self, document):\n        self.document = document\n\n    def build(self):\n        self.parts = []\n        self._foo()\n        return \"\".join(self.parts)\n\n    def _foo(self):\n        self.pages = []\n        self._collect_pages(self.document.get_page())\n        self._render_pages()\n\n    def _collect_pages(self, page):\n        self.pages.append(page)\n        for child in page.children:\n            self._collect_pages(child)\n\n    def _render_pages(self):\n        for page in sorted(self.pages, key=lambda page: page.id):\n            self._write(page.id)\n            self._write(\": \")\n            self._write(page.title)\n            for child in page.children:\n                self._write(\"\\n\")\n                self._write(\"    \")\n                self._write(child.id)\n                self._write(\": \")\n                self._write(child.title)\n            self._write(\"\\n\\n\")\n            for paragraph in page.paragraphs:\n                {\n                    \"text\": self._render_text,\n                    \"quote\": self._render_quote,\n                    \"list\": self._render_list,\n                    \"code\": self._render_code,\n                }.get(paragraph.type, self._render_unknown)(paragraph)\n\n    def _render_text(self, text):\n        self._wrapped_text(fragments_to_text(text.fragments))\n\n    def _render_quote(self, paragraph):\n        self._wrapped_text(fragments_to_text(paragraph.fragments), indent=4)\n\n    def _render_list(self, paragraph):\n        self._write(list_to_text(paragraph))\n\n    def _wrapped_text(self, text, indent=0):\n        current_line = []\n        for part in text.replace(\"\\n\", \" \").split(\" \"):\n            if len(\" \".join(current_line)) > 60-indent:\n                self._write(\" \"*indent+\" \".join(current_line))\n                self._write(\"\\n\")\n                current_line = []\n            if part.strip():\n                current_line.append(part.strip())\n        if current_line:\n            self._write(\" \"*indent+\" \".join(current_line))\n            self._write(\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_code(self, code):\n        self._write(\" / \".join(code.path)+\":\\n\\n\")\n        for line in code.text.splitlines():\n            self._write(\"    \"+line+\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_unknown(self, paragraph):\n        self._write(\"Unknown type = \"+paragraph.type+\"\\n\\n\")\n\n    def _write(self, text):\n        self.parts.append(text)\n",
+"text":"class DiffBuilder(object):\n\n    def __init__(self, document):\n        self.document = document\n\n    def build(self):\n        self.parts = []\n        self._foo()\n        return \"\".join(self.parts)\n\n    def _foo(self):\n        self.pages = []\n        self._collect_pages(self.document.get_page())\n        self._render_pages()\n\n    def _collect_pages(self, page):\n        self.pages.append(page)\n        for child in page.children:\n            self._collect_pages(child)\n\n    def _render_pages(self):\n        for page in sorted(self.pages, key=lambda page: page.id):\n            self._write(page.id)\n            self._write(\": \")\n            self._write(page.title)\n            for child in page.children:\n                self._write(\"\\n\")\n                self._write(\"    \")\n                self._write(child.id)\n                self._write(\": \")\n                self._write(child.title)\n            self._write(\"\\n\\n\")\n            for paragraph in page.paragraphs:\n                {\n                    \"text\": self._render_text,\n                    \"quote\": self._render_quote,\n                    \"list\": self._render_list,\n                    \"code\": self._render_code,\n                }.get(paragraph.type, self._render_unknown)(paragraph)\n\n    def _render_text(self, text):\n        self._wrapped_text(text.text_version)\n\n    def _render_quote(self, paragraph):\n        self._wrapped_text(paragraph.text_version, indent=4)\n\n    def _render_list(self, paragraph):\n        self._write(paragraph.text_version)\n\n    def _wrapped_text(self, text, indent=0):\n        current_line = []\n        for part in text.replace(\"\\n\", \" \").split(\" \"):\n            if len(\" \".join(current_line)) > 60-indent:\n                self._write(\" \"*indent+\" \".join(current_line))\n                self._write(\"\\n\")\n                current_line = []\n            if part.strip():\n                current_line.append(part.strip())\n        if current_line:\n            self._write(\" \"*indent+\" \".join(current_line))\n            self._write(\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_code(self, code):\n        self._write(\" / \".join(code.path)+\":\\n\\n\")\n        for line in code.text.splitlines():\n            self._write(\"    \"+line+\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_unknown(self, paragraph):\n        self._write(\"Unknown type = \"+paragraph.type+\"\\n\\n\")\n\n    def _write(self, text):\n        self.parts.append(text)\n",
 "type":"code"
 }
 ],
@@ -4850,34 +4859,6 @@
 "fragments":[
 {
 "text":"Keep a list of variables so than renames can easily be done",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Is ",
-"type":"text"
-},
-{
-"text":"page_id",
-"type":"code"
-},
-{
-"text":" really needed in paragraph? Can it be removed?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"\"Edit in gvim\" should automatically work for all paragraphs that supports to/from text conversion",
 "type":"text"
 }
 ]

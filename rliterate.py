@@ -85,6 +85,18 @@ class ParagraphBase(Editable):
             "Duplicate",
             lambda: self.paragraph.duplicate()
         )
+        if hasattr(self.paragraph, "text_version"):
+            menu.AppendItem(
+                "Edit in gvim",
+                lambda: setattr(
+                    self.paragraph,
+                    "text_version",
+                    edit_in_gvim(
+                        self.paragraph.text_version,
+                        self.paragraph.filename
+                    )
+                )
+            )
         menu.AppendSeparator()
         self.AddContextMenuItems(menu)
         menu.AppendSeparator()
@@ -968,12 +980,6 @@ class Text(ParagraphBase):
             "To quote",
             lambda: self.paragraph.update({"type": "quote"})
         )
-        menu.AppendItem(
-            "Edit in gvim",
-            lambda: self.paragraph.update({
-                "fragments": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), "text.txt"))
-            })
-        )
 class TextView(RichTextDisplay):
 
     def __init__(self, parent, project, fragments, base, indented=0):
@@ -1014,7 +1020,7 @@ class TextEdit(MultilineTextCtrl):
         MultilineTextCtrl.__init__(
             self,
             parent,
-            value=fragments_to_text(paragraph.fragments),
+            value=paragraph.text_version,
             size=(-1, view.Size[1])
         )
         self.Font = create_font(monospace=True)
@@ -1031,7 +1037,7 @@ class TextEdit(MultilineTextCtrl):
             event.Skip()
 
     def _save(self):
-        self.paragraph.update({"fragments": text_to_fragments(self.Value)})
+        self.paragraph.text_version = self.Value
 class Quote(Text):
 
     INDENT = 20
@@ -1059,12 +1065,6 @@ class Quote(Text):
             "To text",
             lambda: self.paragraph.update({"type": "text"})
         )
-        menu.AppendItem(
-            "Edit in gvim",
-            lambda: self.paragraph.update({
-                "fragments": text_to_fragments(edit_in_gvim(fragments_to_text(self.paragraph.fragments), "quote.txt"))
-            })
-        )
 class List(ParagraphBase):
 
     INDENT = 20
@@ -1077,23 +1077,11 @@ class List(ParagraphBase):
         return view
 
     def CreateEdit(self):
-        return ListTextEdit(
+        return TextEdit(
             self,
             self.project,
             self.paragraph,
             self.view
-        )
-
-    def AddContextMenuItems(self, menu):
-        def edit_fn():
-            child_type, children = text_to_list(edit_in_gvim(list_to_text(self.paragraph), "list.txt"))
-            self.paragraph.update({
-                "child_type": child_type,
-                "children": children
-            })
-        menu.AppendItem(
-            "Edit in gvim",
-            edit_fn
         )
 
     def add_items(self, view, sizer, items, child_type, indent=0):
@@ -1127,36 +1115,6 @@ class List(ParagraphBase):
             return "{}. ".format(index + 1)
         else:
             return u"\u2022 "
-
-
-class ListTextEdit(MultilineTextCtrl):
-
-    def __init__(self, parent, project, paragraph, view):
-        MultilineTextCtrl.__init__(
-            self,
-            parent,
-            value=list_to_text(paragraph),
-            size=(-1, view.Size[1])
-        )
-        self.Font = create_font(monospace=True)
-        self.project = project
-        self.paragraph = paragraph
-        self.Bind(wx.EVT_CHAR, self._on_char)
-
-    def _on_char(self, event):
-        if event.KeyCode == wx.WXK_CONTROL_S:
-            self._save()
-        elif event.KeyCode == wx.WXK_RETURN and event.ControlDown():
-            self._save()
-        else:
-            event.Skip()
-
-    def _save(self):
-        child_type, children = text_to_list(self.Value)
-        self.paragraph.update({
-            "child_type": child_type,
-            "children": children
-        })
 class Code(ParagraphBase):
 
     def CreateView(self):
@@ -1164,14 +1122,6 @@ class Code(ParagraphBase):
 
     def CreateEdit(self):
         return CodeEditor(self, self.project, self.paragraph, self.view)
-
-    def AddContextMenuItems(self, menu):
-        menu.AppendItem(
-            "Edit in gvim",
-            lambda: self.paragraph.update({
-                "text": edit_in_gvim(self.paragraph.text, self.paragraph.filename)
-            })
-        )
 class CodeView(wx.Panel):
 
     BORDER = 0
@@ -1820,6 +1770,10 @@ class Paragraph(object):
                 page_id=self._page.id,
                 before_id=self.next_id
             )
+
+    @property
+    def filename(self):
+        return "paragraph.txt"
 class TextParagraph(Paragraph):
 
     @property
@@ -1837,6 +1791,14 @@ class TextParagraph(Paragraph):
             for fragment
             in self.fragments
         ]
+
+    @property
+    def text_version(self):
+        return fragments_to_text(self.fragments)
+
+    @text_version.setter
+    def text_version(self, value):
+        self.update({"fragments": text_to_fragments(value)})
 class QuoteParagraph(TextParagraph):
     pass
 class ListParagraph(Paragraph):
@@ -1849,7 +1811,17 @@ class ListParagraph(Paragraph):
     def children(self):
         return [ListItem(self._document, x) for x in self._paragraph_dict["children"]]
 
+    @property
+    def text_version(self):
+        return list_to_text(self)
 
+    @text_version.setter
+    def text_version(self, value):
+        child_type, children = text_to_list(value)
+        self.update({
+            "child_type": child_type,
+            "children": children
+        })
 class ListItem(object):
 
     def __init__(self, document, item_dict):
@@ -1878,6 +1850,14 @@ class ListItem(object):
 class CodeParagraph(Paragraph):
 
     @property
+    def text_version(self):
+        return self.text
+
+    @text_version.setter
+    def text_version(self, value):
+        self.update({"text": value})
+
+    @property
     def text(self):
         return self._paragraph_dict["text"]
 
@@ -1904,7 +1884,7 @@ class CodeParagraph(Paragraph):
             if part.startswith("<<"):
                 break
             last_part = part
-        return last_part
+        return os.path.basename(last_part)
 
     @property
     def language(self):
@@ -1945,6 +1925,14 @@ class ImageParagraph(Paragraph):
     @property
     def image_base64(self):
         return self._paragraph_dict.get("image_base64", None)
+
+    @property
+    def text_version(self):
+        return fragments_to_text(self.fragments)
+
+    @text_version.setter
+    def text_version(self, value):
+        self.update({"fragments": text_to_fragments(value)})
 class TextFragment(object):
 
     @staticmethod
@@ -2553,13 +2541,13 @@ class DiffBuilder(object):
                 }.get(paragraph.type, self._render_unknown)(paragraph)
 
     def _render_text(self, text):
-        self._wrapped_text(fragments_to_text(text.fragments))
+        self._wrapped_text(text.text_version)
 
     def _render_quote(self, paragraph):
-        self._wrapped_text(fragments_to_text(paragraph.fragments), indent=4)
+        self._wrapped_text(paragraph.text_version, indent=4)
 
     def _render_list(self, paragraph):
-        self._write(list_to_text(paragraph))
+        self._write(paragraph.text_version)
 
     def _wrapped_text(self, text, indent=0):
         current_line = []
@@ -2654,44 +2642,6 @@ def post_fragment_click(widget, fragment):
     wx.PostEvent(widget, FragmentClick(0, widget=widget, fragment=fragment))
 def post_hovered_fragment_changed(widget, fragment):
     wx.PostEvent(widget, HoveredFragmentChanged(0, widget=widget, fragment=fragment))
-def fragments_to_text(fragments):
-    formatters = {
-        "emphasis": lambda x: "*{}*".format(x.text),
-        "code": lambda x: "`{}`".format(x.text),
-        "strong": lambda x: "**{}**".format(x.text),
-        "reference": lambda x: "[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""),
-        "link": lambda x: "[{}]({})".format(x.text, x.url),
-    }
-    return "".join([
-        formatters.get(fragment.type, lambda x: x.text)(fragment)
-        for fragment
-        in fragments
-    ])
-
-
-def text_to_fragments(text):
-    return LegacyInlineTextParser().parse(text)
-def list_to_text(paragraph):
-    def list_item_to_text(child_type, item, indent=0, index=0):
-        text = "    "*indent
-        if child_type == "ordered":
-            text += "{}. ".format(index+1)
-        else:
-            text += "* "
-        text += fragments_to_text(item.fragments)
-        text += "\n"
-        for index, child in enumerate(item.children):
-            text += list_item_to_text(item.child_type, child, index=index, indent=indent+1)
-        return text
-    res = ""
-    for index, child in enumerate(paragraph.children):
-        res += list_item_to_text(paragraph.child_type, child, index=index)
-    return res
-
-
-def text_to_list(text):
-    return LegacyListParser(text).parse_items()
-
 def insert_between(separator, items):
     result = []
     for i, item in enumerate(items):
@@ -2733,6 +2683,43 @@ def flicker_free_drawing(widget):
     widget.Freeze()
     yield
     widget.Thaw()
+def fragments_to_text(fragments):
+    formatters = {
+        "emphasis": lambda x: "*{}*".format(x.text),
+        "code": lambda x: "`{}`".format(x.text),
+        "strong": lambda x: "**{}**".format(x.text),
+        "reference": lambda x: "[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""),
+        "link": lambda x: "[{}]({})".format(x.text, x.url),
+    }
+    return "".join([
+        formatters.get(fragment.type, lambda x: x.text)(fragment)
+        for fragment
+        in fragments
+    ])
+
+
+def text_to_fragments(text):
+    return LegacyInlineTextParser().parse(text)
+def list_to_text(paragraph):
+    def list_item_to_text(child_type, item, indent=0, index=0):
+        text = "    "*indent
+        if child_type == "ordered":
+            text += "{}. ".format(index+1)
+        else:
+            text += "* "
+        text += fragments_to_text(item.fragments)
+        text += "\n"
+        for index, child in enumerate(item.children):
+            text += list_item_to_text(item.child_type, child, index=index, indent=indent+1)
+        return text
+    res = ""
+    for index, child in enumerate(paragraph.children):
+        res += list_item_to_text(paragraph.child_type, child, index=index)
+    return res
+
+
+def text_to_list(text):
+    return LegacyListParser(text).parse_items()
 def ensure_key(a_dict, key, default):
     if key not in a_dict:
         a_dict[key] = default
