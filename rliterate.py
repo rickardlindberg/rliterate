@@ -390,28 +390,36 @@ class ToolBar(wx.ToolBar):
             "document", "layout"
         )
         self.SetProject(project)
+        self._update_document()
+        self._update_layout()
 
     def SetProject(self, project):
         self.project = project
         self.project_listener.set_observable(self.project)
 
     def _update(self, event):
-        if event.startswith("document") or event == "":
-            self._undo_operation = self.project.get_undo_operation()
-            self.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)
-            self.SetToolShortHelp(
-                self._undo_tool.GetId(),
-                "Undo" if self._undo_operation is None else "Undo '{}'".format(self._undo_operation[0])
-            )
-            self._redo_operation = self.project.get_redo_operation()
-            self.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)
-            self.SetToolShortHelp(
-                self._redo_tool.GetId(),
-                "Redo" if self._redo_operation is None else "Redo '{}'".format(self._redo_operation[0])
-            )
-        if event.startswith("layout") or event == "":
-            self.EnableTool(self._back_tool.GetId(), self.project.can_back())
-            self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())
+        if event.startswith("document"):
+            self._update_document()
+        if event.startswith("layout"):
+            self._update_layout()
+
+    def _update_document(self):
+        self._undo_operation = self.project.get_undo_operation()
+        self.EnableTool(self._undo_tool.GetId(), self._undo_operation is not None)
+        self.SetToolShortHelp(
+            self._undo_tool.GetId(),
+            "Undo" if self._undo_operation is None else "Undo '{}'".format(self._undo_operation[0])
+        )
+        self._redo_operation = self.project.get_redo_operation()
+        self.EnableTool(self._redo_tool.GetId(), self._redo_operation is not None)
+        self.SetToolShortHelp(
+            self._redo_tool.GetId(),
+            "Redo" if self._redo_operation is None else "Redo '{}'".format(self._redo_operation[0])
+        )
+
+    def _update_layout(self):
+        self.EnableTool(self._back_tool.GetId(), self.project.can_back())
+        self.EnableTool(self._forward_tool.GetId(), self.project.can_forward())
 
     def _add_bitmap_tool(self, art, fn, short_help=""):
         tool = self.AddSimpleTool(
