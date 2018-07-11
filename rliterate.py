@@ -44,7 +44,7 @@ class Editable(wx.Panel):
 
     def OnEditStart(self, event):
         if self.project.active_editor is not None:
-            print("njeeheee")
+            show_edit_in_progress_error(self)
             return
         with flicker_free_drawing(self):
             self.edit = self.CreateEdit()
@@ -690,7 +690,7 @@ class TableOfContentsRow(wx.Panel):
             helper.OnRightClick = self._on_right_click
             helper.OnDrag = self._on_drag
     def _on_click(self):
-        self.project.open_pages([self.page.id], column_index=0)
+        open_pages_gui(self, self.project, [self.page.id], column_index=0)
 
     def _on_right_click(self):
         menu = PageContextMenu(self.project, self.page)
@@ -748,22 +748,22 @@ class PageContextMenu(wx.Menu):
     def _create_menu(self):
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.open_pages([self.page.id], column_index=0),
+            lambda event: open_pages_gui(self, self.project, [self.page.id], column_index=0),
             self.Append(wx.NewId(), "Open")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.open_pages([self.page.id]),
+            lambda event: open_pages_gui(self, self.project, [self.page.id]),
             self.Append(wx.NewId(), "Open append")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.open_pages(self.child_ids, column_index=0),
+            lambda event: open_pages_gui(self, self.project, self.child_ids, column_index=0),
             self.Append(wx.NewId(), "Open with children")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.open_pages(self.child_ids),
+            lambda event: open_pages_gui(self, self.project, self.child_ids),
             self.Append(wx.NewId(), "Open with children append")
         )
         self.AppendSeparator()
@@ -891,7 +891,7 @@ class Column(CompactScrolledWindow):
         if self.project is None:
             return
         if event.fragment.token == Token.RLiterate.Reference:
-            self.project.open_pages(
+            open_pages_gui(self, self.project,
                 [event.fragment.extra["page_id"]],
                 column_index=self.index+1
             )
@@ -1457,8 +1457,13 @@ class Factory(ParagraphBase):
         return view
 
     def _add_button(self, text, value):
+        def click_handler(event):
+            if self.project.active_editor is None:
+                self.paragraph.update(value)
+            else:
+                show_edit_in_progress_error(self)
         button = wx.Button(self, label=text)
-        button.Bind(wx.EVT_BUTTON, lambda event: self.paragraph.update(value))
+        button.Bind(wx.EVT_BUTTON, click_handler)
         self.hsizer.Add(button, flag=wx.ALL, border=2)
 class ParagraphContextMenu(wx.Menu):
 
@@ -2374,7 +2379,10 @@ class Project(Observable):
         return self.layout.is_open(*args, **kwargs)
 
     def open_pages(self, *args, **kwargs):
-        return self.layout.open_pages(*args, **kwargs)
+        if self.active_editor is None:
+            return self.layout.open_pages(*args, **kwargs)
+        else:
+            raise EditInProgress()
 
     def can_back(self, *args, **kwargs):
         return self.layout.can_back(*args, **kwargs)
@@ -2403,6 +2411,8 @@ class Project(Observable):
     def active_editor(self, editor):
         with self.notify("editor"):
             self._active_editor = editor
+class EditInProgress(Exception):
+    pass
 class FileGenerator(object):
 
     def __init__(self):
@@ -2771,6 +2781,19 @@ def fit_image(image, width):
     )
 def post_edit_start(control):
     wx.PostEvent(control, EditStart(0))
+def open_pages_gui(window, project, *args, **kwargs):
+    try:
+        project.open_pages(*args, **kwargs)
+    except EditInProgress:
+        show_edit_in_progress_error(window)
+def show_edit_in_progress_error(window):
+    dialog = wx.MessageDialog(
+        window,
+        "An edit is already in progress.",
+        style=wx.CENTRE|wx.ICON_ERROR|wx.OK
+    )
+    dialog.ShowModal()
+    dialog.Destroy()
 @contextlib.contextmanager
 def flicker_free_drawing(widget):
     widget.Freeze()

@@ -1490,7 +1490,7 @@
 "<<classes>>",
 "<<TableOfContentsRow>>"
 ],
-"text":"def _on_click(self):\n    self.project.open_pages([self.page.id], column_index=0)\n\ndef _on_right_click(self):\n    menu = PageContextMenu(self.project, self.page)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
+"text":"def _on_click(self):\n    open_pages_gui(self, self.project, [self.page.id], column_index=0)\n\ndef _on_right_click(self):\n    menu = PageContextMenu(self.project, self.page)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
 "type":"code"
 }
 ],
@@ -1532,7 +1532,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page = page\n        self.child_ids = [page.id]+[child.id for child in page.children]\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages([self.page.id], column_index=0),\n            self.Append(wx.NewId(), \"Open\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages([self.page.id]),\n            self.Append(wx.NewId(), \"Open append\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages(self.child_ids, column_index=0),\n            self.Append(wx.NewId(), \"Open with children\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages(self.child_ids),\n            self.Append(wx.NewId(), \"Open with children append\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.add_page(parent_id=self.page.id),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.set_hoisted_page(self.page.id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: set_clipboard_text(self.page.id),\n            self.Append(wx.NewId(), \"Copy id\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.page.delete(),\n            self.Append(wx.NewId(), \"Delete\")\n        )\n",
+"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page = page\n        self.child_ids = [page.id]+[child.id for child in page.children]\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id], column_index=0),\n            self.Append(wx.NewId(), \"Open\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id]),\n            self.Append(wx.NewId(), \"Open append\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids, column_index=0),\n            self.Append(wx.NewId(), \"Open with children\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids),\n            self.Append(wx.NewId(), \"Open with children append\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.add_page(parent_id=self.page.id),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.set_hoisted_page(self.page.id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: set_clipboard_text(self.page.id),\n            self.Append(wx.NewId(), \"Copy id\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.page.delete(),\n            self.Append(wx.NewId(), \"Delete\")\n        )\n",
 "type":"code"
 },
 {
@@ -1826,7 +1826,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_FRAGMENT_CHANGED, self._on_hovered_fragment_changed)\n        self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)\n\n    def _on_hovered_fragment_changed(self, event):\n        if event.fragment is not None and event.fragment.token in [\n            Token.RLiterate.Link,\n            Token.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_fragment_click(self, event):\n        if self.project is None:\n            return\n        if event.fragment.token == Token.RLiterate.Reference:\n            self.project.open_pages(\n                [event.fragment.extra[\"page_id\"]],\n                column_index=self.index+1\n            )\n        elif event.fragment.token == Token.RLiterate.Link:\n            webbrowser.open(event.fragment.extra[\"url\"])\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
+"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_FRAGMENT_CHANGED, self._on_hovered_fragment_changed)\n        self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)\n\n    def _on_hovered_fragment_changed(self, event):\n        if event.fragment is not None and event.fragment.token in [\n            Token.RLiterate.Link,\n            Token.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_fragment_click(self, event):\n        if self.project is None:\n            return\n        if event.fragment.token == Token.RLiterate.Reference:\n            open_pages_gui(self, self.project,\n                [event.fragment.extra[\"page_id\"]],\n                column_index=self.index+1\n            )\n        elif event.fragment.token == Token.RLiterate.Link:\n            webbrowser.open(event.fragment.extra[\"url\"])\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
 "type":"code"
 }
 ],
@@ -2270,7 +2270,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Factory(ParagraphBase):\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter text here...\"}],\n        })\n        self._add_button(\"Quote\", {\n            \"type\": \"quote\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter quote here...\"}],\n        })\n        self._add_button(\"List\", {\n            \"type\": \"list\",\n            \"child_type\": \"unordered\",\n            \"children\": [{\n                \"child_type\": None,\n                \"children\": [],\n                \"fragments\": [{\"type\": \"text\", \"text\": \"Enter list item here...\"}],\n            }],\n        })\n        self._add_button(\"Code\", {\n            \"type\": \"code\",\n            \"path\": [],\n            \"text\": \"Enter code here...\",\n        })\n        self._add_button(\"Image\", {\n            \"type\": \"image\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter image text here...\"}],\n        })\n        self.vsizer.AddSpacer(PARAGRAPH_SPACE)\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _add_button(self, text, value):\n        button = wx.Button(self, label=text)\n        button.Bind(wx.EVT_BUTTON, lambda event: self.paragraph.update(value))\n        self.hsizer.Add(button, flag=wx.ALL, border=2)\n",
+"text":"class Factory(ParagraphBase):\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=self.ShowContextMenu\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter text here...\"}],\n        })\n        self._add_button(\"Quote\", {\n            \"type\": \"quote\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter quote here...\"}],\n        })\n        self._add_button(\"List\", {\n            \"type\": \"list\",\n            \"child_type\": \"unordered\",\n            \"children\": [{\n                \"child_type\": None,\n                \"children\": [],\n                \"fragments\": [{\"type\": \"text\", \"text\": \"Enter list item here...\"}],\n            }],\n        })\n        self._add_button(\"Code\", {\n            \"type\": \"code\",\n            \"path\": [],\n            \"text\": \"Enter code here...\",\n        })\n        self._add_button(\"Image\", {\n            \"type\": \"image\",\n            \"fragments\": [{\"type\": \"text\", \"text\": \"Enter image text here...\"}],\n        })\n        self.vsizer.AddSpacer(PARAGRAPH_SPACE)\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _add_button(self, text, value):\n        def click_handler(event):\n            if self.project.active_editor is None:\n                self.paragraph.update(value)\n            else:\n                show_edit_in_progress_error(self)\n        button = wx.Button(self, label=text)\n        button.Bind(wx.EVT_BUTTON, click_handler)\n        self.hsizer.Add(button, flag=wx.ALL, border=2)\n",
 "type":"code"
 }
 ],
@@ -2388,7 +2388,7 @@
 "rliterate.py",
 "<<base classes 1>>"
 ],
-"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.active_editor is not None:\n            print(\"njeeheee\")\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit()\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def Cancel(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
+"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.active_editor is not None:\n            show_edit_in_progress_error(self)\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit()\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def Cancel(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
 "type":"code"
 },
 {
@@ -2500,6 +2500,31 @@
 "id":"a6e8ca0aa83d4829b15c0424be259022",
 "paragraphs":[],
 "title":"Drag & drop"
+},
+{
+"children":[],
+"id":"03a31fd01d22449da2450c36ede331c1",
+"paragraphs":[
+{
+"id":"15f128565382486187e8699ba13fcb14",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def open_pages_gui(window, project, *args, **kwargs):\n    try:\n        project.open_pages(*args, **kwargs)\n    except EditInProgress:\n        show_edit_in_progress_error(window)\n",
+"type":"code"
+},
+{
+"id":"858941606e864431bb785f32f3d6a590",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def show_edit_in_progress_error(window):\n    dialog = wx.MessageDialog(\n        window,\n        \"An edit is already in progress.\",\n        style=wx.CENTRE|wx.ICON_ERROR|wx.OK\n    )\n    dialog.ShowModal()\n    dialog.Destroy()\n",
+"type":"code"
+}
+],
+"title":"Edit in progress utilities"
 },
 {
 "children":[
@@ -3664,7 +3689,7 @@
 "<<classes>>",
 "<<Project>>"
 ],
-"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    return self.layout.open_pages(*args, **kwargs)\n\ndef can_back(self, *args, **kwargs):\n    return self.layout.can_back(*args, **kwargs)\n\ndef back(self, *args, **kwargs):\n    return self.layout.back(*args, **kwargs)\n\ndef can_forward(self, *args, **kwargs):\n    return self.layout.can_forward(*args, **kwargs)\n\ndef forward(self, *args, **kwargs):\n    return self.layout.forward(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
+"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    if self.active_editor is None:\n        return self.layout.open_pages(*args, **kwargs)\n    else:\n        raise EditInProgress()\n\ndef can_back(self, *args, **kwargs):\n    return self.layout.can_back(*args, **kwargs)\n\ndef back(self, *args, **kwargs):\n    return self.layout.back(*args, **kwargs)\n\ndef can_forward(self, *args, **kwargs):\n    return self.layout.can_forward(*args, **kwargs)\n\ndef forward(self, *args, **kwargs):\n    return self.layout.forward(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
 "type":"code"
 },
 {
@@ -3715,6 +3740,15 @@
 "<<Project>>"
 ],
 "text":"@property\ndef active_editor(self):\n    return self._active_editor\n\n@active_editor.setter\ndef active_editor(self, editor):\n    with self.notify(\"editor\"):\n        self._active_editor = editor\n",
+"type":"code"
+},
+{
+"id":"38c74c6da2a549778e32f4dba67151ac",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class EditInProgress(Exception):\n    pass\n",
 "type":"code"
 }
 ],
@@ -4990,7 +5024,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Stuck in edit mode if navigating while editing",
+"text":"Can check if editor opened be more isolated?",
 "type":"text"
 }
 ]
@@ -5000,7 +5034,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Show error message when trying to edit/navigate while editing",
+"text":"Show keyboard shourtcuts in tooltops",
 "type":"text"
 }
 ]
