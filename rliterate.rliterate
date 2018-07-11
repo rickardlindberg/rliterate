@@ -939,6 +939,16 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"When a child control re-renders itself, the current focus can be lost. If we don't re-focus the panel, no window will have focus and keyboard shortcuts will not work. (This one took me a few hours to figure out.)",
+"type":"text"
+}
+],
+"id":"1a381ec6a72c4c5fa4bf798f542ce60e",
+"type":"text"
+},
+{
 "id":"ecd0d38324a74c9ba453317c417e46ce",
 "path":[
 "rliterate.py",
