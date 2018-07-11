@@ -81,6 +81,10 @@ class ParagraphBase(Editable):
                 before_id=self.paragraph.next_id
             )
         )
+        menu.AppendItem(
+            "Duplicate",
+            lambda: self.paragraph.duplicate()
+        )
         menu.AppendSeparator()
         self.AddContextMenuItems(menu)
         menu.AppendSeparator()
@@ -1644,6 +1648,7 @@ class DocumentDictWrapper(dict):
             self._cache_page(child, page)
 
     def add_page_dict(self, page_dict, parent_id=None):
+        page_dict = copy.deepcopy(page_dict)
         parent_page = self._pages[parent_id]
         parent_page["children"].append(page_dict)
         self._pages[page_dict["id"]] = page_dict
@@ -1692,6 +1697,7 @@ class DocumentDictWrapper(dict):
         return self._paragraphs.values()
 
     def add_paragraph_dict(self, paragraph_dict, page_id, before_id):
+        paragraph_dict = copy.deepcopy(paragraph_dict)
         paragraphs = self._pages[page_id]["paragraphs"]
         if before_id is None:
             paragraphs.append(paragraph_dict)
@@ -1806,6 +1812,14 @@ class Paragraph(object):
     def move(self, target_page, before_paragraph):
         with self._document.modify("Move paragraph") as document_dict:
             document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
+
+    def duplicate(self):
+        with self._document.modify("Duplicate paragraph") as document_dict:
+            document_dict.add_paragraph_dict(
+                dict(self._paragraph_dict, id=genid()),
+                page_id=self._page.id,
+                before_id=self.next_id
+            )
 class TextParagraph(Paragraph):
 
     @property
