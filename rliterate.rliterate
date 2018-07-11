@@ -935,7 +935,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None, size=(920, 500))\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        self._panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(self._panel, self, project))\n        workspace = Workspace(self._panel, project)\n        toc = TableOfContents(self._panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self._panel.SetSizer(sizer)\n        return self._panel\n\n    <<MainFrame>>\n",
+"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(self, None, size=(920, 500))\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        self._panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(self._panel, project))\n        workspace = Workspace(self._panel, project)\n        toc = TableOfContents(self._panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self._panel.SetSizer(sizer)\n        return self._panel\n\n    <<MainFrame>>\n",
 "type":"code"
 },
 {
@@ -974,7 +974,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"editor_group = self._tool_groups.add_group(lambda: self.project.active_editor is not None)",
+"text":"editor_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is not None\n)\n",
 "type":"code"
 },
 {
@@ -1014,7 +1014,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.active_editor.Cancel(),\n    short_help=\"Cancel\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('C')),\n        (wx.ACCEL_CTRL, ord('G')),\n        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),\n    ]\n)\n",
+"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.active_editor.Cancel(),\n    short_help=\"Cancel\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('G')),\n        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),\n    ]\n)\n",
 "type":"code"
 }
 ],
@@ -1031,7 +1031,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"navigation_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)",
+"text":"navigation_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is None\n)",
 "type":"code"
 },
 {
@@ -1088,7 +1088,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"undo_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)",
+"text":"undo_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is None\n)",
 "type":"code"
 },
 {
@@ -1108,7 +1108,7 @@
 "<<classes>>",
 "<<ToolBar/__init__>>"
 ],
-"text":"undo_group.add_tool(\n    wx.ART_UNDO,\n    lambda: self.project.get_undo_operation()[1](),\n    short_help=lambda: \"Undo\" if self.project.get_undo_operation() is None else \"Undo '{}'\".format(self.project.get_undo_operation()[0]),\n    enabled_fn=lambda: self.project.get_undo_operation() is not None\n)\n",
+"text":"undo_group.add_tool(\n    wx.ART_UNDO,\n    lambda: self.project.get_undo_operation()[1](),\n    short_help=lambda: \"Undo\" if self.project.get_undo_operation() is None else \"Undo '{}'\".format(self.project.get_undo_operation()[0]),\n    enabled_fn=lambda: self.project.get_undo_operation() is not None,\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('Z')),\n    ]\n)\n",
 "type":"code"
 },
 {
@@ -1165,13 +1165,72 @@
 "id":"b311a34073564bc99fc72d44b3c74369",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"ToolBar",
+"type":"code"
+},
+{
+"text":" has two responsiblities:",
+"type":"text"
+}
+],
+"id":"1466531b26504cd19d768312fce9a4d4",
+"type":"text"
+},
+{
+"child_type":"ordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Populate itself with buttons appropriate to the project state.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Maintain the corresponding accelerator table (used for shortcuts).",
+"type":"text"
+}
+]
+}
+],
+"id":"957dd20eec664bd3994a2bf828ffde8e",
+"type":"list"
+},
+{
 "id":"c5e0fb1941dc421592abf8ccc5588916",
 "path":[
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, main_frame, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._tool_groups = ToolGroups(main_frame)\n        <<ToolBar/__init__>>\n        self.project_listener = Listener(\n            self._update,\n            \"document\", \"layout\", \"editor\"\n        )\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n\n    def _update(self, event):\n        self._tool_groups.update(self)\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self.project_listener = Listener(\n            lambda event: self._tool_groups.populate(self),\n            \"document\", \"layout\", \"editor\"\n        )\n        self._tool_groups = ToolGroups(parent)\n        <<ToolBar/__init__>>\n        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"ToolGroups",
+"type":"code"
+},
+{
+"text":" maintains a list of groups of tools that can be populated into a tool bar:",
+"type":"text"
+}
+],
+"id":"abc5280bcfe84f6fa24db9fb31e1ff6d",
+"type":"text"
 },
 {
 "id":"89f873d06e9042dd89e3e559503aa733",
@@ -1179,8 +1238,30 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def update(self, toolbar):\n        items = []\n        toolbar.ClearTools()\n        first = True\n        for group in self._tool_groups:\n            if group.is_active():\n                if not first:\n                    toolbar.AddSeparator()\n                first = False\n                group.create(toolbar)\n                items.extend(group.accelerator_entries())\n        toolbar.Realize()\n        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n",
+"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def populate(self, toolbar):\n        items = []\n        toolbar.ClearTools()\n        first = True\n        for group in self._tool_groups:\n            if group.is_active():\n                if not first:\n                    toolbar.AddSeparator()\n                first = False\n                group.populate(toolbar)\n                items.extend(group.accelerator_entries())\n        toolbar.Realize()\n        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"ToolGroup",
+"type":"code"
+},
+{
+"text":" maintains a list of tools that can be shown or not in the toolbar depending on the ",
+"type":"text"
+},
+{
+"text":"active_fn",
+"type":"code"
+},
+{
+"text":":",
+"type":"text"
+}
+],
+"id":"963e39d03d8645bab8dd840fb94bc2da",
+"type":"text"
 },
 {
 "id":"4c0f55d407844142a68600b960dac1aa",
@@ -1188,8 +1269,22 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ToolGroup(object):\n\n    def __init__(self, frame, active_fn=None):\n        self._tools = []\n        self._frame = frame\n        self._active_fn = active_fn\n\n    def add_tool(self, *args, **kwargs):\n        self._tools.append(Tool(self._frame, *args, **kwargs))\n\n    def is_active(self):\n        if self._active_fn is None:\n            return True\n        else:\n            return self._active_fn()\n\n    def accelerator_entries(self):\n        entries = []\n        for tool in self._tools:\n            entries.extend(tool.accelerator_entries())\n        return entries\n\n    def create(self, toolbar):\n        for tool in self._tools:\n            tool.create(toolbar)\n",
+"text":"class ToolGroup(object):\n\n    def __init__(self, frame, active_fn=None):\n        self._tools = []\n        self._frame = frame\n        self._active_fn = active_fn\n\n    def add_tool(self, *args, **kwargs):\n        self._tools.append(Tool(self._frame, *args, **kwargs))\n\n    def is_active(self):\n        if self._active_fn is None:\n            return True\n        else:\n            return self._active_fn()\n\n    def accelerator_entries(self):\n        entries = []\n        for tool in self._tools:\n            entries.extend(tool.accelerator_entries())\n        return entries\n\n    def populate(self, toolbar):\n        for tool in self._tools:\n            tool.populate(toolbar)\n",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"Tool",
+"type":"code"
+},
+{
+"text":" has information about a single tool and knows how to populate itselt in a tool bar:",
+"type":"text"
+}
+],
+"id":"41db7d30335d404aa1b2a3a324d0cfa4",
+"type":"text"
 },
 {
 "id":"7a0d10485c864d4582976b7d919e7c36",
@@ -1197,7 +1292,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Tool(object):\n\n    def __init__(self, frame, art, action_fn, short_help=\"\", enabled_fn=None, shortcuts=[]):\n        self.id = wx.NewId()\n        frame.Bind(wx.EVT_MENU, self._on_action, id=self.id)\n        self.art = art\n        self.short_help = short_help\n        self.action_fn = action_fn\n        self.enabled_fn = enabled_fn\n        self.shortcuts = shortcuts\n\n    def _on_action(self, event):\n        if self.action_fn is not None:\n            self.action_fn()\n\n    def _is_enabled(self):\n        if self.enabled_fn is None:\n            return True\n        else:\n            return self.enabled_fn()\n\n    def accelerator_entries(self):\n        return [(a, b, self.id) for (a, b) in self.shortcuts]\n\n    def create(self, toolbar):\n        toolbar.AddSimpleTool(\n            self.id,\n            wx.ArtProvider.GetBitmap(\n                self.art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        toolbar.EnableTool(self.id, self._is_enabled())\n        if callable(self.short_help):\n            text = self.short_help()\n        else:\n            text = self.short_help\n        toolbar.SetToolShortHelp(self.id, text)\n",
+"text":"class Tool(object):\n\n    def __init__(self, frame, art, action_fn, short_help=\"\", enabled_fn=None, shortcuts=[]):\n        self.id = wx.NewId()\n        frame.Bind(wx.EVT_MENU, self._on_action, id=self.id)\n        self.art = art\n        self.short_help = short_help\n        self.action_fn = action_fn\n        self.enabled_fn = enabled_fn\n        self.shortcuts = shortcuts\n\n    def _on_action(self, event):\n        if self.action_fn is not None:\n            self.action_fn()\n\n    def _is_enabled(self):\n        if self.enabled_fn is None:\n            return True\n        else:\n            return self.enabled_fn()\n\n    def accelerator_entries(self):\n        return [wx.AcceleratorEntry(a, b, self.id) for (a, b) in self.shortcuts]\n\n    def populate(self, toolbar):\n        toolbar.AddSimpleTool(\n            self.id,\n            wx.ArtProvider.GetBitmap(\n                self.art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        toolbar.EnableTool(self.id, self._is_enabled())\n        if callable(self.short_help):\n            text = self.short_help()\n        else:\n            text = self.short_help\n        if self.shortcuts:\n            text = \"{} ({})\".format(\n                text,\n                \" / \".join(x.ToString() for x in self.accelerator_entries())\n            )\n        toolbar.SetToolShortHelp(self.id, text)\n",
 "type":"code"
 }
 ],
@@ -4513,6 +4608,9 @@
 "child_type":"unordered",
 "children":[
 {
+"child_type":"unordered",
+"children":[
+{
 "child_type":null,
 "children":[],
 "fragments":[
@@ -4555,7 +4653,25 @@
 ],
 "fragments":[
 {
-"text":"Allow fonts to be customized",
+"text":"Fonts",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Keyboard shortcuts",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Allow configuration of",
 "type":"text"
 }
 ]
@@ -5025,16 +5141,6 @@
 "fragments":[
 {
 "text":"Can check if editor opened be more isolated?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Show keyboard shourtcuts in tooltops",
 "type":"text"
 }
 ]

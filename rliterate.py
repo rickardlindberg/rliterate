@@ -356,7 +356,7 @@ class MainFrame(wx.Frame):
     def _create_main_panel(self, filepath):
         self._panel = wx.Panel(self)
         project = Project(filepath)
-        self.SetToolBar(ToolBar(self._panel, self, project))
+        self.SetToolBar(ToolBar(self._panel, project))
         workspace = Workspace(self._panel, project)
         toc = TableOfContents(self._panel, project)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -371,10 +371,16 @@ class MainFrame(wx.Frame):
             self._panel.SetFocus()
 class ToolBar(wx.ToolBar):
 
-    def __init__(self, parent, main_frame, project, *args, **kwargs):
+    def __init__(self, parent, project, *args, **kwargs):
         wx.ToolBar.__init__(self, parent, *args, **kwargs)
-        self._tool_groups = ToolGroups(main_frame)
-        editor_group = self._tool_groups.add_group(lambda: self.project.active_editor is not None)
+        self.project_listener = Listener(
+            lambda event: self._tool_groups.populate(self),
+            "document", "layout", "editor"
+        )
+        self._tool_groups = ToolGroups(parent)
+        editor_group = self._tool_groups.add_group(
+            lambda: self.project.active_editor is not None
+        )
         editor_group.add_tool(
             wx.ART_FILE_SAVE,
             lambda: self.project.active_editor.Save(),
@@ -389,12 +395,13 @@ class ToolBar(wx.ToolBar):
             lambda: self.project.active_editor.Cancel(),
             short_help="Cancel",
             shortcuts=[
-                (wx.ACCEL_CTRL, ord('C')),
                 (wx.ACCEL_CTRL, ord('G')),
                 (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),
             ]
         )
-        navigation_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)
+        navigation_group = self._tool_groups.add_group(
+            lambda: self.project.active_editor is None
+        )
         navigation_group.add_tool(
             wx.ART_GO_BACK,
             lambda: self.project.back(),
@@ -407,12 +414,17 @@ class ToolBar(wx.ToolBar):
             short_help="Go forward",
             enabled_fn=lambda: self.project.can_forward()
         )
-        undo_group = self._tool_groups.add_group(lambda: self.project.active_editor is None)
+        undo_group = self._tool_groups.add_group(
+            lambda: self.project.active_editor is None
+        )
         undo_group.add_tool(
             wx.ART_UNDO,
             lambda: self.project.get_undo_operation()[1](),
             short_help=lambda: "Undo" if self.project.get_undo_operation() is None else "Undo '{}'".format(self.project.get_undo_operation()[0]),
-            enabled_fn=lambda: self.project.get_undo_operation() is not None
+            enabled_fn=lambda: self.project.get_undo_operation() is not None,
+            shortcuts=[
+                (wx.ACCEL_CTRL, ord('Z')),
+            ]
         )
         undo_group.add_tool(
             wx.ART_REDO,
@@ -429,18 +441,11 @@ class ToolBar(wx.ToolBar):
                 (wx.ACCEL_CTRL, ord('Q')),
             ]
         )
-        self.project_listener = Listener(
-            self._update,
-            "document", "layout", "editor"
-        )
         self.SetProject(project)
 
     def SetProject(self, project):
         self.project = project
         self.project_listener.set_observable(self.project)
-
-    def _update(self, event):
-        self._tool_groups.update(self)
 class ToolGroups(object):
 
     def __init__(self, frame):
@@ -452,7 +457,7 @@ class ToolGroups(object):
         self._tool_groups.append(group)
         return group
 
-    def update(self, toolbar):
+    def populate(self, toolbar):
         items = []
         toolbar.ClearTools()
         first = True
@@ -461,7 +466,7 @@ class ToolGroups(object):
                 if not first:
                     toolbar.AddSeparator()
                 first = False
-                group.create(toolbar)
+                group.populate(toolbar)
                 items.extend(group.accelerator_entries())
         toolbar.Realize()
         self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))
@@ -487,9 +492,9 @@ class ToolGroup(object):
             entries.extend(tool.accelerator_entries())
         return entries
 
-    def create(self, toolbar):
+    def populate(self, toolbar):
         for tool in self._tools:
-            tool.create(toolbar)
+            tool.populate(toolbar)
 class Tool(object):
 
     def __init__(self, frame, art, action_fn, short_help="", enabled_fn=None, shortcuts=[]):
@@ -512,9 +517,9 @@ class Tool(object):
             return self.enabled_fn()
 
     def accelerator_entries(self):
-        return [(a, b, self.id) for (a, b) in self.shortcuts]
+        return [wx.AcceleratorEntry(a, b, self.id) for (a, b) in self.shortcuts]
 
-    def create(self, toolbar):
+    def populate(self, toolbar):
         toolbar.AddSimpleTool(
             self.id,
             wx.ArtProvider.GetBitmap(
@@ -528,6 +533,11 @@ class Tool(object):
             text = self.short_help()
         else:
             text = self.short_help
+        if self.shortcuts:
+            text = "{} ({})".format(
+                text,
+                " / ".join(x.ToString() for x in self.accelerator_entries())
+            )
         toolbar.SetToolShortHelp(self.id, text)
 class TableOfContents(wx.Panel):
     def __init__(self, parent, project):
