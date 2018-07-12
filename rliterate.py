@@ -173,6 +173,7 @@ class TokenView(wx.Panel):
         self.skip_extra_space = kwargs.get("skip_extra_space", False)
         self._calculate_token_positions()
         self.Bind(wx.EVT_PAINT, self._on_paint)
+        self._default_cursor = self.GetCursor()
     def _calculate_token_positions(self):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
@@ -214,6 +215,8 @@ class TokenView(wx.Panel):
         for token, style, box in self.token_positions:
             if box.Contains(position):
                 return token
+    def SetDefaultCursor(self):
+        self.SetCursor(self._default_cursor)
 class CompactScrolledWindow(wx.ScrolledWindow):
 
     MIN_WIDTH = 200
@@ -1129,11 +1132,7 @@ class TextView(TokenView):
             move=self._on_mouse_move,
             click=self._on_click
         )
-        self.default_cursor = self.GetCursor()
         self.token = None
-
-    def SetDefaultCursor(self):
-        self.SetCursor(self.default_cursor)
 
     def _on_mouse_move(self, position):
         token = self.GetToken(position)

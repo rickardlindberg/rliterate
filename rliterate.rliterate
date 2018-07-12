@@ -2098,7 +2098,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.default_cursor = self.GetCursor()\n        self.token = None\n\n    def SetDefaultCursor(self):\n        self.SetCursor(self.default_cursor)\n\n    def _on_mouse_move(self, position):\n        token = self.GetToken(position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
+"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.token = None\n\n    def _on_mouse_move(self, position):\n        token = self.GetToken(position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)",
 "type":"code"
 },
 {
@@ -2737,6 +2737,33 @@
 {
 "fragments":[
 {
+"text":"The ",
+"type":"text"
+},
+{
+"text":"Token",
+"type":"code"
+},
+{
+"text":" class:",
+"type":"text"
+}
+],
+"id":"07b0bba6591049d09b863f470fccc782",
+"type":"text"
+},
+{
+"id":"75a8c2b60ac346e5be57b25dd5476f2d",
+"path":[
+"rliterate.py",
+"<<classes>>"
+],
+"text":"class Token(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token_type=TokenType.RLiterate, index=0, **extra):\n        self.text = text\n        self.token_type = token_type\n        self.extra = extra\n        self.index = index\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        index = self.index\n        subtokens = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    subtokens.append(self._replace_text(match.group(0), index))\n                    text = text[match.end(0):]\n                    index += len(match.group(0))\n        return subtokens\n\n    def _replace_text(self, text, index):\n        return Token(\n            text=text,\n            token_type=self.token_type,\n            index=index,\n            **self.extra\n        )\n",
+"type":"code"
+},
+{
+"fragments":[
+{
 "text":"Some mouse move action:",
 "type":"text"
 }
@@ -2755,12 +2782,34 @@
 "type":"code"
 },
 {
-"id":"75a8c2b60ac346e5be57b25dd5476f2d",
+"fragments":[
+{
+"text":"Cursor utilities:",
+"type":"text"
+}
+],
+"id":"c9b07488909047c68bf66ce3173af78a",
+"type":"text"
+},
+{
+"id":"ffc127ce05f14ea9924baad5d1009908",
 "path":[
 "rliterate.py",
-"<<classes>>"
+"<<base classes>>",
+"<<TokenView>>",
+"<<__init__>>"
 ],
-"text":"class Token(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token_type=TokenType.RLiterate, index=0, **extra):\n        self.text = text\n        self.token_type = token_type\n        self.extra = extra\n        self.index = index\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        index = self.index\n        subtokens = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    subtokens.append(self._replace_text(match.group(0), index))\n                    text = text[match.end(0):]\n                    index += len(match.group(0))\n        return subtokens\n\n    def _replace_text(self, text, index):\n        return Token(\n            text=text,\n            token_type=self.token_type,\n            index=index,\n            **self.extra\n        )\n",
+"text":"self._default_cursor = self.GetCursor()",
+"type":"code"
+},
+{
+"id":"1fa26d5bfc6040fd9cca7ebb87073987",
+"path":[
+"rliterate.py",
+"<<base classes>>",
+"<<TokenView>>"
+],
+"text":"def SetDefaultCursor(self):\n    self.SetCursor(self._default_cursor)",
 "type":"code"
 }
 ],
