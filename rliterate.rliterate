@@ -2044,6 +2044,20 @@
 ],
 "text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n        self._selection = (0, 0)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click_pos=lambda pos: self._post_edit_start_from_token_view(pos)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                self._selection = (start, start)\n            elif edge > 0:\n                self._selection = (start+len(token.text), start+len(token.text))\n            else:\n                self._selection = (start, start+len(token.text))\n        post_edit_start(self.view)\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        wx.CallAfter(lambda: edit.SetSelection(*self._selection))\n        return edit",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"wx.CallAfter",
+"type":"code"
+},
+{
+"text":" seems to be needed for the selection to actually be set. No idea why.",
+"type":"text"
+}
+],
+"id":"2f38ae9584e74c4ca6a18bcf9467dc76",
+"type":"text"
 }
 ],
 "title":"Title"
