@@ -2855,6 +2855,7 @@ def flicker_free_drawing(widget):
 def fragments_to_text(fragments):
     return fragments_to_text_with_index(fragments)[0]
 
+
 def fragments_to_text_with_index(fragments, fragment_index=0):
     formatters = {
         "emphasis":  lambda x: ("*{}*".format(x.text), 1),
