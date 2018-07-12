@@ -4366,11 +4366,14 @@
 "child_type":"unordered",
 "children":[
 {
+"child_type":"unordered",
+"children":[
+{
 "child_type":null,
 "children":[],
 "fragments":[
 {
-"text":"Tab indents with tab: should indent 4 spaces?",
+"text":"Figure out tab character automatically based on text",
 "type":"text"
 }
 ]
@@ -4380,7 +4383,25 @@
 "children":[],
 "fragments":[
 {
-"text":"Shift+Tab deletes: should dedent?",
+"text":"Default to 4 spaces",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Tab/Shift+Tab/Backspace should indent/dedent smart",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Enter should keep indentation",
 "type":"text"
 }
 ]
@@ -4417,8 +4438,19 @@
 ]
 },
 {
+"child_type":"unordered",
+"children":[
+{
 "child_type":null,
 "children":[],
+"fragments":[
+{
+"text":"This is partially done, but it is quite messy. Not sure how to best proceed.",
+"type":"text"
+}
+]
+}
+],
 "fragments":[
 {
 "text":"Highlight the word/fragment that is double clicked?",
