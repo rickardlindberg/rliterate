@@ -2153,7 +2153,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
+"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        if not hasattr(view, \"fragment\"):\n            self.SetSelection(0, 0)\n        elif view.fragment is None:\n            self.SetSelection(0, 0)\n        else:\n            index = paragraph.get_text_index(view.fragment.extra[\"fragment_index\"])\n            start = index + view.fragment.index\n            end = start + len(view.fragment.text)\n            self.SetSelection(start, end)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
 "type":"code"
 }
 ],
@@ -2760,7 +2760,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Fragment(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token=Token.RLiterate, **extra):\n        self.text = text\n        self.token = token\n        self.extra = extra\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        fragments = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    fragments.append(self._replace_text(match.group(0)))\n                    text = text[match.end(0):]\n        return fragments\n\n    def _replace_text(self, text):\n        return Fragment(text=text, token=self.token, **self.extra)\n",
+"text":"class Fragment(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token=Token.RLiterate, index=0, **extra):\n        self.text = text\n        self.token = token\n        self.extra = extra\n        self.index = index\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        index = self.index\n        fragments = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    fragments.append(self._replace_text(match.group(0), index))\n                    text = text[match.end(0):]\n                    index += len(match.group(0))\n        return fragments\n\n    def _replace_text(self, text, index):\n        return Fragment(\n            text=text,\n            token=self.token,\n            index=index,\n            **self.extra\n        )\n",
 "type":"code"
 }
 ],
@@ -2841,7 +2841,7 @@
 "rliterate.py",
 "<<base classes>>"
 ],
-"text":"class MultilineTextCtrl(wx.TextCtrl):\n\n    MIN_HEIGHT = 50\n\n    def __init__(self, parent, value, size=wx.DefaultSize):\n        w, h = size\n        size = (w, max(h, self.MIN_HEIGHT))\n        wx.TextCtrl.__init__(\n            self,\n            parent,\n            style=wx.TE_MULTILINE,\n            value=value,\n            size=size\n        )\n",
+"text":"class MultilineTextCtrl(wx.richtext.RichTextCtrl):\n\n    MIN_HEIGHT = 50\n\n    def __init__(self, parent, value, size=wx.DefaultSize):\n        w, h = size\n        size = (w, max(h, self.MIN_HEIGHT))\n        wx.richtext.RichTextCtrl.__init__(\n            self,\n            parent,\n            style=wx.richtext.RE_MULTILINE|wx.BORDER_SIMPLE,\n            value=value,\n            size=size\n        )",
 "type":"code"
 },
 {
@@ -2862,6 +2862,24 @@
 }
 ],
 "id":"3576819cf1444641a6f721127c50e4aa",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"The regular multiline text control does not seem to support ",
+"type":"text"
+},
+{
+"text":"SetSelection",
+"type":"code"
+},
+{
+"text":" very well, so we use the rich text control instead.",
+"type":"text"
+}
+],
+"id":"f84e15a551d74aad88ddb54893097ed1",
 "type":"text"
 }
 ],
@@ -3006,7 +3024,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})\n",
+"text":"class TextParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return fragments_to_formatted_text(self.fragments)\n\n    def get_text_index(self, fragment_index):\n        return fragments_to_text_with_index(\n            self.fragments,\n            fragment_index\n        )[1]\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})",
 "type":"code"
 },
 {
@@ -3015,7 +3033,16 @@
 "rliterate.py",
 "<<functions>>"
 ],
-"text":"def fragments_to_text(fragments):\n    formatters = {\n        \"emphasis\": lambda x: \"*{}*\".format(x.text),\n        \"code\": lambda x: \"`{}`\".format(x.text),\n        \"strong\": lambda x: \"**{}**\".format(x.text),\n        \"reference\": lambda x: \"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"),\n        \"link\": lambda x: \"[{}]({})\".format(x.text, x.url),\n    }\n    return \"\".join([\n        formatters.get(fragment.type, lambda x: x.text)(fragment)\n        for fragment\n        in fragments\n    ])\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)\n",
+"text":"def fragments_to_text(fragments):\n    return fragments_to_text_with_index(fragments)[0]\n\ndef fragments_to_text_with_index(fragments, fragment_index=0):\n    formatters = {\n        \"emphasis\":  lambda x: (\"*{}*\".format(x.text), 1),\n        \"code\":      lambda x: (\"`{}`\".format(x.text), 1),\n        \"strong\":    lambda x: (\"**{}**\".format(x.text), 2),\n        \"reference\": lambda x: (\"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"), 2),\n        \"link\":      lambda x: (\"[{}]({})\".format(x.text, x.url), 1),\n    }\n    parts = []\n    text_index = 0\n    text_len = 0\n    for index, fragment in enumerate(fragments):\n        text, offset = formatters.get(fragment.type, lambda x: (x.text, 0))(fragment)\n        if index == fragment_index:\n            text_index = text_len + offset\n        parts.append(text)\n        text_len += len(text)\n    return (\"\".join(parts), text_index)\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)",
+"type":"code"
+},
+{
+"id":"36cccc8258a949edb4fa46bf36a0b446",
+"path":[
+"rliterate.py",
+"<<functions>>"
+],
+"text":"def fragments_to_formatted_text(fragments):\n    xs = []\n    for index, fragment in enumerate(fragments):\n        x = fragment.formatted_text\n        x.extra[\"fragment_index\"] = index\n        xs.append(x)\n    return xs\n",
 "type":"code"
 }
 ],
@@ -3056,7 +3083,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._item_dict[\"fragments\"]\n        ]\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def formatted_text(self):\n        return [x.formatted_text for x in self.fragments]\n",
+"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._item_dict[\"fragments\"]\n        ]\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def formatted_text(self):\n        return fragments_to_formatted_text(self.fragments)\n",
 "type":"code"
 },
 {
@@ -3097,7 +3124,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ImageParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return [\n            fragment.formatted_text\n            for fragment\n            in self.fragments\n        ]\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})\n",
+"text":"class ImageParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return fragments_to_formatted_text(self.fragments)\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})\n",
 "type":"code"
 }
 ],
@@ -4086,7 +4113,7 @@
 "path":[
 "rliterate.py"
 ],
-"text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
+"text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
 "type":"code"
 },
 {

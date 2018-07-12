@@ -20,6 +20,7 @@ import copy
 import pygments.lexers
 from pygments.token import Token, STANDARD_TYPES
 import wx
+import wx.richtext
 import wx.lib.newevent
 
 
@@ -254,17 +255,17 @@ class CompactScrolledWindow(wx.ScrolledWindow):
 
     def ScrollToEnd(self):
         self.Scroll(*self.Size)
-class MultilineTextCtrl(wx.TextCtrl):
+class MultilineTextCtrl(wx.richtext.RichTextCtrl):
 
     MIN_HEIGHT = 50
 
     def __init__(self, parent, value, size=wx.DefaultSize):
         w, h = size
         size = (w, max(h, self.MIN_HEIGHT))
-        wx.TextCtrl.__init__(
+        wx.richtext.RichTextCtrl.__init__(
             self,
             parent,
-            style=wx.TE_MULTILINE,
+            style=wx.richtext.RE_MULTILINE|wx.BORDER_SIMPLE,
             value=value,
             size=size
         )
@@ -1155,6 +1156,15 @@ class TextEdit(MultilineTextCtrl):
             value=paragraph.text_version,
             size=(-1, view.Size[1])
         )
+        if not hasattr(view, "fragment"):
+            self.SetSelection(0, 0)
+        elif view.fragment is None:
+            self.SetSelection(0, 0)
+        else:
+            index = paragraph.get_text_index(view.fragment.extra["fragment_index"])
+            start = index + view.fragment.index
+            end = start + len(view.fragment.text)
+            self.SetSelection(start, end)
         self.Font = create_font(monospace=True)
         self.project = project
         self.paragraph = paragraph
@@ -1613,10 +1623,11 @@ class Fragment(object):
         re.compile(r"\S+"),
     ]
 
-    def __init__(self, text, token=Token.RLiterate, **extra):
+    def __init__(self, text, token=Token.RLiterate, index=0, **extra):
         self.text = text
         self.token = token
         self.extra = extra
+        self.index = index
 
     def is_newline(self):
         return self.text == "\n"
@@ -1625,18 +1636,25 @@ class Fragment(object):
         return re.match(r"^\s+$", self.text)
 
     def split(self):
+        index = self.index
         fragments = []
         text = self.text
         while text:
             for split_pattern in self.SPLIT_PATTERNS:
                 match = split_pattern.match(text)
                 if match:
-                    fragments.append(self._replace_text(match.group(0)))
+                    fragments.append(self._replace_text(match.group(0), index))
                     text = text[match.end(0):]
+                    index += len(match.group(0))
         return fragments
 
-    def _replace_text(self, text):
-        return Fragment(text=text, token=self.token, **self.extra)
+    def _replace_text(self, text, index):
+        return Fragment(
+            text=text,
+            token=self.token,
+            index=index,
+            **self.extra
+        )
 class Document(Observable):
     @classmethod
     def from_file(cls, path):
@@ -1918,11 +1936,13 @@ class TextParagraph(Paragraph):
 
     @property
     def formatted_text(self):
-        return [
-            fragment.formatted_text
-            for fragment
-            in self.fragments
-        ]
+        return fragments_to_formatted_text(self.fragments)
+
+    def get_text_index(self, fragment_index):
+        return fragments_to_text_with_index(
+            self.fragments,
+            fragment_index
+        )[1]
 
     @property
     def text_version(self):
@@ -1978,7 +1998,7 @@ class ListItem(object):
 
     @property
     def formatted_text(self):
-        return [x.formatted_text for x in self.fragments]
+        return fragments_to_formatted_text(self.fragments)
 class CodeParagraph(Paragraph):
 
     @property
@@ -2048,11 +2068,7 @@ class ImageParagraph(Paragraph):
 
     @property
     def formatted_text(self):
-        return [
-            fragment.formatted_text
-            for fragment
-            in self.fragments
-        ]
+        return fragments_to_formatted_text(self.fragments)
 
     @property
     def image_base64(self):
@@ -2843,22 +2859,37 @@ def flicker_free_drawing(widget):
     yield
     widget.Thaw()
 def fragments_to_text(fragments):
+    return fragments_to_text_with_index(fragments)[0]
+
+def fragments_to_text_with_index(fragments, fragment_index=0):
     formatters = {
-        "emphasis": lambda x: "*{}*".format(x.text),
-        "code": lambda x: "`{}`".format(x.text),
-        "strong": lambda x: "**{}**".format(x.text),
-        "reference": lambda x: "[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""),
-        "link": lambda x: "[{}]({})".format(x.text, x.url),
+        "emphasis":  lambda x: ("*{}*".format(x.text), 1),
+        "code":      lambda x: ("`{}`".format(x.text), 1),
+        "strong":    lambda x: ("**{}**".format(x.text), 2),
+        "reference": lambda x: ("[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""), 2),
+        "link":      lambda x: ("[{}]({})".format(x.text, x.url), 1),
     }
-    return "".join([
-        formatters.get(fragment.type, lambda x: x.text)(fragment)
-        for fragment
-        in fragments
-    ])
+    parts = []
+    text_index = 0
+    text_len = 0
+    for index, fragment in enumerate(fragments):
+        text, offset = formatters.get(fragment.type, lambda x: (x.text, 0))(fragment)
+        if index == fragment_index:
+            text_index = text_len + offset
+        parts.append(text)
+        text_len += len(text)
+    return ("".join(parts), text_index)
 
 
 def text_to_fragments(text):
     return LegacyInlineTextParser().parse(text)
+def fragments_to_formatted_text(fragments):
+    xs = []
+    for index, fragment in enumerate(fragments):
+        x = fragment.formatted_text
+        x.extra["fragment_index"] = index
+        xs.append(x)
+    return xs
 def list_to_text(paragraph):
     def list_item_to_text(child_type, item, indent=0, index=0):
         text = "    "*indent
