@@ -3,6 +3,8 @@
 .PHONY: test
 test:
 	py.test -vv
+	python rliterate.py rliterate.rliterate --diff > /dev/null
+	python rliterate.py rliterate.rliterate --html > /dev/null
 
 .PHONY: watch-test
 watch-test:

@@ -1921,7 +1921,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_FRAGMENT_CHANGED, self._on_hovered_fragment_changed)\n        self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)\n\n    def _on_hovered_fragment_changed(self, event):\n        if event.fragment is not None and event.fragment.token in [\n            Token.RLiterate.Link,\n            Token.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_fragment_click(self, event):\n        if self.project is None:\n            return\n        if event.fragment.token == Token.RLiterate.Reference:\n            open_pages_gui(self, self.project,\n                [event.fragment.extra[\"page_id\"]],\n                column_index=self.index+1\n            )\n        elif event.fragment.token == Token.RLiterate.Link:\n            webbrowser.open(event.fragment.extra[\"url\"])\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
+"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if self.project is None:\n            return\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            open_pages_gui(self, self.project,\n                [event.token.extra[\"page_id\"]],\n                column_index=self.index+1\n            )\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
 "type":"code"
 }
 ],
@@ -2042,7 +2042,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = RichTextDisplay(\n            self,\n            self.project,\n            [Fragment(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda: post_edit_start(view)\n        )\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        return edit\n",
+"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda: post_edit_start(view)\n        )\n        return view\n\n    def CreateEdit(self):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        return edit\n",
 "type":"code"
 }
 ],
@@ -2079,7 +2079,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.formatted_text,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
+"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.tokens,\n            self\n        )\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
 "type":"code"
 },
 {
@@ -2098,7 +2098,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextView(RichTextDisplay):\n\n    def __init__(self, parent, project, fragments, base, indented=0):\n        RichTextDisplay.__init__(\n            self,\n            parent,\n            project,\n            fragments,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.default_cursor = self.GetCursor()\n        self.fragment = None\n\n    def SetDefaultCursor(self):\n        self.SetCursor(self.default_cursor)\n\n    def _on_mouse_move(self, position):\n        fragment = self.GetFragment(position)\n        if fragment is not self.fragment:\n            self.fragment = fragment\n            post_hovered_fragment_changed(self, self.fragment)\n\n    def _on_click(self):\n        if self.fragment is not None:\n            post_fragment_click(self, self.fragment)\n",
+"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=base.ShowContextMenu,\n            double_click=lambda: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.default_cursor = self.GetCursor()\n        self.token = None\n\n    def SetDefaultCursor(self):\n        self.SetCursor(self.default_cursor)\n\n    def _on_mouse_move(self, position):\n        token = self.GetToken(position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
 "type":"code"
 },
 {
@@ -2107,7 +2107,7 @@
 "rliterate.py",
 "<<constants>>"
 ],
-"text":"FragmentClick, EVT_FRAGMENT_CLICK = wx.lib.newevent.NewCommandEvent()\n",
+"text":"TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()\n",
 "type":"code"
 },
 {
@@ -2116,7 +2116,7 @@
 "rliterate.py",
 "<<functions>>"
 ],
-"text":"def post_fragment_click(widget, fragment):\n    wx.PostEvent(widget, FragmentClick(0, widget=widget, fragment=fragment))\n",
+"text":"def post_token_click(widget, token):\n    wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))\n",
 "type":"code"
 },
 {
@@ -2125,7 +2125,7 @@
 "rliterate.py",
 "<<constants>>"
 ],
-"text":"HoveredFragmentChanged, EVT_HOVERED_FRAGMENT_CHANGED = wx.lib.newevent.NewCommandEvent()",
+"text":"HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()",
 "type":"code"
 },
 {
@@ -2134,7 +2134,7 @@
 "rliterate.py",
 "<<functions>>"
 ],
-"text":"def post_hovered_fragment_changed(widget, fragment):\n    wx.PostEvent(widget, HoveredFragmentChanged(0, widget=widget, fragment=fragment))\n",
+"text":"def post_hovered_token_changed(widget, token):\n    wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))\n",
 "type":"code"
 },
 {
@@ -2153,7 +2153,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        if not hasattr(view, \"fragment\"):\n            self.SetSelection(0, 0)\n        elif view.fragment is None:\n            self.SetSelection(0, 0)\n        else:\n            index = paragraph.get_text_index(view.fragment.extra[\"fragment_index\"])\n            start = index + view.fragment.index\n            end = start + len(view.fragment.text)\n            self.SetSelection(start, end)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
+"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        if not hasattr(view, \"token\"):\n            self.SetSelection(0, 0)\n        elif view.token is None:\n            self.SetSelection(0, 0)\n        else:\n            index = paragraph.get_text_index(view.token.extra[\"fragment_index\"])\n            start = index + view.token.index\n            end = start + len(view.token.text)\n            self.SetSelection(start, end)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
 "type":"code"
 }
 ],
@@ -2179,7 +2179,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
+"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
@@ -2205,7 +2205,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def add_items(self, view, sizer, items, child_type, indent=0):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*indent, 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    item.formatted_text,\n                    self,\n                    indented=self.INDENT*indent+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indent+1)\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return RichTextDisplay(\n            view,\n            self.project,\n            [Fragment(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
+"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def add_items(self, view, sizer, items, child_type, indent=0):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*indent, 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    item.tokens,\n                    self,\n                    indented=self.INDENT*indent+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indent+1)\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return TokenView(\n            view,\n            self.project,\n            [Token(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
 "type":"code"
 }
 ],
@@ -2240,7 +2240,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class CodeView(wx.Panel):\n\n    BORDER = 0\n    PADDING = 5\n\n    def __init__(self, parent, project, paragraph, base):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.base = base\n        self.Font = create_font(monospace=True)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        if paragraph.has_path:\n            self.vsizer.Add(\n                self._create_path(paragraph),\n                flag=wx.ALL|wx.EXPAND, border=self.BORDER\n            )\n        self.vsizer.Add(\n            self._create_code(paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n        self.SetBackgroundColour((243, 236, 219))\n\n    def _create_path(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((248, 241, 223))\n        text = RichTextDisplay(\n            panel,\n            self.project,\n            insert_between(\n                Fragment(\" / \"),\n                [Fragment(x, token=pygments.token.Token.RLiterate.Strong) for x in paragraph.path]\n            ),\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, text],\n            double_click=self._post_paragraph_edit_start,\n            drag=self.base.DoDragDrop,\n            right_click=self.base.ShowContextMenu\n        )\n        return panel\n\n    def _create_code(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((253, 246, 227))\n        body = RichTextDisplay(\n            panel,\n            self.project,\n            paragraph.formatted_text,\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, body],\n            double_click=self._post_paragraph_edit_start,\n            drag=self.Parent.DoDragDrop,\n            right_click=self.Parent.ShowContextMenu\n        )\n        return panel\n\n    def _post_paragraph_edit_start(self):\n        post_edit_start(self)\n",
+"text":"class CodeView(wx.Panel):\n\n    BORDER = 0\n    PADDING = 5\n\n    def __init__(self, parent, project, paragraph, base):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.base = base\n        self.Font = create_font(monospace=True)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        if paragraph.has_path:\n            self.vsizer.Add(\n                self._create_path(paragraph),\n                flag=wx.ALL|wx.EXPAND, border=self.BORDER\n            )\n        self.vsizer.Add(\n            self._create_code(paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n        self.SetBackgroundColour((243, 236, 219))\n\n    def _create_path(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((248, 241, 223))\n        text = TokenView(\n            panel,\n            self.project,\n            insert_between(\n                Token(\" / \"),\n                [Token(x, token_type=TokenType.RLiterate.Strong) for x in paragraph.path]\n            ),\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, text],\n            double_click=self._post_paragraph_edit_start,\n            drag=self.base.DoDragDrop,\n            right_click=self.base.ShowContextMenu\n        )\n        return panel\n\n    def _create_code(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((253, 246, 227))\n        body = TokenView(\n            panel,\n            self.project,\n            paragraph.tokens,\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n        panel.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [panel, body],\n            double_click=self._post_paragraph_edit_start,\n            drag=self.Parent.DoDragDrop,\n            right_click=self.Parent.ShowContextMenu\n        )\n        return panel\n\n    def _post_paragraph_edit_start(self):\n        post_edit_start(self)\n",
 "type":"code"
 },
 {
@@ -2303,7 +2303,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.formatted_text,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [view, bitmap],\n            double_click=lambda: post_edit_start(view),\n        )\n        return view\n\n    def CreateEdit(self):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
+"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [view, bitmap],\n            double_click=lambda: post_edit_start(view),\n        )\n        return view\n\n    def CreateEdit(self):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
 "type":"code"
 },
 {
@@ -2646,7 +2646,7 @@
 {
 "fragments":[
 {
-"text":"The rich text display widget displayes styled text fragments. It does so by drawing text on a DC.",
+"text":"The token view widget displays tokens with different styles. It does so by drawing text on a DC.",
 "type":"text"
 }
 ],
@@ -2659,7 +2659,7 @@
 "rliterate.py",
 "<<base classes>>"
 ],
-"text":"class RichTextDisplay(wx.Panel):\n    <<RichTextDisplay>>\n",
+"text":"class TokenView(wx.Panel):\n    <<TokenView>>\n",
 "type":"code"
 },
 {
@@ -2667,15 +2667,15 @@
 "path":[
 "rliterate.py",
 "<<base classes>>",
-"<<RichTextDisplay>>"
+"<<TokenView>>"
 ],
-"text":"def __init__(self, parent, project, fragments, **kwargs):\n    wx.Panel.__init__(self, parent)\n    self.project = project\n    self.fragments = fragments\n    self.line_height = kwargs.get(\"line_height\", 1)\n    self.max_width = kwargs.get(\"max_width\", 100)\n    self.skip_extra_space = kwargs.get(\"skip_extra_space\", False)\n    <<__init__>>\n",
+"text":"def __init__(self, parent, project, tokens, **kwargs):\n    wx.Panel.__init__(self, parent)\n    self.project = project\n    self.tokens = tokens\n    self.line_height = kwargs.get(\"line_height\", 1)\n    self.max_width = kwargs.get(\"max_width\", 100)\n    self.skip_extra_space = kwargs.get(\"skip_extra_space\", False)\n    <<__init__>>\n",
 "type":"code"
 },
 {
 "fragments":[
 {
-"text":"First, the text fragment positions are calculated. For that a DC is needed. But the positions need to be calculated before we can draw on the panel, so a temporary memory DC is created.",
+"text":"First, the token positions are calculated. For that a DC is needed. But the positions need to be calculated before we can draw on the panel, so a temporary memory DC is created.",
 "type":"text"
 }
 ],
@@ -2687,10 +2687,10 @@
 "path":[
 "rliterate.py",
 "<<base classes>>",
-"<<RichTextDisplay>>",
+"<<TokenView>>",
 "<<__init__>>"
 ],
-"text":"self._set_fragments()",
+"text":"self._calculate_token_positions()",
 "type":"code"
 },
 {
@@ -2698,15 +2698,15 @@
 "path":[
 "rliterate.py",
 "<<base classes>>",
-"<<RichTextDisplay>>"
+"<<TokenView>>"
 ],
-"text":"def _set_fragments(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    w, h = self._calculate_fragments(dc)\n    self.SetMinSize((w, h))\n\ndef _calculate_fragments(self, dc):\n    self.draw_fragments = []\n    x = 0\n    y = 0\n    max_x, max_y = dc.GetTextExtent(\"M\")\n    line_height_pixels = int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n    for fragment in self.fragments:\n        for subfragment in fragment.split():\n            if subfragment.is_newline():\n                x = 0\n                y += line_height_pixels\n                max_y = max(max_y, y)\n                continue\n            style = self.project.get_style(subfragment.token)\n            style.apply_to_wx_dc(dc, self.GetFont())\n            w, h = dc.GetTextExtent(subfragment.text)\n            if x > 0 and x+w > self.max_width:\n                x = 0\n                y += line_height_pixels\n            if x == 0 and self.skip_extra_space:\n                if self.draw_fragments and self.draw_fragments[-1][0].is_space():\n                    self.draw_fragments.pop(-1)\n                if subfragment.is_space():\n                    continue\n            self.draw_fragments.append((subfragment, style, wx.Rect(x, y, w, h)))\n            max_x = max(max_x, x+w)\n            max_y = max(max_y, y+line_height_pixels)\n            x += w\n    return (max_x, max_y)\n",
+"text":"def _calculate_token_positions(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.token_positions = []\n    x = 0\n    y = 0\n    max_x, max_y = dc.GetTextExtent(\"M\")\n    line_height_pixels = int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n    for token in self.tokens:\n        for subtoken in token.split():\n            if subtoken.is_newline():\n                x = 0\n                y += line_height_pixels\n                max_y = max(max_y, y)\n                continue\n            style = self.project.get_style(subtoken.token_type)\n            style.apply_to_wx_dc(dc, self.GetFont())\n            w, h = dc.GetTextExtent(subtoken.text)\n            if x > 0 and x+w > self.max_width:\n                x = 0\n                y += line_height_pixels\n            if x == 0 and self.skip_extra_space:\n                if self.token_positions and self.token_positions[-1][0].is_space():\n                    self.token_positions.pop(-1)\n                if subtoken.is_space():\n                    continue\n            self.token_positions.append((subtoken, style, wx.Rect(x, y, w, h)))\n            max_x = max(max_x, x+w)\n            max_y = max(max_y, y+line_height_pixels)\n            x += w\n    self.SetMinSize((max_x, max_y))\n",
 "type":"code"
 },
 {
 "fragments":[
 {
-"text":"Drawing the rich text is just a matter of drawing all fragments at the pre-calculated positions:",
+"text":"Drawing the tokens is just a matter of drawing all tokens at the pre-calculated positions:",
 "type":"text"
 }
 ],
@@ -2718,7 +2718,7 @@
 "path":[
 "rliterate.py",
 "<<base classes>>",
-"<<RichTextDisplay>>",
+"<<TokenView>>",
 "<<__init__>>"
 ],
 "text":"self.Bind(wx.EVT_PAINT, self._on_paint)",
@@ -2729,9 +2729,9 @@
 "path":[
 "rliterate.py",
 "<<base classes>>",
-"<<RichTextDisplay>>"
+"<<TokenView>>"
 ],
-"text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for fragment, style, box in self.draw_fragments:\n        style.apply_to_wx_dc(dc, self.GetFont())\n        dc.DrawText(fragment.text, box.X, box.Y)\n",
+"text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for token, style, box in self.token_positions:\n        style.apply_to_wx_dc(dc, self.GetFont())\n        dc.DrawText(token.text, box.X, box.Y)\n",
 "type":"code"
 },
 {
@@ -2749,9 +2749,9 @@
 "path":[
 "rliterate.py",
 "<<base classes>>",
-"<<RichTextDisplay>>"
+"<<TokenView>>"
 ],
-"text":"def GetFragment(self, position):\n    for fragment, style, box in self.draw_fragments:\n        if box.Contains(position):\n            return fragment\n",
+"text":"def GetToken(self, position):\n    for token, style, box in self.token_positions:\n        if box.Contains(position):\n            return token\n",
 "type":"code"
 },
 {
@@ -2760,11 +2760,11 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class Fragment(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token=Token.RLiterate, index=0, **extra):\n        self.text = text\n        self.token = token\n        self.extra = extra\n        self.index = index\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        index = self.index\n        fragments = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    fragments.append(self._replace_text(match.group(0), index))\n                    text = text[match.end(0):]\n                    index += len(match.group(0))\n        return fragments\n\n    def _replace_text(self, text, index):\n        return Fragment(\n            text=text,\n            token=self.token,\n            index=index,\n            **self.extra\n        )\n",
+"text":"class Token(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token_type=TokenType.RLiterate, index=0, **extra):\n        self.text = text\n        self.token_type = token_type\n        self.extra = extra\n        self.index = index\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        index = self.index\n        subtokens = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    subtokens.append(self._replace_text(match.group(0), index))\n                    text = text[match.end(0):]\n                    index += len(match.group(0))\n        return subtokens\n\n    def _replace_text(self, text, index):\n        return Token(\n            text=text,\n            token_type=self.token_type,\n            index=index,\n            **self.extra\n        )\n",
 "type":"code"
 }
 ],
-"title":"Rich text display"
+"title":"Token view"
 },
 {
 "children":[],
@@ -3024,7 +3024,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return fragments_to_formatted_text(self.fragments)\n\n    def get_text_index(self, fragment_index):\n        return fragments_to_text_with_index(\n            self.fragments,\n            fragment_index\n        )[1]\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})",
+"text":"class TextParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return TextFragment.create_list(self._document, self._paragraph_dict[\"fragments\"])\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.fragments]\n\n    def get_text_index(self, fragment_index):\n        return fragments_to_text_with_index(\n            self.fragments,\n            fragment_index\n        )[1]\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})",
 "type":"code"
 },
 {
@@ -3034,15 +3034,6 @@
 "<<functions>>"
 ],
 "text":"def fragments_to_text(fragments):\n    return fragments_to_text_with_index(fragments)[0]\n\ndef fragments_to_text_with_index(fragments, fragment_index=0):\n    formatters = {\n        \"emphasis\":  lambda x: (\"*{}*\".format(x.text), 1),\n        \"code\":      lambda x: (\"`{}`\".format(x.text), 1),\n        \"strong\":    lambda x: (\"**{}**\".format(x.text), 2),\n        \"reference\": lambda x: (\"[[{}{}]]\".format(x.page_id, \":{}\".format(x.text) if x.text else \"\"), 2),\n        \"link\":      lambda x: (\"[{}]({})\".format(x.text, x.url), 1),\n    }\n    parts = []\n    text_index = 0\n    text_len = 0\n    for index, fragment in enumerate(fragments):\n        text, offset = formatters.get(fragment.type, lambda x: (x.text, 0))(fragment)\n        if index == fragment_index:\n            text_index = text_len + offset\n        parts.append(text)\n        text_len += len(text)\n    return (\"\".join(parts), text_index)\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)",
-"type":"code"
-},
-{
-"id":"36cccc8258a949edb4fa46bf36a0b446",
-"path":[
-"rliterate.py",
-"<<functions>>"
-],
-"text":"def fragments_to_formatted_text(fragments):\n    xs = []\n    for index, fragment in enumerate(fragments):\n        x = fragment.formatted_text\n        x.extra[\"fragment_index\"] = index\n        xs.append(x)\n    return xs\n",
 "type":"code"
 }
 ],
@@ -3083,7 +3074,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._item_dict[\"fragments\"]\n        ]\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def formatted_text(self):\n        return fragments_to_formatted_text(self.fragments)\n",
+"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def fragments(self):\n        return TextFragment.create_list(self._document, self._item_dict[\"fragments\"])\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.fragments]\n",
 "type":"code"
 },
 {
@@ -3108,7 +3099,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class CodeParagraph(Paragraph):\n\n    @property\n    def text_version(self):\n        return self.text\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"text\": value})\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._tokens_to_fragments(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(\"\".join(self.path)) > 0\n\n    @property\n    def path(self):\n        return tuple(self._paragraph_dict[\"path\"])\n\n    @property\n    def filename(self):\n        last_part = \"\"\n        for part in self.path:\n            if part.startswith(\"<<\"):\n                break\n            last_part = part\n        return os.path.basename(last_part)\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _tokens_to_fragments(self, tokens):\n        fragments = []\n        for token, text in tokens:\n            fragments.append(Fragment(text, token=token))\n        return fragments\n",
+"text":"class CodeParagraph(Paragraph):\n\n    @property\n    def text_version(self):\n        return self.text\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"text\": value})\n\n    @property\n    def text(self):\n        return self._paragraph_dict[\"text\"]\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._pygments_tokens_to_tokens(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(\"\".join(self.path)) > 0\n\n    @property\n    def path(self):\n        return tuple(self._paragraph_dict[\"path\"])\n\n    @property\n    def filename(self):\n        last_part = \"\"\n        for part in self.path:\n            if part.startswith(\"<<\"):\n                break\n            last_part = part\n        return os.path.basename(last_part)\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens):\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            tokens.append(Token(text, token_type=pygments_token))\n        return tokens\n",
 "type":"code"
 }
 ],
@@ -3124,7 +3115,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ImageParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return [\n            TextFragment.create(self._document, fragment)\n            for fragment\n            in self._paragraph_dict[\"fragments\"]\n        ]\n\n    @property\n    def formatted_text(self):\n        return fragments_to_formatted_text(self.fragments)\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})\n",
+"text":"class ImageParagraph(Paragraph):\n\n    @property\n    def fragments(self):\n        return TextFragment.create_list(self._document, self._paragraph_dict[\"fragments\"])\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.fragments]\n\n    @property\n    def image_base64(self):\n        return self._paragraph_dict.get(\"image_base64\", None)\n\n    @property\n    def text_version(self):\n        return fragments_to_text(self.fragments)\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": text_to_fragments(value)})\n",
 "type":"code"
 }
 ],
@@ -3167,7 +3158,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class StrongTextFragment(TextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Strong)",
+"text":"class StrongTextFragment(TextFragment):\n\n    @property\n    def token(self):\n        return Token(self.text, token_type=TokenType.RLiterate.Strong, fragment_index=self._index)",
 "type":"code"
 }
 ],
@@ -3183,7 +3174,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class EmphasisTextFragment(TextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Emphasis)",
+"text":"class EmphasisTextFragment(TextFragment):\n\n    @property\n    def token(self):\n        return Token(self.text, token_type=TokenType.RLiterate.Emphasis, fragment_index=self._index)",
 "type":"code"
 }
 ],
@@ -3199,7 +3190,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class CodeTextFragment(TextFragment):\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text, token=Token.RLiterate.Code)",
+"text":"class CodeTextFragment(TextFragment):\n\n    @property\n    def token(self):\n        return Token(self.text, token_type=TokenType.RLiterate.Code, fragment_index=self._index)",
 "type":"code"
 }
 ],
@@ -3215,7 +3206,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class ReferenceTextFragment(TextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self._document.get_page(self.page_id) is not None:\n            return self._document.get_page(self.page_id).title\n        return self.page_id\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Reference, page_id=self.page_id)",
+"text":"class ReferenceTextFragment(TextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self._document.get_page(self.page_id) is not None:\n            return self._document.get_page(self.page_id).title\n        return self.page_id\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Reference, page_id=self.page_id, fragment_index=self._index)",
 "type":"code"
 }
 ],
@@ -3231,7 +3222,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class LinkTextFragment(TextFragment):\n\n    @property\n    def url(self):\n        return self._text_fragment_dict[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.title, token=Token.RLiterate.Link, url=self.url)",
+"text":"class LinkTextFragment(TextFragment):\n\n    @property\n    def url(self):\n        return self._text_fragment_dict[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)",
 "type":"code"
 }
 ],
@@ -3246,7 +3237,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class TextFragment(object):\n\n    @staticmethod\n    def create(document, text_fragment_dict):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict)\n\n    def __init__(self, document, text_fragment_dict):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def formatted_text(self):\n        return Fragment(self.text)\n",
+"text":"class TextFragment(object):\n\n    @staticmethod\n    def create_list(document, text_fragment_dicts):\n        return [\n            TextFragment.create(document, text_fragment_dict, index)\n            for index, text_fragment_dict\n            in enumerate(text_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, text_fragment_dict, index):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict, index)\n\n    def __init__(self, document, text_fragment_dict, index):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n        self._index = index\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def token(self):\n        return Token(self.text, fragment_index=self._index)\n",
 "type":"code"
 }
 ],
@@ -3745,7 +3736,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n\n    styles = {\n        Token:                     Style(color=base00),\n        Token.Keyword:             Style(color=green),\n        Token.Keyword.Constant:    Style(color=cyan),\n        Token.Keyword.Declaration: Style(color=blue),\n        Token.Keyword.Namespace:   Style(color=orange),\n        Token.Name.Builtin:        Style(color=red),\n        Token.Name.Builtin.Pseudo: Style(color=blue),\n        Token.Name.Class:          Style(color=blue),\n        Token.Name.Decorator:      Style(color=blue),\n        Token.Name.Entity:         Style(color=violet),\n        Token.Name.Exception:      Style(color=yellow),\n        Token.Name.Function:       Style(color=blue),\n        Token.String:              Style(color=cyan),\n        Token.Number:              Style(color=cyan),\n        Token.Operator.Word:       Style(color=green),\n        Token.Comment:             Style(color=base1),\n        Token.RLiterate:           Style(color=text),\n        Token.RLiterate.Emphasis:  Style(color=text, italic=True),\n        Token.RLiterate.Strong:    Style(color=text, bold=True),\n        Token.RLiterate.Code:      Style(color=text, monospace=True),\n        Token.RLiterate.Link:      Style(color=blue, underlined=True),\n        Token.RLiterate.Reference: Style(color=blue, italic=True),\n    }\n",
+"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n\n    styles = {\n        TokenType:                     Style(color=base00),\n        TokenType.Keyword:             Style(color=green),\n        TokenType.Keyword.Constant:    Style(color=cyan),\n        TokenType.Keyword.Declaration: Style(color=blue),\n        TokenType.Keyword.Namespace:   Style(color=orange),\n        TokenType.Name.Builtin:        Style(color=red),\n        TokenType.Name.Builtin.Pseudo: Style(color=blue),\n        TokenType.Name.Class:          Style(color=blue),\n        TokenType.Name.Decorator:      Style(color=blue),\n        TokenType.Name.Entity:         Style(color=violet),\n        TokenType.Name.Exception:      Style(color=yellow),\n        TokenType.Name.Function:       Style(color=blue),\n        TokenType.String:              Style(color=cyan),\n        TokenType.Number:              Style(color=cyan),\n        TokenType.Operator.Word:       Style(color=green),\n        TokenType.Comment:             Style(color=base1),\n        TokenType.RLiterate:           Style(color=text),\n        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),\n        TokenType.RLiterate.Strong:    Style(color=text, bold=True),\n        TokenType.RLiterate.Code:      Style(color=text, monospace=True),\n        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),\n        TokenType.RLiterate.Reference: Style(color=blue, italic=True),\n    }\n",
 "type":"code"
 }
 ],
@@ -3904,7 +3895,7 @@
 "rliterate.py",
 "<<classes>>"
 ],
-"text":"class HTMLBuilder(object):\n\n    def __init__(self, document, **options):\n        self.document = document\n        self.parts = []\n        self.generate_toc = options.get(\"generate_toc\", True)\n        self.toc_max_depth = options.get(\"toc_max_depth\", 3)\n\n    def build(self):\n        self.page(self.document.get_page())\n        return \"\".join(self.parts)\n\n    def toc(self, root_page, levels_left):\n        if levels_left > 0 and root_page.children:\n            with self.tag(\"ul\", newlines=False):\n                for page in root_page.children:\n                    with self.tag(\"li\"):\n                        with self.tag(\"a\", args={\"href\": \"#{}\".format(page.id)}):\n                            self.escaped(page.title)\n                        self.toc(page, levels_left - 1)\n\n    def page(self, page, level=1):\n        with self.tag(self.header_tag(level)):\n            with self.tag(\"a\", newlines=False, args={\"name\": page.id}):\n                pass\n            self.escaped(page.title)\n        for paragraph in page.paragraphs:\n            {\n                \"text\": self.paragraph_text,\n                \"quote\": self.paragraph_quote,\n                \"list\": self.paragraph_list,\n                \"code\": self.paragraph_code,\n                \"image\": self.paragraph_image,\n            }.get(paragraph.type, self.paragraph_unknown)(paragraph)\n        if level == 1 and self.generate_toc:\n            self.toc(page, self.toc_max_depth)\n        for child in page.children:\n            self.page(child, level+1)\n\n    def header_tag(self, level):\n        if level > 6:\n            return \"b\"\n        else:\n            return \"h{}\".format(level)\n\n    def paragraph_text(self, text):\n        with self.tag(\"p\"):\n            self.fragments(text.formatted_text)\n\n    def paragraph_quote(self, text):\n        with self.tag(\"blockquote\"):\n            self.fragments(text.formatted_text)\n\n    def paragraph_list(self, paragraph):\n        self.list(paragraph)\n\n    def list(self, a_list):\n        if a_list.children:\n            with self.tag({\"ordered\": \"ol\"}.get(a_list.child_type, \"ul\")):\n                for item in a_list.children:\n                    with self.tag(\"li\"):\n                        self.fragments(item.formatted_text)\n                        self.list(item)\n\n    def fragments(self, fragments):\n        for fragment in fragments:\n            {\n                Token.RLiterate.Emphasis: self.fragment_emphasis,\n                Token.RLiterate.Strong: self.fragment_strong,\n                Token.RLiterate.Code: self.fragment_code,\n                Token.RLiterate.Link: self.fragment_link,\n                Token.RLiterate.Reference: self.fragment_reference,\n            }.get(fragment.token, self.fragment_default)(fragment)\n\n    def fragment_emphasis(self, fragment):\n        with self.tag(\"em\", newlines=False):\n            self.escaped(fragment.text)\n\n    def fragment_strong(self, fragment):\n        with self.tag(\"strong\", newlines=False):\n            self.escaped(fragment.text)\n\n    def fragment_code(self, fragment):\n        with self.tag(\"code\", newlines=False):\n            self.escaped(fragment.text)\n\n    def fragment_link(self, fragment):\n        with self.tag(\"a\", args={\"href\": fragment.extra[\"url\"]}, newlines=False):\n            self.escaped(fragment.text)\n\n    def fragment_reference(self, fragment):\n        with self.tag(\"a\", args={\"href\": \"#{}\".format(fragment.extra[\"page_id\"])}, newlines=False):\n            with self.tag(\"em\", newlines=False):\n                self.escaped(fragment.text)\n\n    def fragment_default(self, fragment):\n        self.escaped(fragment.text)\n\n    def paragraph_code(self, code):\n        if code.has_path:\n            with self.tag(\"div\", args={\"class\": \"rliterate-code-header\"}):\n                with self.tag(\"p\", newlines=False):\n                    self.escaped(\" / \".join(code.path))\n        with self.tag(\"div\", args={\"class\": \"rliterate-code-body\"}):\n            with self.tag(\"pre\", newlines=False):\n                for fragment in code.formatted_text:\n                    with self.tag(\n                        \"span\",\n                        newlines=False,\n                        args={\"class\": STANDARD_TYPES.get(fragment.token, \"\")}\n                    ):\n                        self.escaped(fragment.text)\n\n    def paragraph_image(self, paragraph):\n        with self.tag(\"div\", args={\"class\": \"rliterate-image\"}):\n            with self.tag(\"img\", args={\n                \"src\": \"data:image/png;base64,{}\".format(paragraph.image_base64)\n            }):\n                pass\n        with self.tag(\"div\", args={\"class\": \"rliterate-image-text\"}):\n            with self.tag(\"p\"):\n                self.fragments(paragraph.formatted_text)\n\n    def paragraph_unknown(self, paragraph):\n        with self.tag(\"p\"):\n            self.escaped(\"Unknown paragraph...\")\n\n    @contextlib.contextmanager\n    def tag(self, tag, newlines=True, args={}):\n        args_string = \"\"\n        if args:\n            args_string = \" \" + \" \".join(\"{}=\\\"{}\\\"\".format(k, v) for k, v in args.items())\n        self.raw(\"<{}{}>\".format(tag, args_string))\n        yield\n        self.raw(\"</{}>\".format(tag))\n        if newlines:\n            self.raw(\"\\n\\n\")\n\n    def raw(self, text):\n        self.parts.append(text)\n\n    def escaped(self, text):\n        self.parts.append(xml.sax.saxutils.escape(text))\n",
+"text":"class HTMLBuilder(object):\n\n    def __init__(self, document, **options):\n        self.document = document\n        self.parts = []\n        self.generate_toc = options.get(\"generate_toc\", True)\n        self.toc_max_depth = options.get(\"toc_max_depth\", 3)\n\n    def build(self):\n        self.page(self.document.get_page())\n        return \"\".join(self.parts)\n\n    def toc(self, root_page, levels_left):\n        if levels_left > 0 and root_page.children:\n            with self.tag(\"ul\", newlines=False):\n                for page in root_page.children:\n                    with self.tag(\"li\"):\n                        with self.tag(\"a\", args={\"href\": \"#{}\".format(page.id)}):\n                            self.escaped(page.title)\n                        self.toc(page, levels_left - 1)\n\n    def page(self, page, level=1):\n        with self.tag(self.header_tag(level)):\n            with self.tag(\"a\", newlines=False, args={\"name\": page.id}):\n                pass\n            self.escaped(page.title)\n        for paragraph in page.paragraphs:\n            {\n                \"text\": self.paragraph_text,\n                \"quote\": self.paragraph_quote,\n                \"list\": self.paragraph_list,\n                \"code\": self.paragraph_code,\n                \"image\": self.paragraph_image,\n            }.get(paragraph.type, self.paragraph_unknown)(paragraph)\n        if level == 1 and self.generate_toc:\n            self.toc(page, self.toc_max_depth)\n        for child in page.children:\n            self.page(child, level+1)\n\n    def header_tag(self, level):\n        if level > 6:\n            return \"b\"\n        else:\n            return \"h{}\".format(level)\n\n    def paragraph_text(self, text):\n        with self.tag(\"p\"):\n            self.tokens(text.tokens)\n\n    def paragraph_quote(self, text):\n        with self.tag(\"blockquote\"):\n            self.tokens(text.tokens)\n\n    def paragraph_list(self, paragraph):\n        self.list(paragraph)\n\n    def list(self, a_list):\n        if a_list.children:\n            with self.tag({\"ordered\": \"ol\"}.get(a_list.child_type, \"ul\")):\n                for item in a_list.children:\n                    with self.tag(\"li\"):\n                        self.tokens(item.tokens)\n                        self.list(item)\n\n    def tokens(self, tokens):\n        for token in tokens:\n            {\n                TokenType.RLiterate.Emphasis: self.token_emphasis,\n                TokenType.RLiterate.Strong: self.token_strong,\n                TokenType.RLiterate.Code: self.token_code,\n                TokenType.RLiterate.Link: self.token_link,\n                TokenType.RLiterate.Reference: self.token_reference,\n            }.get(token.token_type, self.token_default)(token)\n\n    def token_emphasis(self, token):\n        with self.tag(\"em\", newlines=False):\n            self.escaped(token.text)\n\n    def token_strong(self, token):\n        with self.tag(\"strong\", newlines=False):\n            self.escaped(token.text)\n\n    def token_code(self, token):\n        with self.tag(\"code\", newlines=False):\n            self.escaped(token.text)\n\n    def token_link(self, token):\n        with self.tag(\"a\", args={\"href\": token.extra[\"url\"]}, newlines=False):\n            self.escaped(token.text)\n\n    def token_reference(self, token):\n        with self.tag(\"a\", args={\"href\": \"#{}\".format(token.extra[\"page_id\"])}, newlines=False):\n            with self.tag(\"em\", newlines=False):\n                self.escaped(token.text)\n\n    def token_default(self, token):\n        self.escaped(token.text)\n\n    def paragraph_code(self, code):\n        if code.has_path:\n            with self.tag(\"div\", args={\"class\": \"rliterate-code-header\"}):\n                with self.tag(\"p\", newlines=False):\n                    self.escaped(\" / \".join(code.path))\n        with self.tag(\"div\", args={\"class\": \"rliterate-code-body\"}):\n            with self.tag(\"pre\", newlines=False):\n                for token in code.tokens:\n                    with self.tag(\n                        \"span\",\n                        newlines=False,\n                        args={\"class\": pygments.token.STANDARD_TYPES.get(token.token_type, \"\")}\n                    ):\n                        self.escaped(token.text)\n\n    def paragraph_image(self, paragraph):\n        with self.tag(\"div\", args={\"class\": \"rliterate-image\"}):\n            with self.tag(\"img\", args={\n                \"src\": \"data:image/png;base64,{}\".format(paragraph.image_base64)\n            }):\n                pass\n        with self.tag(\"div\", args={\"class\": \"rliterate-image-text\"}):\n            with self.tag(\"p\"):\n                self.tokens(paragraph.tokens)\n\n    def paragraph_unknown(self, paragraph):\n        with self.tag(\"p\"):\n            self.escaped(\"Unknown paragraph...\")\n\n    @contextlib.contextmanager\n    def tag(self, tag, newlines=True, args={}):\n        args_string = \"\"\n        if args:\n            args_string = \" \" + \" \".join(\"{}=\\\"{}\\\"\".format(k, v) for k, v in args.items())\n        self.raw(\"<{}{}>\".format(tag, args_string))\n        yield\n        self.raw(\"</{}>\".format(tag))\n        if newlines:\n            self.raw(\"\\n\\n\")\n\n    def raw(self, text):\n        self.parts.append(text)\n\n    def escaped(self, text):\n        self.parts.append(xml.sax.saxutils.escape(text))\n",
 "type":"code"
 }
 ],
@@ -4113,7 +4104,7 @@
 "path":[
 "rliterate.py"
 ],
-"text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nfrom pygments.token import Token, STANDARD_TYPES\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
+"text":"# This file is automatically extracted from rliterate.rliterate.\n\n\nfrom collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n\n\n<<constants>>\n<<base classes 1>>\n<<base classes>>\n<<classes>>\n<<functions>>\n\n\nif __name__ == \"__main__\":\n    if sys.argv[2:] == [\"--html\"]:\n        sys.stdout.write(HTMLBuilder(Document.from_file(sys.argv[1])).build())\n    elif sys.argv[2:] == [\"--diff\"]:\n        sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())\n    else:\n        app = wx.App()\n        main_frame = MainFrame(filepath=sys.argv[1])\n        main_frame.Show()\n        app.MainLoop()\n",
 "type":"code"
 },
 {
@@ -4129,7 +4120,7 @@
 "path":[
 "Makefile"
 ],
-"text":"# This file is automatically extracted from rliterate.rliterate.\n\n.PHONY: test\ntest:\n\tpy.test -vv\n\n.PHONY: watch-test\nwatch-test:\n\tinotifywait -m -e close_write *rliterate.py 2>&1 | while read x; do tput reset && make test; done\n",
+"text":"# This file is automatically extracted from rliterate.rliterate.\n\n.PHONY: test\ntest:\n\tpy.test -vv\n\tpython rliterate.py rliterate.rliterate --diff > /dev/null\n\tpython rliterate.py rliterate.rliterate --html > /dev/null\n\n.PHONY: watch-test\nwatch-test:\n\tinotifywait -m -e close_write *rliterate.py 2>&1 | while read x; do tput reset && make test; done\n",
 "type":"code"
 }
 ],

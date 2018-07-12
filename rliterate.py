@@ -18,14 +18,15 @@ import base64
 import copy
 
 import pygments.lexers
-from pygments.token import Token, STANDARD_TYPES
+import pygments.token
+from pygments.token import Token as TokenType
 import wx
 import wx.richtext
 import wx.lib.newevent
 
 
-FragmentClick, EVT_FRAGMENT_CLICK = wx.lib.newevent.NewCommandEvent()
-HoveredFragmentChanged, EVT_HOVERED_FRAGMENT_CHANGED = wx.lib.newevent.NewCommandEvent()
+TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
+HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
 EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 PAGE_BODY_WIDTH = 600
 PAGE_PADDING = 13
@@ -162,61 +163,57 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class RichTextDisplay(wx.Panel):
-    def __init__(self, parent, project, fragments, **kwargs):
+class TokenView(wx.Panel):
+    def __init__(self, parent, project, tokens, **kwargs):
         wx.Panel.__init__(self, parent)
         self.project = project
-        self.fragments = fragments
+        self.tokens = tokens
         self.line_height = kwargs.get("line_height", 1)
         self.max_width = kwargs.get("max_width", 100)
         self.skip_extra_space = kwargs.get("skip_extra_space", False)
-        self._set_fragments()
+        self._calculate_token_positions()
         self.Bind(wx.EVT_PAINT, self._on_paint)
-    def _set_fragments(self):
+    def _calculate_token_positions(self):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
         dc.SelectObject(wx.EmptyBitmap(1, 1))
-        w, h = self._calculate_fragments(dc)
-        self.SetMinSize((w, h))
-
-    def _calculate_fragments(self, dc):
-        self.draw_fragments = []
+        self.token_positions = []
         x = 0
         y = 0
         max_x, max_y = dc.GetTextExtent("M")
         line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self.line_height))
-        for fragment in self.fragments:
-            for subfragment in fragment.split():
-                if subfragment.is_newline():
+        for token in self.tokens:
+            for subtoken in token.split():
+                if subtoken.is_newline():
                     x = 0
                     y += line_height_pixels
                     max_y = max(max_y, y)
                     continue
-                style = self.project.get_style(subfragment.token)
+                style = self.project.get_style(subtoken.token_type)
                 style.apply_to_wx_dc(dc, self.GetFont())
-                w, h = dc.GetTextExtent(subfragment.text)
+                w, h = dc.GetTextExtent(subtoken.text)
                 if x > 0 and x+w > self.max_width:
                     x = 0
                     y += line_height_pixels
                 if x == 0 and self.skip_extra_space:
-                    if self.draw_fragments and self.draw_fragments[-1][0].is_space():
-                        self.draw_fragments.pop(-1)
-                    if subfragment.is_space():
+                    if self.token_positions and self.token_positions[-1][0].is_space():
+                        self.token_positions.pop(-1)
+                    if subtoken.is_space():
                         continue
-                self.draw_fragments.append((subfragment, style, wx.Rect(x, y, w, h)))
+                self.token_positions.append((subtoken, style, wx.Rect(x, y, w, h)))
                 max_x = max(max_x, x+w)
                 max_y = max(max_y, y+line_height_pixels)
                 x += w
-        return (max_x, max_y)
+        self.SetMinSize((max_x, max_y))
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
-        for fragment, style, box in self.draw_fragments:
+        for token, style, box in self.token_positions:
             style.apply_to_wx_dc(dc, self.GetFont())
-            dc.DrawText(fragment.text, box.X, box.Y)
-    def GetFragment(self, position):
-        for fragment, style, box in self.draw_fragments:
+            dc.DrawText(token.text, box.X, box.Y)
+    def GetToken(self, position):
+        for token, style, box in self.token_positions:
             if box.Contains(position):
-                return fragment
+                return token
 class CompactScrolledWindow(wx.ScrolledWindow):
 
     MIN_WIDTH = 200
@@ -899,28 +896,28 @@ class Column(CompactScrolledWindow):
         self.index = index
         self._page_ids = []
         self._setup_layout()
-        self.Bind(EVT_HOVERED_FRAGMENT_CHANGED, self._on_hovered_fragment_changed)
-        self.Bind(EVT_FRAGMENT_CLICK, self._on_fragment_click)
+        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
+        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)
 
-    def _on_hovered_fragment_changed(self, event):
-        if event.fragment is not None and event.fragment.token in [
-            Token.RLiterate.Link,
-            Token.RLiterate.Reference,
+    def _on_hovered_token_changed(self, event):
+        if event.token is not None and event.token.token_type in [
+            TokenType.RLiterate.Link,
+            TokenType.RLiterate.Reference,
         ]:
             event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         else:
             event.widget.SetDefaultCursor()
 
-    def _on_fragment_click(self, event):
+    def _on_token_click(self, event):
         if self.project is None:
             return
-        if event.fragment.token == Token.RLiterate.Reference:
+        if event.token.token_type == TokenType.RLiterate.Reference:
             open_pages_gui(self, self.project,
-                [event.fragment.extra["page_id"]],
+                [event.token.extra["page_id"]],
                 column_index=self.index+1
             )
-        elif event.fragment.token == Token.RLiterate.Link:
-            webbrowser.open(event.fragment.extra["url"])
+        elif event.token.token_type == TokenType.RLiterate.Link:
+            webbrowser.open(event.token.extra["url"])
 
     def _setup_layout(self):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1073,10 +1070,10 @@ class Title(Editable):
 
     def CreateView(self):
         self.Font = create_font(size=16)
-        view = RichTextDisplay(
+        view = TokenView(
             self,
             self.project,
-            [Fragment(self.page.title)],
+            [Token(self.page.title)],
             max_width=PAGE_BODY_WIDTH
         )
         MouseEventHelper.bind(
@@ -1095,7 +1092,7 @@ class Text(ParagraphBase):
         return TextView(
             self,
             self.project,
-            self.paragraph.formatted_text,
+            self.paragraph.tokens,
             self
         )
 
@@ -1112,14 +1109,14 @@ class Text(ParagraphBase):
             "To quote",
             lambda: self.paragraph.update({"type": "quote"})
         )
-class TextView(RichTextDisplay):
+class TextView(TokenView):
 
-    def __init__(self, parent, project, fragments, base, indented=0):
-        RichTextDisplay.__init__(
+    def __init__(self, parent, project, tokens, base, indented=0):
+        TokenView.__init__(
             self,
             parent,
             project,
-            fragments,
+            tokens,
             line_height=1.2,
             max_width=PAGE_BODY_WIDTH-indented,
             skip_extra_space=True
@@ -1133,20 +1130,20 @@ class TextView(RichTextDisplay):
             click=self._on_click
         )
         self.default_cursor = self.GetCursor()
-        self.fragment = None
+        self.token = None
 
     def SetDefaultCursor(self):
         self.SetCursor(self.default_cursor)
 
     def _on_mouse_move(self, position):
-        fragment = self.GetFragment(position)
-        if fragment is not self.fragment:
-            self.fragment = fragment
-            post_hovered_fragment_changed(self, self.fragment)
+        token = self.GetToken(position)
+        if token is not self.token:
+            self.token = token
+            post_hovered_token_changed(self, self.token)
 
     def _on_click(self):
-        if self.fragment is not None:
-            post_fragment_click(self, self.fragment)
+        if self.token is not None:
+            post_token_click(self, self.token)
 class TextEdit(MultilineTextCtrl):
 
     def __init__(self, parent, project, paragraph, view):
@@ -1156,14 +1153,14 @@ class TextEdit(MultilineTextCtrl):
             value=paragraph.text_version,
             size=(-1, view.Size[1])
         )
-        if not hasattr(view, "fragment"):
+        if not hasattr(view, "token"):
             self.SetSelection(0, 0)
-        elif view.fragment is None:
+        elif view.token is None:
             self.SetSelection(0, 0)
         else:
-            index = paragraph.get_text_index(view.fragment.extra["fragment_index"])
-            start = index + view.fragment.index
-            end = start + len(view.fragment.text)
+            index = paragraph.get_text_index(view.token.extra["fragment_index"])
+            start = index + view.token.index
+            end = start + len(view.token.text)
             self.SetSelection(start, end)
         self.Font = create_font(monospace=True)
         self.project = project
@@ -1183,7 +1180,7 @@ class Quote(Text):
             TextView(
                 view,
                 self.project,
-                self.paragraph.formatted_text,
+                self.paragraph.tokens,
                 self,
                 indented=self.INDENT
             ),
@@ -1227,7 +1224,7 @@ class List(ParagraphBase):
                 TextView(
                     view,
                     self.project,
-                    item.formatted_text,
+                    item.tokens,
                     self,
                     indented=self.INDENT*indent+bullet.GetMinSize()[0]
                 ),
@@ -1237,10 +1234,10 @@ class List(ParagraphBase):
             self.add_items(view, sizer, item.children, item.child_type, indent+1)
 
     def _create_bullet_widget(self, view, list_type, index):
-        return RichTextDisplay(
+        return TokenView(
             view,
             self.project,
-            [Fragment(self._get_bullet_text(list_type, index))]
+            [Token(self._get_bullet_text(list_type, index))]
         )
 
     def _get_bullet_text(self, list_type, index):
@@ -1281,12 +1278,12 @@ class CodeView(wx.Panel):
     def _create_path(self, paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((248, 241, 223))
-        text = RichTextDisplay(
+        text = TokenView(
             panel,
             self.project,
             insert_between(
-                Fragment(" / "),
-                [Fragment(x, token=pygments.token.Token.RLiterate.Strong) for x in paragraph.path]
+                Token(" / "),
+                [Token(x, token_type=TokenType.RLiterate.Strong) for x in paragraph.path]
             ),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
@@ -1304,10 +1301,10 @@ class CodeView(wx.Panel):
     def _create_code(self, paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
-        body = RichTextDisplay(
+        body = TokenView(
             panel,
             self.project,
-            paragraph.formatted_text,
+            paragraph.tokens,
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1384,7 +1381,7 @@ class Image(ParagraphBase):
             TextView(
                 view,
                 self.project,
-                self.paragraph.formatted_text,
+                self.paragraph.tokens,
                 self,
                 indented=2*self.PADDING
             ),
@@ -1615,7 +1612,7 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick()
-class Fragment(object):
+class Token(object):
 
     SPLIT_PATTERNS = [
         re.compile(r"\n"),
@@ -1623,9 +1620,9 @@ class Fragment(object):
         re.compile(r"\S+"),
     ]
 
-    def __init__(self, text, token=Token.RLiterate, index=0, **extra):
+    def __init__(self, text, token_type=TokenType.RLiterate, index=0, **extra):
         self.text = text
-        self.token = token
+        self.token_type = token_type
         self.extra = extra
         self.index = index
 
@@ -1637,21 +1634,21 @@ class Fragment(object):
 
     def split(self):
         index = self.index
-        fragments = []
+        subtokens = []
         text = self.text
         while text:
             for split_pattern in self.SPLIT_PATTERNS:
                 match = split_pattern.match(text)
                 if match:
-                    fragments.append(self._replace_text(match.group(0), index))
+                    subtokens.append(self._replace_text(match.group(0), index))
                     text = text[match.end(0):]
                     index += len(match.group(0))
-        return fragments
+        return subtokens
 
     def _replace_text(self, text, index):
-        return Fragment(
+        return Token(
             text=text,
-            token=self.token,
+            token_type=self.token_type,
             index=index,
             **self.extra
         )
@@ -1928,15 +1925,11 @@ class TextParagraph(Paragraph):
 
     @property
     def fragments(self):
-        return [
-            TextFragment.create(self._document, fragment)
-            for fragment
-            in self._paragraph_dict["fragments"]
-        ]
+        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
 
     @property
-    def formatted_text(self):
-        return fragments_to_formatted_text(self.fragments)
+    def tokens(self):
+        return [x.token for x in self.fragments]
 
     def get_text_index(self, fragment_index):
         return fragments_to_text_with_index(
@@ -1982,11 +1975,7 @@ class ListItem(object):
 
     @property
     def fragments(self):
-        return [
-            TextFragment.create(self._document, fragment)
-            for fragment
-            in self._item_dict["fragments"]
-        ]
+        return TextFragment.create_list(self._document, self._item_dict["fragments"])
 
     @property
     def child_type(self):
@@ -1997,8 +1986,8 @@ class ListItem(object):
         return [ListItem(self._document, x) for x in self._item_dict["children"]]
 
     @property
-    def formatted_text(self):
-        return fragments_to_formatted_text(self.fragments)
+    def tokens(self):
+        return [x.token for x in self.fragments]
 class CodeParagraph(Paragraph):
 
     @property
@@ -2014,12 +2003,12 @@ class CodeParagraph(Paragraph):
         return self._paragraph_dict["text"]
 
     @property
-    def formatted_text(self):
+    def tokens(self):
         try:
             lexer = self._get_lexer()
         except:
             lexer = pygments.lexers.TextLexer(stripnl=False)
-        return self._tokens_to_fragments(lexer.get_tokens(self.text))
+        return self._pygments_tokens_to_tokens(lexer.get_tokens(self.text))
 
     @property
     def has_path(self):
@@ -2051,24 +2040,20 @@ class CodeParagraph(Paragraph):
             stripnl=False
         )
 
-    def _tokens_to_fragments(self, tokens):
-        fragments = []
-        for token, text in tokens:
-            fragments.append(Fragment(text, token=token))
-        return fragments
+    def _pygments_tokens_to_tokens(self, pygments_tokens):
+        tokens = []
+        for pygments_token, text in pygments_tokens:
+            tokens.append(Token(text, token_type=pygments_token))
+        return tokens
 class ImageParagraph(Paragraph):
 
     @property
     def fragments(self):
-        return [
-            TextFragment.create(self._document, fragment)
-            for fragment
-            in self._paragraph_dict["fragments"]
-        ]
+        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
 
     @property
-    def formatted_text(self):
-        return fragments_to_formatted_text(self.fragments)
+    def tokens(self):
+        return [x.token for x in self.fragments]
 
     @property
     def image_base64(self):
@@ -2084,18 +2069,27 @@ class ImageParagraph(Paragraph):
 class TextFragment(object):
 
     @staticmethod
-    def create(document, text_fragment_dict):
+    def create_list(document, text_fragment_dicts):
+        return [
+            TextFragment.create(document, text_fragment_dict, index)
+            for index, text_fragment_dict
+            in enumerate(text_fragment_dicts)
+        ]
+
+    @staticmethod
+    def create(document, text_fragment_dict, index):
         return {
             "strong": StrongTextFragment,
             "emphasis": EmphasisTextFragment,
             "code": CodeTextFragment,
             "reference": ReferenceTextFragment,
             "link": LinkTextFragment,
-        }.get(text_fragment_dict["type"], TextFragment)(document, text_fragment_dict)
+        }.get(text_fragment_dict["type"], TextFragment)(document, text_fragment_dict, index)
 
-    def __init__(self, document, text_fragment_dict):
+    def __init__(self, document, text_fragment_dict, index):
         self._document = document
         self._text_fragment_dict = text_fragment_dict
+        self._index = index
 
     @property
     def type(self):
@@ -2106,23 +2100,23 @@ class TextFragment(object):
         return self._text_fragment_dict["text"]
 
     @property
-    def formatted_text(self):
-        return Fragment(self.text)
+    def token(self):
+        return Token(self.text, fragment_index=self._index)
 class StrongTextFragment(TextFragment):
 
     @property
-    def formatted_text(self):
-        return Fragment(self.text, token=Token.RLiterate.Strong)
+    def token(self):
+        return Token(self.text, token_type=TokenType.RLiterate.Strong, fragment_index=self._index)
 class EmphasisTextFragment(TextFragment):
 
     @property
-    def formatted_text(self):
-        return Fragment(self.text, token=Token.RLiterate.Emphasis)
+    def token(self):
+        return Token(self.text, token_type=TokenType.RLiterate.Emphasis, fragment_index=self._index)
 class CodeTextFragment(TextFragment):
 
     @property
-    def formatted_text(self):
-        return Fragment(self.text, token=Token.RLiterate.Code)
+    def token(self):
+        return Token(self.text, token_type=TokenType.RLiterate.Code, fragment_index=self._index)
 class ReferenceTextFragment(TextFragment):
 
     @property
@@ -2138,8 +2132,8 @@ class ReferenceTextFragment(TextFragment):
         return self.page_id
 
     @property
-    def formatted_text(self):
-        return Fragment(self.title, token=Token.RLiterate.Reference, page_id=self.page_id)
+    def token(self):
+        return Token(self.title, token_type=TokenType.RLiterate.Reference, page_id=self.page_id, fragment_index=self._index)
 class LinkTextFragment(TextFragment):
 
     @property
@@ -2153,8 +2147,8 @@ class LinkTextFragment(TextFragment):
         return self.url
 
     @property
-    def formatted_text(self):
-        return Fragment(self.title, token=Token.RLiterate.Link, url=self.url)
+    def token(self):
+        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)
 class LegacyInlineTextParser(object):
 
     SPACE_RE = re.compile(r"\s+")
@@ -2372,28 +2366,28 @@ class SolarizedTheme(BaseTheme):
     text    = "#2e3436"
 
     styles = {
-        Token:                     Style(color=base00),
-        Token.Keyword:             Style(color=green),
-        Token.Keyword.Constant:    Style(color=cyan),
-        Token.Keyword.Declaration: Style(color=blue),
-        Token.Keyword.Namespace:   Style(color=orange),
-        Token.Name.Builtin:        Style(color=red),
-        Token.Name.Builtin.Pseudo: Style(color=blue),
-        Token.Name.Class:          Style(color=blue),
-        Token.Name.Decorator:      Style(color=blue),
-        Token.Name.Entity:         Style(color=violet),
-        Token.Name.Exception:      Style(color=yellow),
-        Token.Name.Function:       Style(color=blue),
-        Token.String:              Style(color=cyan),
-        Token.Number:              Style(color=cyan),
-        Token.Operator.Word:       Style(color=green),
-        Token.Comment:             Style(color=base1),
-        Token.RLiterate:           Style(color=text),
-        Token.RLiterate.Emphasis:  Style(color=text, italic=True),
-        Token.RLiterate.Strong:    Style(color=text, bold=True),
-        Token.RLiterate.Code:      Style(color=text, monospace=True),
-        Token.RLiterate.Link:      Style(color=blue, underlined=True),
-        Token.RLiterate.Reference: Style(color=blue, italic=True),
+        TokenType:                     Style(color=base00),
+        TokenType.Keyword:             Style(color=green),
+        TokenType.Keyword.Constant:    Style(color=cyan),
+        TokenType.Keyword.Declaration: Style(color=blue),
+        TokenType.Keyword.Namespace:   Style(color=orange),
+        TokenType.Name.Builtin:        Style(color=red),
+        TokenType.Name.Builtin.Pseudo: Style(color=blue),
+        TokenType.Name.Class:          Style(color=blue),
+        TokenType.Name.Decorator:      Style(color=blue),
+        TokenType.Name.Entity:         Style(color=violet),
+        TokenType.Name.Exception:      Style(color=yellow),
+        TokenType.Name.Function:       Style(color=blue),
+        TokenType.String:              Style(color=cyan),
+        TokenType.Number:              Style(color=cyan),
+        TokenType.Operator.Word:       Style(color=green),
+        TokenType.Comment:             Style(color=base1),
+        TokenType.RLiterate:           Style(color=text),
+        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),
+        TokenType.RLiterate.Strong:    Style(color=text, bold=True),
+        TokenType.RLiterate.Code:      Style(color=text, monospace=True),
+        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),
+        TokenType.RLiterate.Reference: Style(color=blue, italic=True),
     }
 class Project(Observable):
 
@@ -2566,11 +2560,11 @@ class HTMLBuilder(object):
 
     def paragraph_text(self, text):
         with self.tag("p"):
-            self.fragments(text.formatted_text)
+            self.tokens(text.tokens)
 
     def paragraph_quote(self, text):
         with self.tag("blockquote"):
-            self.fragments(text.formatted_text)
+            self.tokens(text.tokens)
 
     def paragraph_list(self, paragraph):
         self.list(paragraph)
@@ -2580,42 +2574,42 @@ class HTMLBuilder(object):
             with self.tag({"ordered": "ol"}.get(a_list.child_type, "ul")):
                 for item in a_list.children:
                     with self.tag("li"):
-                        self.fragments(item.formatted_text)
+                        self.tokens(item.tokens)
                         self.list(item)
 
-    def fragments(self, fragments):
-        for fragment in fragments:
+    def tokens(self, tokens):
+        for token in tokens:
             {
-                Token.RLiterate.Emphasis: self.fragment_emphasis,
-                Token.RLiterate.Strong: self.fragment_strong,
-                Token.RLiterate.Code: self.fragment_code,
-                Token.RLiterate.Link: self.fragment_link,
-                Token.RLiterate.Reference: self.fragment_reference,
-            }.get(fragment.token, self.fragment_default)(fragment)
+                TokenType.RLiterate.Emphasis: self.token_emphasis,
+                TokenType.RLiterate.Strong: self.token_strong,
+                TokenType.RLiterate.Code: self.token_code,
+                TokenType.RLiterate.Link: self.token_link,
+                TokenType.RLiterate.Reference: self.token_reference,
+            }.get(token.token_type, self.token_default)(token)
 
-    def fragment_emphasis(self, fragment):
+    def token_emphasis(self, token):
         with self.tag("em", newlines=False):
-            self.escaped(fragment.text)
+            self.escaped(token.text)
 
-    def fragment_strong(self, fragment):
+    def token_strong(self, token):
         with self.tag("strong", newlines=False):
-            self.escaped(fragment.text)
+            self.escaped(token.text)
 
-    def fragment_code(self, fragment):
+    def token_code(self, token):
         with self.tag("code", newlines=False):
-            self.escaped(fragment.text)
+            self.escaped(token.text)
 
-    def fragment_link(self, fragment):
-        with self.tag("a", args={"href": fragment.extra["url"]}, newlines=False):
-            self.escaped(fragment.text)
+    def token_link(self, token):
+        with self.tag("a", args={"href": token.extra["url"]}, newlines=False):
+            self.escaped(token.text)
 
-    def fragment_reference(self, fragment):
-        with self.tag("a", args={"href": "#{}".format(fragment.extra["page_id"])}, newlines=False):
+    def token_reference(self, token):
+        with self.tag("a", args={"href": "#{}".format(token.extra["page_id"])}, newlines=False):
             with self.tag("em", newlines=False):
-                self.escaped(fragment.text)
+                self.escaped(token.text)
 
-    def fragment_default(self, fragment):
-        self.escaped(fragment.text)
+    def token_default(self, token):
+        self.escaped(token.text)
 
     def paragraph_code(self, code):
         if code.has_path:
@@ -2624,13 +2618,13 @@ class HTMLBuilder(object):
                     self.escaped(" / ".join(code.path))
         with self.tag("div", args={"class": "rliterate-code-body"}):
             with self.tag("pre", newlines=False):
-                for fragment in code.formatted_text:
+                for token in code.tokens:
                     with self.tag(
                         "span",
                         newlines=False,
-                        args={"class": STANDARD_TYPES.get(fragment.token, "")}
+                        args={"class": pygments.token.STANDARD_TYPES.get(token.token_type, "")}
                     ):
-                        self.escaped(fragment.text)
+                        self.escaped(token.text)
 
     def paragraph_image(self, paragraph):
         with self.tag("div", args={"class": "rliterate-image"}):
@@ -2640,7 +2634,7 @@ class HTMLBuilder(object):
                 pass
         with self.tag("div", args={"class": "rliterate-image-text"}):
             with self.tag("p"):
-                self.fragments(paragraph.formatted_text)
+                self.tokens(paragraph.tokens)
 
     def paragraph_unknown(self, paragraph):
         with self.tag("p"):
@@ -2800,10 +2794,10 @@ def set_clipboard_text(text):
             wx.TheClipboard.SetData(wx.TextDataObject(text.encode("utf-8")))
         finally:
             wx.TheClipboard.Close()
-def post_fragment_click(widget, fragment):
-    wx.PostEvent(widget, FragmentClick(0, widget=widget, fragment=fragment))
-def post_hovered_fragment_changed(widget, fragment):
-    wx.PostEvent(widget, HoveredFragmentChanged(0, widget=widget, fragment=fragment))
+def post_token_click(widget, token):
+    wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
+def post_hovered_token_changed(widget, token):
+    wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
 def insert_between(separator, items):
     result = []
     for i, item in enumerate(items):
@@ -2883,13 +2877,6 @@ def fragments_to_text_with_index(fragments, fragment_index=0):
 
 def text_to_fragments(text):
     return LegacyInlineTextParser().parse(text)
-def fragments_to_formatted_text(fragments):
-    xs = []
-    for index, fragment in enumerate(fragments):
-        x = fragment.formatted_text
-        x.extra["fragment_index"] = index
-        xs.append(x)
-    return xs
 def list_to_text(paragraph):
     def list_item_to_text(child_type, item, indent=0, index=0):
         text = "    "*indent
