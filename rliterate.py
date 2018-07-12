@@ -215,6 +215,31 @@ class TokenView(wx.Panel):
         for token, style, box in self.token_positions:
             if box.Contains(position):
                 return token
+    def GetClosestToken(self, position):
+        if len(self.token_positions) == 0:
+            return None
+        tokens_by_y_distance = defaultdict(list)
+        for token, style, box in self.token_positions:
+            if box.Contains(position):
+                tokens_by_y_distance[0] = [(token, box)]
+                break
+            tokens_by_y_distance[
+                abs(box.Y + int(box.Height / 2) - position.y)
+            ].append((token, box))
+        closest_token, closest_box = min(
+            tokens_by_y_distance[min(tokens_by_y_distance.keys())],
+            key=lambda (token, box): abs(box.X + int(box.Width / 2) - position.x)
+        )
+        center = closest_box.X + box.Width / 2
+        left_margin = center - box.Width / 4
+        right_margin = center + box.Width / 4
+        if position.x < left_margin:
+            edge = -1
+        elif position.x > right_margin:
+            edge = 1
+        else:
+            edge = 0
+        return (edge, closest_token)
     def SetDefaultCursor(self):
         self.SetCursor(self._default_cursor)
 class CompactScrolledWindow(wx.ScrolledWindow):
@@ -1070,6 +1095,7 @@ class Title(Editable):
     def __init__(self, parent, project, page):
         self.page = page
         Editable.__init__(self, parent, project)
+        self._selection = (0, 0)
 
     def CreateView(self):
         self.Font = create_font(size=16)
@@ -1081,13 +1107,27 @@ class Title(Editable):
         )
         MouseEventHelper.bind(
             [view],
-            double_click=lambda: post_edit_start(view)
+            double_click_pos=lambda pos: self._post_edit_start_from_token_view(pos)
         )
         return view
+
+    def _post_edit_start_from_token_view(self, pos):
+        edge_token = self.view.GetClosestToken(pos)
+        if edge_token is not None:
+            edge, token = edge_token
+            start = token.index
+            if edge < 0:
+                self._selection = (start, start)
+            elif edge > 0:
+                self._selection = (start+len(token.text), start+len(token.text))
+            else:
+                self._selection = (start, start+len(token.text))
+        post_edit_start(self.view)
 
     def CreateEdit(self):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
         edit.Save = lambda: self.page.set_title(self.edit.Value)
+        wx.CallAfter(lambda: edit.SetSelection(*self._selection))
         return edit
 class Text(ParagraphBase):
 
@@ -1546,7 +1586,7 @@ class MouseEventHelper(object):
 
     @classmethod
     def bind(cls, windows, drag=None, click=None, right_click=None,
-             double_click=None, move=None):
+             double_click=None, double_click_pos=None, move=None):
         for window in windows:
             mouse_event_helper = cls(window)
             if drag is not None:
@@ -1555,7 +1595,9 @@ class MouseEventHelper(object):
                 mouse_event_helper.OnClick = click
             if right_click is not None:
                 mouse_event_helper.OnRightClick = right_click
-            if double_click is not None:
+            if double_click_pos is not None:
+                mouse_event_helper.OnDoubleClickPos = double_click_pos
+            elif double_click is not None:
                 mouse_event_helper.OnDoubleClick = double_click
             if move is not None:
                 mouse_event_helper.OnMove = move
@@ -1578,6 +1620,9 @@ class MouseEventHelper(object):
         pass
 
     def OnDoubleClick(self):
+        pass
+
+    def OnDoubleClickPos(self, position):
         pass
 
     def OnMove(self, position):
@@ -1609,6 +1654,7 @@ class MouseEventHelper(object):
 
     def _on_left_dclick(self, event):
         self.OnDoubleClick()
+        self.OnDoubleClickPos(event.Position)
 
     def _on_right_up(self, event):
         self.OnRightClick()
