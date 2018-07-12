@@ -1174,21 +1174,22 @@ class Quote(Text):
 
     def CreateView(self):
         view = wx.Panel(self)
+        self.text_view = TextView(
+            view,
+            self.project,
+            self.paragraph.tokens,
+            self,
+            indented=self.INDENT
+        )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add((self.INDENT, 1))
-        sizer.Add(
-            TextView(
-                view,
-                self.project,
-                self.paragraph.tokens,
-                self,
-                indented=self.INDENT
-            ),
-            flag=wx.EXPAND,
-            proportion=1
-        )
+        sizer.Add(self.text_view, flag=wx.EXPAND, proportion=1)
         view.SetSizer(sizer)
         return view
+
+    def CreateEdit(self):
+        self.view.token = self.text_view.token
+        return Text.CreateEdit(self)
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
