@@ -211,9 +211,7 @@
 },
 {
 "chunkpath":[],
-"filepath":[
-""
-],
+"filepath":[],
 "fragments":[
 {
 "text":"git clone https://github.com/rickardlindberg/rliterate.git\n",
@@ -4400,7 +4398,7 @@
 ],
 "fragments":[
 {
-"text":"(\n    [\"foo.py\", \"<<functions>>\"],\n    ([\"foo.py\"], [\"functions\"])\n),\n(\n    [\"foo.py\", \"<<Foo/__init__>>\"],\n    ([\"foo.py\"], [\"Foo\", \"__init__\"])\n),\n(\n    [\"foo.py\", \"<<functions>>\", \"<<with\", \"missing>>\", \"stuff/or\"],\n    ([\"foo.py\"], [\"functions\", \"with\", \"missing\", \"stuff\", \"or\"])\n),\n(\n    [\"foo.py\", \"<<with\", \"missing>>\", \"stuff/or\"],\n    ([\"foo.py\", \"<<with\", \"missing>>\", \"stuff\", \"or\"], [])\n),\n(\n    [\"bar/foo.py\"],\n    ([\"bar\", \"foo.py\"], [])\n),\n",
+"text":"(\n    [\"foo.py\", \"<<functions>>\"],\n    ([\"foo.py\"], [\"functions\"])\n),\n(\n    [\"foo.py\", \"<<Foo/__init__>>\"],\n    ([\"foo.py\"], [\"Foo\", \"__init__\"])\n),\n(\n    [\"foo.py\", \"<<functions>>\", \"<<with\", \"missing>>\", \"stuff/or\"],\n    ([\"foo.py\"], [\"functions\", \"with\", \"missing\", \"stuff\", \"or\"])\n),\n(\n    [\"foo.py\", \"<<with\", \"missing>>\", \"stuff/or\"],\n    ([\"foo.py\", \"<<with\", \"missing>>\", \"stuff\", \"or\"], [])\n),\n(\n    [\"bar/foo.py\"],\n    ([\"bar\", \"foo.py\"], [])\n),\n(\n    [],\n    ([], [])\n),\n",
 "type":"code"
 }
 ],

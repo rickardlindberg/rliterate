@@ -113,6 +113,10 @@ def test_reads_legacy_code_paragraph(tmpfile):
         ["bar/foo.py"],
         (["bar", "foo.py"], [])
     ),
+    (
+        [],
+        ([], [])
+    ),
 ])
 def test_split_legacy_path(path, expected_split):
     assert split_legacy_path(path) == expected_split
