@@ -3523,9 +3523,10 @@
 {
 "id":"046324b15fa5412a9fad2bc72e35bec5",
 "path":[
-"test_rliterate.py"
+"test_rliterate.py",
+"<<test cases>>"
 ],
-"text":"def test_reads_legacy_scratch_pages(tmpfile):\n    write_json_to_file(tmpfile, {\n        \"workspace\": {\n            \"scratch\": [\"abc\"],\n        }\n    })\n    layout = Layout(tmpfile)\n    layout.set_hoisted_page(None)\n    assert load_json_from_file(tmpfile)[\"workspace\"] == {\n        \"columns\": [\n            [\"abc\"],\n        ]\n    }\n",
+"text":"def test_reads_legacy_scratch_pages(tmpfile):\n    write_json_to_file(tmpfile, {\n        \"workspace\": {\n            \"scratch\": [\"abc\"],\n        }\n    })\n    layout = Layout(tmpfile)\n    layout.set_hoisted_page(None)\n    assert load_json_from_file(tmpfile)[\"workspace\"] == {\n        \"columns\": [\n            [\"abc\"],\n        ]\n    }",
 "type":"code"
 },
 {
