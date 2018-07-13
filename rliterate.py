@@ -1342,11 +1342,11 @@ class CodeView(wx.Panel):
             panel,
             self.project,
             insert_between(
-                Token("/"),
-                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.filepaths]
-            )+[Token(" // ")]+insert_between(
-                Token("/"),
-                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.chunkpaths]
+                Token("/", token_type=TokenType.RLiterate.Sep),
+                [Token(x, token_type=TokenType.RLiterate.Path, path=xs) for (x, xs) in paragraph.path.filepaths]
+            )+[Token(" ", token_type=TokenType.RLiterate.Sep)]+insert_between(
+                Token("/", token_type=TokenType.RLiterate.Sep),
+                [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in paragraph.path.chunkpaths]
             ),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
@@ -2541,6 +2541,9 @@ class SolarizedTheme(BaseTheme):
         TokenType.RLiterate.Code:      Style(color=text, monospace=True),
         TokenType.RLiterate.Link:      Style(color=blue, underlined=True),
         TokenType.RLiterate.Reference: Style(color=blue, italic=True),
+        TokenType.RLiterate.Path:      Style(color=text, italic=True),
+        TokenType.RLiterate.Chunk:     Style(color=red, bold=True),
+        TokenType.RLiterate.Sep:       Style(color=base1),
     }
 class Project(Observable):
 
