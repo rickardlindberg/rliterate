@@ -1343,10 +1343,10 @@ class CodeView(wx.Panel):
             self.project,
             insert_between(
                 Token("/"),
-                [Token(x, token_type=TokenType.RLiterate.Strong, path=x) for x in paragraph.filepath]
+                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.filepaths]
             )+[Token(" // ")]+insert_between(
                 Token("/"),
-                [Token(x, token_type=TokenType.RLiterate.Strong, path=x) for x in paragraph.chunkpath]
+                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.chunkpaths]
             ),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
@@ -2093,6 +2093,10 @@ class CodeParagraph(Paragraph):
         return len(self.filepath) > 0 or len(self.chunkpath) > 0
 
     @property
+    def path(self):
+        return ChunkPath(self.filepath, self.chunkpath)
+
+    @property
     def filepath(self):
         return [x for x in self._paragraph_dict["filepath"] if x]
 
@@ -2126,6 +2130,27 @@ class CodeParagraph(Paragraph):
         for pygments_token, text in pygments_tokens:
             tokens.append(Token(text, token_type=pygments_token))
         return tokens
+class ChunkPath(object):
+
+    def __init__(self, filepath, chunkpath):
+        self._filepath = filepath
+        self._chunkpath = chunkpath
+
+    @property
+    def filepaths(self):
+        for index in range(len(self._filepath)):
+            yield (
+                self._filepath[index],
+                (self._filepath[:index+1], [])
+            )
+
+    @property
+    def chunkpaths(self):
+        for index in range(len(self._chunkpath)):
+            yield (
+                self._chunkpath[index],
+                (self._filepath[:], self._chunkpath[:index+1])
+            )
 class ImageParagraph(Paragraph):
 
     @property
