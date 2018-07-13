@@ -2541,8 +2541,8 @@ class SolarizedTheme(BaseTheme):
         TokenType.RLiterate.Code:      Style(color=text, monospace=True),
         TokenType.RLiterate.Link:      Style(color=blue, underlined=True),
         TokenType.RLiterate.Reference: Style(color=blue, italic=True),
-        TokenType.RLiterate.Path:      Style(color=text, italic=True),
-        TokenType.RLiterate.Chunk:     Style(color=red, bold=True),
+        TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),
+        TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),
         TokenType.RLiterate.Sep:       Style(color=base1),
     }
 class Project(Observable):
