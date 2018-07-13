@@ -73,6 +73,26 @@ class ParagraphBase(Editable):
         self.paragraph = paragraph
         Editable.__init__(self, parent, project)
 
+    def BindMouse(self, widget, controls, **overrides):
+        def create_handler(name, fn):
+            def handler(*args, **kwargs):
+                if name in overrides:
+                    if not overrides[name](*args, **kwargs):
+                        return
+                fn(*args, **kwargs)
+            return handler
+        handlers = {
+            "double_click": lambda: post_edit_start(widget),
+            "drag": self.DoDragDrop,
+            "right_click": self.ShowContextMenu,
+        }
+        for key in overrides.keys():
+            if key in handlers:
+                handlers[key] = create_handler(key, handlers[key])
+            else:
+                handlers[key] = overrides[key]
+        MouseEventHelper.bind(controls, **handlers)
+
     def DoDragDrop(self):
         data = RliterateDataObject("paragraph", {
             "page_id": self.page_id,
@@ -1333,12 +1353,11 @@ class CodeView(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
-        MouseEventHelper.bind(
-            [panel, text],
-            double_click=self._post_paragraph_edit_start,
-            drag=self.base.DoDragDrop,
-            right_click=self.base.ShowContextMenu
-        )
+        def foo():
+            print("click")
+            return True
+        self.base.BindMouse(self, [panel])
+        self.base.BindMouse(self, [text], right_click=foo)
         return panel
 
     def _create_code(self, paragraph):
@@ -1353,16 +1372,8 @@ class CodeView(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
         panel.SetSizer(sizer)
-        MouseEventHelper.bind(
-            [panel, body],
-            double_click=self._post_paragraph_edit_start,
-            drag=self.Parent.DoDragDrop,
-            right_click=self.Parent.ShowContextMenu
-        )
+        self.base.BindMouse(self, [panel, body])
         return panel
-
-    def _post_paragraph_edit_start(self):
-        post_edit_start(self)
 class CodeEditor(wx.Panel):
 
     BORDER = 1
