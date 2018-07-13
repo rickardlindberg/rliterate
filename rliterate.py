@@ -84,7 +84,7 @@ class ParagraphBase(Editable):
         handlers = {
             "double_click": lambda: post_edit_start(widget),
             "drag": self.DoDragDrop,
-            "right_click": self.ShowContextMenu,
+            "right_click": lambda position: self.ShowContextMenu(),
         }
         for key in overrides.keys():
             if key in handlers:
@@ -1187,7 +1187,7 @@ class TextView(TokenView):
         MouseEventHelper.bind(
             [self],
             drag=base.DoDragDrop,
-            right_click=base.ShowContextMenu,
+            right_click=lambda position: base.ShowContextMenu(),
             double_click=lambda: post_edit_start(self),
             move=self._on_mouse_move,
             click=self._on_click
@@ -1353,7 +1353,7 @@ class CodeView(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
-        def foo():
+        def foo(position):
             print("click")
             return True
         self.base.BindMouse(self, [panel])
@@ -1498,7 +1498,7 @@ class Factory(ParagraphBase):
         MouseEventHelper.bind(
             [view],
             drag=self.DoDragDrop,
-            right_click=self.ShowContextMenu
+            right_click=lambda position: self.ShowContextMenu()
         )
         view.SetBackgroundColour((240, 240, 240))
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
@@ -1633,7 +1633,7 @@ class MouseEventHelper(object):
     def OnClick(self):
         pass
 
-    def OnRightClick(self):
+    def OnRightClick(self, position):
         pass
 
     def OnDoubleClick(self):
@@ -1674,7 +1674,7 @@ class MouseEventHelper(object):
         self.OnDoubleClickPos(event.Position)
 
     def _on_right_up(self, event):
-        self.OnRightClick()
+        self.OnRightClick(event.Position)
 class Token(object):
 
     SPLIT_PATTERNS = [
