@@ -2079,11 +2079,11 @@ class CodeParagraph(Paragraph):
 
     @property
     def filepath(self):
-        return copy.deepcopy(self._paragraph_dict["filepath"])
+        return [x for x in self._paragraph_dict["filepath"] if x]
 
     @property
     def chunkpath(self):
-        return copy.deepcopy(self._paragraph_dict["chunkpath"])
+        return [x for x in self._paragraph_dict["chunkpath"] if x]
 
     @property
     def path_text_version(self):

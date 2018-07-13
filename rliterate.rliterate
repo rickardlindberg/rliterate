@@ -281,9 +281,7 @@
 },
 {
 "chunkpath":[],
-"filepath":[
-""
-],
+"filepath":[],
 "fragments":[
 {
 "text":"dnf install python wxPython python2-pygments\n",
@@ -4025,7 +4023,7 @@
 ],
 "fragments":[
 {
-"text":"class CodeParagraph(Paragraph):\n\n    @property\n    def text_version(self):\n        return self.text\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": code_text_to_fragments(value)})\n\n    @property\n    def text(self):\n        return code_fragments_to_text(self.fragments)\n\n    @property\n    def fragments(self):\n        return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._pygments_tokens_to_tokens(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(self.filepath) > 0 or len(self.chunkpath) > 0\n\n    @property\n    def filepath(self):\n        return copy.deepcopy(self._paragraph_dict[\"filepath\"])\n\n    @property\n    def chunkpath(self):\n        return copy.deepcopy(self._paragraph_dict[\"chunkpath\"])\n\n    @property\n    def path_text_version(self):\n        return code_path_to_text(self.filepath, self.chunkpath)\n\n    @property\n    def filename(self):\n        return self.filepath[-1] if self.filepath else \"\"\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens):\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            tokens.append(Token(text, token_type=pygments_token))\n        return tokens\n",
+"text":"class CodeParagraph(Paragraph):\n\n    @property\n    def text_version(self):\n        return self.text\n\n    @text_version.setter\n    def text_version(self, value):\n        self.update({\"fragments\": code_text_to_fragments(value)})\n\n    @property\n    def text(self):\n        return code_fragments_to_text(self.fragments)\n\n    @property\n    def fragments(self):\n        return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        return self._pygments_tokens_to_tokens(lexer.get_tokens(self.text))\n\n    @property\n    def has_path(self):\n        return len(self.filepath) > 0 or len(self.chunkpath) > 0\n\n    @property\n    def filepath(self):\n        return [x for x in self._paragraph_dict[\"filepath\"] if x]\n\n    @property\n    def chunkpath(self):\n        return [x for x in self._paragraph_dict[\"chunkpath\"] if x]\n\n    @property\n    def path_text_version(self):\n        return code_path_to_text(self.filepath, self.chunkpath)\n\n    @property\n    def filename(self):\n        return self.filepath[-1] if self.filepath else \"\"\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens):\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            tokens.append(Token(text, token_type=pygments_token))\n        return tokens\n",
 "type":"code"
 }
 ],
