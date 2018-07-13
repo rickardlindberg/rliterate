@@ -6998,6 +6998,16 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Can do edits through context menu even though edit is in progress",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
