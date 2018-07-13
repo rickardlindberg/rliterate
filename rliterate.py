@@ -1338,27 +1338,31 @@ class CodeView(wx.Panel):
     def _create_path(self, paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((248, 241, 223))
-        text = TokenView(
+        self.path_token_view = TokenView(
             panel,
             self.project,
             insert_between(
                 Token("/"),
-                [Token(x, token_type=TokenType.RLiterate.Strong) for x in paragraph.filepath]
+                [Token(x, token_type=TokenType.RLiterate.Strong, path=x) for x in paragraph.filepath]
             )+[Token(" // ")]+insert_between(
                 Token("/"),
-                [Token(x, token_type=TokenType.RLiterate.Strong) for x in paragraph.chunkpath]
+                [Token(x, token_type=TokenType.RLiterate.Strong, path=x) for x in paragraph.chunkpath]
             ),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(text, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
+        sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
-        def foo(position):
-            print("click")
-            return True
         self.base.BindMouse(self, [panel])
-        self.base.BindMouse(self, [text], right_click=foo)
+        self.base.BindMouse(self, [self.path_token_view], right_click=self._path_right_click)
         return panel
+
+    def _path_right_click(self, position):
+        token = self.path_token_view.GetToken(position)
+        if token is not None and token.extra.get("path") is not None:
+            print(token.extra["path"])
+            return False
+        return True
 
     def _create_code(self, paragraph):
         panel = wx.Panel(self)
