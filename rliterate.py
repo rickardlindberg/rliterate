@@ -1360,9 +1360,21 @@ class CodeView(wx.Panel):
     def _path_right_click(self, position):
         token = self.path_token_view.GetToken(position)
         if token is not None and token.extra.get("path") is not None:
-            dialog = RenamePathDialog(self, self.project, token.extra["path"])
-            dialog.ShowModal()
-            dialog.Destroy()
+            def rename():
+                dialog = RenamePathDialog(
+                    self,
+                    self.project,
+                    token.extra["path"]
+                )
+                dialog.ShowModal()
+                dialog.Destroy()
+            menu = ParagraphContextMenu()
+            menu.AppendItem(
+                "Rename '{}'".format(token.extra["path"].text_version),
+                rename
+            )
+            self.PopupMenu(menu)
+            menu.Destroy()
             return False
         return True
 
