@@ -1360,7 +1360,7 @@ class CodeView(wx.Panel):
     def _path_right_click(self, position):
         token = self.path_token_view.GetToken(position)
         if token is not None and token.extra.get("path") is not None:
-            print(token.extra["path"])
+            print(token.extra["path"].text_version)
             return False
         return True
 
@@ -2149,7 +2149,7 @@ class Path(object):
         for index in range(len(self.filepath)):
             yield (
                 self.filepath[index],
-                (self.filepath[:index+1], [])
+                Path(self.filepath[:index+1], [])
             )
 
     @property
@@ -2157,7 +2157,7 @@ class Path(object):
         for index in range(len(self.chunkpath)):
             yield (
                 self.chunkpath[index],
-                (self.filepath[:], self.chunkpath[:index+1])
+                Path(self.filepath[:], self.chunkpath[:index+1])
             )
 class ImageParagraph(Paragraph):
 
