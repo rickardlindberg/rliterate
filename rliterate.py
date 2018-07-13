@@ -1403,7 +1403,7 @@ class CodeEditor(wx.Panel):
     def _create_path(self, paragraph):
         self.path = wx.TextCtrl(
             self,
-            value=code_path_to_text(paragraph.filepath, paragraph.chunkpath)
+            value=paragraph.path.text_version
         )
         return self.path
 
@@ -1416,10 +1416,10 @@ class CodeEditor(wx.Panel):
         return self.text
 
     def Save(self):
-        filepath, chunkpath = code_text_to_path(self.path.Value)
+        path = Path.from_text_version(self.path.Value)
         self.paragraph.update({
-            "filepath": filepath,
-            "chunkpath": chunkpath,
+            "filepath": path.filepath,
+            "chunkpath": path.chunkpath,
             "fragments": code_text_to_fragments(self.text.Value),
         })
 class Image(ParagraphBase):
@@ -2094,7 +2094,7 @@ class CodeParagraph(Paragraph):
 
     @property
     def path(self):
-        return ChunkPath(self.filepath, self.chunkpath)
+        return Path(self.filepath, self.chunkpath)
 
     @property
     def filepath(self):
@@ -2103,10 +2103,6 @@ class CodeParagraph(Paragraph):
     @property
     def chunkpath(self):
         return [x for x in self._paragraph_dict["chunkpath"] if x]
-
-    @property
-    def path_text_version(self):
-        return code_path_to_text(self.filepath, self.chunkpath)
 
     @property
     def filename(self):
@@ -2130,26 +2126,38 @@ class CodeParagraph(Paragraph):
         for pygments_token, text in pygments_tokens:
             tokens.append(Token(text, token_type=pygments_token))
         return tokens
-class ChunkPath(object):
+class Path(object):
+
+    @classmethod
+    def from_text_version(cls, text):
+        filepath_text, chunkpath_text = text.split(" // ", 1)
+        return cls(
+            filepath_text.split("/") if filepath_text else [],
+            chunkpath_text.split("/") if chunkpath_text else [],
+        )
+
+    @property
+    def text_version(self):
+        return "{} // {}".format("/".join(self.filepath), "/".join(self.chunkpath))
 
     def __init__(self, filepath, chunkpath):
-        self._filepath = filepath
-        self._chunkpath = chunkpath
+        self.filepath = filepath
+        self.chunkpath = chunkpath
 
     @property
     def filepaths(self):
-        for index in range(len(self._filepath)):
+        for index in range(len(self.filepath)):
             yield (
-                self._filepath[index],
-                (self._filepath[:index+1], [])
+                self.filepath[index],
+                (self.filepath[:index+1], [])
             )
 
     @property
     def chunkpaths(self):
-        for index in range(len(self._chunkpath)):
+        for index in range(len(self.chunkpath)):
             yield (
-                self._chunkpath[index],
-                (self._filepath[:], self._chunkpath[:index+1])
+                self.chunkpath[index],
+                (self.filepath[:], self.chunkpath[:index+1])
             )
 class ImageParagraph(Paragraph):
 
@@ -2722,7 +2730,7 @@ class HTMLBuilder(object):
         if code.has_path:
             with self.tag("div", args={"class": "rliterate-code-header"}):
                 with self.tag("p", newlines=False):
-                    self.escaped(code.path_text_version)
+                    self.escaped(code.path.text_version)
         with self.tag("div", args={"class": "rliterate-code-body"}):
             with self.tag("pre", newlines=False):
                 for token in code.tokens:
@@ -2827,7 +2835,7 @@ class DiffBuilder(object):
         self._write("\n")
 
     def _render_code(self, code):
-        self._write(code.path_text_version+":\n\n")
+        self._write(code.path.text_version+":\n\n")
         for line in code.text.splitlines():
             self._write("    "+line+"\n")
         self._write("\n")
@@ -3005,14 +3013,6 @@ def list_to_text(paragraph):
 
 def text_to_list(text):
     return LegacyListParser(text).parse_items()
-def code_path_to_text(filepath, chunkpath):
-    return "{} // {}".format("/".join(filepath), "/".join(chunkpath))
-def code_text_to_path(text):
-    filepath_text, chunkpath_text = text.split(" // ", 1)
-    return (
-        filepath_text.split("/") if filepath_text else [],
-        chunkpath_text.split("/") if chunkpath_text else [],
-    )
 def code_fragments_to_text(fragments):
     parts = []
     for fragment in fragments:
