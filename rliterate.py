@@ -1322,8 +1322,11 @@ class CodeView(wx.Panel):
             panel,
             self.project,
             insert_between(
-                Token(" / "),
-                [Token(x, token_type=TokenType.RLiterate.Strong) for x in paragraph.path]
+                Token("/"),
+                [Token(x, token_type=TokenType.RLiterate.Strong) for x in paragraph.filepath]
+            )+[Token(" // ")]+insert_between(
+                Token("/"),
+                [Token(x, token_type=TokenType.RLiterate.Strong) for x in paragraph.chunkpath]
             ),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
@@ -1385,22 +1388,24 @@ class CodeEditor(wx.Panel):
     def _create_path(self, paragraph):
         self.path = wx.TextCtrl(
             self,
-            value=" / ".join(paragraph.path)
+            value=code_path_to_text(paragraph.filepath, paragraph.chunkpath)
         )
         return self.path
 
     def _create_code(self, paragraph):
         self.text = MultilineTextCtrl(
             self,
-            value=paragraph.text,
+            value=code_fragments_to_text(paragraph.fragments),
             size=(-1, self.view.Size[1])
         )
         return self.text
 
     def Save(self):
+        filepath, chunkpath = code_text_to_path(self.path.Value)
         self.paragraph.update({
-            "path": self.path.Value.split(" / "),
-            "text": self.text.Value,
+            "filepath": filepath,
+            "chunkpath": chunkpath,
+            "fragments": code_text_to_fragments(self.text.Value),
         })
 class Image(ParagraphBase):
 
@@ -1516,8 +1521,9 @@ class Factory(ParagraphBase):
         })
         self._add_button("Code", {
             "type": "code",
-            "path": [],
-            "text": "Enter code here...",
+            "filepath": [],
+            "chunkpath": [],
+            "fragments": [{"type": "code", "text": "Enter code here..."}],
         })
         self._add_button("Image", {
             "type": "image",
@@ -1720,6 +1726,13 @@ class Document(Observable):
             elif paragraph["type"] in ["list"] and "text" in paragraph:
                 paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
                 del paragraph["text"]
+        for p in self._document_dict.paragraph_dict_iterator():
+            if p["type"] == "code" and "path" in p:
+                p["filepath"], p["chunkpath"] = split_legacy_path(p["path"])
+                del p["path"]
+            if p["type"] == "code" and "text" in p:
+                p["fragments"] = legacy_code_text_to_fragments(p["text"])
+                del p["text"]
 
     @property
     def _document_dict(self):
@@ -2042,11 +2055,15 @@ class CodeParagraph(Paragraph):
 
     @text_version.setter
     def text_version(self, value):
-        self.update({"text": value})
+        self.update({"fragments": code_text_to_fragments(value)})
 
     @property
     def text(self):
-        return self._paragraph_dict["text"]
+        return code_fragments_to_text(self.fragments)
+
+    @property
+    def fragments(self):
+        return copy.deepcopy(self._paragraph_dict["fragments"])
 
     @property
     def tokens(self):
@@ -2058,20 +2075,23 @@ class CodeParagraph(Paragraph):
 
     @property
     def has_path(self):
-        return len("".join(self.path)) > 0
+        return len(self.filepath) > 0 or len(self.chunkpath) > 0
 
     @property
-    def path(self):
-        return tuple(self._paragraph_dict["path"])
+    def filepath(self):
+        return copy.deepcopy(self._paragraph_dict["filepath"])
+
+    @property
+    def chunkpath(self):
+        return copy.deepcopy(self._paragraph_dict["chunkpath"])
+
+    @property
+    def path_text_version(self):
+        return code_path_to_text(self.filepath, self.chunkpath)
 
     @property
     def filename(self):
-        last_part = ""
-        for part in self.path:
-            if part.startswith("<<"):
-                break
-            last_part = part
-        return os.path.basename(last_part)
+        return self.filepath[-1] if self.filepath else ""
 
     @property
     def language(self):
@@ -2529,8 +2549,10 @@ class FileGenerator(object):
     def _collect_parts(self, page):
         for paragraph in page.paragraphs:
             if paragraph.type == "code":
-                for line in paragraph.text.splitlines():
-                    self._parts[paragraph.path].append(line)
+                self._parts[(
+                    tuple(paragraph.filepath),
+                    tuple(paragraph.chunkpath),
+                )].append(paragraph)
         for child in page.children:
             self._collect_parts(child)
 
@@ -2542,23 +2564,22 @@ class FileGenerator(object):
                     self._render(f, key)
 
     def _render(self, f, key, prefix=""):
-        for line in self._parts[key]:
-            match = re.match(r"^(\s*)(<<.*>>)\s*$", line)
-            if match:
-                self._render(f, key + (match.group(2),), prefix=prefix+match.group(1))
-            else:
-                if len(line) > 0:
-                    f.write(prefix)
-                    f.write(line)
-                f.write("\n")
+        for paragraph in self._parts[key]:
+            for fragment in paragraph.fragments:
+                if fragment["type"] == "chunk":
+                    self._render(f, (key[0], key[1]+tuple(fragment["path"])), prefix=prefix+fragment["prefix"])
+                else:
+                    for line in fragment["text"].splitlines():
+                        if len(line) > 0:
+                            f.write(prefix)
+                            f.write(line)
+                        f.write("\n")
 
     def _get_filepath(self, key):
-        if len(key) == 0:
+        if len(key[0]) > 0 and len(key[1]) == 0:
+            return os.path.join(*key[0])
+        else:
             return None
-        for part in key:
-            if part.startswith("<<") and part.endswith(">>"):
-                return None
-        return os.path.join(*key)
 class HTMLBuilder(object):
 
     def __init__(self, document, **options):
@@ -2661,7 +2682,7 @@ class HTMLBuilder(object):
         if code.has_path:
             with self.tag("div", args={"class": "rliterate-code-header"}):
                 with self.tag("p", newlines=False):
-                    self.escaped(" / ".join(code.path))
+                    self.escaped(code.path_text_version)
         with self.tag("div", args={"class": "rliterate-code-body"}):
             with self.tag("pre", newlines=False):
                 for token in code.tokens:
@@ -2766,7 +2787,7 @@ class DiffBuilder(object):
         self._write("\n")
 
     def _render_code(self, code):
-        self._write(" / ".join(code.path)+":\n\n")
+        self._write(code.path_text_version+":\n\n")
         for line in code.text.splitlines():
             self._write("    "+line+"\n")
         self._write("\n")
@@ -2944,6 +2965,66 @@ def list_to_text(paragraph):
 
 def text_to_list(text):
     return LegacyListParser(text).parse_items()
+def code_path_to_text(filepath, chunkpath):
+    return "{} // {}".format("/".join(filepath), "/".join(chunkpath))
+def code_text_to_path(text):
+    filepath_text, chunkpath_text = text.split(" // ", 1)
+    return (
+        filepath_text.split("/") if filepath_text else [],
+        chunkpath_text.split("/") if chunkpath_text else [],
+    )
+def code_fragments_to_text(fragments):
+    parts = []
+    for fragment in fragments:
+        if fragment["type"] == "code":
+            parts.append(fragment["text"])
+        else:
+            parts.append("{}<<{}>>\n".format(fragment["prefix"], "/".join(fragment["path"])))
+    return "".join(parts)
+def code_text_to_fragments(text):
+    fragments = []
+    current_text = ""
+    for line in text.splitlines():
+        match = re.match(r"^(\s*)<<(.*)>>\s*$", line)
+        if match:
+            if current_text:
+                fragments.append({"type": "code", "text": current_text})
+            current_text = ""
+            fragments.append({"type": "chunk", "path": match.group(2).split("/"), "prefix": match.group(1)})
+        else:
+            current_text += line
+            current_text += "\n"
+    if current_text:
+        fragments.append({"type": "code", "text": current_text})
+    return fragments
+def split_legacy_path(path):
+    filepath = []
+    chunkpath = []
+    while path and not (path[0].startswith("<<") and path[0].endswith(">>")):
+        filepath.extend(path.pop(0).split("/"))
+    for chunk in path:
+        if chunk.startswith("<<"):
+            chunk = chunk[2:]
+        if chunk.endswith(">>"):
+            chunk = chunk[:-2]
+        chunkpath.extend(chunk.split("/"))
+    return filepath, chunkpath
+def legacy_code_text_to_fragments(text):
+    fragments = []
+    current_text = ""
+    for line in text.splitlines():
+        match = re.match(r"^(\s*)<<(.*)>>\s*$", line)
+        if match:
+            if current_text:
+                fragments.append({"type": "code", "text": current_text})
+            current_text = ""
+            fragments.append({"type": "chunk", "path": match.group(2).split("/"), "prefix": match.group(1)})
+        else:
+            current_text += line
+            current_text += "\n"
+    if current_text:
+        fragments.append({"type": "code", "text": current_text})
+    return fragments
 def ensure_key(a_dict, key, default):
     if key not in a_dict:
         a_dict[key] = default
