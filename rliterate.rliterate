@@ -2762,7 +2762,7 @@
 ],
 "fragments":[
 {
-"text":"class CodeView(wx.Panel):\n\n    BORDER = 0\n    PADDING = 5\n\n    def __init__(self, parent, project, paragraph, base):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.base = base\n        self.Font = create_font(monospace=True)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        if paragraph.has_path:\n            self.vsizer.Add(\n                self._create_path(paragraph),\n                flag=wx.ALL|wx.EXPAND, border=self.BORDER\n            )\n        self.vsizer.Add(\n            self._create_code(paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n        self.SetBackgroundColour((243, 236, 219))\n\n    def _create_path(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((248, 241, 223))\n        self.path_token_view = TokenView(\n            panel,\n            self.project,\n            insert_between(\n                Token(\"/\"),\n                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.filepaths]\n            )+[Token(\" // \")]+insert_between(\n                Token(\"/\"),\n                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.chunkpaths]\n            ),\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n        panel.SetSizer(sizer)\n        self.base.BindMouse(self, [panel])\n        self.base.BindMouse(self, [self.path_token_view], right_click=self._path_right_click)\n        return panel\n\n    def _path_right_click(self, position):\n        token = self.path_token_view.GetToken(position)\n        if token is not None and token.extra.get(\"path\") is not None:\n            print(token.extra[\"path\"].text_version)\n            return False\n        return True\n\n    def _create_code(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((253, 246, 227))\n        body = TokenView(\n            panel,\n            self.project,\n            paragraph.tokens,\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n        panel.SetSizer(sizer)\n        self.base.BindMouse(self, [panel, body])\n        return panel\n",
+"text":"class CodeView(wx.Panel):\n\n    BORDER = 0\n    PADDING = 5\n\n    def __init__(self, parent, project, paragraph, base):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.base = base\n        self.Font = create_font(monospace=True)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        if paragraph.has_path:\n            self.vsizer.Add(\n                self._create_path(paragraph),\n                flag=wx.ALL|wx.EXPAND, border=self.BORDER\n            )\n        self.vsizer.Add(\n            self._create_code(paragraph),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n        self.SetBackgroundColour((243, 236, 219))\n\n    def _create_path(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((248, 241, 223))\n        self.path_token_view = TokenView(\n            panel,\n            self.project,\n            insert_between(\n                Token(\"/\"),\n                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.filepaths]\n            )+[Token(\" // \")]+insert_between(\n                Token(\"/\"),\n                [Token(x, token_type=TokenType.RLiterate.Strong, path=xs) for (x, xs) in paragraph.path.chunkpaths]\n            ),\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n        panel.SetSizer(sizer)\n        self.base.BindMouse(self, [panel])\n        self.base.BindMouse(self, [self.path_token_view], right_click=self._path_right_click)\n        return panel\n\n    def _path_right_click(self, position):\n        token = self.path_token_view.GetToken(position)\n        if token is not None and token.extra.get(\"path\") is not None:\n            dialog = RenamePathDialog(self, self.project, token.extra[\"path\"])\n            dialog.ShowModal()\n            dialog.Destroy()\n            return False\n        return True\n\n    def _create_code(self, paragraph):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((253, 246, 227))\n        body = TokenView(\n            panel,\n            self.project,\n            paragraph.tokens,\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n        panel.SetSizer(sizer)\n        self.base.BindMouse(self, [panel, body])\n        return panel\n",
 "type":"code"
 }
 ],
@@ -3139,6 +3139,36 @@
 }
 ],
 "title":"Workspace"
+},
+{
+"children":[
+{
+"children":[],
+"id":"3cc8fc7c578a42de913136fe8a28b7ec",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class RenamePathDialog(wx.Dialog):\n\n    def __init__(self, parent, project, path):\n        wx.Dialog.__init__(self, parent, title=\"Rename path\")\n        self._project = project\n        self._path = path\n        self._create_gui()\n\n    def _create_gui(self):\n        self._text = wx.TextCtrl(self, value=self._path.text_version, size=(400, -1))\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        sizer.Add(wx.StaticText(self, label=\"From:\"))\n        sizer.Add(wx.StaticText(self, label=self._path.text_version))\n        sizer.Add(wx.StaticText(self, label=\"To:\"))\n        sizer.Add(self._text, flag=wx.EXPAND)\n        sizer.Add(self.CreateButtonSizer(wx.OK|wx.CANCEL), flag=wx.ALL)\n        self.SetSizerAndFit(sizer)\n        self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)\n\n    def _on_ok(self, event):\n        print(\"Rename '{}' to '{}'\".format(\n            self._path.text_version,\n            Path.from_text_version(self._text.Value).text_version\n        ))\n        self.Close()\n",
+"type":"code"
+}
+],
+"id":"fbfa8d5a6a944778a1b5ad79f095e7ea",
+"type":"code"
+}
+],
+"title":"Rename path"
+}
+],
+"id":"56165a57dbf4495b8a2394758f338521",
+"paragraphs":[],
+"title":"Dialogs"
 },
 {
 "children":[

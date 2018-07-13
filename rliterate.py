@@ -1360,7 +1360,9 @@ class CodeView(wx.Panel):
     def _path_right_click(self, position):
         token = self.path_token_view.GetToken(position)
         if token is not None and token.extra.get("path") is not None:
-            print(token.extra["path"].text_version)
+            dialog = RenamePathDialog(self, self.project, token.extra["path"])
+            dialog.ShowModal()
+            dialog.Destroy()
             return False
         return True
 
@@ -1565,6 +1567,31 @@ class ParagraphContextMenu(wx.Menu):
             lambda event: fn(),
             self.Append(wx.NewId(), text)
         )
+class RenamePathDialog(wx.Dialog):
+
+    def __init__(self, parent, project, path):
+        wx.Dialog.__init__(self, parent, title="Rename path")
+        self._project = project
+        self._path = path
+        self._create_gui()
+
+    def _create_gui(self):
+        self._text = wx.TextCtrl(self, value=self._path.text_version, size=(400, -1))
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(wx.StaticText(self, label="From:"))
+        sizer.Add(wx.StaticText(self, label=self._path.text_version))
+        sizer.Add(wx.StaticText(self, label="To:"))
+        sizer.Add(self._text, flag=wx.EXPAND)
+        sizer.Add(self.CreateButtonSizer(wx.OK|wx.CANCEL), flag=wx.ALL)
+        self.SetSizerAndFit(sizer)
+        self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)
+
+    def _on_ok(self, event):
+        print("Rename '{}' to '{}'".format(
+            self._path.text_version,
+            Path.from_text_version(self._text.Value).text_version
+        ))
+        self.Close()
 class RliterateDataObject(wx.CustomDataObject):
 
     def __init__(self, kind, json=None):
