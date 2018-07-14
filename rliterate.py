@@ -1323,34 +1323,42 @@ class CodeView(wx.Panel):
     def __init__(self, parent, project, paragraph, base):
         wx.Panel.__init__(self, parent)
         self.project = project
+        self.paragraph = paragraph
         self.base = base
+        self._create_gui()
+
+    def _create_gui(self):
         self.Font = create_font(monospace=True)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        if not paragraph.path.is_empty:
+        if not self.paragraph.path.is_empty:
             self.vsizer.Add(
-                self._create_path(paragraph),
+                self._create_path(),
                 flag=wx.ALL|wx.EXPAND, border=self.BORDER
             )
         self.vsizer.Add(
-            self._create_code(paragraph),
+            self._create_code(),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
         self.SetSizer(self.vsizer)
         self.SetBackgroundColour((243, 236, 219))
 
-    def _create_path(self, paragraph):
+    def _create_path(self):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((248, 241, 223))
         self.path_token_view = TokenView(
             panel,
             self.project,
-            self._create_path_tokens(paragraph.path),
+            self._create_path_tokens(self.paragraph.path),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
-        self.base.BindMouse(self, [panel])
+        self.base.BindMouse(
+            self,
+            [panel],
+            double_click=lambda event: post_edit_start(self, path_token=None)
+        )
         self.base.BindMouse(
             self,
             [self.path_token_view],
@@ -1409,19 +1417,23 @@ class CodeView(wx.Panel):
         else:
             return CONTINUE_PROCESSING
 
-    def _create_code(self, paragraph):
+    def _create_code(self):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
         self.body_token_view = TokenView(
             panel,
             self.project,
-            paragraph.tokens,
+            self.paragraph.tokens,
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
         panel.SetSizer(sizer)
-        self.base.BindMouse(self, [panel])
+        self.base.BindMouse(
+            self,
+            [panel],
+            double_click=lambda event: post_edit_start(self, body_token=None)
+        )
         self.base.BindMouse(
             self,
             [self.body_token_view],
