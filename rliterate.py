@@ -2134,7 +2134,10 @@ class CodeParagraph(Paragraph):
 
     @property
     def path(self):
-        return Path(self.filepath, self.chunkpath)
+        return Path(
+            [x for x in self._paragraph_dict["filepath"] if x],
+            [x for x in self._paragraph_dict["chunkpath"] if x]
+        )
 
     @path.setter
     def path(self, path):
@@ -2142,14 +2145,6 @@ class CodeParagraph(Paragraph):
             "filepath": copy.deepcopy(path.filepath),
             "chunkpath": copy.deepcopy(path.chunkpath),
         })
-
-    @property
-    def filepath(self):
-        return [x for x in self._paragraph_dict["filepath"] if x]
-
-    @property
-    def chunkpath(self):
-        return [x for x in self._paragraph_dict["chunkpath"] if x]
     @property
     def fragments(self):
         return copy.deepcopy(self._paragraph_dict["fragments"])
@@ -2760,8 +2755,8 @@ class FileGenerator(object):
         for paragraph in page.paragraphs:
             if paragraph.type == "code":
                 self._parts[(
-                    tuple(paragraph.filepath),
-                    tuple(paragraph.chunkpath),
+                    tuple(paragraph.path.filepath),
+                    tuple(paragraph.path.chunkpath),
                 )].append(paragraph)
         for child in page.children:
             self._collect_parts(child)
