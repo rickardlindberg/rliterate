@@ -184,6 +184,7 @@ class DropPointDropTarget(wx.DropTarget):
             self.last_drop_point.Hide()
             self.last_drop_point = None
 class TokenView(wx.Panel):
+
     def __init__(self, parent, project, tokens, **kwargs):
         wx.Panel.__init__(self, parent)
         self.project = project
@@ -194,6 +195,7 @@ class TokenView(wx.Panel):
         self._calculate_token_positions()
         self.Bind(wx.EVT_PAINT, self._on_paint)
         self._default_cursor = self.GetCursor()
+
     def _calculate_token_positions(self):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
