@@ -761,7 +761,7 @@ class TableOfContentsRow(wx.Panel):
     def _on_click(self):
         open_pages_gui(self, self.project, [self.page.id], column_index=0)
 
-    def _on_right_click(self):
+    def _on_right_click(self, position):
         menu = PageContextMenu(self.project, self.page)
         self.PopupMenu(menu)
         menu.Destroy()

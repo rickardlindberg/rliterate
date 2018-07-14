@@ -1872,7 +1872,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_click(self):\n    open_pages_gui(self, self.project, [self.page.id], column_index=0)\n\ndef _on_right_click(self):\n    menu = PageContextMenu(self.project, self.page)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
+"text":"def _on_click(self):\n    open_pages_gui(self, self.project, [self.page.id], column_index=0)\n\ndef _on_right_click(self, position):\n    menu = PageContextMenu(self.project, self.page)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
 "type":"code"
 }
 ],
