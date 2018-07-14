@@ -1441,18 +1441,19 @@ class CodeEditor(wx.Panel):
     def _create_code(self, paragraph):
         self.text = MultilineTextCtrl(
             self,
-            value=code_fragments_to_text(paragraph.fragments),
+            value=paragraph.text_version,
             size=(-1, self.view.Size[1])
         )
         return self.text
 
     def Save(self):
-        path = Path.from_text_version(self.path.Value)
-        self.paragraph.update({
-            "filepath": path.filepath,
-            "chunkpath": path.chunkpath,
-            "fragments": code_text_to_fragments(self.text.Value),
-        })
+        with self.paragraph.multi_update():
+            path = Path.from_text_version(self.path.Value)
+            self.paragraph.update({
+                "filepath": path.filepath,
+                "chunkpath": path.chunkpath,
+            })
+            self.paragraph.text_version = self.text.Value
 class Image(ParagraphBase):
 
     PADDING = 30
@@ -2038,6 +2039,11 @@ class Paragraph(object):
     def type(self):
         return self._paragraph_dict["type"]
 
+    @contextlib.contextmanager
+    def multi_update(self):
+        with self._document.modify("Edit paragraph"):
+            yield
+
     def update(self, data):
         with self._document.modify("Edit paragraph") as document_dict:
             document_dict.update_paragraph_dict(self.id, data)
@@ -2136,11 +2142,37 @@ class CodeParagraph(Paragraph):
 
     @text_version.setter
     def text_version(self, value):
-        self.update({"fragments": code_text_to_fragments(value)})
+        self.update({"fragments": self._code_text_to_fragments(value)})
+
+    def _code_text_to_fragments(self, text):
+        fragments = []
+        current_text = ""
+        for line in text.splitlines():
+            match = re.match(r"^(\s*)<<(.*)>>\s*$", line)
+            if match:
+                if current_text:
+                    fragments.append({"type": "code", "text": current_text})
+                current_text = ""
+                fragments.append({"type": "chunk", "path": match.group(2).split("/"), "prefix": match.group(1)})
+            else:
+                current_text += line
+                current_text += "\n"
+        if current_text:
+            fragments.append({"type": "code", "text": current_text})
+        return fragments
 
     @property
     def text(self):
-        return code_fragments_to_text(self.fragments)
+        return self._code_fragments_to_text(self.fragments)
+
+    def _code_fragments_to_text(self, fragments):
+        parts = []
+        for fragment in fragments:
+            if fragment["type"] == "code":
+                parts.append(fragment["text"])
+            else:
+                parts.append("{}<<{}>>\n".format(fragment["prefix"], "/".join(fragment["path"])))
+        return "".join(parts)
 
     @property
     def fragments(self):
@@ -3136,30 +3168,6 @@ def list_to_text(paragraph):
 
 def text_to_list(text):
     return LegacyListParser(text).parse_items()
-def code_fragments_to_text(fragments):
-    parts = []
-    for fragment in fragments:
-        if fragment["type"] == "code":
-            parts.append(fragment["text"])
-        else:
-            parts.append("{}<<{}>>\n".format(fragment["prefix"], "/".join(fragment["path"])))
-    return "".join(parts)
-def code_text_to_fragments(text):
-    fragments = []
-    current_text = ""
-    for line in text.splitlines():
-        match = re.match(r"^(\s*)<<(.*)>>\s*$", line)
-        if match:
-            if current_text:
-                fragments.append({"type": "code", "text": current_text})
-            current_text = ""
-            fragments.append({"type": "chunk", "path": match.group(2).split("/"), "prefix": match.group(1)})
-        else:
-            current_text += line
-            current_text += "\n"
-    if current_text:
-        fragments.append({"type": "code", "text": current_text})
-    return fragments
 def split_legacy_path(path):
     filepath = []
     chunkpath = []
