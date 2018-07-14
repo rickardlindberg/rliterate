@@ -130,7 +130,7 @@ class ParagraphBase(Editable):
                     "text_version",
                     edit_in_gvim(
                         self.paragraph.text_version,
-                        self.paragraph.path.filename
+                        self.paragraph.filename
                     )
                 )
             )
@@ -2215,6 +2215,10 @@ class CodeParagraph(Paragraph):
 
     def _chunk_delimiters(self):
         return ("<<", ">>")
+
+    @property
+    def filename(self):
+        return self.path.filename
 
     @property
     def tokens(self):
