@@ -2473,26 +2473,12 @@
 ],
 "fragments":[
 {
-"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n        self._selection = (0, 0)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                self._selection = (start, start)\n            elif edge > 0:\n                self._selection = (start+len(token.text), start+len(token.text))\n            else:\n                self._selection = (start, start+len(token.text))\n        post_edit_start(self.view)\n\n    def CreateEdit(self, extra):\n        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        wx.CallAfter(lambda: edit.SetSelection(*self._selection))\n        return edit\n",
+"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n        self._selection = (0, 0)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                self._selection = (start, start)\n            elif edge > 0:\n                self._selection = (start+len(token.text), start+len(token.text))\n            else:\n                self._selection = (start, start+len(token.text))\n        post_edit_start(self.view)\n\n    def CreateEdit(self, extra):\n        edit = SelectionableTextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        edit.SetSelection(*self._selection)\n        return edit\n",
 "type":"code"
 }
 ],
 "id":"24ce3a2a4785432ea263e18f55bfa106",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"wx.CallAfter",
-"type":"code"
-},
-{
-"text":" seems to be needed for the selection to actually be set. No idea why.",
-"type":"text"
-}
-],
-"id":"2f38ae9584e74c4ca6a18bcf9467dc76",
-"type":"text"
 }
 ],
 "title":"Title"
@@ -2811,7 +2797,7 @@
 ],
 "fragments":[
 {
-"text":"def _create_gui(self):\n    self.Font = create_font(monospace=True)\n    self.vsizer = wx.BoxSizer(wx.VERTICAL)\n    self.vsizer.Add(\n        self._create_path(),\n        flag=wx.ALL|wx.EXPAND\n    )\n    self.vsizer.Add(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,\n        proportion=1\n    )\n    self.SetSizer(self.vsizer)\n\ndef _create_path(self):\n    self.path = wx.TextCtrl(\n        self,\n        value=self.paragraph.path.text_version\n    )\n    return self.path\n\ndef _create_code(self):\n    self.text = MultilineTextCtrl(\n        self,\n        value=self.paragraph.text_version\n    )\n    return self.text\n",
+"text":"def _create_gui(self):\n    self.Font = create_font(monospace=True)\n    self.vsizer = wx.BoxSizer(wx.VERTICAL)\n    self.vsizer.Add(\n        self._create_path(),\n        flag=wx.ALL|wx.EXPAND\n    )\n    self.vsizer.Add(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,\n        proportion=1\n    )\n    self.SetSizer(self.vsizer)\n\ndef _create_path(self):\n    self.path = SelectionableTextCtrl(\n        self,\n        value=self.paragraph.path.text_version\n    )\n    return self.path\n\ndef _create_code(self):\n    self.text = MultilineTextCtrl(\n        self,\n        value=self.paragraph.text_version\n    )\n    return self.text\n",
 "type":"code"
 }
 ],
@@ -2838,7 +2824,7 @@
 ],
 "fragments":[
 {
-"text":"def _focus(self):\n    if \"path_token\" in self.extra:\n        self._focus_path(self.extra[\"path_token\"])\n    elif \"body_token\" in self.extra:\n        self._focus_body(self.extra[\"body_token\"])\n    else:\n        self._focus_body(None)\n\ndef _focus_path(self, path_token):\n    self.path.SetFocus()\n    start = len(self.path.Value) - 1\n    end = start\n    wx.CallAfter(self.path.SetSelection, start, end)\n\ndef _focus_body(self, body_token):\n    self.text.SetFocus()\n",
+"text":"def _focus(self):\n    if \"path_token\" in self.extra:\n        self._focus_path(self.extra[\"path_token\"])\n    elif \"body_token\" in self.extra:\n        self._focus_body(self.extra[\"body_token\"])\n    else:\n        self._focus_body(None)\n\ndef _focus_path(self, path_token):\n    self.path.SetFocus()\n    start = len(self.path.Value) - 1\n    end = start\n    self.path.SetSelection(start, end)\n\ndef _focus_body(self, body_token):\n    self.text.SetFocus()\n",
 "type":"code"
 }
 ],
@@ -3871,6 +3857,43 @@
 }
 ],
 "title":"Flicker free drawing"
+},
+{
+"children":[],
+"id":"6926dd56ddad4bceb337da92d19644c1",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"wx.CallAfter",
+"type":"code"
+},
+{
+"text":" seems to be needed for the selection to actually be set. No idea why.",
+"type":"text"
+}
+],
+"id":"2f38ae9584e74c4ca6a18bcf9467dc76",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class SelectionableTextCtrl(wx.TextCtrl):\n\n    def SetSelection(self, start, end):\n        wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)\n",
+"type":"code"
+}
+],
+"id":"117f39c2d18b4fccb3c959899b646103",
+"type":"code"
+}
+],
+"title":"Selectionable text control"
 }
 ],
 "id":"5c3647a616b8495f8bebd268be84377d",

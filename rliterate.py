@@ -1148,9 +1148,9 @@ class Title(Editable):
         post_edit_start(self.view)
 
     def CreateEdit(self, extra):
-        edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
+        edit = SelectionableTextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
         edit.Save = lambda: self.page.set_title(self.edit.Value)
-        wx.CallAfter(lambda: edit.SetSelection(*self._selection))
+        edit.SetSelection(*self._selection)
         return edit
 class Text(ParagraphBase):
 
@@ -1468,7 +1468,7 @@ class CodeEditor(wx.Panel):
         self.SetSizer(self.vsizer)
 
     def _create_path(self):
-        self.path = wx.TextCtrl(
+        self.path = SelectionableTextCtrl(
             self,
             value=self.paragraph.path.text_version
         )
@@ -1492,7 +1492,7 @@ class CodeEditor(wx.Panel):
         self.path.SetFocus()
         start = len(self.path.Value) - 1
         end = start
-        wx.CallAfter(self.path.SetSelection, start, end)
+        self.path.SetSelection(start, end)
 
     def _focus_body(self, body_token):
         self.text.SetFocus()
@@ -1807,6 +1807,10 @@ class Token(object):
             index=index,
             **self.extra
         )
+class SelectionableTextCtrl(wx.TextCtrl):
+
+    def SetSelection(self, start, end):
+        wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)
 class Document(Observable):
     @classmethod
     def from_file(cls, path):
