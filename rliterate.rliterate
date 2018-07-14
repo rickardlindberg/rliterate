@@ -2355,7 +2355,7 @@
 {
 "chunkpath":[
 "classes",
-"Page"
+"PagePanel"
 ],
 "filepath":[
 "rliterate.py"
@@ -2395,7 +2395,7 @@
 {
 "chunkpath":[
 "classes",
-"Page"
+"PagePanel"
 ],
 "filepath":[
 "rliterate.py"
@@ -2429,7 +2429,7 @@
 },
 {
 "path":[
-"Page"
+"PagePanel"
 ],
 "prefix":"    ",
 "type":"chunk"
