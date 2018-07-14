@@ -83,7 +83,7 @@ class ParagraphBase(Editable):
                 fn(*args, **kwargs)
             return handler
         handlers = {
-            "double_click": lambda: post_edit_start(widget),
+            "double_click": lambda event: post_edit_start(widget),
             "drag": self.DoDragDrop,
             "right_click": lambda event: self.ShowContextMenu(),
         }
@@ -1130,7 +1130,7 @@ class Title(Editable):
         )
         MouseEventHelper.bind(
             [view],
-            double_click_pos=lambda pos: self._post_edit_start_from_token_view(pos)
+            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)
         )
         return view
 
@@ -1191,7 +1191,7 @@ class TextView(TokenView):
             [self],
             drag=base.DoDragDrop,
             right_click=lambda event: base.ShowContextMenu(),
-            double_click=lambda: post_edit_start(self),
+            double_click=lambda event: post_edit_start(self),
             move=self._on_mouse_move,
             click=self._on_click
         )
@@ -1664,7 +1664,7 @@ class MouseEventHelper(object):
 
     @classmethod
     def bind(cls, windows, drag=None, click=None, right_click=None,
-             double_click=None, double_click_pos=None, move=None):
+             double_click=None, move=None):
         for window in windows:
             mouse_event_helper = cls(window)
             if drag is not None:
@@ -1673,9 +1673,7 @@ class MouseEventHelper(object):
                 mouse_event_helper.OnClick = click
             if right_click is not None:
                 mouse_event_helper.OnRightClick = right_click
-            if double_click_pos is not None:
-                mouse_event_helper.OnDoubleClickPos = double_click_pos
-            elif double_click is not None:
+            if double_click is not None:
                 mouse_event_helper.OnDoubleClick = double_click
             if move is not None:
                 mouse_event_helper.OnMove = move
@@ -1697,10 +1695,7 @@ class MouseEventHelper(object):
     def OnRightClick(self, event):
         pass
 
-    def OnDoubleClick(self):
-        pass
-
-    def OnDoubleClickPos(self, position):
+    def OnDoubleClick(self, event):
         pass
 
     def OnMove(self, event):
@@ -1731,8 +1726,7 @@ class MouseEventHelper(object):
         self.down_pos = None
 
     def _on_left_dclick(self, event):
-        self.OnDoubleClick()
-        self.OnDoubleClickPos(event.Position)
+        self.OnDoubleClick(event)
 
     def _on_right_up(self, event):
         self.OnRightClick(event)
