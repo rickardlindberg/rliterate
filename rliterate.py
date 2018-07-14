@@ -1350,7 +1350,12 @@ class CodeView(wx.Panel):
         sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
         panel.SetSizer(sizer)
         self.base.BindMouse(self, [panel])
-        self.base.BindMouse(self, [self.path_token_view], right_click=self._path_right_click)
+        self.base.BindMouse(
+            self,
+            [self.path_token_view],
+            right_click=self._path_right_click,
+            move=self._path_move
+        )
         return panel
 
     def _create_path_tokens(self, path):
@@ -1366,6 +1371,20 @@ class CodeView(wx.Panel):
             [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in path.chunkpaths]
         ))
         return tokens
+
+    def _path_move(self, position):
+        return self._token_move(self.path_token_view, position)
+
+    def _body_move(self, position):
+        return self._token_move(self.body_token_view, position)
+
+    def _token_move(self, token_view, position):
+        token = token_view.GetToken(position)
+        if token is not None and token.extra.get("path") is not None:
+            token_view.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+        else:
+            token_view.SetDefaultCursor()
+        return True
 
     def _path_right_click(self, position):
         return self._token_right_click(self.path_token_view, position)
@@ -1407,7 +1426,12 @@ class CodeView(wx.Panel):
         sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
         panel.SetSizer(sizer)
         self.base.BindMouse(self, [panel])
-        self.base.BindMouse(self, [self.body_token_view], right_click=self._body_right_click)
+        self.base.BindMouse(
+            self,
+            [self.body_token_view],
+            right_click=self._body_right_click,
+            move=self._body_move
+        )
         return panel
 class CodeEditor(wx.Panel):
 
