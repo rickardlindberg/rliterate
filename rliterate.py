@@ -1448,11 +1448,7 @@ class CodeEditor(wx.Panel):
 
     def Save(self):
         with self.paragraph.multi_update():
-            path = Path.from_text_version(self.path.Value)
-            self.paragraph.update({
-                "filepath": path.filepath,
-                "chunkpath": path.chunkpath,
-            })
+            self.paragraph.path = Path.from_text_version(self.path.Value)
             self.paragraph.text_version = self.text.Value
 class Image(ParagraphBase):
 
@@ -2139,6 +2135,13 @@ class CodeParagraph(Paragraph):
     @property
     def path(self):
         return Path(self.filepath, self.chunkpath)
+
+    @path.setter
+    def path(self, path):
+        self.update({
+            "filepath": copy.deepcopy(path.filepath),
+            "chunkpath": copy.deepcopy(path.chunkpath),
+        })
 
     @property
     def filepath(self):
