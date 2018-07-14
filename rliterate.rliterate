@@ -2841,7 +2841,7 @@
 ],
 "fragments":[
 {
-"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        MouseEventHelper.bind(\n            [view, bitmap],\n            double_click=lambda: post_edit_start(view),\n        )\n        return view\n\n    def CreateEdit(self):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
+"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def CreateEdit(self):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
 "type":"code"
 }
 ],
@@ -7141,27 +7141,6 @@
 "fragments":[
 {
 "text":"TokenView is slow for code now that many tokens are generated",
-"type":"text"
-}
-]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Can not drag image, must drag image text",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Image support",
 "type":"text"
 }
 ]

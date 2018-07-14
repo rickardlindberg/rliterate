@@ -1500,10 +1500,7 @@ class Image(ParagraphBase):
             flag=wx.ALIGN_CENTER
         )
         view.SetSizer(sizer)
-        MouseEventHelper.bind(
-            [view, bitmap],
-            double_click=lambda: post_edit_start(view),
-        )
+        self.BindMouse(view, [view, bitmap])
         return view
 
     def CreateEdit(self):
