@@ -2838,7 +2838,7 @@
 ],
 "fragments":[
 {
-"text":"def _focus(self):\n    print(self.extra)\n    self.text.SetFocus()\n",
+"text":"def _focus(self):\n    if \"path_token\" in self.extra:\n        self._focus_path(self.extra[\"path_token\"])\n    elif \"body_token\" in self.extra:\n        self._focus_body(self.extra[\"body_token\"])\n    else:\n        self._focus_body(None)\n\ndef _focus_path(self, path_token):\n    self.path.SetFocus()\n    start = len(self.path.Value) - 1\n    end = start\n    wx.CallAfter(self.path.SetSelection, start, end)\n\ndef _focus_body(self, body_token):\n    self.text.SetFocus()\n",
 "type":"code"
 }
 ],

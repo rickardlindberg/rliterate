@@ -1481,7 +1481,20 @@ class CodeEditor(wx.Panel):
         )
         return self.text
     def _focus(self):
-        print(self.extra)
+        if "path_token" in self.extra:
+            self._focus_path(self.extra["path_token"])
+        elif "body_token" in self.extra:
+            self._focus_body(self.extra["body_token"])
+        else:
+            self._focus_body(None)
+
+    def _focus_path(self, path_token):
+        self.path.SetFocus()
+        start = len(self.path.Value) - 1
+        end = start
+        wx.CallAfter(self.path.SetSelection, start, end)
+
+    def _focus_body(self, body_token):
         self.text.SetFocus()
     def Save(self):
         with self.paragraph.multi_update():
