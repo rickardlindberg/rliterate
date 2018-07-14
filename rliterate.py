@@ -1366,7 +1366,13 @@ class CodeView(wx.Panel):
         return tokens
 
     def _path_right_click(self, position):
-        token = self.path_token_view.GetToken(position)
+        return self._token_right_click(self.path_token_view, position)
+
+    def _body_right_click(self, position):
+        return self._token_right_click(self.body_token_view, position)
+
+    def _token_right_click(self, token_view, position):
+        token = token_view.GetToken(position)
         if token is not None and token.extra.get("path") is not None:
             def rename():
                 dialog = RenamePathDialog(
@@ -1389,16 +1395,17 @@ class CodeView(wx.Panel):
     def _create_code(self, paragraph):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((253, 246, 227))
-        body = TokenView(
+        self.body_token_view = TokenView(
             panel,
             self.project,
             paragraph.tokens,
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(body, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
+        sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
         panel.SetSizer(sizer)
-        self.base.BindMouse(self, [panel, body])
+        self.base.BindMouse(self, [panel])
+        self.base.BindMouse(self, [self.body_token_view], right_click=self._body_right_click)
         return panel
 class CodeEditor(wx.Panel):
 
@@ -2143,7 +2150,25 @@ class CodeParagraph(Paragraph):
             lexer = self._get_lexer()
         except:
             lexer = pygments.lexers.TextLexer(stripnl=False)
-        return self._pygments_tokens_to_tokens(lexer.get_tokens(self.text))
+        pygments_text, inserts = self._pygments_text()
+        return self._pygments_tokens_to_tokens(
+            lexer.get_tokens(pygments_text),
+            inserts
+        )
+
+    def _pygments_text(self):
+        pygments_text = ""
+        inserts = defaultdict(list)
+        for fragment in self.fragments:
+            if fragment["type"] == "chunk":
+                inserts[len(pygments_text)].append(Token(
+                    "{}<<{}>>\n".format(fragment["prefix"], "/".join(fragment["path"])),
+                    token_type=TokenType.RLiterate.Chunk,
+                    path=self.path.extend_chunk(fragment["path"])
+                ))
+            else:
+                pygments_text += fragment["text"]
+        return pygments_text, inserts
 
     @property
     def has_path(self):
@@ -2178,10 +2203,14 @@ class CodeParagraph(Paragraph):
             stripnl=False
         )
 
-    def _pygments_tokens_to_tokens(self, pygments_tokens):
+    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):
+        pos = 0
         tokens = []
         for pygments_token, text in pygments_tokens:
-            tokens.append(Token(text, token_type=pygments_token))
+            for ch in text:
+                tokens.extend(inserts.get(pos, []))
+                tokens.append(Token(ch, token_type=pygments_token))
+                pos += 1
         return tokens
 class Path(object):
 
@@ -2196,6 +2225,12 @@ class Path(object):
     @property
     def text_version(self):
         return "{} // {}".format("/".join(self.filepath), "/".join(self.chunkpath))
+
+    def extend_chunk(self, chunk):
+        return Path(
+            copy.deepcopy(self.filepath),
+            copy.deepcopy(self.chunkpath)+copy.deepcopy(chunk)
+        )
 
     @property
     def last(self):
