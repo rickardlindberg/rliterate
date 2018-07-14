@@ -1424,42 +1424,43 @@ class CodeView(wx.Panel):
         return panel
 class CodeEditor(wx.Panel):
 
-    BORDER = 1
-    PADDING = 3
-
     def __init__(self, parent, project, paragraph, view):
         wx.Panel.__init__(self, parent, size=(-1, max(90, view.Size[1])))
-        self.Font = create_font(monospace=True)
         self.project = project
         self.paragraph = paragraph
         self.view = view
+        self._create_gui()
+        self._focus()
+
+    def _create_gui(self):
+        self.Font = create_font(monospace=True)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.vsizer.Add(
-            self._create_path(paragraph),
-            flag=wx.ALL|wx.EXPAND, border=self.BORDER
+            self._create_path(),
+            flag=wx.ALL|wx.EXPAND
         )
         self.vsizer.Add(
-            self._create_code(paragraph),
-            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER,
+            self._create_code(),
+            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,
             proportion=1
         )
         self.SetSizer(self.vsizer)
-        self.text.SetFocus()
 
-    def _create_path(self, paragraph):
+    def _create_path(self):
         self.path = wx.TextCtrl(
             self,
-            value=paragraph.path.text_version
+            value=self.paragraph.path.text_version
         )
         return self.path
 
-    def _create_code(self, paragraph):
+    def _create_code(self):
         self.text = MultilineTextCtrl(
             self,
-            value=paragraph.text_version
+            value=self.paragraph.text_version
         )
         return self.text
-
+    def _focus(self):
+        self.text.SetFocus()
     def Save(self):
         with self.paragraph.multi_update():
             self.paragraph.path = Path.from_text_version(self.path.Value)
