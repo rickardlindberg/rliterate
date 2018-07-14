@@ -27,6 +27,7 @@ import wx.lib.newevent
 
 TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
 HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
+CONTINUE_PROCESSING = object()
 EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 PAGE_BODY_WIDTH = 600
 PAGE_PADDING = 13
@@ -77,7 +78,7 @@ class ParagraphBase(Editable):
         def create_handler(name, fn):
             def handler(*args, **kwargs):
                 if name in overrides:
-                    if not overrides[name](*args, **kwargs):
+                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:
                         return
                 fn(*args, **kwargs)
             return handler
@@ -1378,7 +1379,7 @@ class CodeView(wx.Panel):
             event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         else:
             event.EventObject.SetDefaultCursor()
-        return True
+        return CONTINUE_PROCESSING
 
     def _token_right_click(self, event):
         token = event.EventObject.GetToken(event.Position)
@@ -1398,8 +1399,8 @@ class CodeView(wx.Panel):
             )
             self.PopupMenu(menu)
             menu.Destroy()
-            return False
-        return True
+        else:
+            return CONTINUE_PROCESSING
 
     def _create_code(self, paragraph):
         panel = wx.Panel(self)
