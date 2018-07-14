@@ -84,7 +84,7 @@ class ParagraphBase(Editable):
         handlers = {
             "double_click": lambda: post_edit_start(widget),
             "drag": self.DoDragDrop,
-            "right_click": lambda position: self.ShowContextMenu(),
+            "right_click": lambda event: self.ShowContextMenu(),
         }
         for key in overrides.keys():
             if key in handlers:
@@ -761,7 +761,7 @@ class TableOfContentsRow(wx.Panel):
     def _on_click(self):
         open_pages_gui(self, self.project, [self.page.id], column_index=0)
 
-    def _on_right_click(self, position):
+    def _on_right_click(self, event):
         menu = PageContextMenu(self.project, self.page)
         self.PopupMenu(menu)
         menu.Destroy()
@@ -1189,7 +1189,7 @@ class TextView(TokenView):
         MouseEventHelper.bind(
             [self],
             drag=base.DoDragDrop,
-            right_click=lambda position: base.ShowContextMenu(),
+            right_click=lambda event: base.ShowContextMenu(),
             double_click=lambda: post_edit_start(self),
             move=self._on_mouse_move,
             click=self._on_click
@@ -1386,11 +1386,11 @@ class CodeView(wx.Panel):
             token_view.SetDefaultCursor()
         return True
 
-    def _path_right_click(self, position):
-        return self._token_right_click(self.path_token_view, position)
+    def _path_right_click(self, event):
+        return self._token_right_click(self.path_token_view, event.Position)
 
-    def _body_right_click(self, position):
-        return self._token_right_click(self.body_token_view, position)
+    def _body_right_click(self, event):
+        return self._token_right_click(self.body_token_view, event.Position)
 
     def _token_right_click(self, token_view, position):
         token = token_view.GetToken(position)
@@ -1551,7 +1551,7 @@ class Factory(ParagraphBase):
         MouseEventHelper.bind(
             [view],
             drag=self.DoDragDrop,
-            right_click=lambda position: self.ShowContextMenu()
+            right_click=lambda event: self.ShowContextMenu()
         )
         view.SetBackgroundColour((240, 240, 240))
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
@@ -1705,7 +1705,7 @@ class MouseEventHelper(object):
     def OnClick(self):
         pass
 
-    def OnRightClick(self, position):
+    def OnRightClick(self, event):
         pass
 
     def OnDoubleClick(self):
@@ -1746,7 +1746,7 @@ class MouseEventHelper(object):
         self.OnDoubleClickPos(event.Position)
 
     def _on_right_up(self, event):
-        self.OnRightClick(event.Position)
+        self.OnRightClick(event)
 class Token(object):
 
     SPLIT_PATTERNS = [
