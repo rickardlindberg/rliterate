@@ -6636,27 +6636,6 @@
 ]
 },
 {
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Can not drag image, must drag image text",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Image support",
-"type":"text"
-}
-]
-},
-{
 "child_type":null,
 "children":[],
 "fragments":[
@@ -6996,6 +6975,16 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Show references: what other pages use this variable?",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
@@ -7010,7 +6999,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Backreferences: what pages link here?",
+"text":"Back references: what pages link here?",
 "type":"text"
 }
 ]
@@ -7034,8 +7023,19 @@
 ]
 },
 {
+"child_type":"unordered",
+"children":[
+{
 "child_type":null,
 "children":[],
+"fragments":[
+{
+"text":"Can do edits through context menu even though edit is in progress",
+"type":"text"
+}
+]
+}
+],
 "fragments":[
 {
 "text":"Can check if editor opened be more isolated?",
@@ -7109,16 +7109,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Can do edits through context menu even though edit is in progress",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Context menu for path should have option \"Add to chunk\"",
 "type":"text"
 }
@@ -7151,6 +7141,27 @@
 "fragments":[
 {
 "text":"TokenView is slow for code now that many tokens are generated",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Can not drag image, must drag image text",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Image support",
 "type":"text"
 }
 ]
