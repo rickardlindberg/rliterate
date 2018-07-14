@@ -1325,7 +1325,7 @@ class CodeView(wx.Panel):
         self.base = base
         self.Font = create_font(monospace=True)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        if paragraph.has_path:
+        if not paragraph.path.is_empty:
             self.vsizer.Add(
                 self._create_path(paragraph),
                 flag=wx.ALL|wx.EXPAND, border=self.BORDER
@@ -2137,10 +2137,6 @@ class ListItem(object):
 class CodeParagraph(Paragraph):
 
     @property
-    def has_path(self):
-        return len(self.filepath) > 0 or len(self.chunkpath) > 0
-
-    @property
     def path(self):
         return Path(self.filepath, self.chunkpath)
 
@@ -2279,6 +2275,10 @@ class Path(object):
             return self.filepath[-1]
         else:
             return ""
+
+    @property
+    def is_empty(self):
+        return self.length == 0
 
     @property
     def length(self):
@@ -2886,7 +2886,7 @@ class HTMLBuilder(object):
         self.escaped(token.text)
 
     def paragraph_code(self, code):
-        if code.has_path:
+        if not code.path.is_empty:
             with self.tag("div", args={"class": "rliterate-code-header"}):
                 with self.tag("p", newlines=False):
                     self.escaped(code.path.text_version)
