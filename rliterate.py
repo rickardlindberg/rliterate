@@ -2137,6 +2137,9 @@ class ListItem(object):
 class CodeParagraph(Paragraph):
 
     @property
+    def fragments(self):
+        return copy.deepcopy(self._paragraph_dict["fragments"])
+    @property
     def text_version(self):
         CONVERTERS = {
             "chunk": self._chunk_fragment_to_text,
@@ -2179,10 +2182,6 @@ class CodeParagraph(Paragraph):
 
     def _chunk_delimiters(self):
         return ("<<", ">>")
-
-    @property
-    def fragments(self):
-        return copy.deepcopy(self._paragraph_dict["fragments"])
 
     @property
     def tokens(self):

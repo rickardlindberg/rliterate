@@ -4035,6 +4035,43 @@
 "id":"328abedb1f3840929e519c2056634a9e",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"Code fragments include body text and chunks.",
+"type":"text"
+}
+],
+"id":"d8084614389e4d16b1b04087511e0cd0",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef fragments(self):\n    return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n",
+"type":"code"
+}
+],
+"id":"4527d0fd662b40bd886cc5fbc6bdd3b3",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"They can be converted to text for editing:",
+"type":"text"
+}
+],
+"id":"5dc6cf753ee64f38b6ac2220eb252fd8",
+"type":"text"
+},
+{
 "chunkpath":[
 "classes",
 "CodeParagraph"
@@ -4050,6 +4087,16 @@
 ],
 "id":"730285ef9d82453baa7bb79881c1db22",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"And converted back again from text:",
+"type":"text"
+}
+],
+"id":"1c5d3f7e02094783a2cf5de25cb6ebc9",
+"type":"text"
 },
 {
 "chunkpath":[
@@ -4096,7 +4143,7 @@
 "type":"code"
 }
 ],
-"title":"Text conversion"
+"title":"Fragments"
 }
 ],
 "id":"74b0c8c33aa0436cbd01d16e205a738c",
@@ -4121,7 +4168,7 @@
 "type":"chunk"
 },
 {
-"text":"\n    @property\n    def fragments(self):\n        return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        pygments_text, inserts = self._pygments_text()\n        return self._pygments_tokens_to_tokens(\n            lexer.get_tokens(pygments_text),\n            inserts\n        )\n\n    def _pygments_text(self):\n        pygments_text = \"\"\n        inserts = defaultdict(list)\n        for fragment in self.fragments:\n            if fragment[\"type\"] == \"chunk\":\n                inserts[len(pygments_text)].append(Token(\n                    self._chunk_fragment_to_text(fragment),\n                    token_type=TokenType.RLiterate.Chunk,\n                    path=self.path.extend_chunk(fragment[\"path\"])\n                ))\n            else:\n                pygments_text += fragment[\"text\"]\n        return pygments_text, inserts\n\n    @property\n    def has_path(self):\n        return len(self.filepath) > 0 or len(self.chunkpath) > 0\n\n    @property\n    def path(self):\n        return Path(self.filepath, self.chunkpath)\n\n    @property\n    def filepath(self):\n        return [x for x in self._paragraph_dict[\"filepath\"] if x]\n\n    @property\n    def chunkpath(self):\n        return [x for x in self._paragraph_dict[\"chunkpath\"] if x]\n\n    @property\n    def filename(self):\n        return self.filepath[-1] if self.filepath else \"\"\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):\n        pos = 0\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            for ch in text:\n                tokens.extend(inserts.get(pos, []))\n                tokens.append(Token(ch, token_type=pygments_token))\n                pos += 1\n        tokens.extend(inserts.get(pos, []))\n        return tokens\n",
+"text":"\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        pygments_text, inserts = self._pygments_text()\n        return self._pygments_tokens_to_tokens(\n            lexer.get_tokens(pygments_text),\n            inserts\n        )\n\n    def _pygments_text(self):\n        pygments_text = \"\"\n        inserts = defaultdict(list)\n        for fragment in self.fragments:\n            if fragment[\"type\"] == \"chunk\":\n                inserts[len(pygments_text)].append(Token(\n                    self._chunk_fragment_to_text(fragment),\n                    token_type=TokenType.RLiterate.Chunk,\n                    path=self.path.extend_chunk(fragment[\"path\"])\n                ))\n            else:\n                pygments_text += fragment[\"text\"]\n        return pygments_text, inserts\n\n    @property\n    def has_path(self):\n        return len(self.filepath) > 0 or len(self.chunkpath) > 0\n\n    @property\n    def path(self):\n        return Path(self.filepath, self.chunkpath)\n\n    @property\n    def filepath(self):\n        return [x for x in self._paragraph_dict[\"filepath\"] if x]\n\n    @property\n    def chunkpath(self):\n        return [x for x in self._paragraph_dict[\"chunkpath\"] if x]\n\n    @property\n    def filename(self):\n        return self.filepath[-1] if self.filepath else \"\"\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):\n        pos = 0\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            for ch in text:\n                tokens.extend(inserts.get(pos, []))\n                tokens.append(Token(ch, token_type=pygments_token))\n                pos += 1\n        tokens.extend(inserts.get(pos, []))\n        return tokens\n",
 "type":"code"
 }
 ],
