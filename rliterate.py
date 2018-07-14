@@ -1353,7 +1353,7 @@ class CodeView(wx.Panel):
         self.base.BindMouse(
             self,
             [self.path_token_view],
-            right_click=self._path_right_click,
+            right_click=self._token_right_click,
             move=self._path_move
         )
         return panel
@@ -1386,14 +1386,8 @@ class CodeView(wx.Panel):
             token_view.SetDefaultCursor()
         return True
 
-    def _path_right_click(self, event):
-        return self._token_right_click(self.path_token_view, event.Position)
-
-    def _body_right_click(self, event):
-        return self._token_right_click(self.body_token_view, event.Position)
-
-    def _token_right_click(self, token_view, position):
-        token = token_view.GetToken(position)
+    def _token_right_click(self, event):
+        token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("path") is not None:
             def rename():
                 dialog = RenamePathDialog(
@@ -1429,7 +1423,7 @@ class CodeView(wx.Panel):
         self.base.BindMouse(
             self,
             [self.body_token_view],
-            right_click=self._body_right_click,
+            right_click=self._token_right_click,
             move=self._body_move
         )
         return panel
