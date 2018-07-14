@@ -1428,7 +1428,7 @@ class CodeEditor(wx.Panel):
     PADDING = 3
 
     def __init__(self, parent, project, paragraph, view):
-        wx.Panel.__init__(self, parent)
+        wx.Panel.__init__(self, parent, size=(-1, max(90, view.Size[1])))
         self.Font = create_font(monospace=True)
         self.project = project
         self.paragraph = paragraph
@@ -1440,9 +1440,11 @@ class CodeEditor(wx.Panel):
         )
         self.vsizer.Add(
             self._create_code(paragraph),
-            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
+            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER,
+            proportion=1
         )
         self.SetSizer(self.vsizer)
+        self.text.SetFocus()
 
     def _create_path(self, paragraph):
         self.path = wx.TextCtrl(
@@ -1454,8 +1456,7 @@ class CodeEditor(wx.Panel):
     def _create_code(self, paragraph):
         self.text = MultilineTextCtrl(
             self,
-            value=paragraph.text_version,
-            size=(-1, self.view.Size[1])
+            value=paragraph.text_version
         )
         return self.text
 
