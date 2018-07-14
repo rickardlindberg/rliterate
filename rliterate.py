@@ -1354,7 +1354,7 @@ class CodeView(wx.Panel):
             self,
             [self.path_token_view],
             right_click=self._token_right_click,
-            move=self._path_move
+            move=self._token_move
         )
         return panel
 
@@ -1372,18 +1372,12 @@ class CodeView(wx.Panel):
         ))
         return tokens
 
-    def _path_move(self, event):
-        return self._token_move(self.path_token_view, event.Position)
-
-    def _body_move(self, event):
-        return self._token_move(self.body_token_view, event.Position)
-
-    def _token_move(self, token_view, position):
-        token = token_view.GetToken(position)
+    def _token_move(self, event):
+        token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("path") is not None:
-            token_view.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+            event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         else:
-            token_view.SetDefaultCursor()
+            event.EventObject.SetDefaultCursor()
         return True
 
     def _token_right_click(self, event):
@@ -1424,7 +1418,7 @@ class CodeView(wx.Panel):
             self,
             [self.body_token_view],
             right_click=self._token_right_click,
-            move=self._body_move
+            move=self._token_move
         )
         return panel
 class CodeEditor(wx.Panel):
