@@ -2211,6 +2211,7 @@ class CodeParagraph(Paragraph):
                 tokens.extend(inserts.get(pos, []))
                 tokens.append(Token(ch, token_type=pygments_token))
                 pos += 1
+        tokens.extend(inserts.get(pos, []))
         return tokens
 class Path(object):
 
