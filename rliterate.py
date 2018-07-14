@@ -2138,17 +2138,21 @@ class CodeParagraph(Paragraph):
 
     @property
     def text_version(self):
-        return self.text
-
+        CONVERTERS = {
+            "chunk": self._chunk_fragment_to_text,
+            "code": lambda fragment: fragment["text"]
+        }
+        return "".join(
+            CONVERTERS[fragment["type"]](fragment)
+            for fragment
+            in self.fragments
+        )
     @text_version.setter
     def text_version(self, value):
-        self.update({"fragments": self._code_text_to_fragments(value)})
-
-    def _code_text_to_fragments(self, text):
         fragments = []
         current_text = ""
-        for line in text.splitlines():
-            match = re.match(r"^(\s*)<<(.*)>>\s*$", line)
+        for line in value.splitlines():
+            match = re.match(self._chunk_fragment_re(), line)
             if match:
                 if current_text:
                     fragments.append({"type": "code", "text": current_text})
@@ -2159,20 +2163,22 @@ class CodeParagraph(Paragraph):
                 current_text += "\n"
         if current_text:
             fragments.append({"type": "code", "text": current_text})
-        return fragments
+        self.update({"fragments": fragments})
+    def _chunk_fragment_to_text(self, fragment):
+        start, end = self._chunk_delimiters()
+        return "{}{}{}{}\n".format(
+            fragment["prefix"],
+            start,
+            "/".join(fragment["path"]),
+            end
+        )
 
-    @property
-    def text(self):
-        return self._code_fragments_to_text(self.fragments)
+    def _chunk_fragment_re(self):
+        start, end = self._chunk_delimiters()
+        return r"^(\s*){}(.*){}\s*$".format(re.escape(start), re.escape(end))
 
-    def _code_fragments_to_text(self, fragments):
-        parts = []
-        for fragment in fragments:
-            if fragment["type"] == "code":
-                parts.append(fragment["text"])
-            else:
-                parts.append("{}<<{}>>\n".format(fragment["prefix"], "/".join(fragment["path"])))
-        return "".join(parts)
+    def _chunk_delimiters(self):
+        return ("<<", ">>")
 
     @property
     def fragments(self):
@@ -2196,7 +2202,7 @@ class CodeParagraph(Paragraph):
         for fragment in self.fragments:
             if fragment["type"] == "chunk":
                 inserts[len(pygments_text)].append(Token(
-                    "{}<<{}>>\n".format(fragment["prefix"], "/".join(fragment["path"])),
+                    self._chunk_fragment_to_text(fragment),
                     token_type=TokenType.RLiterate.Chunk,
                     path=self.path.extend_chunk(fragment["path"])
                 ))
@@ -2991,7 +2997,7 @@ class DiffBuilder(object):
 
     def _render_code(self, code):
         self._write(code.path.text_version+":\n\n")
-        for line in code.text.splitlines():
+        for line in code.text_version.splitlines():
             self._write("    "+line+"\n")
         self._write("\n")
 

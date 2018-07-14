@@ -4029,7 +4029,76 @@
 "title":"List"
 },
 {
+"children":[
+{
 "children":[],
+"id":"328abedb1f3840929e519c2056634a9e",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef text_version(self):\n    CONVERTERS = {\n        \"chunk\": self._chunk_fragment_to_text,\n        \"code\": lambda fragment: fragment[\"text\"]\n    }\n    return \"\".join(\n        CONVERTERS[fragment[\"type\"]](fragment)\n        for fragment\n        in self.fragments\n    )\n",
+"type":"code"
+}
+],
+"id":"730285ef9d82453baa7bb79881c1db22",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@text_version.setter\ndef text_version(self, value):\n    fragments = []\n    current_text = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            if current_text:\n                fragments.append({\"type\": \"code\", \"text\": current_text})\n            current_text = \"\"\n            fragments.append({\"type\": \"chunk\", \"path\": match.group(2).split(\"/\"), \"prefix\": match.group(1)})\n        else:\n            current_text += line\n            current_text += \"\\n\"\n    if current_text:\n        fragments.append({\"type\": \"code\", \"text\": current_text})\n    self.update({\"fragments\": fragments})\n",
+"type":"code"
+}
+],
+"id":"b8876217fc6747f3b501f98c29e3f0ad",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Chunk fragments:",
+"type":"text"
+}
+],
+"id":"79e743ac50e94da19416a9da6cf982fa",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _chunk_fragment_to_text(self, fragment):\n    start, end = self._chunk_delimiters()\n    return \"{}{}{}{}\\n\".format(\n        fragment[\"prefix\"],\n        start,\n        \"/\".join(fragment[\"path\"]),\n        end\n    )\n\ndef _chunk_fragment_re(self):\n    start, end = self._chunk_delimiters()\n    return r\"^(\\s*){}(.*){}\\s*$\".format(re.escape(start), re.escape(end))\n\ndef _chunk_delimiters(self):\n    return (\"<<\", \">>\")\n",
+"type":"code"
+}
+],
+"id":"62c8f717420a491693cb1cfc2033b4dd",
+"type":"code"
+}
+],
+"title":"Text conversion"
+}
+],
 "id":"74b0c8c33aa0436cbd01d16e205a738c",
 "paragraphs":[
 {
@@ -4052,7 +4121,7 @@
 "type":"chunk"
 },
 {
-"text":"\n    @property\n    def fragments(self):\n        return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        pygments_text, inserts = self._pygments_text()\n        return self._pygments_tokens_to_tokens(\n            lexer.get_tokens(pygments_text),\n            inserts\n        )\n\n    def _pygments_text(self):\n        pygments_text = \"\"\n        inserts = defaultdict(list)\n        for fragment in self.fragments:\n            if fragment[\"type\"] == \"chunk\":\n                inserts[len(pygments_text)].append(Token(\n                    \"{}<<{}>>\\n\".format(fragment[\"prefix\"], \"/\".join(fragment[\"path\"])),\n                    token_type=TokenType.RLiterate.Chunk,\n                    path=self.path.extend_chunk(fragment[\"path\"])\n                ))\n            else:\n                pygments_text += fragment[\"text\"]\n        return pygments_text, inserts\n\n    @property\n    def has_path(self):\n        return len(self.filepath) > 0 or len(self.chunkpath) > 0\n\n    @property\n    def path(self):\n        return Path(self.filepath, self.chunkpath)\n\n    @property\n    def filepath(self):\n        return [x for x in self._paragraph_dict[\"filepath\"] if x]\n\n    @property\n    def chunkpath(self):\n        return [x for x in self._paragraph_dict[\"chunkpath\"] if x]\n\n    @property\n    def filename(self):\n        return self.filepath[-1] if self.filepath else \"\"\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):\n        pos = 0\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            for ch in text:\n                tokens.extend(inserts.get(pos, []))\n                tokens.append(Token(ch, token_type=pygments_token))\n                pos += 1\n        tokens.extend(inserts.get(pos, []))\n        return tokens\n",
+"text":"\n    @property\n    def fragments(self):\n        return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        pygments_text, inserts = self._pygments_text()\n        return self._pygments_tokens_to_tokens(\n            lexer.get_tokens(pygments_text),\n            inserts\n        )\n\n    def _pygments_text(self):\n        pygments_text = \"\"\n        inserts = defaultdict(list)\n        for fragment in self.fragments:\n            if fragment[\"type\"] == \"chunk\":\n                inserts[len(pygments_text)].append(Token(\n                    self._chunk_fragment_to_text(fragment),\n                    token_type=TokenType.RLiterate.Chunk,\n                    path=self.path.extend_chunk(fragment[\"path\"])\n                ))\n            else:\n                pygments_text += fragment[\"text\"]\n        return pygments_text, inserts\n\n    @property\n    def has_path(self):\n        return len(self.filepath) > 0 or len(self.chunkpath) > 0\n\n    @property\n    def path(self):\n        return Path(self.filepath, self.chunkpath)\n\n    @property\n    def filepath(self):\n        return [x for x in self._paragraph_dict[\"filepath\"] if x]\n\n    @property\n    def chunkpath(self):\n        return [x for x in self._paragraph_dict[\"chunkpath\"] if x]\n\n    @property\n    def filename(self):\n        return self.filepath[-1] if self.filepath else \"\"\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):\n        pos = 0\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            for ch in text:\n                tokens.extend(inserts.get(pos, []))\n                tokens.append(Token(ch, token_type=pygments_token))\n                pos += 1\n        tokens.extend(inserts.get(pos, []))\n        return tokens\n",
 "type":"code"
 }
 ],
@@ -4090,23 +4159,6 @@
 }
 ],
 "id":"d4937570aa6b4bcea3bc918d2b211d25",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"CodeParagraph"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef text_version(self):\n    return self.text\n\n@text_version.setter\ndef text_version(self, value):\n    self.update({\"fragments\": self._code_text_to_fragments(value)})\n\ndef _code_text_to_fragments(self, text):\n    fragments = []\n    current_text = \"\"\n    for line in text.splitlines():\n        match = re.match(r\"^(\\s*)<<(.*)>>\\s*$\", line)\n        if match:\n            if current_text:\n                fragments.append({\"type\": \"code\", \"text\": current_text})\n            current_text = \"\"\n            fragments.append({\"type\": \"chunk\", \"path\": match.group(2).split(\"/\"), \"prefix\": match.group(1)})\n        else:\n            current_text += line\n            current_text += \"\\n\"\n    if current_text:\n        fragments.append({\"type\": \"code\", \"text\": current_text})\n    return fragments\n\n@property\ndef text(self):\n    return self._code_fragments_to_text(self.fragments)\n\ndef _code_fragments_to_text(self, fragments):\n    parts = []\n    for fragment in fragments:\n        if fragment[\"type\"] == \"code\":\n            parts.append(fragment[\"text\"])\n        else:\n            parts.append(\"{}<<{}>>\\n\".format(fragment[\"prefix\"], \"/\".join(fragment[\"path\"])))\n    return \"\".join(parts)\n",
-"type":"code"
-}
-],
-"id":"730285ef9d82453baa7bb79881c1db22",
 "type":"code"
 }
 ],
@@ -5566,7 +5618,7 @@
 ],
 "fragments":[
 {
-"text":"class DiffBuilder(object):\n\n    def __init__(self, document):\n        self.document = document\n\n    def build(self):\n        self.parts = []\n        self._foo()\n        return \"\".join(self.parts)\n\n    def _foo(self):\n        self.pages = []\n        self._collect_pages(self.document.get_page())\n        self._render_pages()\n\n    def _collect_pages(self, page):\n        self.pages.append(page)\n        for child in page.children:\n            self._collect_pages(child)\n\n    def _render_pages(self):\n        for page in sorted(self.pages, key=lambda page: page.id):\n            self._write(page.id)\n            self._write(\": \")\n            self._write(page.title)\n            for child in page.children:\n                self._write(\"\\n\")\n                self._write(\"    \")\n                self._write(child.id)\n                self._write(\": \")\n                self._write(child.title)\n            self._write(\"\\n\\n\")\n            for paragraph in page.paragraphs:\n                {\n                    \"text\": self._render_text,\n                    \"quote\": self._render_quote,\n                    \"list\": self._render_list,\n                    \"code\": self._render_code,\n                }.get(paragraph.type, self._render_unknown)(paragraph)\n\n    def _render_text(self, text):\n        self._wrapped_text(text.text_version)\n\n    def _render_quote(self, paragraph):\n        self._wrapped_text(paragraph.text_version, indent=4)\n\n    def _render_list(self, paragraph):\n        self._write(paragraph.text_version)\n\n    def _wrapped_text(self, text, indent=0):\n        current_line = []\n        for part in text.replace(\"\\n\", \" \").split(\" \"):\n            if len(\" \".join(current_line)) > 60-indent:\n                self._write(\" \"*indent+\" \".join(current_line))\n                self._write(\"\\n\")\n                current_line = []\n            if part.strip():\n                current_line.append(part.strip())\n        if current_line:\n            self._write(\" \"*indent+\" \".join(current_line))\n            self._write(\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_code(self, code):\n        self._write(code.path.text_version+\":\\n\\n\")\n        for line in code.text.splitlines():\n            self._write(\"    \"+line+\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_unknown(self, paragraph):\n        self._write(\"Unknown type = \"+paragraph.type+\"\\n\\n\")\n\n    def _write(self, text):\n        self.parts.append(text)\n",
+"text":"class DiffBuilder(object):\n\n    def __init__(self, document):\n        self.document = document\n\n    def build(self):\n        self.parts = []\n        self._foo()\n        return \"\".join(self.parts)\n\n    def _foo(self):\n        self.pages = []\n        self._collect_pages(self.document.get_page())\n        self._render_pages()\n\n    def _collect_pages(self, page):\n        self.pages.append(page)\n        for child in page.children:\n            self._collect_pages(child)\n\n    def _render_pages(self):\n        for page in sorted(self.pages, key=lambda page: page.id):\n            self._write(page.id)\n            self._write(\": \")\n            self._write(page.title)\n            for child in page.children:\n                self._write(\"\\n\")\n                self._write(\"    \")\n                self._write(child.id)\n                self._write(\": \")\n                self._write(child.title)\n            self._write(\"\\n\\n\")\n            for paragraph in page.paragraphs:\n                {\n                    \"text\": self._render_text,\n                    \"quote\": self._render_quote,\n                    \"list\": self._render_list,\n                    \"code\": self._render_code,\n                }.get(paragraph.type, self._render_unknown)(paragraph)\n\n    def _render_text(self, text):\n        self._wrapped_text(text.text_version)\n\n    def _render_quote(self, paragraph):\n        self._wrapped_text(paragraph.text_version, indent=4)\n\n    def _render_list(self, paragraph):\n        self._write(paragraph.text_version)\n\n    def _wrapped_text(self, text, indent=0):\n        current_line = []\n        for part in text.replace(\"\\n\", \" \").split(\" \"):\n            if len(\" \".join(current_line)) > 60-indent:\n                self._write(\" \"*indent+\" \".join(current_line))\n                self._write(\"\\n\")\n                current_line = []\n            if part.strip():\n                current_line.append(part.strip())\n        if current_line:\n            self._write(\" \"*indent+\" \".join(current_line))\n            self._write(\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_code(self, code):\n        self._write(code.path.text_version+\":\\n\\n\")\n        for line in code.text_version.splitlines():\n            self._write(\"    \"+line+\"\\n\")\n        self._write(\"\\n\")\n\n    def _render_unknown(self, paragraph):\n        self._write(\"Unknown type = \"+paragraph.type+\"\\n\\n\")\n\n    def _write(self, text):\n        self.parts.append(text)\n",
 "type":"code"
 }
 ],
