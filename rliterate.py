@@ -2137,6 +2137,25 @@ class ListItem(object):
 class CodeParagraph(Paragraph):
 
     @property
+    def has_path(self):
+        return len(self.filepath) > 0 or len(self.chunkpath) > 0
+
+    @property
+    def path(self):
+        return Path(self.filepath, self.chunkpath)
+
+    @property
+    def filepath(self):
+        return [x for x in self._paragraph_dict["filepath"] if x]
+
+    @property
+    def chunkpath(self):
+        return [x for x in self._paragraph_dict["chunkpath"] if x]
+
+    @property
+    def filename(self):
+        return self.filepath[-1] if self.filepath else ""
+    @property
     def fragments(self):
         return copy.deepcopy(self._paragraph_dict["fragments"])
     @property
@@ -2208,26 +2227,6 @@ class CodeParagraph(Paragraph):
             else:
                 pygments_text += fragment["text"]
         return pygments_text, inserts
-
-    @property
-    def has_path(self):
-        return len(self.filepath) > 0 or len(self.chunkpath) > 0
-
-    @property
-    def path(self):
-        return Path(self.filepath, self.chunkpath)
-
-    @property
-    def filepath(self):
-        return [x for x in self._paragraph_dict["filepath"] if x]
-
-    @property
-    def chunkpath(self):
-        return [x for x in self._paragraph_dict["chunkpath"] if x]
-
-    @property
-    def filename(self):
-        return self.filepath[-1] if self.filepath else ""
 
     @property
     def language(self):
