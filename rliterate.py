@@ -1196,8 +1196,8 @@ class TextView(TokenView):
         )
         self.token = None
 
-    def _on_mouse_move(self, position):
-        token = self.GetToken(position)
+    def _on_mouse_move(self, event):
+        token = self.GetToken(event.Position)
         if token is not self.token:
             self.token = token
             post_hovered_token_changed(self, self.token)
@@ -1372,11 +1372,11 @@ class CodeView(wx.Panel):
         ))
         return tokens
 
-    def _path_move(self, position):
-        return self._token_move(self.path_token_view, position)
+    def _path_move(self, event):
+        return self._token_move(self.path_token_view, event.Position)
 
-    def _body_move(self, position):
-        return self._token_move(self.body_token_view, position)
+    def _body_move(self, event):
+        return self._token_move(self.body_token_view, event.Position)
 
     def _token_move(self, token_view, position):
         token = token_view.GetToken(position)
@@ -1708,7 +1708,7 @@ class MouseEventHelper(object):
     def OnDoubleClickPos(self, position):
         pass
 
-    def OnMove(self, position):
+    def OnMove(self, event):
         pass
 
     def _on_left_down(self, event):
@@ -1716,7 +1716,7 @@ class MouseEventHelper(object):
 
     def _on_motion(self, event):
         if self.down_pos is None:
-            self.OnMove(event.Position)
+            self.OnMove(event)
         if self._should_drag(event.Position):
             self.down_pos = None
             self.OnDrag()
