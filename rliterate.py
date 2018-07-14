@@ -50,7 +50,7 @@ class Editable(wx.Panel):
             show_edit_in_progress_error(self)
             return
         with flicker_free_drawing(self):
-            self.edit = self.CreateEdit()
+            self.edit = self.CreateEdit(event.extra)
             self.edit.SetFocus()
             self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
             self.sizer.Hide(self.view)
@@ -1147,7 +1147,7 @@ class Title(Editable):
                 self._selection = (start, start+len(token.text))
         post_edit_start(self.view)
 
-    def CreateEdit(self):
+    def CreateEdit(self, extra):
         edit = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
         edit.Save = lambda: self.page.set_title(self.edit.Value)
         wx.CallAfter(lambda: edit.SetSelection(*self._selection))
@@ -1162,7 +1162,7 @@ class Text(ParagraphBase):
             self
         )
 
-    def CreateEdit(self):
+    def CreateEdit(self, extra):
         return TextEdit(
             self,
             self.project,
@@ -1249,9 +1249,9 @@ class Quote(Text):
         view.SetSizer(sizer)
         return view
 
-    def CreateEdit(self):
+    def CreateEdit(self, extra):
         self.view.token = self.text_view.token
-        return Text.CreateEdit(self)
+        return Text.CreateEdit(self, extra)
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
@@ -1269,7 +1269,7 @@ class List(ParagraphBase):
         view.SetSizer(sizer)
         return view
 
-    def CreateEdit(self):
+    def CreateEdit(self, extra):
         return TextEdit(
             self,
             self.project,
@@ -1313,8 +1313,8 @@ class Code(ParagraphBase):
     def CreateView(self):
         return CodeView(self, self.project, self.paragraph, self)
 
-    def CreateEdit(self):
-        return CodeEditor(self, self.project, self.paragraph, self.view)
+    def CreateEdit(self, extra):
+        return CodeEditor(self, self.project, self.paragraph, self.view, extra)
 class CodeView(wx.Panel):
 
     BORDER = 0
@@ -1383,8 +1383,10 @@ class CodeView(wx.Panel):
         return CONTINUE_PROCESSING
 
     def _path_double_click(self, event):
-        self.path_token_double_clicked = event.EventObject.GetToken(event.Position)
-        return CONTINUE_PROCESSING
+        post_edit_start(self, path_token=event.EventObject.GetToken(event.Position))
+
+    def _body_double_click(self, event):
+        post_edit_start(self, body_token=event.EventObject.GetToken(event.Position))
 
     def _token_right_click(self, event):
         token = event.EventObject.GetToken(event.Position)
@@ -1424,16 +1426,18 @@ class CodeView(wx.Panel):
             self,
             [self.body_token_view],
             right_click=self._token_right_click,
-            move=self._token_move
+            move=self._token_move,
+            double_click=self._body_double_click
         )
         return panel
 class CodeEditor(wx.Panel):
 
-    def __init__(self, parent, project, paragraph, view):
+    def __init__(self, parent, project, paragraph, view, extra):
         wx.Panel.__init__(self, parent, size=(-1, max(90, view.Size[1])))
         self.project = project
         self.paragraph = paragraph
         self.view = view
+        self.extra = extra
         self._create_gui()
         self._focus()
 
@@ -1465,6 +1469,7 @@ class CodeEditor(wx.Panel):
         )
         return self.text
     def _focus(self):
+        print(self.extra)
         self.text.SetFocus()
     def Save(self):
         with self.paragraph.multi_update():
@@ -1499,7 +1504,7 @@ class Image(ParagraphBase):
         self.BindMouse(view, [view, bitmap])
         return view
 
-    def CreateEdit(self):
+    def CreateEdit(self, extra):
         return ImageEdit(
             self,
             self.project,
@@ -3119,8 +3124,8 @@ def fit_image(image, width):
         int(image.Height*factor),
         wx.IMAGE_QUALITY_HIGH
     )
-def post_edit_start(control):
-    wx.PostEvent(control, EditStart(0))
+def post_edit_start(control, **extra):
+    wx.PostEvent(control, EditStart(0, extra=extra))
 def open_pages_gui(window, project, *args, **kwargs):
     try:
         project.open_pages(*args, **kwargs)
