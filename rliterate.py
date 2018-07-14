@@ -1355,7 +1355,8 @@ class CodeView(wx.Panel):
             self,
             [self.path_token_view],
             right_click=self._token_right_click,
-            move=self._token_move
+            move=self._token_move,
+            double_click=self._path_double_click
         )
         return panel
 
@@ -1379,6 +1380,10 @@ class CodeView(wx.Panel):
             event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         else:
             event.EventObject.SetDefaultCursor()
+        return CONTINUE_PROCESSING
+
+    def _path_double_click(self, event):
+        self.path_token_double_clicked = event.EventObject.GetToken(event.Position)
         return CONTINUE_PROCESSING
 
     def _token_right_click(self, event):
