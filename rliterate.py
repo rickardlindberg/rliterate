@@ -1378,7 +1378,7 @@ class CodeView(wx.Panel):
                 dialog.Destroy()
             menu = ParagraphContextMenu()
             menu.AppendItem(
-                "Rename '{}'".format(token.extra["path"].text_version),
+                "Rename '{}'".format(token.extra["path"].last),
                 rename
             )
             self.PopupMenu(menu)
@@ -1596,11 +1596,8 @@ class RenamePathDialog(wx.Dialog):
         self._create_gui()
 
     def _create_gui(self):
-        self._text = wx.TextCtrl(self, value=self._path.text_version, size=(400, -1))
+        self._text = wx.TextCtrl(self, value=self._path.last, size=(400, -1))
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(wx.StaticText(self, label="From:"))
-        sizer.Add(wx.StaticText(self, label=self._path.text_version))
-        sizer.Add(wx.StaticText(self, label="To:"))
         sizer.Add(self._text, flag=wx.EXPAND)
         sizer.Add(self.CreateButtonSizer(wx.OK|wx.CANCEL), flag=wx.ALL)
         self.SetSizerAndFit(sizer)
@@ -1609,7 +1606,7 @@ class RenamePathDialog(wx.Dialog):
     def _on_ok(self, event):
         print("Rename '{}' to '{}'".format(
             self._path.text_version,
-            Path.from_text_version(self._text.Value).text_version
+            self._path.with_last(self._text.Value).text_version
         ))
         self.Close()
 class RliterateDataObject(wx.CustomDataObject):
@@ -2193,6 +2190,19 @@ class Path(object):
 
     def has_both(self):
         return len(self.filepath) > 0 and len(self.chunkpath) > 0
+
+    def with_last(self, value):
+        if len(self.chunkpath) > 0:
+            return Path(self.filepath, self.chunkpath[:-1]+[value])
+        else:
+            return Path(self.filepath[:-1]+[value], self.chunkpath)
+
+    @property
+    def last(self):
+        if len(self.chunkpath) > 0:
+            return self.chunkpath[-1]
+        else:
+            return self.filepath[-1]
 
     @property
     def filepaths(self):
