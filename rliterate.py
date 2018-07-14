@@ -1341,13 +1341,7 @@ class CodeView(wx.Panel):
         self.path_token_view = TokenView(
             panel,
             self.project,
-            insert_between(
-                Token("/", token_type=TokenType.RLiterate.Sep),
-                [Token(x, token_type=TokenType.RLiterate.Path, path=xs) for (x, xs) in paragraph.path.filepaths]
-            )+[Token(" ", token_type=TokenType.RLiterate.Sep)]+insert_between(
-                Token("/", token_type=TokenType.RLiterate.Sep),
-                [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in paragraph.path.chunkpaths]
-            ),
+            self._create_path_tokens(paragraph.path),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1356,6 +1350,20 @@ class CodeView(wx.Panel):
         self.base.BindMouse(self, [panel])
         self.base.BindMouse(self, [self.path_token_view], right_click=self._path_right_click)
         return panel
+
+    def _create_path_tokens(self, path):
+        tokens = []
+        tokens.extend(insert_between(
+            Token("/", token_type=TokenType.RLiterate.Sep),
+            [Token(x, token_type=TokenType.RLiterate.Path, path=xs) for (x, xs) in path.filepaths]
+        ))
+        if path.has_both():
+            tokens.append(Token(" ", token_type=TokenType.RLiterate.Sep))
+        tokens.extend(insert_between(
+            Token("/", token_type=TokenType.RLiterate.Sep),
+            [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in path.chunkpaths]
+        ))
+        return tokens
 
     def _path_right_click(self, position):
         token = self.path_token_view.GetToken(position)
@@ -2182,6 +2190,9 @@ class Path(object):
     def __init__(self, filepath, chunkpath):
         self.filepath = filepath
         self.chunkpath = chunkpath
+
+    def has_both(self):
+        return len(self.filepath) > 0 and len(self.chunkpath) > 0
 
     @property
     def filepaths(self):
