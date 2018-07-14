@@ -1604,10 +1604,7 @@ class RenamePathDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)
 
     def _on_ok(self, event):
-        print("Rename '{}' to '{}'".format(
-            self._path.text_version,
-            self._path.with_last(self._text.Value).text_version
-        ))
+        self._project.rename_path(self._path, self._text.Value)
         self.Close()
 class RliterateDataObject(wx.CustomDataObject):
 
@@ -1843,6 +1840,22 @@ class Document(Observable):
         for paragraph in self.get_page(page_id).paragraphs:
             if paragraph.id == paragraph_id:
                 return paragraph
+    def rename_path(self, path, name):
+        with self.modify("Rename path") as document_dict:
+            for p in document_dict.paragraph_dict_iterator():
+                if p["type"] == "code":
+                    filelen = len(p["filepath"])
+                    chunklen = len(p["chunkpath"])
+                    if path.is_prefix(Path(p["filepath"], p["chunkpath"])):
+                        if path.length > filelen:
+                            p["chunkpath"][path.length-1-filelen] = name
+                        else:
+                            p["filepath"][path.length-1] = name
+                    else:
+                        for f in p["fragments"]:
+                            if f["type"] == "chunk":
+                                if path.is_prefix(Path(p["filepath"], p["chunkpath"]+f["path"])):
+                                    f["path"][path.length-1-filelen-chunklen] = name
 class DocumentDictWrapper(dict):
 
     def __init__(self, document_dict):
@@ -2184,25 +2197,31 @@ class Path(object):
     def text_version(self):
         return "{} // {}".format("/".join(self.filepath), "/".join(self.chunkpath))
 
-    def __init__(self, filepath, chunkpath):
-        self.filepath = filepath
-        self.chunkpath = chunkpath
-
-    def has_both(self):
-        return len(self.filepath) > 0 and len(self.chunkpath) > 0
-
-    def with_last(self, value):
-        if len(self.chunkpath) > 0:
-            return Path(self.filepath, self.chunkpath[:-1]+[value])
-        else:
-            return Path(self.filepath[:-1]+[value], self.chunkpath)
-
     @property
     def last(self):
         if len(self.chunkpath) > 0:
             return self.chunkpath[-1]
-        else:
+        elif len(self.filepath) > 0:
             return self.filepath[-1]
+        else:
+            return ""
+
+    @property
+    def length(self):
+        return len(self.chunkpath) + len(self.filepath)
+
+    def __init__(self, filepath, chunkpath):
+        self.filepath = filepath
+        self.chunkpath = chunkpath
+
+    def is_prefix(self, other):
+        if len(self.chunkpath) > 0:
+            return self.filepath == other.filepath and self.chunkpath == other.chunkpath[:len(self.chunkpath)]
+        else:
+            return self.filepath == other.filepath[:len(self.filepath)]
+
+    def has_both(self):
+        return len(self.filepath) > 0 and len(self.chunkpath) > 0
 
     @property
     def filepaths(self):
@@ -2595,6 +2614,9 @@ class Project(Observable):
 
     def get_redo_operation(self, *args, **kwargs):
         return self.document.get_redo_operation(*args, **kwargs)
+
+    def rename_path(self, *args, **kwargs):
+        return self.document.rename_path(*args, **kwargs)
     def toggle_collapsed(self, *args, **kwargs):
         return self.layout.toggle_collapsed(*args, **kwargs)
 

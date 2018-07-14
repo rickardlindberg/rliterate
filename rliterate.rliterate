@@ -3155,7 +3155,7 @@
 ],
 "fragments":[
 {
-"text":"class RenamePathDialog(wx.Dialog):\n\n    def __init__(self, parent, project, path):\n        wx.Dialog.__init__(self, parent, title=\"Rename path\")\n        self._project = project\n        self._path = path\n        self._create_gui()\n\n    def _create_gui(self):\n        self._text = wx.TextCtrl(self, value=self._path.last, size=(400, -1))\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        sizer.Add(self._text, flag=wx.EXPAND)\n        sizer.Add(self.CreateButtonSizer(wx.OK|wx.CANCEL), flag=wx.ALL)\n        self.SetSizerAndFit(sizer)\n        self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)\n\n    def _on_ok(self, event):\n        print(\"Rename '{}' to '{}'\".format(\n            self._path.text_version,\n            self._path.with_last(self._text.Value).text_version\n        ))\n        self.Close()\n",
+"text":"class RenamePathDialog(wx.Dialog):\n\n    def __init__(self, parent, project, path):\n        wx.Dialog.__init__(self, parent, title=\"Rename path\")\n        self._project = project\n        self._path = path\n        self._create_gui()\n\n    def _create_gui(self):\n        self._text = wx.TextCtrl(self, value=self._path.last, size=(400, -1))\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        sizer.Add(self._text, flag=wx.EXPAND)\n        sizer.Add(self.CreateButtonSizer(wx.OK|wx.CANCEL), flag=wx.ALL)\n        self.SetSizerAndFit(sizer)\n        self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)\n\n    def _on_ok(self, event):\n        self._project.rename_path(self._path, self._text.Value)\n        self.Close()\n",
 "type":"code"
 }
 ],
@@ -4069,11 +4069,28 @@
 ],
 "fragments":[
 {
-"text":"class Path(object):\n\n    @classmethod\n    def from_text_version(cls, text):\n        filepath_text, chunkpath_text = text.split(\" // \", 1)\n        return cls(\n            filepath_text.split(\"/\") if filepath_text else [],\n            chunkpath_text.split(\"/\") if chunkpath_text else [],\n        )\n\n    @property\n    def text_version(self):\n        return \"{} // {}\".format(\"/\".join(self.filepath), \"/\".join(self.chunkpath))\n\n    def __init__(self, filepath, chunkpath):\n        self.filepath = filepath\n        self.chunkpath = chunkpath\n\n    def has_both(self):\n        return len(self.filepath) > 0 and len(self.chunkpath) > 0\n\n    def with_last(self, value):\n        if len(self.chunkpath) > 0:\n            return Path(self.filepath, self.chunkpath[:-1]+[value])\n        else:\n            return Path(self.filepath[:-1]+[value], self.chunkpath)\n\n    @property\n    def last(self):\n        if len(self.chunkpath) > 0:\n            return self.chunkpath[-1]\n        else:\n            return self.filepath[-1]\n\n    @property\n    def filepaths(self):\n        for index in range(len(self.filepath)):\n            yield (\n                self.filepath[index],\n                Path(self.filepath[:index+1], [])\n            )\n\n    @property\n    def chunkpaths(self):\n        for index in range(len(self.chunkpath)):\n            yield (\n                self.chunkpath[index],\n                Path(self.filepath[:], self.chunkpath[:index+1])\n            )\n",
+"text":"class Path(object):\n\n    @classmethod\n    def from_text_version(cls, text):\n        filepath_text, chunkpath_text = text.split(\" // \", 1)\n        return cls(\n            filepath_text.split(\"/\") if filepath_text else [],\n            chunkpath_text.split(\"/\") if chunkpath_text else [],\n        )\n\n    @property\n    def text_version(self):\n        return \"{} // {}\".format(\"/\".join(self.filepath), \"/\".join(self.chunkpath))\n\n    @property\n    def last(self):\n        if len(self.chunkpath) > 0:\n            return self.chunkpath[-1]\n        elif len(self.filepath) > 0:\n            return self.filepath[-1]\n        else:\n            return \"\"\n\n    @property\n    def length(self):\n        return len(self.chunkpath) + len(self.filepath)\n\n    def __init__(self, filepath, chunkpath):\n        self.filepath = filepath\n        self.chunkpath = chunkpath\n\n    def is_prefix(self, other):\n        if len(self.chunkpath) > 0:\n            return self.filepath == other.filepath and self.chunkpath == other.chunkpath[:len(self.chunkpath)]\n        else:\n            return self.filepath == other.filepath[:len(self.filepath)]\n\n    def has_both(self):\n        return len(self.filepath) > 0 and len(self.chunkpath) > 0\n\n    @property\n    def filepaths(self):\n        for index in range(len(self.filepath)):\n            yield (\n                self.filepath[index],\n                Path(self.filepath[:index+1], [])\n            )\n\n    @property\n    def chunkpaths(self):\n        for index in range(len(self.chunkpath)):\n            yield (\n                self.chunkpath[index],\n                Path(self.filepath[:], self.chunkpath[:index+1])\n            )\n",
 "type":"code"
 }
 ],
 "id":"20a78120213741d3b3607b3d07415ce7",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def rename_path(self, path, name):\n    with self.modify(\"Rename path\") as document_dict:\n        for p in document_dict.paragraph_dict_iterator():\n            if p[\"type\"] == \"code\":\n                filelen = len(p[\"filepath\"])\n                chunklen = len(p[\"chunkpath\"])\n                if path.is_prefix(Path(p[\"filepath\"], p[\"chunkpath\"])):\n                    if path.length > filelen:\n                        p[\"chunkpath\"][path.length-1-filelen] = name\n                    else:\n                        p[\"filepath\"][path.length-1] = name\n                else:\n                    for f in p[\"fragments\"]:\n                        if f[\"type\"] == \"chunk\":\n                            if path.is_prefix(Path(p[\"filepath\"], p[\"chunkpath\"]+f[\"path\"])):\n                                f[\"path\"][path.length-1-filelen-chunklen] = name\n",
+"type":"code"
+}
+],
+"id":"d4937570aa6b4bcea3bc918d2b211d25",
 "type":"code"
 },
 {
@@ -5369,7 +5386,7 @@
 ],
 "fragments":[
 {
-"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n",
+"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n",
 "type":"code"
 }
 ],
