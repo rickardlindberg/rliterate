@@ -7031,6 +7031,27 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Speed up by drawing only once to bg image?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"TokenView is slow for code now that many tokens are generated",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
