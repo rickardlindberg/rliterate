@@ -130,7 +130,7 @@ class ParagraphBase(Editable):
                     "text_version",
                     edit_in_gvim(
                         self.paragraph.text_version,
-                        self.paragraph.filename
+                        self.paragraph.path.filename
                     )
                 )
             )
@@ -2147,10 +2147,6 @@ class CodeParagraph(Paragraph):
     @property
     def chunkpath(self):
         return [x for x in self._paragraph_dict["chunkpath"] if x]
-
-    @property
-    def filename(self):
-        return self.filepath[-1] if self.filepath else ""
     @property
     def fragments(self):
         return copy.deepcopy(self._paragraph_dict["fragments"])
@@ -2233,7 +2229,7 @@ class CodeParagraph(Paragraph):
 
     def _get_lexer(self):
         return pygments.lexers.get_lexer_for_filename(
-            self.filename,
+            self.path.filename,
             stripnl=False
         )
 
@@ -2266,6 +2262,10 @@ class Path(object):
             copy.deepcopy(self.filepath),
             copy.deepcopy(self.chunkpath)+copy.deepcopy(chunk)
         )
+
+    @property
+    def filename(self):
+        return self.filepath[-1] if self.filepath else ""
 
     @property
     def last(self):
