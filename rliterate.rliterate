@@ -2724,11 +2724,62 @@
 ],
 "fragments":[
 {
-"text":"class CodeView(wx.Panel):\n\n    BORDER = 0\n    PADDING = 5\n\n    def __init__(self, parent, project, paragraph, base):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.paragraph = paragraph\n        self.base = base\n        self._create_gui()\n\n    def _create_gui(self):\n        self.Font = create_font(monospace=True)\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        if not self.paragraph.path.is_empty:\n            self.vsizer.Add(\n                self._create_path(),\n                flag=wx.ALL|wx.EXPAND, border=self.BORDER\n            )\n        self.vsizer.Add(\n            self._create_code(),\n            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n        )\n        self.SetSizer(self.vsizer)\n        self.SetBackgroundColour((243, 236, 219))\n\n    def _create_path(self):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((248, 241, 223))\n        self.path_token_view = TokenView(\n            panel,\n            self.project,\n            self._create_path_tokens(self.paragraph.path),\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n        panel.SetSizer(sizer)\n        self.base.BindMouse(\n            self,\n            [panel],\n            double_click=lambda event: post_edit_start(self, path_token=None)\n        )\n        self.base.BindMouse(\n            self,\n            [self.path_token_view],\n            right_click=self._token_right_click,\n            move=self._token_move,\n            double_click=self._path_double_click\n        )\n        return panel\n\n    def _create_path_tokens(self, path):\n        tokens = []\n        tokens.extend(insert_between(\n            Token(\"/\", token_type=TokenType.RLiterate.Sep),\n            [Token(x, token_type=TokenType.RLiterate.Path, path=xs) for (x, xs) in path.filepaths]\n        ))\n        if path.has_both():\n            tokens.append(Token(\" \", token_type=TokenType.RLiterate.Sep))\n        tokens.extend(insert_between(\n            Token(\"/\", token_type=TokenType.RLiterate.Sep),\n            [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in path.chunkpaths]\n        ))\n        return tokens\n\n    def _token_move(self, event):\n        token = event.EventObject.GetToken(event.Position)\n        if token is not None and token.extra.get(\"path\") is not None:\n            event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.EventObject.SetDefaultCursor()\n        return CONTINUE_PROCESSING\n\n    def _path_double_click(self, event):\n        post_edit_start(self, path_token=event.EventObject.GetToken(event.Position))\n\n    def _body_double_click(self, event):\n        post_edit_start(self, body_token=event.EventObject.GetToken(event.Position))\n\n    def _token_right_click(self, event):\n        token = event.EventObject.GetToken(event.Position)\n        if token is not None and token.extra.get(\"path\") is not None:\n            def rename():\n                dialog = RenamePathDialog(\n                    self,\n                    self.project,\n                    token.extra[\"path\"]\n                )\n                dialog.ShowModal()\n                dialog.Destroy()\n            menu = ParagraphContextMenu()\n            menu.AppendItem(\n                \"Rename '{}'\".format(token.extra[\"path\"].last),\n                rename\n            )\n            self.PopupMenu(menu)\n            menu.Destroy()\n        else:\n            return CONTINUE_PROCESSING\n\n    def _create_code(self):\n        panel = wx.Panel(self)\n        panel.SetBackgroundColour((253, 246, 227))\n        self.body_token_view = TokenView(\n            panel,\n            self.project,\n            self.paragraph.tokens,\n            max_width=PAGE_BODY_WIDTH-2*self.PADDING\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n        panel.SetSizer(sizer)\n        self.base.BindMouse(\n            self,\n            [panel],\n            double_click=lambda event: post_edit_start(self, body_token=None)\n        )\n        self.base.BindMouse(\n            self,\n            [self.body_token_view],\n            right_click=self._token_right_click,\n            move=self._token_move,\n            double_click=self._body_double_click\n        )\n        return panel\n",
+"text":"class CodeView(wx.Panel):\n\n    BORDER = 0\n    PADDING = 5\n\n    def __init__(self, parent, project, paragraph, base):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.paragraph = paragraph\n        self.base = base\n        self._create_gui()\n\n",
 "type":"code"
+},
+{
+"path":[
+"CodeView"
+],
+"prefix":"    ",
+"type":"chunk"
 }
 ],
 "id":"397eb97b4763418c9e8e4a8cbcb75a72",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"CodeView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _create_gui(self):\n    self.Font = create_font(monospace=True)\n    sizer = wx.BoxSizer(wx.VERTICAL)\n    if not self.paragraph.path.is_empty:\n        sizer.Add(\n            self._create_path(),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n    sizer.Add(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetSizer(sizer)\n    self.SetBackgroundColour((243, 236, 219))\n",
+"type":"code"
+}
+],
+"id":"2d17b1adc0b149b1b05374fb065578b0",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"The path widget:",
+"type":"text"
+}
+],
+"id":"0fb237b9f38c4480885e6d54a13748e7",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"CodeView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _create_path(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = TokenView(\n        panel,\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        max_width=PAGE_BODY_WIDTH-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, path_token=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.path_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._path_double_click\n    )\n    return panel\n\ndef _create_path_tokens(self, path):\n    tokens = []\n    tokens.extend(insert_between(\n        Token(\"/\", token_type=TokenType.RLiterate.Sep),\n        [Token(x, token_type=TokenType.RLiterate.Path, path=xs) for (x, xs) in path.filepaths]\n    ))\n    if path.has_both():\n        tokens.append(Token(\" \", token_type=TokenType.RLiterate.Sep))\n    tokens.extend(insert_between(\n        Token(\"/\", token_type=TokenType.RLiterate.Sep),\n        [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in path.chunkpaths]\n    ))\n    return tokens\n",
+"type":"code"
+}
+],
+"id":"ef115efcd2a949e3ba341fca036af050",
 "type":"code"
 },
 {
@@ -2745,6 +2796,60 @@
 }
 ],
 "id":"7b087c5b9fd0460088e21aa2dc47567f",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"The code widget:",
+"type":"text"
+}
+],
+"id":"fc505fae111b45968e378157fedcc5a8",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"CodeView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _create_code(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = TokenView(\n        panel,\n        self.project,\n        self.paragraph.tokens,\n        max_width=PAGE_BODY_WIDTH-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, body_token=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.body_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._body_double_click\n    )\n    return panel\n",
+"type":"code"
+}
+],
+"id":"b103c45c567a4e8e9c2c79adabec6fdc",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Event handlers:",
+"type":"text"
+}
+],
+"id":"2103b7da1b7548ec979ef366b5eb7b8a",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"CodeView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _token_move(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"path\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.EventObject.SetDefaultCursor()\n    return CONTINUE_PROCESSING\n\ndef _token_right_click(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"path\") is not None:\n        def rename():\n            dialog = RenamePathDialog(\n                self,\n                self.project,\n                token.extra[\"path\"]\n            )\n            dialog.ShowModal()\n            dialog.Destroy()\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"path\"].last),\n            rename\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _path_double_click(self, event):\n    post_edit_start(\n        self,\n        path_token=event.EventObject.GetToken(event.Position)\n    )\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
+"type":"code"
+}
+],
+"id":"237d1ae77cc548e293f18bbb0668dbce",
 "type":"code"
 }
 ],

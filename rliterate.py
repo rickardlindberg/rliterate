@@ -1329,19 +1329,18 @@ class CodeView(wx.Panel):
 
     def _create_gui(self):
         self.Font = create_font(monospace=True)
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         if not self.paragraph.path.is_empty:
-            self.vsizer.Add(
+            sizer.Add(
                 self._create_path(),
                 flag=wx.ALL|wx.EXPAND, border=self.BORDER
             )
-        self.vsizer.Add(
+        sizer.Add(
             self._create_code(),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
-        self.SetSizer(self.vsizer)
+        self.SetSizer(sizer)
         self.SetBackgroundColour((243, 236, 219))
-
     def _create_path(self):
         panel = wx.Panel(self)
         panel.SetBackgroundColour((248, 241, 223))
@@ -1362,8 +1361,8 @@ class CodeView(wx.Panel):
         self.base.BindMouse(
             self,
             [self.path_token_view],
-            right_click=self._token_right_click,
             move=self._token_move,
+            right_click=self._token_right_click,
             double_click=self._path_double_click
         )
         return panel
@@ -1381,7 +1380,31 @@ class CodeView(wx.Panel):
             [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in path.chunkpaths]
         ))
         return tokens
-
+    def _create_code(self):
+        panel = wx.Panel(self)
+        panel.SetBackgroundColour((253, 246, 227))
+        self.body_token_view = TokenView(
+            panel,
+            self.project,
+            self.paragraph.tokens,
+            max_width=PAGE_BODY_WIDTH-2*self.PADDING
+        )
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
+        panel.SetSizer(sizer)
+        self.base.BindMouse(
+            self,
+            [panel],
+            double_click=lambda event: post_edit_start(self, body_token=None)
+        )
+        self.base.BindMouse(
+            self,
+            [self.body_token_view],
+            move=self._token_move,
+            right_click=self._token_right_click,
+            double_click=self._body_double_click
+        )
+        return panel
     def _token_move(self, event):
         token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("path") is not None:
@@ -1389,12 +1412,6 @@ class CodeView(wx.Panel):
         else:
             event.EventObject.SetDefaultCursor()
         return CONTINUE_PROCESSING
-
-    def _path_double_click(self, event):
-        post_edit_start(self, path_token=event.EventObject.GetToken(event.Position))
-
-    def _body_double_click(self, event):
-        post_edit_start(self, body_token=event.EventObject.GetToken(event.Position))
 
     def _token_right_click(self, event):
         token = event.EventObject.GetToken(event.Position)
@@ -1417,31 +1434,17 @@ class CodeView(wx.Panel):
         else:
             return CONTINUE_PROCESSING
 
-    def _create_code(self):
-        panel = wx.Panel(self)
-        panel.SetBackgroundColour((253, 246, 227))
-        self.body_token_view = TokenView(
-            panel,
-            self.project,
-            self.paragraph.tokens,
-            max_width=PAGE_BODY_WIDTH-2*self.PADDING
-        )
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
-        panel.SetSizer(sizer)
-        self.base.BindMouse(
+    def _path_double_click(self, event):
+        post_edit_start(
             self,
-            [panel],
-            double_click=lambda event: post_edit_start(self, body_token=None)
+            path_token=event.EventObject.GetToken(event.Position)
         )
-        self.base.BindMouse(
+
+    def _body_double_click(self, event):
+        post_edit_start(
             self,
-            [self.body_token_view],
-            right_click=self._token_right_click,
-            move=self._token_move,
-            double_click=self._body_double_click
+            body_token=event.EventObject.GetToken(event.Position)
         )
-        return panel
 class CodeEditor(wx.Panel):
 
     def __init__(self, parent, project, paragraph, view, extra):
