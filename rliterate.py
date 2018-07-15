@@ -1118,7 +1118,6 @@ class Title(Editable):
     def __init__(self, parent, project, page):
         self.page = page
         Editable.__init__(self, parent, project)
-        self._selection = (0, 0)
 
     def CreateView(self):
         self.Font = create_font(size=16)
@@ -1136,21 +1135,26 @@ class Title(Editable):
 
     def _post_edit_start_from_token_view(self, pos):
         edge_token = self.view.GetClosestToken(pos)
+        selection = (0, 0)
         if edge_token is not None:
             edge, token = edge_token
             start = token.index
             if edge < 0:
-                self._selection = (start, start)
+                selection = (start, start)
             elif edge > 0:
-                self._selection = (start+len(token.text), start+len(token.text))
+                selection = (start+len(token.text), start+len(token.text))
             else:
-                self._selection = (start, start+len(token.text))
-        post_edit_start(self.view)
+                selection = (start, start+len(token.text))
+        post_edit_start(self.view, selection=selection)
 
     def CreateEdit(self, extra):
-        edit = SelectionableTextCtrl(self, style=wx.TE_PROCESS_ENTER, value=self.page.title)
+        edit = SelectionableTextCtrl(
+            self,
+            style=wx.TE_PROCESS_ENTER,
+            value=self.page.title
+        )
         edit.Save = lambda: self.page.set_title(self.edit.Value)
-        edit.SetSelection(*self._selection)
+        edit.SetSelection(*extra["selection"])
         return edit
 class Text(ParagraphBase):
 
