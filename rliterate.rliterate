@@ -2517,7 +2517,7 @@
 ],
 "fragments":[
 {
-"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.tokens,\n            self\n        )\n\n    def CreateEdit(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
+"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            self.paragraph.tokens,\n            self\n        )\n\n    def CreateEdit(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
 "type":"code"
 }
 ],
@@ -2543,7 +2543,7 @@
 ],
 "fragments":[
 {
-"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=lambda event: base.ShowContextMenu(),\n            double_click=lambda event: post_edit_start(self),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.token = None\n\n    def _on_mouse_move(self, event):\n        token = self.GetToken(event.Position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
+"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=lambda event: base.ShowContextMenu(),\n            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.token = None\n\n    def _on_mouse_move(self, event):\n        token = self.GetToken(event.Position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
 "type":"code"
 }
 ],
@@ -2633,7 +2633,7 @@
 ],
 "fragments":[
 {
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        if not hasattr(view, \"token\"):\n            self.SetSelection(0, 0)\n        elif view.token is None:\n            self.SetSelection(0, 0)\n        else:\n            index = paragraph.get_text_index(view.token.extra[\"fragment_index\"])\n            start = index + view.token.index\n            end = start + len(view.token.text)\n            self.SetSelection(start, end)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
+"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view, extra):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        if extra.get(\"token\", None) is None:\n            self.SetSelection(0, 0)\n        else:\n            index = paragraph.get_text_index(extra[\"token\"].extra[\"fragment_index\"])\n            start = index + extra[\"token\"].index\n            end = start + len(extra[\"token\"].text)\n            self.SetSelection(start, end)\n        self.Font = create_font(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
 "type":"code"
 }
 ],

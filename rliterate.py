@@ -1167,7 +1167,8 @@ class Text(ParagraphBase):
             self,
             self.project,
             self.paragraph,
-            self.view
+            self.view,
+            extra
         )
 
     def AddContextMenuItems(self, menu):
@@ -1191,7 +1192,7 @@ class TextView(TokenView):
             [self],
             drag=base.DoDragDrop,
             right_click=lambda event: base.ShowContextMenu(),
-            double_click=lambda event: post_edit_start(self),
+            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),
             move=self._on_mouse_move,
             click=self._on_click
         )
@@ -1208,21 +1209,19 @@ class TextView(TokenView):
             post_token_click(self, self.token)
 class TextEdit(MultilineTextCtrl):
 
-    def __init__(self, parent, project, paragraph, view):
+    def __init__(self, parent, project, paragraph, view, extra):
         MultilineTextCtrl.__init__(
             self,
             parent,
             value=paragraph.text_version,
             size=(-1, view.Size[1])
         )
-        if not hasattr(view, "token"):
-            self.SetSelection(0, 0)
-        elif view.token is None:
+        if extra.get("token", None) is None:
             self.SetSelection(0, 0)
         else:
-            index = paragraph.get_text_index(view.token.extra["fragment_index"])
-            start = index + view.token.index
-            end = start + len(view.token.text)
+            index = paragraph.get_text_index(extra["token"].extra["fragment_index"])
+            start = index + extra["token"].index
+            end = start + len(extra["token"].text)
             self.SetSelection(start, end)
         self.Font = create_font(monospace=True)
         self.project = project
