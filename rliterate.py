@@ -1249,10 +1249,6 @@ class Quote(Text):
         view.SetSizer(sizer)
         return view
 
-    def CreateEdit(self, extra):
-        self.view.token = self.text_view.token
-        return Text.CreateEdit(self, extra)
-
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
             "To text",

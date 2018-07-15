@@ -2666,7 +2666,7 @@
 ],
 "fragments":[
 {
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        self.text_view = TextView(\n            view,\n            self.project,\n            self.paragraph.tokens,\n            self,\n            indented=self.INDENT\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(self.text_view, flag=wx.EXPAND, proportion=1)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self, extra):\n        self.view.token = self.text_view.token\n        return Text.CreateEdit(self, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
+"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        self.text_view = TextView(\n            view,\n            self.project,\n            self.paragraph.tokens,\n            self,\n            indented=self.INDENT\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(self.text_view, flag=wx.EXPAND, proportion=1)\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
