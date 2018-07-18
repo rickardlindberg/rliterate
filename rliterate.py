@@ -1368,16 +1368,46 @@ class CodeView(wx.Panel):
 
     def _create_path_tokens(self, path):
         tokens = []
-        tokens.extend(insert_between(
-            Token("/", token_type=TokenType.RLiterate.Sep),
-            [Token(x, token_type=TokenType.RLiterate.Path, path=xs) for (x, xs) in path.filepaths]
-        ))
+        start = 0
+        for (index, (name, subpath)) in enumerate(path.filepaths):
+            if index > 0:
+                tokens.append(Token(
+                    "/",
+                    token_type=TokenType.RLiterate.Sep,
+                    start=start,
+                    end=start
+                ))
+            tokens.append(Token(
+                name,
+                token_type=TokenType.RLiterate.Path,
+                path=subpath,
+                start=start,
+                end=start+len(name)
+            ))
+            start = len(subpath.text_version)
         if path.has_both():
-            tokens.append(Token(" ", token_type=TokenType.RLiterate.Sep))
-        tokens.extend(insert_between(
-            Token("/", token_type=TokenType.RLiterate.Sep),
-            [Token(x, token_type=TokenType.RLiterate.Chunk, path=xs) for (x, xs) in path.chunkpaths]
-        ))
+            tokens.append(Token(
+                " ",
+                token_type=TokenType.RLiterate.Sep,
+                start=start,
+                end=start
+            ))
+            for (index, (name, subpath)) in enumerate(path.chunkpaths):
+                if index > 0:
+                    tokens.append(Token(
+                        "/",
+                        token_type=TokenType.RLiterate.Sep,
+                        start=start,
+                        end=start
+                    ))
+                tokens.append(Token(
+                    name,
+                    token_type=TokenType.RLiterate.Chunk,
+                    path=subpath,
+                    start=start,
+                    end=start+len(name)
+                ))
+                start = len(subpath.text_version)
         return tokens
     def _create_code(self):
         panel = wx.Panel(self)
@@ -1491,9 +1521,13 @@ class CodeEditor(wx.Panel):
             self._focus_body(None)
 
     def _focus_path(self, path_token):
+        if path_token is None:
+            start = len(self.path.Value)
+            end = start
+        else:
+            start = path_token.extra["start"]
+            end = path_token.extra["end"]
         self.path.SetFocus()
-        start = len(self.path.Value) - 1
-        end = start
         self.path.SetSelection(start, end)
 
     def _focus_body(self, body_token):
@@ -3121,13 +3155,6 @@ def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):
     wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
-def insert_between(separator, items):
-    result = []
-    for i, item in enumerate(items):
-        if i > 0:
-            result.append(separator)
-        result.append(item)
-    return result
 def base64_to_bitmap(data):
     try:
         image = fit_image(wx.ImageFromStream(
