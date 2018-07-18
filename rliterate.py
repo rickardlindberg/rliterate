@@ -253,9 +253,9 @@ class TokenView(wx.Panel):
             tokens_by_y_distance[min(tokens_by_y_distance.keys())],
             key=lambda (token, box): abs(box.X + int(box.Width / 2) - position.x)
         )
-        center = closest_box.X + box.Width / 2
-        left_margin = center - box.Width / 4
-        right_margin = center + box.Width / 4
+        center = closest_box.X + box.Width / 2.0
+        left_margin = center - box.Width / 4.0
+        right_margin = center + box.Width / 4.0
         if position.x < left_margin:
             edge = -1
         elif position.x > right_margin:
@@ -1355,7 +1355,7 @@ class CodeView(wx.Panel):
         self.base.BindMouse(
             self,
             [panel],
-            double_click=lambda event: post_edit_start(self, path_token=None)
+            double_click=lambda event: post_edit_start(self, subpath=None)
         )
         self.base.BindMouse(
             self,
@@ -1368,46 +1368,42 @@ class CodeView(wx.Panel):
 
     def _create_path_tokens(self, path):
         tokens = []
-        start = 0
+        last_subpath = None
         for (index, (name, subpath)) in enumerate(path.filepaths):
             if index > 0:
                 tokens.append(Token(
                     "/",
                     token_type=TokenType.RLiterate.Sep,
-                    start=start,
-                    end=start
+                    prev_subpath=last_subpath,
+                    next_subpath=subpath
                 ))
             tokens.append(Token(
                 name,
                 token_type=TokenType.RLiterate.Path,
-                path=subpath,
-                start=start,
-                end=start+len(name)
+                subpath=subpath
             ))
-            start = len(subpath.text_version)
+            last_subpath = subpath
         if path.has_both():
             tokens.append(Token(
                 " ",
                 token_type=TokenType.RLiterate.Sep,
-                start=start,
-                end=start
+                prev_subpath=last_subpath,
+                next_subpath=list(path.chunkpaths)[0][1]
             ))
             for (index, (name, subpath)) in enumerate(path.chunkpaths):
                 if index > 0:
                     tokens.append(Token(
                         "/",
                         token_type=TokenType.RLiterate.Sep,
-                        start=start,
-                        end=start
+                        prev_subpath=last_subpath,
+                        next_subpath=subpath
                     ))
                 tokens.append(Token(
                     name,
                     token_type=TokenType.RLiterate.Chunk,
-                    path=subpath,
-                    start=start,
-                    end=start+len(name)
+                    subpath=subpath
                 ))
-                start = len(subpath.text_version)
+                last_subpath = subpath
         return tokens
     def _create_code(self):
         panel = wx.Panel(self)
@@ -1464,10 +1460,17 @@ class CodeView(wx.Panel):
             return CONTINUE_PROCESSING
 
     def _path_double_click(self, event):
-        post_edit_start(
-            self,
-            path_token=event.EventObject.GetToken(event.Position)
-        )
+        edge_token = event.EventObject.GetClosestToken(event.Position)
+        if edge_token is None:
+            post_edit_start(self, subpath=None)
+        else:
+            edge, token = edge_token
+            if "subpath" in token.extra:
+                post_edit_start(self, subpath=token.extra["subpath"], edge=edge)
+            elif edge < 0:
+                post_edit_start(self, subpath=token.extra["prev_subpath"], edge=1)
+            else:
+                post_edit_start(self, subpath=token.extra["next_subpath"], edge=-1)
 
     def _body_double_click(self, event):
         post_edit_start(
@@ -1513,22 +1516,24 @@ class CodeEditor(wx.Panel):
         )
         return self.text
     def _focus(self):
-        if "path_token" in self.extra:
-            self._focus_path(self.extra["path_token"])
+        if "subpath" in self.extra:
+            self._focus_path(self.extra["subpath"], self.extra.get("edge"))
         elif "body_token" in self.extra:
             self._focus_body(self.extra["body_token"])
         else:
             self._focus_body(None)
 
-    def _focus_path(self, path_token):
-        if path_token is None:
-            start = len(self.path.Value)
-            end = start
-        else:
-            start = path_token.extra["start"]
-            end = path_token.extra["end"]
+    def _focus_path(self, subpath, edge):
         self.path.SetFocus()
-        self.path.SetSelection(start, end)
+        if subpath is None:
+            end = len(self.path.Value)
+            self.path.SetSelection(end, end)
+        elif edge < 0:
+            self.path.SetSelection(subpath.text_start, subpath.text_start)
+        elif edge > 0:
+            self.path.SetSelection(subpath.text_end, subpath.text_end)
+        else:
+            self.path.SetSelection(subpath.text_start, subpath.text_end)
 
     def _focus_body(self, body_token):
         self.text.SetFocus()
@@ -2338,7 +2343,23 @@ class Path(object):
 
     @property
     def text_version(self):
-        return "{} // {}".format("/".join(self.filepath), "/".join(self.chunkpath))
+        if self.has_both():
+            sep = " // "
+        else:
+            sep = ""
+        return "{}{}{}".format(
+            "/".join(self.filepath),
+            sep,
+            "/".join(self.chunkpath)
+        )
+
+    @property
+    def text_start(self):
+        return self.text_end - len(self.last)
+
+    @property
+    def text_end(self):
+        return len(self.text_version)
 
     def extend_chunk(self, chunk):
         return Path(
