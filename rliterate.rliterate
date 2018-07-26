@@ -750,11 +750,11 @@
 "url":"https://www.youtube.com/watch?v=Av0PQDVTP4A"
 },
 {
-"text":". He also argues that programmers must change the mindset from wring a program to writing a book. Some more can be read here: ",
+"text":". He also argues that programmers must change the mindset from wring a program to writing a book. Some more can be read in ",
 "type":"text"
 },
 {
-"text":"",
+"text":"Example of Literate Programming in HTML",
 "type":"link",
 "url":"http://axiom-developer.org/axiom-website/litprog.html"
 },
