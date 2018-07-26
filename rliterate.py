@@ -1432,7 +1432,7 @@ class CodeView(wx.Panel):
         return panel
     def _token_move(self, event):
         token = event.EventObject.GetToken(event.Position)
-        if token is not None and token.extra.get("path") is not None:
+        if token is not None and token.extra.get("subpath") is not None:
             event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         else:
             event.EventObject.SetDefaultCursor()
@@ -1440,18 +1440,18 @@ class CodeView(wx.Panel):
 
     def _token_right_click(self, event):
         token = event.EventObject.GetToken(event.Position)
-        if token is not None and token.extra.get("path") is not None:
+        if token is not None and token.extra.get("subpath") is not None:
             def rename():
                 dialog = RenamePathDialog(
                     self,
                     self.project,
-                    token.extra["path"]
+                    token.extra["subpath"]
                 )
                 dialog.ShowModal()
                 dialog.Destroy()
             menu = ParagraphContextMenu()
             menu.AppendItem(
-                "Rename '{}'".format(token.extra["path"].last),
+                "Rename '{}'".format(token.extra["subpath"].last),
                 rename
             )
             self.PopupMenu(menu)
