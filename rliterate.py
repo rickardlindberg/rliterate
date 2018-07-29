@@ -1273,7 +1273,8 @@ class List(ParagraphBase):
             self,
             self.project,
             self.paragraph,
-            self.view
+            self.view,
+            extra
         )
 
     def add_items(self, view, sizer, items, child_type, indent=0):
