@@ -2302,7 +2302,7 @@ class CodeParagraph(Paragraph):
                 inserts[len(pygments_text)].append(Token(
                     self._chunk_fragment_to_text(fragment),
                     token_type=TokenType.RLiterate.Chunk,
-                    path=self.path.extend_chunk(fragment["path"])
+                    subpath=self.path.extend_chunk(fragment["path"])
                 ))
             else:
                 pygments_text += fragment["text"]
