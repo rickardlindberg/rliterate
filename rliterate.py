@@ -1870,6 +1870,7 @@ class SelectionableTextCtrl(wx.TextCtrl):
     def SetSelection(self, start, end):
         wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)
 class Document(Observable):
+
     @classmethod
     def from_file(cls, path):
         return cls(path)
@@ -1878,12 +1879,13 @@ class Document(Observable):
         Observable.__init__(self)
         self._load(path)
         self.listen(lambda event: write_json_to_file(path, self._document_dict))
+
     def _load(self, path):
         if os.path.exists(path):
-            root_page = load_json_from_file(path)
+            document_dict = load_json_from_file(path)
         else:
-            root_page = self._empty_page()
-        self._history = History(DocumentDictWrapper(root_page), size=10)
+            document_dict = self._empty_page()
+        self._history = History(DocumentDictWrapper(document_dict), size=10)
         for paragraph in self._document_dict.paragraph_dict_iterator():
             if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
                 paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
