@@ -2464,7 +2464,11 @@ class Path(object):
 
     @classmethod
     def from_text_version(cls, text):
-        filepath_text, chunkpath_text = text.split(" // ", 1)
+        try:
+            filepath_text, chunkpath_text = text.split(" // ", 1)
+        except:
+            filepath_text = text
+            chunkpath_text = ""
         return cls(
             filepath_text.split("/") if filepath_text else [],
             chunkpath_text.split("/") if chunkpath_text else [],
