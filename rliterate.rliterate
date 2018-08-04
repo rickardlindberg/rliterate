@@ -4725,15 +4725,7 @@
 {
 "fragments":[
 {
-"text":"Paragraphs that contain inline text did not store it as fragments. They stored it with special syntax instead. This code converts inline text to proper fragments with the ",
-"type":"text"
-},
-{
-"text":"LegacyInlineTextParser",
-"type":"code"
-},
-{
-"text":".",
+"text":"Paragraphs that contain inline text used to store it with special syntax like this:",
 "type":"text"
 }
 ],
@@ -4749,12 +4741,188 @@
 ],
 "fragments":[
 {
-"text":"def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):\n    text = \"This **is** very *cool*. [[106af6f8665c45e8ab751993a6abc876:page]] is it. Some `code`. [link](http://example.com).\"\n    fragments = [\n        {\"type\": \"text\",      \"text\": \"This \"},\n        {\"type\": \"strong\",    \"text\": \"is\"},\n        {\"type\": \"text\",      \"text\": \" very \"},\n        {\"type\": \"emphasis\",  \"text\": \"cool\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"reference\", \"text\": \"page\", \"page_id\": \"106af6f8665c45e8ab751993a6abc876\"},\n        {\"type\": \"text\",      \"text\": \" is it. Some \"},\n        {\"type\": \"code\",      \"text\": \"code\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"link\",      \"text\": \"link\", \"url\": \"http://example.com\"},\n        {\"type\": \"text\",      \"text\": \".\"},\n    ]\n    write_json_to_file(tmpfile, {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"text\": text},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"text\": text},\n            {\"id\": \"abc3\", \"type\": \"image\", \"text\": text, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"text\": \"\\n\".join([\n                \"* **a**{}\".format(text),\n                \"* **b**{}\".format(text),\n                \"    1. **c**{}\".format(text),\n                \"    1. **d**{}\".format(text),\n            ])},\n        ],\n    })\n    doc = Document.from_file(tmpfile)\n    with doc.notify():\n        pass\n    assert load_json_from_file(tmpfile) == {\n        \"root_page\": {\n            \"title\": \"Root\",\n            \"children\": [],\n            \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n            \"paragraphs\": [\n                {\"id\": \"abc1\", \"type\": \"text\", \"fragments\": fragments},\n                {\"id\": \"abc2\", \"type\": \"quote\", \"fragments\": fragments},\n                {\"id\": \"abc3\", \"type\": \"image\", \"fragments\": fragments, \"image_base64\": \"data\"},\n                {\"id\": \"abc4\", \"type\": \"list\", \"child_type\": \"unordered\", \"children\": [\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"a\"}]+fragments},\n                    {\"child_type\": \"ordered\", \"children\": [\n                        {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"c\"}]+fragments},\n                        {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"d\"}]+fragments},\n                    ], \"fragments\": [{\"type\": \"strong\", \"text\": \"b\"}]+fragments},\n                ]},\n            ],\n        },\n        \"variables\": {},\n    }\n",
+"text":"INLINE_TEXT = \"This **is** very *cool*. [[106af6f8665c45e8ab751993a6abc876:page]] is it. Some `code`. [link](http://example.com).\"\n",
 "type":"code"
 }
 ],
 "id":"7075da194716490f8b586c811cbe6bb5",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"This should be converted to fragments:",
+"type":"text"
+}
+],
+"id":"3e2e57be71734a1b85fc04eeb0393b99",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"FRAGMENTS = [\n    {\"type\": \"text\",      \"text\": \"This \"},\n    {\"type\": \"strong\",    \"text\": \"is\"},\n    {\"type\": \"text\",      \"text\": \" very \"},\n    {\"type\": \"emphasis\",  \"text\": \"cool\"},\n    {\"type\": \"text\",      \"text\": \". \"},\n    {\"type\": \"reference\", \"text\": \"page\", \"page_id\": \"106af6f8665c45e8ab751993a6abc876\"},\n    {\"type\": \"text\",      \"text\": \" is it. Some \"},\n    {\"type\": \"code\",      \"text\": \"code\"},\n    {\"type\": \"text\",      \"text\": \". \"},\n    {\"type\": \"link\",      \"text\": \"link\", \"url\": \"http://example.com\"},\n    {\"type\": \"text\",      \"text\": \".\"},\n]\n",
+"type":"code"
+}
+],
+"id":"062b3edf07f144cc9db04923f6f671db",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"This conversion needs to be done for paragraph types text, quote, image, and list. In addition, the list paragraph used to store the whole list in the text attribute. In order to convert list item text to fragments, the list structure also needs to change.",
+"type":"text"
+}
+],
+"id":"d5cd3030e94442d782bcf46caa8fe03f",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Here is how text paragraphs change:",
+"type":"text"
+}
+],
+"id":"5bd801e9b7a24c5f9d071a2fb6ca953d",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"TEXT_OLD = {\"id\": \"abc1\", \"type\": \"text\", \"text\": INLINE_TEXT}\nTEXT_NEW = {\"id\": \"abc1\", \"type\": \"text\", \"fragments\": FRAGMENTS}\n",
+"type":"code"
+}
+],
+"id":"38cd6c9327214a2abcebf55e2b7f8198",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Here is how quote paragraphs change:",
+"type":"text"
+}
+],
+"id":"51fef06cd5e84c8b8418babacb5b4e55",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"QUOTE_OLD = {\"id\": \"abc2\", \"type\": \"quote\", \"text\": INLINE_TEXT}\nQUOTE_NEW = {\"id\": \"abc2\", \"type\": \"quote\", \"fragments\": FRAGMENTS}\n",
+"type":"code"
+}
+],
+"id":"11c593db8ef041ea8f73c7fe3fb9f9f6",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Here is how image paragraphs change:",
+"type":"text"
+}
+],
+"id":"4d93ef94cad84cacac65f4fdf5f0e85e",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"IMAGE_OLD = {\"id\": \"abc3\", \"type\": \"image\", \"image_base64\": \"data\",\n             \"text\": INLINE_TEXT}\nIMAGE_NEW = {\"id\": \"abc3\", \"type\": \"image\", \"image_base64\": \"data\",\n             \"fragments\": FRAGMENTS}\n",
+"type":"code"
+}
+],
+"id":"81614afa6ff749d385ebbee26ab26060",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Here is how list paragraphs change:",
+"type":"text"
+}
+],
+"id":"33c256a00ac741f79ba338349278a9e3",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"LIST_OLD = {\n    \"id\": \"abc4\",\n    \"type\": \"list\",\n    \"text\": \"\\n\".join([\n        \"* **a**{}\".format(INLINE_TEXT),\n        \"* **b**{}\".format(INLINE_TEXT),\n        \"    1. **c**{}\".format(INLINE_TEXT),\n        \"    1. **d**{}\".format(INLINE_TEXT),\n    ]),\n}\nLIST_NEW = {\n    \"id\": \"abc4\",\n    \"type\": \"list\",\n    \"child_type\": \"unordered\",\n    \"children\": [\n        {\n            \"fragments\": [{\"type\": \"strong\", \"text\": \"a\"}]+FRAGMENTS,\n            \"child_type\": None,\n            \"children\": [],\n        },\n        {\n            \"fragments\": [{\"type\": \"strong\", \"text\": \"b\"}]+FRAGMENTS,\n            \"child_type\": \"ordered\",\n            \"children\": [\n                {\n                    \"fragments\": [{\"type\": \"strong\", \"text\": \"c\"}]+FRAGMENTS,\n                    \"child_type\": None,\n                    \"children\": [],\n                },\n                {\n                    \"fragments\": [{\"type\": \"strong\", \"text\": \"d\"}]+FRAGMENTS,\n                    \"child_type\": None,\n                    \"children\": [],\n                },\n            ],\n        },\n    ]\n}\n",
+"type":"code"
+}
+],
+"id":"0ae642fe863246819754b1ecc3ef6d5f",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Here is a test that ensures that the paragraphs are properly converted:",
+"type":"text"
+}
+],
+"id":"2a9982a16c0f4704bc1447b0975ef4bf",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"def test_converts_inline_text_to_fragments(tmpfile):\n    old_paragraphs = [TEXT_OLD, QUOTE_OLD, IMAGE_OLD, LIST_OLD]\n    new_paragraphs = [TEXT_NEW, QUOTE_NEW, IMAGE_NEW, LIST_NEW]\n    document = write_read_document(tmpfile, {\n        \"title\": \"Root\",\n        \"id\": \"abc1\",\n        \"paragraphs\": old_paragraphs,\n        \"children\": [\n            {\n                \"title\": \"Child\",\n                \"children\": [],\n                \"id\": \"abc2\",\n                \"paragraphs\": old_paragraphs,\n            }\n        ],\n    })\n    assert document[\"root_page\"][\"paragraphs\"] == new_paragraphs\n    assert document[\"root_page\"][\"children\"][0][\"paragraphs\"] == new_paragraphs\n",
+"type":"code"
+}
+],
+"id":"fefd16722383455aa2169fac1948696b",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Here is the implementation:",
+"type":"text"
+}
+],
+"id":"7dfe82df9d674a6e98073b3c5ab01752",
+"type":"text"
 },
 {
 "chunkpath":[
@@ -4833,7 +5001,7 @@
 {
 "fragments":[
 {
-"text":"This code converts legacy code paragraphs to the new structure. Legacy code paragraphs had path and text attributes which are converted to filepath, chunkpath, and fragments attributes. Example:",
+"text":"Code paragraphs used to have path and text attributes like this:",
 "type":"text"
 }
 ],
@@ -4842,15 +5010,14 @@
 },
 {
 "chunkpath":[
-"test cases",
-"legacy code paragraph example"
+"test cases"
 ],
 "filepath":[
 "test_rliterate.py"
 ],
 "fragments":[
 {
-"text":"{\n    \"id\": \"abc1\",\n    \"type\": \"code\",\n    \"path\": [\"foo.py\", \"<<functions>>\"],\n    \"text\": \"one\\n<<chunk>>\\ntwo\\n\",\n}\n",
+"text":"CODE_OLD = {\n    \"id\": \"abc1\",\n    \"type\": \"code\",\n    \"path\": [\"foo.py\", \"<<functions>>\"],\n    \"text\": \"one\\n<<chunk>>\\ntwo\\n\",\n}\n",
 "type":"code"
 }
 ],
@@ -4858,20 +5025,55 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"Those should be converted to filepath, chunkpath, and fragments attributes:",
+"type":"text"
+}
+],
+"id":"bd60cb1d3c584fdb94a2b5d0bb396249",
+"type":"text"
+},
+{
 "chunkpath":[
-"test cases",
-"new code paragraph example"
+"test cases"
 ],
 "filepath":[
 "test_rliterate.py"
 ],
 "fragments":[
 {
-"text":"{\n    \"id\": \"abc1\",\n    \"type\": \"code\",\n    \"filepath\": [\"foo.py\"],\n    \"chunkpath\": [\"functions\"],\n    \"fragments\": [\n        {\"type\": \"code\", \"text\": \"one\\n\"},\n        {\"type\": \"chunk\", \"prefix\": \"\", \"path\": [\"chunk\"]},\n        {\"type\": \"code\", \"text\": \"two\\n\"},\n    ],\n}\n",
+"text":"CODE_NEW = {\n    \"id\": \"abc1\",\n    \"type\": \"code\",\n    \"filepath\": [\"foo.py\"],\n    \"chunkpath\": [\"functions\"],\n    \"fragments\": [\n        {\"type\": \"code\", \"text\": \"one\\n\"},\n        {\"type\": \"chunk\", \"prefix\": \"\", \"path\": [\"chunk\"]},\n        {\"type\": \"code\", \"text\": \"two\\n\"},\n    ],\n}\n",
 "type":"code"
 }
 ],
 "id":"10f3a9e6b24e410da7980e0de6a96efd",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Here is a test that ensures that the conversion is done in all pages:",
+"type":"text"
+}
+],
+"id":"b18571381a4d4c25a7ec269433885eaa",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"def test_converts_legacy_code_paragraphs(tmpfile):\n    document = write_read_document(tmpfile, {\n        \"title\": \"Root\",\n        \"children\": [\n            {\n                \"title\": \"Child\",\n                \"children\": [],\n                \"id\": \"abc2\",\n                \"paragraphs\": [CODE_OLD],\n            },\n        ],\n        \"id\": \"abc1\",\n        \"paragraphs\": [CODE_OLD],\n    })\n    assert document[\"root_page\"][\"paragraphs\"] == [CODE_NEW]\n    assert document[\"root_page\"][\"children\"][0][\"paragraphs\"] == [CODE_NEW]\n",
+"type":"code"
+}
+],
+"id":"b1f3d8a30f774c1e9c20121c499b1ffa",
 "type":"code"
 },
 {
@@ -4931,19 +5133,18 @@
 },
 {
 "chunkpath":[
-"test cases",
-"path split examples"
+"test cases"
 ],
 "filepath":[
 "test_rliterate.py"
 ],
 "fragments":[
 {
-"text":"(\n    [\"foo.py\", \"<<functions>>\"],\n    ([\"foo.py\"], [\"functions\"])\n),\n(\n    [\"foo.py\", \"<<Foo/__init__>>\"],\n    ([\"foo.py\"], [\"Foo\", \"__init__\"])\n),\n(\n    [\"foo.py\", \"<<functions>>\", \"<<with\", \"missing>>\", \"stuff/or\"],\n    ([\"foo.py\"], [\"functions\", \"with\", \"missing\", \"stuff\", \"or\"])\n),\n(\n    [\"foo.py\", \"<<with\", \"missing>>\", \"stuff/or\"],\n    ([\"foo.py\", \"<<with\", \"missing>>\", \"stuff\", \"or\"], [])\n),\n(\n    [\"bar/foo.py\"],\n    ([\"bar\", \"foo.py\"], [])\n),\n(\n    [],\n    ([], [])\n),\n",
+"text":"@pytest.mark.parametrize(\"path,expected_split\", [\n    (\n        [\"foo.py\", \"<<functions>>\"],\n        ([\"foo.py\"], [\"functions\"])\n    ),\n    (\n        [\"foo.py\", \"<<Foo/__init__>>\"],\n        ([\"foo.py\"], [\"Foo\", \"__init__\"])\n    ),\n    (\n        [\"foo.py\", \"<<functions>>\", \"<<with\", \"missing>>\", \"stuff/or\"],\n        ([\"foo.py\"], [\"functions\", \"with\", \"missing\", \"stuff\", \"or\"])\n    ),\n    (\n        [\"foo.py\", \"<<with\", \"missing>>\", \"stuff/or\"],\n        ([\"foo.py\", \"<<with\", \"missing>>\", \"stuff\", \"or\"], [])\n    ),\n    (\n        [\"bar/foo.py\"],\n        ([\"bar\", \"foo.py\"], [])\n    ),\n    (\n        [],\n        ([], [])\n    ),\n])\ndef test_split_legacy_path(path, expected_split):\n    assert split_legacy_path(path) == expected_split\n",
 "type":"code"
 }
 ],
-"id":"eb65e2070e1646e6bd74326bc19b3eb4",
+"id":"746ce63c815d495f8dfa3635e4abc4d5",
 "type":"code"
 },
 {
@@ -4974,19 +5175,18 @@
 },
 {
 "chunkpath":[
-"test cases",
-"text to fragments examples"
+"test cases"
 ],
 "filepath":[
 "test_rliterate.py"
 ],
 "fragments":[
 {
-"text":"(\n    \"def foo()\\n\",\n    [\n        {\"type\": \"code\", \"text\": \"def foo()\\n\"},\n    ]\n),\n(\n    \"def foo()\\n    <<foo/pre>>\\n    return False\",\n    [\n        {\"type\": \"code\", \"text\": \"def foo()\\n\"},\n        {\"type\": \"chunk\", \"prefix\": \"    \", \"path\": [\"foo\", \"pre\"]},\n        {\"type\": \"code\", \"text\": \"    return False\\n\"},\n    ]\n),\n",
+"text":"@pytest.mark.parametrize(\"text,expected_fragments\", [\n    (\n        \"def foo()\\n\",\n        [\n            {\"type\": \"code\", \"text\": \"def foo()\\n\"},\n        ]\n    ),\n    (\n        \"def foo()\\n    <<foo/pre>>\\n    return False\",\n        [\n            {\"type\": \"code\", \"text\": \"def foo()\\n\"},\n            {\"type\": \"chunk\", \"prefix\": \"    \", \"path\": [\"foo\", \"pre\"]},\n            {\"type\": \"code\", \"text\": \"    return False\\n\"},\n        ]\n    ),\n])\ndef test_legacy_code_text_to_fragments(text, expected_fragments):\n    assert legacy_code_text_to_fragments(text) == expected_fragments\n",
 "type":"code"
 }
 ],
-"id":"a5f037e16fd3462abe3489a2161dc3a5",
+"id":"548de4af3a274fd4873a6c99195b83f6",
 "type":"code"
 },
 {
@@ -5004,108 +5204,6 @@
 ],
 "id":"819e7f5c643f41b7b759217c5a0d4f99",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"And some boilerplate test code:",
-"type":"text"
-}
-],
-"id":"c92e452852a4411081dd0e8c0bd961cc",
-"type":"text"
-},
-{
-"chunkpath":[
-"test cases"
-],
-"filepath":[
-"test_rliterate.py"
-],
-"fragments":[
-{
-"text":"def test_reads_legacy_code_paragraph(tmpfile):\n    write_json_to_file(tmpfile, {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n",
-"type":"code"
-},
-{
-"path":[
-"legacy code paragraph example"
-],
-"prefix":"            ",
-"type":"chunk"
-},
-{
-"text":"        ],\n    })\n    document = Document(tmpfile)\n    with document.notify():\n        pass\n    assert load_json_from_file(tmpfile)[\"root_page\"][\"paragraphs\"] == [\n",
-"type":"code"
-},
-{
-"path":[
-"new code paragraph example"
-],
-"prefix":"        ",
-"type":"chunk"
-},
-{
-"text":"    ]\n",
-"type":"code"
-}
-],
-"id":"b1f3d8a30f774c1e9c20121c499b1ffa",
-"type":"code"
-},
-{
-"chunkpath":[
-"test cases"
-],
-"filepath":[
-"test_rliterate.py"
-],
-"fragments":[
-{
-"text":"@pytest.mark.parametrize(\"path,expected_split\", [\n",
-"type":"code"
-},
-{
-"path":[
-"path split examples"
-],
-"prefix":"    ",
-"type":"chunk"
-},
-{
-"text":"])\ndef test_split_legacy_path(path, expected_split):\n    assert split_legacy_path(path) == expected_split\n",
-"type":"code"
-}
-],
-"id":"746ce63c815d495f8dfa3635e4abc4d5",
-"type":"code"
-},
-{
-"chunkpath":[
-"test cases"
-],
-"filepath":[
-"test_rliterate.py"
-],
-"fragments":[
-{
-"text":"@pytest.mark.parametrize(\"text,expected_fragments\", [\n",
-"type":"code"
-},
-{
-"path":[
-"text to fragments examples"
-],
-"prefix":"    ",
-"type":"chunk"
-},
-{
-"text":"])\ndef test_legacy_code_text_to_fragments(text, expected_fragments):\n    assert legacy_code_text_to_fragments(text) == expected_fragments\n",
-"type":"code"
-}
-],
-"id":"548de4af3a274fd4873a6c99195b83f6",
-"type":"code"
 }
 ],
 "title":"Code"
@@ -5117,11 +5215,37 @@
 {
 "fragments":[
 {
-"text":"The root JSON object used to represent the root page. It changed to represent a document so that variabled could also be stored somewhere.",
+"text":"The root JSON object used to represent the root page. It changed to represent a document so that variables could also be stored somewhere.",
 "type":"text"
 }
 ],
 "id":"ecdcdfbe18cc4a0685c1699580245d6d",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"def test_converts_legacy_root_document(tmpfile):\n    root_page = {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"abc1\",\n        \"paragraphs\": [],\n    }\n    assert write_read_document(tmpfile, root_page) == {\n        \"root_page\": root_page,\n        \"variables\": {},\n    }\n",
+"type":"code"
+}
+],
+"id":"3e68bfbbe8844c0cbeaa63988579d302",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"The implementation:",
+"type":"text"
+}
+],
+"id":"ae01e48eaed54885aefac77741a5df9c",
 "type":"text"
 },
 {
@@ -5161,6 +5285,47 @@
 }
 ],
 "title":"Root page"
+},
+{
+"children":[],
+"id":"4afd486ff2bc4ec482d4e9b7e3e1621c",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"write_read_document",
+"type":"code"
+},
+{
+"text":" function is used in legacy tests to write a legacy document, read it, write it, and then ensure that the written is according to new structure.",
+"type":"text"
+}
+],
+"id":"740f0595a3cf47c29acb370122cacdb4",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[
+{
+"text":"def write_read_document(tmpfile, document):\n    write_json_to_file(tmpfile, document)\n    doc = Document.from_file(tmpfile)\n    with doc.notify():\n        pass\n    return load_json_from_file(tmpfile)\n",
+"type":"code"
+}
+],
+"id":"5280d5f5e03548cebc807af49f6363f3",
+"type":"code"
+}
+],
+"title":"Test helpers"
 }
 ],
 "id":"398df049c8844fe28c5b0399efea0535",
@@ -5168,7 +5333,7 @@
 {
 "fragments":[
 {
-"text":"The JSON structure of an RLiterate document changes over time. If a document with an old structure is opened, this code converts it to the current structure.",
+"text":"The JSON structure of an RLiterate document changes over time. If a document with an old structure is opened, it is automatically converted to the current structure.",
 "type":"text"
 }
 ],
@@ -5204,7 +5369,7 @@
 "type":"code"
 }
 ],
-"title":"Legacy format"
+"title":"Legacy structure"
 }
 ],
 "id":"ce4dc071bada48bb9294c937631e0214",
