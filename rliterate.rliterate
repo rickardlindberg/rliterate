@@ -5075,6 +5075,52 @@
 }
 ],
 "title":"Code"
+},
+{
+"children":[],
+"id":"dffe7ee65d4a4a34b6f33580f4ce5542",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"The root JSON object used to represent the root page. It changed to represent a document so that variabled could also be stored somewhere.",
+"type":"text"
+}
+],
+"id":"ecdcdfbe18cc4a0685c1699580245d6d",
+"type":"text"
+},
+{
+"chunkpath":[
+"test cases"
+],
+"filepath":[
+"test_rliterate.py"
+],
+"fragments":[],
+"id":"ffd8b4734aa74ab8ac0347d4b93b09c1",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document",
+"Post load"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"if \"root_page\" not in self._document_dict:\n    pass\n",
+"type":"code"
+}
+],
+"id":"c2898711e8b34dae87773655eab6780d",
+"type":"code"
+}
+],
+"title":"Root page"
 }
 ],
 "id":"398df049c8844fe28c5b0399efea0535",

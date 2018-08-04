@@ -1900,6 +1900,8 @@ class Document(Observable):
             if p["type"] == "code" and "text" in p:
                 p["fragments"] = legacy_code_text_to_fragments(p["text"])
                 del p["text"]
+        if "root_page" not in self._document_dict:
+            pass
 
     @property
     def _document_dict(self):
