@@ -4097,7 +4097,7 @@
 ],
 "fragments":[
 {
-"text":"class DocumentDictWrapper(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self)\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        page_dict = copy.deepcopy(page_dict)\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self[\"id\"]\n        return self._pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        if page_id == self[\"id\"]:\n            return\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(copy.deepcopy(data))\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n",
+"text":"class DocumentDictWrapper(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        page_dict = copy.deepcopy(page_dict)\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self[\"root_page\"][\"id\"]\n        return self._pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        if page_id == self[\"root_page\"][\"id\"]:\n            return\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(copy.deepcopy(data))\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n",
 "type":"code"
 }
 ],
@@ -4749,7 +4749,7 @@
 ],
 "fragments":[
 {
-"text":"def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):\n    text = \"This **is** very *cool*. [[106af6f8665c45e8ab751993a6abc876:page]] is it. Some `code`. [link](http://example.com).\"\n    fragments = [\n        {\"type\": \"text\",      \"text\": \"This \"},\n        {\"type\": \"strong\",    \"text\": \"is\"},\n        {\"type\": \"text\",      \"text\": \" very \"},\n        {\"type\": \"emphasis\",  \"text\": \"cool\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"reference\", \"text\": \"page\", \"page_id\": \"106af6f8665c45e8ab751993a6abc876\"},\n        {\"type\": \"text\",      \"text\": \" is it. Some \"},\n        {\"type\": \"code\",      \"text\": \"code\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"link\",      \"text\": \"link\", \"url\": \"http://example.com\"},\n        {\"type\": \"text\",      \"text\": \".\"},\n    ]\n    write_json_to_file(tmpfile, {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"text\": text},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"text\": text},\n            {\"id\": \"abc3\", \"type\": \"image\", \"text\": text, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"text\": \"\\n\".join([\n                \"* **a**{}\".format(text),\n                \"* **b**{}\".format(text),\n                \"    1. **c**{}\".format(text),\n                \"    1. **d**{}\".format(text),\n            ])},\n        ],\n    })\n    doc = Document.from_file(tmpfile)\n    with doc.notify():\n        pass\n    assert load_json_from_file(tmpfile) == {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"fragments\": fragments},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"fragments\": fragments},\n            {\"id\": \"abc3\", \"type\": \"image\", \"fragments\": fragments, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"child_type\": \"unordered\", \"children\": [\n                {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"a\"}]+fragments},\n                {\"child_type\": \"ordered\", \"children\": [\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"c\"}]+fragments},\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"d\"}]+fragments},\n                ], \"fragments\": [{\"type\": \"strong\", \"text\": \"b\"}]+fragments},\n            ]},\n        ],\n    }\n",
+"text":"def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):\n    text = \"This **is** very *cool*. [[106af6f8665c45e8ab751993a6abc876:page]] is it. Some `code`. [link](http://example.com).\"\n    fragments = [\n        {\"type\": \"text\",      \"text\": \"This \"},\n        {\"type\": \"strong\",    \"text\": \"is\"},\n        {\"type\": \"text\",      \"text\": \" very \"},\n        {\"type\": \"emphasis\",  \"text\": \"cool\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"reference\", \"text\": \"page\", \"page_id\": \"106af6f8665c45e8ab751993a6abc876\"},\n        {\"type\": \"text\",      \"text\": \" is it. Some \"},\n        {\"type\": \"code\",      \"text\": \"code\"},\n        {\"type\": \"text\",      \"text\": \". \"},\n        {\"type\": \"link\",      \"text\": \"link\", \"url\": \"http://example.com\"},\n        {\"type\": \"text\",      \"text\": \".\"},\n    ]\n    write_json_to_file(tmpfile, {\n        \"title\": \"Root\",\n        \"children\": [],\n        \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n        \"paragraphs\": [\n            {\"id\": \"abc1\", \"type\": \"text\", \"text\": text},\n            {\"id\": \"abc2\", \"type\": \"quote\", \"text\": text},\n            {\"id\": \"abc3\", \"type\": \"image\", \"text\": text, \"image_base64\": \"data\"},\n            {\"id\": \"abc4\", \"type\": \"list\", \"text\": \"\\n\".join([\n                \"* **a**{}\".format(text),\n                \"* **b**{}\".format(text),\n                \"    1. **c**{}\".format(text),\n                \"    1. **d**{}\".format(text),\n            ])},\n        ],\n    })\n    doc = Document.from_file(tmpfile)\n    with doc.notify():\n        pass\n    assert load_json_from_file(tmpfile) == {\n        \"root_page\": {\n            \"title\": \"Root\",\n            \"children\": [],\n            \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n            \"paragraphs\": [\n                {\"id\": \"abc1\", \"type\": \"text\", \"fragments\": fragments},\n                {\"id\": \"abc2\", \"type\": \"quote\", \"fragments\": fragments},\n                {\"id\": \"abc3\", \"type\": \"image\", \"fragments\": fragments, \"image_base64\": \"data\"},\n                {\"id\": \"abc4\", \"type\": \"list\", \"child_type\": \"unordered\", \"children\": [\n                    {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"a\"}]+fragments},\n                    {\"child_type\": \"ordered\", \"children\": [\n                        {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"c\"}]+fragments},\n                        {\"child_type\": None, \"children\": [], \"fragments\": [{\"type\": \"strong\", \"text\": \"d\"}]+fragments},\n                    ], \"fragments\": [{\"type\": \"strong\", \"text\": \"b\"}]+fragments},\n                ]},\n            ],\n        },\n        \"variables\": {},\n    }\n",
 "type":"code"
 }
 ],
@@ -4760,14 +4760,31 @@
 "chunkpath":[
 "classes",
 "Document",
-"Post load"
+"legacy handlers"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"for paragraph in self._document_dict.paragraph_dict_iterator():\n    if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n        paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n        del paragraph[\"text\"]\n    elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n        paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n        del paragraph[\"text\"]\n",
+"text":"self._legacy_inline_text,\n",
+"type":"code"
+}
+],
+"id":"aacc8f502e00461db45d5ee34dd69a5b",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _legacy_inline_text(self, document_dict):\n    for paragraph in document_dict.get(\"paragraphs\", []):\n        if paragraph[\"type\"] in [\"text\", \"quote\", \"image\"] and \"text\" in paragraph:\n            paragraph[\"fragments\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n            del paragraph[\"text\"]\n        elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n            paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n            del paragraph[\"text\"]\n    for child in document_dict.get(\"children\", []):\n        self._legacy_inline_text(child)\n    return document_dict\n",
 "type":"code"
 }
 ],
@@ -4871,14 +4888,31 @@
 "chunkpath":[
 "classes",
 "Document",
-"Post load"
+"legacy handlers"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"for p in self._document_dict.paragraph_dict_iterator():\n    if p[\"type\"] == \"code\" and \"path\" in p:\n        p[\"filepath\"], p[\"chunkpath\"] = split_legacy_path(p[\"path\"])\n        del p[\"path\"]\n    if p[\"type\"] == \"code\" and \"text\" in p:\n        p[\"fragments\"] = legacy_code_text_to_fragments(p[\"text\"])\n        del p[\"text\"]\n",
+"text":"self._legacy_inline_code,\n",
+"type":"code"
+}
+],
+"id":"7565d27b0bf6493ea1b9cd23b510c418",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _legacy_inline_code(self, document_dict):\n    for p in document_dict.get(\"paragraphs\", []):\n        if p[\"type\"] == \"code\" and \"path\" in p:\n            p[\"filepath\"], p[\"chunkpath\"] = split_legacy_path(p[\"path\"])\n            del p[\"path\"]\n        if p[\"type\"] == \"code\" and \"text\" in p:\n            p[\"fragments\"] = legacy_code_text_to_fragments(p[\"text\"])\n            del p[\"text\"]\n    for child in document_dict.get(\"children\", []):\n        self._legacy_inline_code(child)\n    return document_dict\n",
 "type":"code"
 }
 ],
@@ -5001,7 +5035,7 @@
 "type":"chunk"
 },
 {
-"text":"        ],\n    })\n    document = Document(tmpfile)\n    with document.notify():\n        pass\n    assert load_json_from_file(tmpfile)[\"paragraphs\"] == [\n",
+"text":"        ],\n    })\n    document = Document(tmpfile)\n    with document.notify():\n        pass\n    assert load_json_from_file(tmpfile)[\"root_page\"][\"paragraphs\"] == [\n",
 "type":"code"
 },
 {
@@ -5092,27 +5126,33 @@
 },
 {
 "chunkpath":[
-"test cases"
-],
-"filepath":[
-"test_rliterate.py"
-],
-"fragments":[],
-"id":"ffd8b4734aa74ab8ac0347d4b93b09c1",
-"type":"code"
-},
-{
-"chunkpath":[
 "classes",
 "Document",
-"Post load"
+"legacy handlers"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"if \"root_page\" not in self._document_dict:\n    pass\n",
+"text":"self._legacy_root_page,\n",
+"type":"code"
+}
+],
+"id":"6078b9b5ce264c06b3f8033a92b32e63",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _legacy_root_page(self, document_dict):\n    if \"root_page\" not in document_dict:\n        return {\n            \"root_page\": document_dict,\n            \"variables\": {},\n        }\n    else:\n        return document_dict\n",
 "type":"code"
 }
 ],
@@ -5134,6 +5174,34 @@
 ],
 "id":"f83ca3ad0ea74fe0be39456933a5250b",
 "type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _handle_legacy(self, document_dict):\n    for fn in [\n",
+"type":"code"
+},
+{
+"path":[
+"legacy handlers"
+],
+"prefix":"        ",
+"type":"chunk"
+},
+{
+"text":"    ]:\n        document_dict = fn(document_dict)\n    return document_dict\n",
+"type":"code"
+}
+],
+"id":"c702b466a707408d975e1d13737844d0",
+"type":"code"
 }
 ],
 "title":"Legacy format"
@@ -5287,7 +5355,7 @@
 ],
 "fragments":[
 {
-"text":"def _load(self, path):\n    if os.path.exists(path):\n        document_dict = load_json_from_file(path)\n    else:\n        document_dict = self._empty_page()\n    self._history = History(DocumentDictWrapper(document_dict), size=10)\n",
+"text":"def _load(self, path):\n    if os.path.exists(path):\n        document_dict = self._handle_legacy(load_json_from_file(path))\n    else:\n        document_dict = self._empty_page()\n    self._history = History(DocumentDictWrapper(document_dict), size=10)\n",
 "type":"code"
 },
 {

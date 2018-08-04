@@ -46,21 +46,24 @@ def test_can_read_legacy_file_format_paragraph_had_text(tmpfile):
     with doc.notify():
         pass
     assert load_json_from_file(tmpfile) == {
-        "title": "Root",
-        "children": [],
-        "id": "106af6f8665c45e8ab751993a6abc876",
-        "paragraphs": [
-            {"id": "abc1", "type": "text", "fragments": fragments},
-            {"id": "abc2", "type": "quote", "fragments": fragments},
-            {"id": "abc3", "type": "image", "fragments": fragments, "image_base64": "data"},
-            {"id": "abc4", "type": "list", "child_type": "unordered", "children": [
-                {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "a"}]+fragments},
-                {"child_type": "ordered", "children": [
-                    {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "c"}]+fragments},
-                    {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "d"}]+fragments},
-                ], "fragments": [{"type": "strong", "text": "b"}]+fragments},
-            ]},
-        ],
+        "root_page": {
+            "title": "Root",
+            "children": [],
+            "id": "106af6f8665c45e8ab751993a6abc876",
+            "paragraphs": [
+                {"id": "abc1", "type": "text", "fragments": fragments},
+                {"id": "abc2", "type": "quote", "fragments": fragments},
+                {"id": "abc3", "type": "image", "fragments": fragments, "image_base64": "data"},
+                {"id": "abc4", "type": "list", "child_type": "unordered", "children": [
+                    {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "a"}]+fragments},
+                    {"child_type": "ordered", "children": [
+                        {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "c"}]+fragments},
+                        {"child_type": None, "children": [], "fragments": [{"type": "strong", "text": "d"}]+fragments},
+                    ], "fragments": [{"type": "strong", "text": "b"}]+fragments},
+                ]},
+            ],
+        },
+        "variables": {},
     }
 def test_reads_legacy_code_paragraph(tmpfile):
     write_json_to_file(tmpfile, {
@@ -79,7 +82,7 @@ def test_reads_legacy_code_paragraph(tmpfile):
     document = Document(tmpfile)
     with document.notify():
         pass
-    assert load_json_from_file(tmpfile)["paragraphs"] == [
+    assert load_json_from_file(tmpfile)["root_page"]["paragraphs"] == [
         {
             "id": "abc1",
             "type": "code",

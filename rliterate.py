@@ -1882,26 +1882,10 @@ class Document(Observable):
 
     def _load(self, path):
         if os.path.exists(path):
-            document_dict = load_json_from_file(path)
+            document_dict = self._handle_legacy(load_json_from_file(path))
         else:
             document_dict = self._empty_page()
         self._history = History(DocumentDictWrapper(document_dict), size=10)
-        for paragraph in self._document_dict.paragraph_dict_iterator():
-            if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
-                paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
-                del paragraph["text"]
-            elif paragraph["type"] in ["list"] and "text" in paragraph:
-                paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
-                del paragraph["text"]
-        for p in self._document_dict.paragraph_dict_iterator():
-            if p["type"] == "code" and "path" in p:
-                p["filepath"], p["chunkpath"] = split_legacy_path(p["path"])
-                del p["path"]
-            if p["type"] == "code" and "text" in p:
-                p["fragments"] = legacy_code_text_to_fragments(p["text"])
-                del p["text"]
-        if "root_page" not in self._document_dict:
-            pass
 
     @property
     def _document_dict(self):
@@ -1969,6 +1953,44 @@ class Document(Observable):
                             if f["type"] == "chunk":
                                 if path.is_prefix(Path(p["filepath"], p["chunkpath"]+f["path"])):
                                     f["path"][path.length-1-filelen-chunklen] = name
+    def _handle_legacy(self, document_dict):
+        for fn in [
+            self._legacy_inline_text,
+            self._legacy_inline_code,
+            self._legacy_root_page,
+        ]:
+            document_dict = fn(document_dict)
+        return document_dict
+    def _legacy_inline_text(self, document_dict):
+        for paragraph in document_dict.get("paragraphs", []):
+            if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
+                paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
+                del paragraph["text"]
+            elif paragraph["type"] in ["list"] and "text" in paragraph:
+                paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
+                del paragraph["text"]
+        for child in document_dict.get("children", []):
+            self._legacy_inline_text(child)
+        return document_dict
+    def _legacy_inline_code(self, document_dict):
+        for p in document_dict.get("paragraphs", []):
+            if p["type"] == "code" and "path" in p:
+                p["filepath"], p["chunkpath"] = split_legacy_path(p["path"])
+                del p["path"]
+            if p["type"] == "code" and "text" in p:
+                p["fragments"] = legacy_code_text_to_fragments(p["text"])
+                del p["text"]
+        for child in document_dict.get("children", []):
+            self._legacy_inline_code(child)
+        return document_dict
+    def _legacy_root_page(self, document_dict):
+        if "root_page" not in document_dict:
+            return {
+                "root_page": document_dict,
+                "variables": {},
+            }
+        else:
+            return document_dict
 class DocumentDictWrapper(dict):
 
     def __init__(self, document_dict):
@@ -1976,7 +1998,7 @@ class DocumentDictWrapper(dict):
         self._pages = {}
         self._parent_pages = {}
         self._paragraphs = {}
-        self._cache_page(self)
+        self._cache_page(self["root_page"])
 
     def _cache_page(self, page, parent_page=None):
         self._pages[page["id"]] = page
@@ -1995,11 +2017,11 @@ class DocumentDictWrapper(dict):
 
     def get_page_dict(self, page_id=None):
         if page_id is None:
-            page_id = self["id"]
+            page_id = self["root_page"]["id"]
         return self._pages.get(page_id, None)
 
     def delete_page_dict(self, page_id):
-        if page_id == self["id"]:
+        if page_id == self["root_page"]["id"]:
             return
         page = self._pages[page_id]
         parent_page = self._parent_pages[page_id]
