@@ -2223,7 +2223,7 @@ class ListParagraph(Paragraph):
 
     @text_version.setter
     def text_version(self, value):
-        child_type, children = text_to_list(value)
+        child_type, children = LegacyListParser(value).parse_items()
         self.update({
             "child_type": child_type,
             "children": children
@@ -3323,8 +3323,6 @@ def fragments_to_text(fragments):
 
 def text_to_fragments(text):
     return LegacyInlineTextParser().parse(text)
-def text_to_list(text):
-    return LegacyListParser(text).parse_items()
 def split_legacy_path(path):
     filepath = []
     chunkpath = []

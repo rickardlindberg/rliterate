@@ -4207,7 +4207,7 @@
 ],
 "fragments":[
 {
-"text":"class ListParagraph(Paragraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._paragraph_dict[\"children\"]]\n\n    def get_text_index(self, list_and_fragment_index):\n        return self._text_version.get_selection(list_and_fragment_index)[0]\n\n    @property\n    def text_version(self):\n        return self._text_version.text\n\n    @property\n    def _text_version(self):\n        def list_item_to_text(text_version, child_type, item, indent=0, index=0):\n            text_version.add(\"    \"*indent)\n            if child_type == \"ordered\":\n                text_version.add(\"{}. \".format(index+1))\n            else:\n                text_version.add(\"* \")\n            for fragment in item.fragments:\n                fragment.fill_text_version(text_version)\n            text_version.add(\"\\n\")\n            for index, child in enumerate(item.children):\n                with text_version.index(index):\n                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)\n        text_version = TextVersion()\n        for index, child in enumerate(self.children):\n            with text_version.index(index):\n                list_item_to_text(text_version, self.child_type, child, index=index)\n        return text_version\n\n    @text_version.setter\n    def text_version(self, value):\n        child_type, children = text_to_list(value)\n        self.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n",
+"text":"class ListParagraph(Paragraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._paragraph_dict[\"children\"]]\n\n    def get_text_index(self, list_and_fragment_index):\n        return self._text_version.get_selection(list_and_fragment_index)[0]\n\n    @property\n    def text_version(self):\n        return self._text_version.text\n\n    @property\n    def _text_version(self):\n        def list_item_to_text(text_version, child_type, item, indent=0, index=0):\n            text_version.add(\"    \"*indent)\n            if child_type == \"ordered\":\n                text_version.add(\"{}. \".format(index+1))\n            else:\n                text_version.add(\"* \")\n            for fragment in item.fragments:\n                fragment.fill_text_version(text_version)\n            text_version.add(\"\\n\")\n            for index, child in enumerate(item.children):\n                with text_version.index(index):\n                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)\n        text_version = TextVersion()\n        for index, child in enumerate(self.children):\n            with text_version.index(index):\n                list_item_to_text(text_version, self.child_type, child, index=index)\n        return text_version\n\n    @text_version.setter\n    def text_version(self, value):\n        child_type, children = LegacyListParser(value).parse_items()\n        self.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n",
 "type":"code"
 }
 ],
@@ -4228,22 +4228,6 @@
 }
 ],
 "id":"b1df900b20ce4fd195ba8b9e6040ab24",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def text_to_list(text):\n    return LegacyListParser(text).parse_items()\n",
-"type":"code"
-}
-],
-"id":"126fbee10f774ea5a325a8ee855d4ae9",
 "type":"code"
 }
 ],
