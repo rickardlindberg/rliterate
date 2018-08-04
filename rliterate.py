@@ -1277,24 +1277,29 @@ class List(ParagraphBase):
             extra
         )
 
-    def add_items(self, view, sizer, items, child_type, indent=0):
+    def add_items(self, view, sizer, items, child_type, indicies=[]):
         for index, item in enumerate(items):
             inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            inner_sizer.Add((self.INDENT*indent, 1))
+            inner_sizer.Add((self.INDENT*len(indicies), 1))
             bullet = self._create_bullet_widget(view, child_type, index)
             inner_sizer.Add(bullet)
+            tokens = []
+            for t in item.tokens:
+                f = t.extra["fragment_index"]
+                t.extra["fragment_index"] = tuple(indicies+[index]+[f])
+                tokens.append(t)
             inner_sizer.Add(
                 TextView(
                     view,
                     self.project,
-                    item.tokens,
+                    tokens,
                     self,
-                    indented=self.INDENT*indent+bullet.GetMinSize()[0]
+                    indented=self.INDENT*len(indicies)+bullet.GetMinSize()[0]
                 ),
                 proportion=1
             )
             sizer.Add(inner_sizer, flag=wx.EXPAND)
-            self.add_items(view, sizer, item.children, item.child_type, indent+1)
+            self.add_items(view, sizer, item.children, item.child_type, indicies+[index])
 
     def _create_bullet_widget(self, view, list_type, index):
         return TokenView(
@@ -2161,14 +2166,18 @@ class TextParagraph(Paragraph):
         return [x.token for x in self.fragments]
 
     def get_text_index(self, fragment_index):
-        return fragments_to_text_with_index(
-            self.fragments,
-            fragment_index
-        )[1]
+        return self._text_version.get_selection(fragment_index)[0]
 
     @property
     def text_version(self):
-        return fragments_to_text(self.fragments)
+        return self._text_version.text
+
+    @property
+    def _text_version(self):
+        text_version = TextVersion()
+        for fragment in self.fragments:
+            fragment.fill_text_version(text_version)
+        return text_version
 
     @text_version.setter
     def text_version(self, value):
@@ -2185,9 +2194,32 @@ class ListParagraph(Paragraph):
     def children(self):
         return [ListItem(self._document, x) for x in self._paragraph_dict["children"]]
 
+    def get_text_index(self, list_and_fragment_index):
+        return self._text_version.get_selection(list_and_fragment_index)[0]
+
     @property
     def text_version(self):
-        return list_to_text(self)
+        return self._text_version.text
+
+    @property
+    def _text_version(self):
+        def list_item_to_text(text_version, child_type, item, indent=0, index=0):
+            text_version.add("    "*indent)
+            if child_type == "ordered":
+                text_version.add("{}. ".format(index+1))
+            else:
+                text_version.add("* ")
+            for fragment in item.fragments:
+                fragment.fill_text_version(text_version)
+            text_version.add("\n")
+            for index, child in enumerate(item.children):
+                with text_version.index(index):
+                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)
+        text_version = TextVersion()
+        for index, child in enumerate(self.children):
+            with text_version.index(index):
+                list_item_to_text(text_version, self.child_type, child, index=index)
+        return text_version
 
     @text_version.setter
     def text_version(self, value):
@@ -2474,21 +2506,39 @@ class TextFragment(object):
     @property
     def token(self):
         return Token(self.text, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add_with_index(self.text, self._index)
 class StrongTextFragment(TextFragment):
 
     @property
     def token(self):
         return Token(self.text, token_type=TokenType.RLiterate.Strong, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("**")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("**")
 class EmphasisTextFragment(TextFragment):
 
     @property
     def token(self):
         return Token(self.text, token_type=TokenType.RLiterate.Emphasis, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("*")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("*")
 class CodeTextFragment(TextFragment):
 
     @property
     def token(self):
         return Token(self.text, token_type=TokenType.RLiterate.Code, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("`")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("`")
 class ReferenceTextFragment(TextFragment):
 
     @property
@@ -2506,6 +2556,14 @@ class ReferenceTextFragment(TextFragment):
     @property
     def token(self):
         return Token(self.title, token_type=TokenType.RLiterate.Reference, page_id=self.page_id, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("[[")
+        text_version.add_with_index(self.page_id, self._index)
+        if self.text:
+            text_version.add(":")
+            text_version.add(self.text)
+        text_version.add("]]")
 class LinkTextFragment(TextFragment):
 
     @property
@@ -2521,6 +2579,38 @@ class LinkTextFragment(TextFragment):
     @property
     def token(self):
         return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("[")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("]")
+        text_version.add("(")
+        text_version.add(self.url)
+        text_version.add(")")
+class TextVersion(object):
+
+    def __init__(self):
+        self.text = ""
+        self.indicies = {}
+        self._index_prefix = []
+
+    def get_selection(self, index):
+        return self.indicies.get(index, (0, 0))
+
+    @contextlib.contextmanager
+    def index(self, index):
+        self._index_prefix.append(index)
+        yield
+        self._index_prefix.pop(-1)
+
+    def add_with_index(self, text, index):
+        start = len(self.text)
+        end = start + len(text)
+        self.indicies[tuple(self._index_prefix + [index])] = (start, end)
+        self.add(text)
+
+    def add(self, text):
+        self.text += text
 class LegacyInlineTextParser(object):
 
     SPACE_RE = re.compile(r"\s+")
@@ -3225,49 +3315,14 @@ def flicker_free_drawing(widget):
     yield
     widget.Thaw()
 def fragments_to_text(fragments):
-    return fragments_to_text_with_index(fragments)[0]
-
-
-def fragments_to_text_with_index(fragments, fragment_index=0):
-    formatters = {
-        "emphasis":  lambda x: ("*{}*".format(x.text), 1),
-        "code":      lambda x: ("`{}`".format(x.text), 1),
-        "strong":    lambda x: ("**{}**".format(x.text), 2),
-        "reference": lambda x: ("[[{}{}]]".format(x.page_id, ":{}".format(x.text) if x.text else ""), 2),
-        "link":      lambda x: ("[{}]({})".format(x.text, x.url), 1),
-    }
-    parts = []
-    text_index = 0
-    text_len = 0
-    for index, fragment in enumerate(fragments):
-        text, offset = formatters.get(fragment.type, lambda x: (x.text, 0))(fragment)
-        if index == fragment_index:
-            text_index = text_len + offset
-        parts.append(text)
-        text_len += len(text)
-    return ("".join(parts), text_index)
+    text_version = TextVersion()
+    for fragment in fragments:
+        fragment.fill_text_version(text_version)
+    return text_version.text
 
 
 def text_to_fragments(text):
     return LegacyInlineTextParser().parse(text)
-def list_to_text(paragraph):
-    def list_item_to_text(child_type, item, indent=0, index=0):
-        text = "    "*indent
-        if child_type == "ordered":
-            text += "{}. ".format(index+1)
-        else:
-            text += "* "
-        text += fragments_to_text(item.fragments)
-        text += "\n"
-        for index, child in enumerate(item.children):
-            text += list_item_to_text(item.child_type, child, index=index, indent=indent+1)
-        return text
-    res = ""
-    for index, child in enumerate(paragraph.children):
-        res += list_item_to_text(paragraph.child_type, child, index=index)
-    return res
-
-
 def text_to_list(text):
     return LegacyListParser(text).parse_items()
 def split_legacy_path(path):
