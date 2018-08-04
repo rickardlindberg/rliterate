@@ -1162,7 +1162,10 @@ class Text(ParagraphBase):
         return TextView(
             self,
             self.project,
-            self.paragraph.tokens,
+            [
+                token.with_extra("text_index", (token.extra["fragment_index"],))
+                for token in self.paragraph.tokens
+            ],
             self
         )
 
@@ -1223,7 +1226,7 @@ class TextEdit(MultilineTextCtrl):
         if extra.get("token", None) is None:
             self.SetSelection(0, 0)
         else:
-            index = paragraph.get_text_index(extra["token"].extra["fragment_index"])
+            index = paragraph.get_text_index(extra["token"].extra["text_index"])
             start = index + extra["token"].index
             end = start + len(extra["token"].text)
             self.SetSelection(start, end)
@@ -1242,7 +1245,10 @@ class Quote(Text):
         self.text_view = TextView(
             view,
             self.project,
-            self.paragraph.tokens,
+            [
+                token.with_extra("text_index", (token.extra["fragment_index"],))
+                for token in self.paragraph.tokens
+            ],
             self,
             indented=self.INDENT
         )
@@ -1283,16 +1289,17 @@ class List(ParagraphBase):
             inner_sizer.Add((self.INDENT*len(indicies), 1))
             bullet = self._create_bullet_widget(view, child_type, index)
             inner_sizer.Add(bullet)
-            tokens = []
-            for t in item.tokens:
-                f = t.extra["fragment_index"]
-                t.extra["fragment_index"] = tuple(indicies+[index]+[f])
-                tokens.append(t)
             inner_sizer.Add(
                 TextView(
                     view,
                     self.project,
-                    tokens,
+                    [
+                        token.with_extra(
+                            "text_index",
+                            tuple(indicies+[index]+[token.extra["fragment_index"]])
+                        )
+                        for token in item.tokens
+                    ],
                     self,
                     indented=self.INDENT*len(indicies)+bullet.GetMinSize()[0]
                 ),
@@ -1828,6 +1835,10 @@ class Token(object):
         self.extra = extra
         self.index = index
 
+    def with_extra(self, key, value):
+        self.extra[key] = value
+        return self
+
     def is_newline(self):
         return self.text == "\n"
 
@@ -2165,8 +2176,8 @@ class TextParagraph(Paragraph):
     def tokens(self):
         return [x.token for x in self.fragments]
 
-    def get_text_index(self, fragment_index):
-        return self._text_version.get_selection(fragment_index)[0]
+    def get_text_index(self, index):
+        return self._text_version.get_selection(index)[0]
 
     @property
     def text_version(self):
