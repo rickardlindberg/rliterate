@@ -1953,6 +1953,18 @@ class Document(Observable):
                             if f["type"] == "chunk":
                                 if path.is_prefix(Path(p["filepath"], p["chunkpath"]+f["path"])):
                                     f["path"][path.length-1-filelen-chunklen] = name
+    def new_variable(self, name):
+        with self.modify("New variable") as document_dict:
+            variable_id = genid()
+            document_dict["variables"][variable_id] = name
+            return variable_id
+
+    def rename_variable(self, variable_id, name):
+        with self.modify("Rename variable") as document_dict:
+            document_dict["variables"][variable_id] = name
+
+    def lookup_variable(self, variable_id):
+        return self._document_dict["variables"].get(variable_id)
     def _handle_legacy(self, document_dict):
         for fn in [
             self._legacy_inline_text,
@@ -2308,6 +2320,7 @@ class CodeParagraph(Paragraph):
     def text_version(self):
         CONVERTERS = {
             "chunk": self._chunk_fragment_to_text,
+            "variable": self._variable_fragment_to_text,
             "code": lambda fragment: fragment["text"]
         }
         return "".join(
@@ -2317,21 +2330,58 @@ class CodeParagraph(Paragraph):
         )
     @text_version.setter
     def text_version(self, value):
-        fragments = []
-        current_text = ""
+        with self.multi_update():
+            self.update({
+                "fragments": self._parse(value)
+            })
+
+    def _parse(self, value):
+        self._parsed_fragments = []
+        self._parse_buffer = ""
         for line in value.splitlines():
             match = re.match(self._chunk_fragment_re(), line)
             if match:
-                if current_text:
-                    fragments.append({"type": "code", "text": current_text})
-                current_text = ""
-                fragments.append({"type": "chunk", "path": match.group(2).split("/"), "prefix": match.group(1)})
+                self._parse_clear()
+                self._parsed_fragments.append({
+                    "type": "chunk",
+                    "path": match.group(2).split("/"),
+                    "prefix": match.group(1)
+                })
             else:
-                current_text += line
-                current_text += "\n"
-        if current_text:
-            fragments.append({"type": "code", "text": current_text})
-        self.update({"fragments": fragments})
+                while line:
+                    match = re.match(self._variable_fragment_re(), line)
+                    if match:
+                        self._parse_clear()
+                        self._parsed_fragments.append({
+                            "type": "variable",
+                            "id": self._get_variable_id(match.group(1))
+                        })
+                        line = line[len(match.group(0)):]
+                    else:
+                        self._parse_buffer += line[0]
+                        line = line[1:]
+                self._parse_buffer += "\n"
+        self._parse_clear()
+        return self._parsed_fragments
+
+    def _get_variable_id(self, identifier):
+        if self._document.lookup_variable(identifier) is None:
+            return self._document.new_variable(identifier)
+        else:
+            return self._document.lookup_variable(identifier)
+
+    def _parse_clear(self):
+        if self._parse_buffer:
+            self._parsed_fragments.append({"type": "code", "text": self._parse_buffer})
+        self._parse_buffer = ""
+
+    def _chunk_fragment_re(self):
+        start, end = self._chunk_delimiters()
+        return r"^(\s*){}(.*){}\s*$".format(re.escape(start), re.escape(end))
+
+    def _variable_fragment_re(self):
+        start, end = self._variable_delimiters()
+        return r"{}(.*?){}".format(re.escape(start), re.escape(end))
     def _chunk_fragment_to_text(self, fragment):
         start, end = self._chunk_delimiters()
         return "{}{}{}{}\n".format(
@@ -2341,12 +2391,18 @@ class CodeParagraph(Paragraph):
             end
         )
 
-    def _chunk_fragment_re(self):
-        start, end = self._chunk_delimiters()
-        return r"^(\s*){}(.*){}\s*$".format(re.escape(start), re.escape(end))
-
     def _chunk_delimiters(self):
         return ("<<", ">>")
+    def _variable_fragment_to_text(self, fragment):
+        start, end = self._variable_delimiters()
+        return "{}{}{}".format(
+            start,
+            fragment["id"],
+            end
+        )
+
+    def _variable_delimiters(self):
+        return ("__RL_", "__")
 
     @property
     def filename(self):
@@ -2374,6 +2430,9 @@ class CodeParagraph(Paragraph):
                     token_type=TokenType.RLiterate.Chunk,
                     subpath=self.path.extend_chunk(fragment["path"])
                 ))
+            elif fragment["type"] == "variable":
+                name = self._document.lookup_variable(fragment["id"])
+                pygments_text += name if name is not None else fragment["id"]
             else:
                 pygments_text += fragment["text"]
         return pygments_text, inserts
@@ -3007,6 +3066,9 @@ class FileGenerator(object):
             for fragment in paragraph.fragments:
                 if fragment["type"] == "chunk":
                     self._render(f, (key[0], key[1]+tuple(fragment["path"])), prefix=prefix+fragment["prefix"])
+                elif fragment["type"] == "variable":
+                    name = self.document.lookup_variable(fragment["id"])
+                    f.write(name if name is not None else fragment["id"])
                 else:
                     for line in fragment["text"].splitlines():
                         if len(line) > 0:

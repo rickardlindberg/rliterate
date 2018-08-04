@@ -4378,7 +4378,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef text_version(self):\n    CONVERTERS = {\n        \"chunk\": self._chunk_fragment_to_text,\n        \"code\": lambda fragment: fragment[\"text\"]\n    }\n    return \"\".join(\n        CONVERTERS[fragment[\"type\"]](fragment)\n        for fragment\n        in self.fragments\n    )\n",
+"text":"@property\ndef text_version(self):\n    CONVERTERS = {\n        \"chunk\": self._chunk_fragment_to_text,\n        \"variable\": self._variable_fragment_to_text,\n        \"code\": lambda fragment: fragment[\"text\"]\n    }\n    return \"\".join(\n        CONVERTERS[fragment[\"type\"]](fragment)\n        for fragment\n        in self.fragments\n    )\n",
 "type":"code"
 }
 ],
@@ -4405,7 +4405,7 @@
 ],
 "fragments":[
 {
-"text":"@text_version.setter\ndef text_version(self, value):\n    fragments = []\n    current_text = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            if current_text:\n                fragments.append({\"type\": \"code\", \"text\": current_text})\n            current_text = \"\"\n            fragments.append({\"type\": \"chunk\", \"path\": match.group(2).split(\"/\"), \"prefix\": match.group(1)})\n        else:\n            current_text += line\n            current_text += \"\\n\"\n    if current_text:\n        fragments.append({\"type\": \"code\", \"text\": current_text})\n    self.update({\"fragments\": fragments})\n",
+"text":"@text_version.setter\ndef text_version(self, value):\n    with self.multi_update():\n        self.update({\n            \"fragments\": self._parse(value)\n        })\n\ndef _parse(self, value):\n    self._parsed_fragments = []\n    self._parse_buffer = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            self._parse_clear()\n            self._parsed_fragments.append({\n                \"type\": \"chunk\",\n                \"path\": match.group(2).split(\"/\"),\n                \"prefix\": match.group(1)\n            })\n        else:\n            while line:\n                match = re.match(self._variable_fragment_re(), line)\n                if match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"variable\",\n                        \"id\": self._get_variable_id(match.group(1))\n                    })\n                    line = line[len(match.group(0)):]\n                else:\n                    self._parse_buffer += line[0]\n                    line = line[1:]\n            self._parse_buffer += \"\\n\"\n    self._parse_clear()\n    return self._parsed_fragments\n\ndef _get_variable_id(self, identifier):\n    if self._document.lookup_variable(identifier) is None:\n        return self._document.new_variable(identifier)\n    else:\n        return self._document.lookup_variable(identifier)\n\ndef _parse_clear(self):\n    if self._parse_buffer:\n        self._parsed_fragments.append({\"type\": \"code\", \"text\": self._parse_buffer})\n    self._parse_buffer = \"\"\n\ndef _chunk_fragment_re(self):\n    start, end = self._chunk_delimiters()\n    return r\"^(\\s*){}(.*){}\\s*$\".format(re.escape(start), re.escape(end))\n\ndef _variable_fragment_re(self):\n    start, end = self._variable_delimiters()\n    return r\"{}(.*?){}\".format(re.escape(start), re.escape(end))\n",
 "type":"code"
 }
 ],
@@ -4432,11 +4432,38 @@
 ],
 "fragments":[
 {
-"text":"def _chunk_fragment_to_text(self, fragment):\n    start, end = self._chunk_delimiters()\n    return \"{}{}{}{}\\n\".format(\n        fragment[\"prefix\"],\n        start,\n        \"/\".join(fragment[\"path\"]),\n        end\n    )\n\ndef _chunk_fragment_re(self):\n    start, end = self._chunk_delimiters()\n    return r\"^(\\s*){}(.*){}\\s*$\".format(re.escape(start), re.escape(end))\n\ndef _chunk_delimiters(self):\n    return (\"<<\", \">>\")\n",
+"text":"def _chunk_fragment_to_text(self, fragment):\n    start, end = self._chunk_delimiters()\n    return \"{}{}{}{}\\n\".format(\n        fragment[\"prefix\"],\n        start,\n        \"/\".join(fragment[\"path\"]),\n        end\n    )\n\ndef _chunk_delimiters(self):\n    return (\"<<\", \">>\")\n",
 "type":"code"
 }
 ],
 "id":"62c8f717420a491693cb1cfc2033b4dd",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"Variable fragments:",
+"type":"text"
+}
+],
+"id":"580eabe0764d43efadb0e8d3893e4bf6",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _variable_fragment_to_text(self, fragment):\n    start, end = self._variable_delimiters()\n    return \"{}{}{}\".format(\n        start,\n        fragment[\"id\"],\n        end\n    )\n\ndef _variable_delimiters(self):\n    return (\"__RL_\", \"__\")\n",
+"type":"code"
+}
+],
+"id":"43e624edbcbf40e4aa4f043a909e4d71",
 "type":"code"
 }
 ],
@@ -4465,7 +4492,7 @@
 "type":"chunk"
 },
 {
-"text":"\n    @property\n    def filename(self):\n        return self.path.filename\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        pygments_text, inserts = self._pygments_text()\n        return self._pygments_tokens_to_tokens(\n            lexer.get_tokens(pygments_text),\n            inserts\n        )\n\n    def _pygments_text(self):\n        pygments_text = \"\"\n        inserts = defaultdict(list)\n        for fragment in self.fragments:\n            if fragment[\"type\"] == \"chunk\":\n                inserts[len(pygments_text)].append(Token(\n                    self._chunk_fragment_to_text(fragment),\n                    token_type=TokenType.RLiterate.Chunk,\n                    subpath=self.path.extend_chunk(fragment[\"path\"])\n                ))\n            else:\n                pygments_text += fragment[\"text\"]\n        return pygments_text, inserts\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.path.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):\n        pos = 0\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            for ch in text:\n                tokens.extend(inserts.get(pos, []))\n                tokens.append(Token(ch, token_type=pygments_token))\n                pos += 1\n        tokens.extend(inserts.get(pos, []))\n        return tokens\n",
+"text":"\n    @property\n    def filename(self):\n        return self.path.filename\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        pygments_text, inserts = self._pygments_text()\n        return self._pygments_tokens_to_tokens(\n            lexer.get_tokens(pygments_text),\n            inserts\n        )\n\n    def _pygments_text(self):\n        pygments_text = \"\"\n        inserts = defaultdict(list)\n        for fragment in self.fragments:\n            if fragment[\"type\"] == \"chunk\":\n                inserts[len(pygments_text)].append(Token(\n                    self._chunk_fragment_to_text(fragment),\n                    token_type=TokenType.RLiterate.Chunk,\n                    subpath=self.path.extend_chunk(fragment[\"path\"])\n                ))\n            elif fragment[\"type\"] == \"variable\":\n                name = self._document.lookup_variable(fragment[\"id\"])\n                pygments_text += name if name is not None else fragment[\"id\"]\n            else:\n                pygments_text += fragment[\"text\"]\n        return pygments_text, inserts\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.path.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):\n        pos = 0\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            for ch in text:\n                tokens.extend(inserts.get(pos, []))\n                tokens.append(Token(ch, token_type=pygments_token))\n                pos += 1\n        tokens.extend(inserts.get(pos, []))\n        return tokens\n",
 "type":"code"
 }
 ],
@@ -4675,6 +4702,30 @@
 }
 ],
 "title":"Text fragment"
+},
+{
+"children":[],
+"id":"0fd2d898313145d6aa056ecb8502291e",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def new_variable(self, name):\n    with self.modify(\"New variable\") as document_dict:\n        variable_id = genid()\n        document_dict[\"variables\"][variable_id] = name\n        return variable_id\n\ndef rename_variable(self, variable_id, name):\n    with self.modify(\"Rename variable\") as document_dict:\n        document_dict[\"variables\"][variable_id] = name\n\ndef lookup_variable(self, variable_id):\n    return self._document_dict[\"variables\"].get(variable_id)\n",
+"type":"code"
+}
+],
+"id":"6d90ee0fa2f043d7a3ce3f14fb3e3eb2",
+"type":"code"
+}
+],
+"title":"Variables"
 },
 {
 "children":[],
@@ -6237,7 +6288,7 @@
 ],
 "fragments":[
 {
-"text":"class FileGenerator(object):\n\n    def __init__(self):\n        self.listener = Listener(lambda event: self._generate())\n\n    def set_document(self, document):\n        self.document = document\n        self.listener.set_observable(self.document)\n\n    def _generate(self):\n        self._parts = defaultdict(list)\n        self._collect_parts(self.document.get_page())\n        self._generate_files()\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n        for child in page.children:\n            self._collect_parts(child)\n\n    def _generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                with open(filepath, \"w\") as f:\n                    self._render(f, key)\n\n    def _render(self, f, key, prefix=\"\"):\n        for paragraph in self._parts[key]:\n            for fragment in paragraph.fragments:\n                if fragment[\"type\"] == \"chunk\":\n                    self._render(f, (key[0], key[1]+tuple(fragment[\"path\"])), prefix=prefix+fragment[\"prefix\"])\n                else:\n                    for line in fragment[\"text\"].splitlines():\n                        if len(line) > 0:\n                            f.write(prefix)\n                            f.write(line)\n                        f.write(\"\\n\")\n\n    def _get_filepath(self, key):\n        if len(key[0]) > 0 and len(key[1]) == 0:\n            return os.path.join(*key[0])\n        else:\n            return None\n",
+"text":"class FileGenerator(object):\n\n    def __init__(self):\n        self.listener = Listener(lambda event: self._generate())\n\n    def set_document(self, document):\n        self.document = document\n        self.listener.set_observable(self.document)\n\n    def _generate(self):\n        self._parts = defaultdict(list)\n        self._collect_parts(self.document.get_page())\n        self._generate_files()\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n        for child in page.children:\n            self._collect_parts(child)\n\n    def _generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                with open(filepath, \"w\") as f:\n                    self._render(f, key)\n\n    def _render(self, f, key, prefix=\"\"):\n        for paragraph in self._parts[key]:\n            for fragment in paragraph.fragments:\n                if fragment[\"type\"] == \"chunk\":\n                    self._render(f, (key[0], key[1]+tuple(fragment[\"path\"])), prefix=prefix+fragment[\"prefix\"])\n                elif fragment[\"type\"] == \"variable\":\n                    name = self.document.lookup_variable(fragment[\"id\"])\n                    f.write(name if name is not None else fragment[\"id\"])\n                else:\n                    for line in fragment[\"text\"].splitlines():\n                        if len(line) > 0:\n                            f.write(prefix)\n                            f.write(line)\n                        f.write(\"\\n\")\n\n    def _get_filepath(self, key):\n        if len(key[0]) > 0 and len(key[1]) == 0:\n            return os.path.join(*key[0])\n        else:\n            return None\n",
 "type":"code"
 }
 ],
