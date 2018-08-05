@@ -1,5 +1,5 @@
-# This file is automatically extracted from rliterate.rliterate.
-
+# This file is extracted from rliterate.rliterate.
+# DO NOT EDIT MANUALLY!
 
 from collections import defaultdict
 import contextlib
@@ -23,18 +23,16 @@ from pygments.token import Token as TokenType
 import wx
 import wx.richtext
 import wx.lib.newevent
-
-
-TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
-HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
-CONTINUE_PROCESSING = object()
-EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
+UNDO_BUFFER_SIZE = 10
 PAGE_BODY_WIDTH = 600
 PAGE_PADDING = 13
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
 CONTAINER_BORDER = PARAGRAPH_SPACE
-UNDO_BUFFER_SIZE = 10
+TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
+HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
+CONTINUE_PROCESSING = object()
+EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 class Editable(wx.Panel):
 
     def __init__(self, parent, project):
@@ -68,6 +66,44 @@ class Editable(wx.Panel):
             self.sizer.Show(self.view)
             self.GetTopLevelParent().ChildReRendered()
             self.project.active_editor = None
+class Style(object):
+
+    def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
+        self.color = color
+        self.color_rgb = tuple([
+            int(x, 16)
+            for x
+            in (color[1:3], color[3:5], color[5:7])
+        ])
+        self.bold = bold
+        self.underlined = underlined
+        self.italic = italic
+        self.monospace = monospace
+
+    def apply_to_wx_dc(self, dc, base_font, highlight=False):
+        font = base_font
+        if self.bold:
+            font = font.Bold()
+        if self.underlined:
+            font = font.Underlined()
+        if self.italic:
+            font = font.Italic()
+        if self.monospace:
+            font = wx.Font(
+                pointSize=font.GetPointSize(),
+                family=wx.FONTFAMILY_TELETYPE,
+                style=font.GetStyle(),
+                weight=font.GetWeight(),
+                underline=font.GetUnderlined(),
+            )
+        if highlight:
+            dc.SetTextForeground("#fcf4df")
+            dc.SetTextBackground("#b58900")
+            dc.SetBackgroundMode(wx.SOLID)
+        else:
+            dc.SetTextForeground(self.color_rgb)
+            dc.SetBackgroundMode(wx.TRANSPARENT)
+        dc.SetFont(font)
 class ParagraphBase(Editable):
 
     def __init__(self, parent, project, page_id, paragraph):
@@ -318,44 +354,6 @@ class MultilineTextCtrl(wx.richtext.RichTextCtrl):
             value=value,
             size=size
         )
-class Style(object):
-
-    def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
-        self.color = color
-        self.color_rgb = tuple([
-            int(x, 16)
-            for x
-            in (color[1:3], color[3:5], color[5:7])
-        ])
-        self.bold = bold
-        self.underlined = underlined
-        self.italic = italic
-        self.monospace = monospace
-
-    def apply_to_wx_dc(self, dc, base_font, highlight=False):
-        font = base_font
-        if self.bold:
-            font = font.Bold()
-        if self.underlined:
-            font = font.Underlined()
-        if self.italic:
-            font = font.Italic()
-        if self.monospace:
-            font = wx.Font(
-                pointSize=font.GetPointSize(),
-                family=wx.FONTFAMILY_TELETYPE,
-                style=font.GetStyle(),
-                weight=font.GetWeight(),
-                underline=font.GetUnderlined(),
-            )
-        if highlight:
-            dc.SetTextForeground("#fcf4df")
-            dc.SetTextBackground("#b58900")
-            dc.SetBackgroundMode(wx.SOLID)
-        else:
-            dc.SetTextForeground(self.color_rgb)
-            dc.SetBackgroundMode(wx.TRANSPARENT)
-        dc.SetFont(font)
 class Observable(object):
 
     def __init__(self):
@@ -395,6 +393,1206 @@ class Observable(object):
             if is_prefix(fn_event.split("."), event.split(".")):
                 return True
         return False
+class Document(Observable):
+
+    def __init__(self, document_dict=None):
+        Observable.__init__(self)
+        self._load(document_dict)
+
+    @classmethod
+    def from_file(cls, path):
+        if os.path.exists(path):
+            document = cls(load_json_from_file(path))
+        else:
+            document = cls()
+        document.listen(lambda event:
+            write_json_to_file(
+                path,
+                document.read_only_document_dict
+            )
+        )
+        return document
+    def _load(self, document_dict):
+        self._history = History(
+            DocumentDictWrapper(
+                self._convert_to_latest(
+                    self._empty_page()
+                    if document_dict is None else
+                    document_dict
+                )
+            ),
+            size=UNDO_BUFFER_SIZE
+        )
+    @property
+    def read_only_document_dict(self):
+        return self._history.value
+    @contextlib.contextmanager
+    def modify(self, name):
+        with self.notify():
+            with self._history.new_value(name) as value:
+                yield value
+
+    def get_undo_operation(self):
+        def undo():
+            with self.notify():
+                self._history.back()
+        if self._history.can_back():
+            return (self._history.back_name(), undo)
+
+    def get_redo_operation(self):
+        def redo():
+            with self.notify():
+                self._history.forward()
+        if self._history.can_forward():
+            return (self._history.forward_name(), redo)
+    def add_page(self, title="New page", parent_id=None):
+        with self.modify("Add page") as document_dict:
+            document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)
+
+    def _empty_page(self):
+        return {
+            "id": genid(),
+            "title": "New page...",
+            "children": [],
+            "paragraphs": [],
+        }
+    def get_page(self, page_id=None):
+        page_dict = self.read_only_document_dict.get_page_dict(page_id)
+        if page_dict is None:
+            return None
+        return Page(self, page_dict)
+    def add_paragraph(self, page_id, before_id=None):
+        with self.modify("Add paragraph") as document_dict:
+            paragraph = {
+                "id": genid(),
+                "type": "factory",
+            }
+            document_dict.add_paragraph_dict(paragraph, page_id, before_id=before_id)
+
+    def get_paragraph(self, page_id, paragraph_id):
+        for paragraph in self.get_page(page_id).paragraphs:
+            if paragraph.id == paragraph_id:
+                return paragraph
+    def rename_path(self, path, name):
+        with self.modify("Rename path") as document_dict:
+            for p in document_dict.paragraph_dict_iterator():
+                if p["type"] == "code":
+                    filelen = len(p["filepath"])
+                    chunklen = len(p["chunkpath"])
+                    if path.is_prefix(Path(p["filepath"], p["chunkpath"])):
+                        if path.length > filelen:
+                            p["chunkpath"][path.length-1-filelen] = name
+                        else:
+                            p["filepath"][path.length-1] = name
+                    else:
+                        for f in p["fragments"]:
+                            if f["type"] == "chunk":
+                                if path.is_prefix(Path(p["filepath"], p["chunkpath"]+f["path"])):
+                                    f["path"][path.length-1-filelen-chunklen] = name
+    def new_variable(self, name):
+        with self.modify("New variable") as document_dict:
+            variable_id = genid()
+            document_dict["variables"][variable_id] = name
+            return variable_id
+
+    def rename_variable(self, variable_id, name):
+        with self.modify("Rename variable") as document_dict:
+            document_dict["variables"][variable_id] = name
+
+    def lookup_variable(self, variable_id):
+        return self.read_only_document_dict["variables"].get(variable_id)
+    def _convert_to_latest(self, document_dict):
+        for fn in [
+            self._legacy_inline_text,
+            self._legacy_inline_code,
+            self._legacy_root_page,
+        ]:
+            document_dict = fn(document_dict)
+        return document_dict
+    def _legacy_inline_text(self, document_dict):
+        for paragraph in document_dict.get("paragraphs", []):
+            if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
+                paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
+                del paragraph["text"]
+            elif paragraph["type"] in ["list"] and "text" in paragraph:
+                paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
+                del paragraph["text"]
+        for child in document_dict.get("children", []):
+            self._legacy_inline_text(child)
+        return document_dict
+    def _legacy_inline_code(self, document_dict):
+        for p in document_dict.get("paragraphs", []):
+            if p["type"] == "code" and "path" in p:
+                p["filepath"], p["chunkpath"] = split_legacy_path(p["path"])
+                del p["path"]
+            if p["type"] == "code" and "text" in p:
+                p["fragments"] = legacy_code_text_to_fragments(p["text"])
+                del p["text"]
+        for child in document_dict.get("children", []):
+            self._legacy_inline_code(child)
+        return document_dict
+    def _legacy_root_page(self, document_dict):
+        if "root_page" not in document_dict:
+            return {
+                "root_page": document_dict,
+                "variables": {},
+            }
+        else:
+            return document_dict
+class DocumentDictWrapper(dict):
+
+    def __init__(self, document_dict):
+        dict.__init__(self, document_dict)
+        self._pages = {}
+        self._parent_pages = {}
+        self._paragraphs = {}
+        self._cache_page(self["root_page"])
+
+    def _cache_page(self, page, parent_page=None):
+        self._pages[page["id"]] = page
+        self._parent_pages[page["id"]] = parent_page
+        for paragraph in page["paragraphs"]:
+            self._paragraphs[paragraph["id"]] = paragraph
+        for child in page["children"]:
+            self._cache_page(child, page)
+
+    def add_page_dict(self, page_dict, parent_id=None):
+        page_dict = copy.deepcopy(page_dict)
+        parent_page = self._pages[parent_id]
+        parent_page["children"].append(page_dict)
+        self._pages[page_dict["id"]] = page_dict
+        self._parent_pages[page_dict["id"]] = parent_page
+
+    def get_page_dict(self, page_id=None):
+        if page_id is None:
+            page_id = self["root_page"]["id"]
+        return self._pages.get(page_id, None)
+
+    def delete_page_dict(self, page_id):
+        if page_id == self["root_page"]["id"]:
+            return
+        page = self._pages[page_id]
+        parent_page = self._parent_pages[page_id]
+        index = index_with_id(parent_page["children"], page_id)
+        parent_page["children"].pop(index)
+        self._pages.pop(page_id)
+        self._parent_pages.pop(page_id)
+        for child in reversed(page["children"]):
+            parent_page["children"].insert(index, child)
+            self._parent_pages[child["id"]] = parent_page
+
+    def update_page_dict(self, page_id, data):
+        self._pages[page_id].update(copy.deepcopy(data))
+
+    def move_page_dict(self, page_id, parent_page_id, before_page_id):
+        if page_id == before_page_id:
+            return
+        parent = self._pages[parent_page_id]
+        while parent is not None:
+            if parent["id"] == page_id:
+                return
+            parent = self._parent_pages[parent["id"]]
+        parent = self._parent_pages[page_id]
+        page = parent["children"].pop(index_with_id(parent["children"], page_id))
+        new_parent = self._pages[parent_page_id]
+        self._parent_pages[page_id] = new_parent
+        if before_page_id is None:
+            new_parent["children"].append(page)
+        else:
+            new_parent["children"].insert(
+                index_with_id(new_parent["children"], before_page_id),
+                page
+            )
+
+    def paragraph_dict_iterator(self):
+        return self._paragraphs.values()
+
+    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):
+        paragraph_dict = copy.deepcopy(paragraph_dict)
+        paragraphs = self._pages[page_id]["paragraphs"]
+        if before_id is None:
+            paragraphs.append(paragraph_dict)
+        else:
+            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)
+        self._paragraphs[paragraph_dict["id"]] = paragraph_dict
+
+    def delete_paragraph_dict(self, page_id, paragraph_id):
+        paragraphs = self._pages[page_id]["paragraphs"]
+        paragraphs.pop(index_with_id(paragraphs, paragraph_id))
+        return self._paragraphs.pop(paragraph_id)
+
+    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):
+        if (page_id == target_page and
+            paragraph_id == before_paragraph):
+            return
+        self.add_paragraph_dict(
+            self.delete_paragraph_dict(page_id, paragraph_id),
+            target_page,
+            before_paragraph
+        )
+
+    def update_paragraph_dict(self, paragraph_id, data):
+        self._paragraphs[paragraph_id].update(copy.deepcopy(data))
+class Page(object):
+
+    def __init__(self, document, page_dict):
+        self._document = document
+        self._page_dict = page_dict
+
+    @property
+    def id(self):
+        return self._page_dict["id"]
+
+    @property
+    def title(self):
+        return self._page_dict["title"]
+
+    def set_title(self, title):
+        with self._document.modify("Change title") as document_dict:
+            document_dict.update_page_dict(self.id, {"title": title})
+
+    @property
+    def paragraphs(self):
+        return [
+            Paragraph.create(
+                self._document,
+                self,
+                paragraph_dict,
+                next_paragraph_dict["id"] if next_paragraph_dict is not None else None
+            )
+            for paragraph_dict, next_paragraph_dict
+            in zip(
+                self._page_dict["paragraphs"],
+                self._page_dict["paragraphs"][1:]+[None]
+            )
+        ]
+
+    @property
+    def children(self):
+        return [
+            Page(self._document, child_dict)
+            for child_dict
+            in self._page_dict["children"]
+        ]
+
+    def delete(self):
+        with self._document.modify("Delete page") as document_dict:
+            document_dict.delete_page_dict(self.id)
+
+    def move(self, parent_page_id, before_page_id):
+        with self._document.modify("Move page") as document_dict:
+            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)
+class Paragraph(object):
+
+    @staticmethod
+    def create(document, page, paragraph_dict, next_id):
+        return {
+            "text": TextParagraph,
+            "quote": QuoteParagraph,
+            "list": ListParagraph,
+            "code": CodeParagraph,
+            "image": ImageParagraph,
+        }.get(paragraph_dict["type"], Paragraph)(document, page, paragraph_dict, next_id)
+
+    def __init__(self, document, page, paragraph_dict, next_id):
+        self._document = document
+        self._page = page
+        self._paragraph_dict = paragraph_dict
+        self._next_id = next_id
+
+    @property
+    def id(self):
+        return self._paragraph_dict["id"]
+
+    @property
+    def next_id(self):
+        return self._next_id
+
+    @property
+    def type(self):
+        return self._paragraph_dict["type"]
+
+    @contextlib.contextmanager
+    def multi_update(self):
+        with self._document.modify("Edit paragraph"):
+            yield
+
+    def update(self, data):
+        with self._document.modify("Edit paragraph") as document_dict:
+            document_dict.update_paragraph_dict(self.id, data)
+
+    def delete(self):
+        with self._document.modify("Delete paragraph") as document_dict:
+            document_dict.delete_paragraph_dict(self._page.id, self.id)
+
+    def move(self, target_page, before_paragraph):
+        with self._document.modify("Move paragraph") as document_dict:
+            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
+
+    def duplicate(self):
+        with self._document.modify("Duplicate paragraph") as document_dict:
+            document_dict.add_paragraph_dict(
+                dict(self._paragraph_dict, id=genid()),
+                page_id=self._page.id,
+                before_id=self.next_id
+            )
+
+    @property
+    def filename(self):
+        return "paragraph.txt"
+class TextParagraph(Paragraph):
+
+    @property
+    def fragments(self):
+        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
+
+    @property
+    def tokens(self):
+        return [x.token for x in self.fragments]
+
+    def get_text_index(self, index):
+        return self._text_version.get_selection(index)[0]
+
+    @property
+    def text_version(self):
+        return self._text_version.text
+
+    @property
+    def _text_version(self):
+        text_version = TextVersion()
+        for fragment in self.fragments:
+            fragment.fill_text_version(text_version)
+        return text_version
+
+    @text_version.setter
+    def text_version(self, value):
+        self.update({"fragments": text_to_fragments(value)})
+class QuoteParagraph(TextParagraph):
+    pass
+class ListParagraph(Paragraph):
+
+    @property
+    def child_type(self):
+        return self._paragraph_dict["child_type"]
+
+    @property
+    def children(self):
+        return [ListItem(self._document, x) for x in self._paragraph_dict["children"]]
+
+    def get_text_index(self, list_and_fragment_index):
+        return self._text_version.get_selection(list_and_fragment_index)[0]
+
+    @property
+    def text_version(self):
+        return self._text_version.text
+
+    @property
+    def _text_version(self):
+        def list_item_to_text(text_version, child_type, item, indent=0, index=0):
+            text_version.add("    "*indent)
+            if child_type == "ordered":
+                text_version.add("{}. ".format(index+1))
+            else:
+                text_version.add("* ")
+            for fragment in item.fragments:
+                fragment.fill_text_version(text_version)
+            text_version.add("\n")
+            for index, child in enumerate(item.children):
+                with text_version.index(index):
+                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)
+        text_version = TextVersion()
+        for index, child in enumerate(self.children):
+            with text_version.index(index):
+                list_item_to_text(text_version, self.child_type, child, index=index)
+        return text_version
+
+    @text_version.setter
+    def text_version(self, value):
+        child_type, children = LegacyListParser(value).parse_items()
+        self.update({
+            "child_type": child_type,
+            "children": children
+        })
+class ListItem(object):
+
+    def __init__(self, document, item_dict):
+        self._document = document
+        self._item_dict = item_dict
+
+    @property
+    def fragments(self):
+        return TextFragment.create_list(self._document, self._item_dict["fragments"])
+
+    @property
+    def child_type(self):
+        return self._item_dict["child_type"]
+
+    @property
+    def children(self):
+        return [ListItem(self._document, x) for x in self._item_dict["children"]]
+
+    @property
+    def tokens(self):
+        return [x.token for x in self.fragments]
+class CodeParagraph(Paragraph):
+
+    @property
+    def path(self):
+        return Path(
+            [x for x in self._paragraph_dict["filepath"] if x],
+            [x for x in self._paragraph_dict["chunkpath"] if x]
+        )
+
+    @path.setter
+    def path(self, path):
+        self.update({
+            "filepath": copy.deepcopy(path.filepath),
+            "chunkpath": copy.deepcopy(path.chunkpath),
+        })
+    @property
+    def fragments(self):
+        return copy.deepcopy(self._paragraph_dict["fragments"])
+    @property
+    def text_version(self):
+        CONVERTERS = {
+            "chunk": self._chunk_fragment_to_text,
+            "variable": self._variable_fragment_to_text,
+            "code": lambda fragment: fragment["text"]
+        }
+        return "".join(
+            CONVERTERS[fragment["type"]](fragment)
+            for fragment
+            in self.fragments
+        )
+    @text_version.setter
+    def text_version(self, value):
+        with self.multi_update():
+            self.update({
+                "fragments": self._parse(value)
+            })
+
+    def _parse(self, value):
+        self._parsed_fragments = []
+        self._parse_buffer = ""
+        for line in value.splitlines():
+            match = re.match(self._chunk_fragment_re(), line)
+            if match:
+                self._parse_clear()
+                self._parsed_fragments.append({
+                    "type": "chunk",
+                    "path": match.group(2).split("/"),
+                    "prefix": match.group(1)
+                })
+            else:
+                while line:
+                    match = re.match(self._variable_fragment_re(), line)
+                    if match:
+                        self._parse_clear()
+                        self._parsed_fragments.append({
+                            "type": "variable",
+                            "id": self._get_variable_id(match.group(1))
+                        })
+                        line = line[len(match.group(0)):]
+                    else:
+                        self._parse_buffer += line[0]
+                        line = line[1:]
+                self._parse_buffer += "\n"
+        self._parse_clear()
+        return self._parsed_fragments
+
+    def _get_variable_id(self, identifier):
+        if self._document.lookup_variable(identifier) is None:
+            return self._document.new_variable(identifier)
+        else:
+            return identifier
+
+    def _parse_clear(self):
+        if self._parse_buffer:
+            self._parsed_fragments.append({"type": "code", "text": self._parse_buffer})
+        self._parse_buffer = ""
+
+    def _chunk_fragment_re(self):
+        start, end = self._chunk_delimiters()
+        return r"^(\s*){}(.*){}\s*$".format(re.escape(start), re.escape(end))
+
+    def _variable_fragment_re(self):
+        start, end = self._variable_delimiters()
+        return r"{}(.*?){}".format(re.escape(start), re.escape(end))
+    def _chunk_fragment_to_text(self, fragment):
+        start, end = self._chunk_delimiters()
+        return "{}{}{}{}\n".format(
+            fragment["prefix"],
+            start,
+            "/".join(fragment["path"]),
+            end
+        )
+
+    def _chunk_delimiters(self):
+        return ("<<", ">>")
+    def _variable_fragment_to_text(self, fragment):
+        start, end = self._variable_delimiters()
+        return "{}{}{}".format(
+            start,
+            fragment["id"],
+            end
+        )
+
+    def _variable_delimiters(self):
+        return ("__RL_", "__")
+
+    @property
+    def filename(self):
+        return self.path.filename
+
+    @property
+    def tokens(self):
+        try:
+            lexer = self._get_lexer()
+        except:
+            lexer = pygments.lexers.TextLexer(stripnl=False)
+        pygments_text, inserts, extras = self._pygments_text()
+        return self._pygments_tokens_to_tokens(
+            lexer.get_tokens(pygments_text),
+            inserts,
+            extras
+        )
+
+    def _pygments_text(self):
+        pygments_text = ""
+        inserts = defaultdict(list)
+        extras = defaultdict(dict)
+        for fragment in self.fragments:
+            if fragment["type"] == "chunk":
+                inserts[len(pygments_text)].append(Token(
+                    self._chunk_fragment_to_text(fragment),
+                    token_type=TokenType.RLiterate.Chunk,
+                    subpath=self.path.extend_chunk(fragment["path"])
+                ))
+            elif fragment["type"] == "variable":
+                name = self._document.lookup_variable(fragment["id"])
+                text = name if name is not None else fragment["id"]
+                for i in range(len(text)):
+                    extras[len(pygments_text)+i] = {"variable": fragment["id"]}
+                pygments_text += text
+            else:
+                pygments_text += fragment["text"]
+        return pygments_text, inserts, extras
+
+    @property
+    def language(self):
+        try:
+            return "".join(self._get_lexer().aliases[:1])
+        except:
+            return ""
+
+    def _get_lexer(self):
+        return pygments.lexers.get_lexer_for_filename(
+            self.path.filename,
+            stripnl=False
+        )
+
+    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts, extras):
+        pos = 0
+        tokens = []
+        for pygments_token, text in pygments_tokens:
+            for ch in text:
+                tokens.extend(inserts.get(pos, []))
+                tokens.append(Token(ch, token_type=pygments_token, **extras.get(pos, {})))
+                pos += 1
+        tokens.extend(inserts.get(pos, []))
+        return tokens
+class Path(object):
+
+    @classmethod
+    def from_text_version(cls, text):
+        try:
+            filepath_text, chunkpath_text = text.split(" // ", 1)
+        except:
+            filepath_text = text
+            chunkpath_text = ""
+        return cls(
+            filepath_text.split("/") if filepath_text else [],
+            chunkpath_text.split("/") if chunkpath_text else [],
+        )
+
+    @property
+    def text_version(self):
+        if self.has_both():
+            sep = " // "
+        else:
+            sep = ""
+        return "{}{}{}".format(
+            "/".join(self.filepath),
+            sep,
+            "/".join(self.chunkpath)
+        )
+
+    @property
+    def text_start(self):
+        return self.text_end - len(self.last)
+
+    @property
+    def text_end(self):
+        return len(self.text_version)
+
+    def extend_chunk(self, chunk):
+        return Path(
+            copy.deepcopy(self.filepath),
+            copy.deepcopy(self.chunkpath)+copy.deepcopy(chunk)
+        )
+
+    @property
+    def filename(self):
+        return self.filepath[-1] if self.filepath else ""
+
+    @property
+    def last(self):
+        if len(self.chunkpath) > 0:
+            return self.chunkpath[-1]
+        elif len(self.filepath) > 0:
+            return self.filepath[-1]
+        else:
+            return ""
+
+    @property
+    def is_empty(self):
+        return self.length == 0
+
+    @property
+    def length(self):
+        return len(self.chunkpath) + len(self.filepath)
+
+    def __init__(self, filepath, chunkpath):
+        self.filepath = filepath
+        self.chunkpath = chunkpath
+
+    def is_prefix(self, other):
+        if len(self.chunkpath) > 0:
+            return self.filepath == other.filepath and self.chunkpath == other.chunkpath[:len(self.chunkpath)]
+        else:
+            return self.filepath == other.filepath[:len(self.filepath)]
+
+    def has_both(self):
+        return len(self.filepath) > 0 and len(self.chunkpath) > 0
+
+    @property
+    def filepaths(self):
+        for index in range(len(self.filepath)):
+            yield (
+                self.filepath[index],
+                Path(self.filepath[:index+1], [])
+            )
+
+    @property
+    def chunkpaths(self):
+        for index in range(len(self.chunkpath)):
+            yield (
+                self.chunkpath[index],
+                Path(self.filepath[:], self.chunkpath[:index+1])
+            )
+class ImageParagraph(Paragraph):
+
+    @property
+    def fragments(self):
+        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
+
+    @property
+    def tokens(self):
+        return [x.token for x in self.fragments]
+
+    @property
+    def image_base64(self):
+        return self._paragraph_dict.get("image_base64", None)
+
+    @property
+    def text_version(self):
+        return fragments_to_text(self.fragments)
+
+    @text_version.setter
+    def text_version(self, value):
+        self.update({"fragments": text_to_fragments(value)})
+class TextFragment(object):
+
+    @staticmethod
+    def create_list(document, text_fragment_dicts):
+        return [
+            TextFragment.create(document, text_fragment_dict, index)
+            for index, text_fragment_dict
+            in enumerate(text_fragment_dicts)
+        ]
+
+    @staticmethod
+    def create(document, text_fragment_dict, index):
+        return {
+            "strong": StrongTextFragment,
+            "emphasis": EmphasisTextFragment,
+            "code": CodeTextFragment,
+            "reference": ReferenceTextFragment,
+            "link": LinkTextFragment,
+        }.get(text_fragment_dict["type"], TextFragment)(document, text_fragment_dict, index)
+
+    def __init__(self, document, text_fragment_dict, index):
+        self._document = document
+        self._text_fragment_dict = text_fragment_dict
+        self._index = index
+
+    @property
+    def type(self):
+        return self._text_fragment_dict["type"]
+
+    @property
+    def text(self):
+        return self._text_fragment_dict["text"]
+
+    @property
+    def token(self):
+        return Token(self.text, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add_with_index(self.text, self._index)
+class StrongTextFragment(TextFragment):
+
+    @property
+    def token(self):
+        return Token(self.text, token_type=TokenType.RLiterate.Strong, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("**")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("**")
+class EmphasisTextFragment(TextFragment):
+
+    @property
+    def token(self):
+        return Token(self.text, token_type=TokenType.RLiterate.Emphasis, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("*")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("*")
+class CodeTextFragment(TextFragment):
+
+    @property
+    def token(self):
+        return Token(self.text, token_type=TokenType.RLiterate.Code, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("`")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("`")
+class ReferenceTextFragment(TextFragment):
+
+    @property
+    def page_id(self):
+        return self._text_fragment_dict["page_id"]
+
+    @property
+    def title(self):
+        if self.text:
+            return self.text
+        if self._document.get_page(self.page_id) is not None:
+            return self._document.get_page(self.page_id).title
+        return self.page_id
+
+    @property
+    def token(self):
+        return Token(self.title, token_type=TokenType.RLiterate.Reference, page_id=self.page_id, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("[[")
+        text_version.add_with_index(self.page_id, self._index)
+        if self.text:
+            text_version.add(":")
+            text_version.add(self.text)
+        text_version.add("]]")
+class LinkTextFragment(TextFragment):
+
+    @property
+    def url(self):
+        return self._text_fragment_dict["url"]
+
+    @property
+    def title(self):
+        if self.text:
+            return self.text
+        return self.url
+
+    @property
+    def token(self):
+        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)
+
+    def fill_text_version(self, text_version):
+        text_version.add("[")
+        text_version.add_with_index(self.text, self._index)
+        text_version.add("]")
+        text_version.add("(")
+        text_version.add(self.url)
+        text_version.add(")")
+class TextVersion(object):
+
+    def __init__(self):
+        self.text = ""
+        self.indicies = {}
+        self._index_prefix = []
+
+    def get_selection(self, index):
+        return self.indicies.get(index, (0, 0))
+
+    @contextlib.contextmanager
+    def index(self, index):
+        self._index_prefix.append(index)
+        yield
+        self._index_prefix.pop(-1)
+
+    def add_with_index(self, text, index):
+        start = len(self.text)
+        end = start + len(text)
+        self.indicies[tuple(self._index_prefix + [index])] = (start, end)
+        self.add(text)
+
+    def add(self, text):
+        self.text += text
+class LegacyInlineTextParser(object):
+
+    SPACE_RE = re.compile(r"\s+")
+    PATTERNS = [
+        (
+            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "strong",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "emphasis",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"`(.+?)`", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "code",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "reference",
+                "text": match.group(3),
+                "page_id": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "link",
+                "text": match.group(1),
+                "url": match.group(2),
+            }
+        ),
+    ]
+
+    def parse(self, text):
+        text = self._normalise_space(text)
+        fragments = []
+        partial = ""
+        while text:
+            result = self._get_special_fragment(text)
+            if result is None:
+                partial += text[0]
+                text = text[1:]
+            else:
+                match, fragment = result
+                if partial:
+                    fragments.append({"type": "text", "text": partial})
+                    partial = ""
+                fragments.append(fragment)
+                text = text[match.end(0):]
+        if partial:
+            fragments.append({"type": "text", "text": partial})
+        return fragments
+
+    def _normalise_space(self, text):
+        return self.SPACE_RE.sub(" ", text).strip()
+
+    def _get_special_fragment(self, text):
+        for pattern, fn in self.PATTERNS:
+            match = pattern.match(text)
+            if match:
+                return match, fn(self, match)
+class LegacyListParser(object):
+
+    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
+
+    def __init__(self, text):
+        self.lines = text.strip().split("\n")
+
+    def parse_items(self, level=0):
+        items = []
+        list_type = None
+        while True:
+            type_and_item = self.parse_item(level)
+            if type_and_item is None:
+                return list_type, items
+            else:
+                item_type, item = type_and_item
+                if list_type is None:
+                    list_type = item_type
+                items.append(item)
+
+    def parse_item(self, level):
+        parts = self.consume_bodies()
+        next_level = level + 1
+        item_type = None
+        if self.lines:
+            match = self.ITEM_START_RE.match(self.lines[0])
+            if match:
+                matched_level = len(match.group(1))
+                if matched_level >= level:
+                    parts.append(match.group(3))
+                    self.lines.pop(0)
+                    parts.extend(self.consume_bodies())
+                    next_level = matched_level + 1
+                    if "*" in match.group(2):
+                        item_type = "unordered"
+                    else:
+                        item_type = "ordered"
+        if parts:
+            child_type, children = self.parse_items(next_level)
+            return (item_type, {
+                "fragments": LegacyInlineTextParser().parse(" ".join(parts)),
+                "children": children,
+                "child_type": child_type,
+            })
+
+    def consume_bodies(self):
+        bodies = []
+        while self.lines:
+            if self.ITEM_START_RE.match(self.lines[0]):
+                break
+            else:
+                bodies.append(self.lines.pop(0))
+        return bodies
+class Project(Observable):
+
+    def __init__(self, filepath):
+        Observable.__init__(self)
+        self._active_editor = None
+        self._highlighted_variable = None
+        self.theme = SolarizedTheme()
+        self.document = Document.from_file(filepath)
+        self.document.listen(self.notify_forwarder("document"))
+        self.layout = Layout(os.path.join(
+            os.path.dirname(filepath),
+            ".{}.layout".format(os.path.basename(filepath))
+        ))
+        self.layout.listen(self.notify_forwarder("layout"))
+        FileGenerator().set_document(self.document)
+
+    def get_page(self, *args, **kwargs):
+        return self.document.get_page(*args, **kwargs)
+
+    def get_paragraph(self, *args, **kwargs):
+        return self.document.get_paragraph(*args, **kwargs)
+
+    def add_page(self, *args, **kwargs):
+        return self.document.add_page(*args, **kwargs)
+
+    def add_paragraph(self, *args, **kwargs):
+        return self.document.add_paragraph(*args, **kwargs)
+
+    def get_undo_operation(self, *args, **kwargs):
+        return self.document.get_undo_operation(*args, **kwargs)
+
+    def get_redo_operation(self, *args, **kwargs):
+        return self.document.get_redo_operation(*args, **kwargs)
+
+    def rename_path(self, *args, **kwargs):
+        return self.document.rename_path(*args, **kwargs)
+
+    def lookup_variable(self, *args, **kwargs):
+        return self.document.lookup_variable(*args, **kwargs)
+
+    def rename_variable(self, *args, **kwargs):
+        return self.document.rename_variable(*args, **kwargs)
+    def toggle_collapsed(self, *args, **kwargs):
+        return self.layout.toggle_collapsed(*args, **kwargs)
+
+    def is_collapsed(self, *args, **kwargs):
+        return self.layout.is_collapsed(*args, **kwargs)
+
+    @property
+    def columns(self):
+        return self.layout.columns
+
+    def is_open(self, *args, **kwargs):
+        return self.layout.is_open(*args, **kwargs)
+
+    def open_pages(self, *args, **kwargs):
+        if self.active_editor is None:
+            return self.layout.open_pages(*args, **kwargs)
+        else:
+            raise EditInProgress()
+
+    def can_back(self, *args, **kwargs):
+        return self.layout.can_back(*args, **kwargs)
+
+    def back(self, *args, **kwargs):
+        return self.layout.back(*args, **kwargs)
+
+    def can_forward(self, *args, **kwargs):
+        return self.layout.can_forward(*args, **kwargs)
+
+    def forward(self, *args, **kwargs):
+        return self.layout.forward(*args, **kwargs)
+
+    def get_hoisted_page(self, *args, **kwargs):
+        return self.layout.get_hoisted_page(*args, **kwargs)
+
+    def set_hoisted_page(self, *args, **kwargs):
+        return self.layout.set_hoisted_page(*args, **kwargs)
+    def get_style(self, *args, **kwargs):
+        return self.theme.get_style(*args, **kwargs)
+    @property
+    def active_editor(self):
+        return self._active_editor
+
+    @active_editor.setter
+    def active_editor(self, editor):
+        with self.notify("editor"):
+            self._active_editor = editor
+    @property
+    def highlighted_variable(self):
+        return self._highlighted_variable
+
+    @highlighted_variable.setter
+    def highlighted_variable(self, variable_id):
+        with self.notify("highlights"):
+            self._highlighted_variable = variable_id
+class EditInProgress(Exception):
+    pass
+class Layout(Observable):
+    def __init__(self, path):
+        Observable.__init__(self)
+        self.listen(lambda event: write_json_to_file(path, self.data))
+        if os.path.exists(path):
+            self.data = load_json_from_file(path)
+        else:
+            self.data = {}
+        self._toc = ensure_key(self.data, "toc", {})
+        self._toc_collapsed = ensure_key(self._toc, "collapsed", [])
+        self._workspace = ensure_key(self.data, "workspace", {})
+        self._workspace_columns = ensure_key(self._workspace, "columns", [])
+        self._workspace_columns_history = History(copy.deepcopy(self._workspace_columns), size=20)
+        if "scratch" in self._workspace:
+            if not self._workspace["columns"]:
+                self._workspace["columns"] = [self._workspace["scratch"]]
+            del self._workspace["scratch"]
+    def get_hoisted_page(self):
+        return self._toc.get("hoisted_page_id", None)
+
+    def set_hoisted_page(self, page_id):
+        with self.notify("toc"):
+            self._toc["hoisted_page_id"] = page_id
+    def is_collapsed(self, page_id):
+        return page_id in self._toc_collapsed
+
+    def toggle_collapsed(self, page_id):
+        with self.notify("toc"):
+            if page_id in self._toc_collapsed:
+                self._toc_collapsed.remove(page_id)
+            else:
+                self._toc_collapsed.append(page_id)
+    @property
+    def columns(self):
+        return [column[:] for column in self._workspace_columns]
+
+    def open_pages(self, page_ids, column_index=None):
+        with self.notify("workspace"):
+            with self._workspace_columns_history.new_value() as value:
+                if column_index is None:
+                    column_index = len(self._workspace_columns)
+                value[column_index:] = [page_ids[:]]
+                self._workspace_columns[:] = value
+
+    def can_back(self):
+        return self._workspace_columns_history.can_back()
+
+    def back(self):
+        with self.notify("workspace"):
+            self._workspace_columns_history.back()
+            self._workspace_columns[:] = self._workspace_columns_history.value
+
+    def can_forward(self):
+        return self._workspace_columns_history.can_forward()
+
+    def forward(self):
+        with self.notify("workspace"):
+            self._workspace_columns_history.forward()
+            self._workspace_columns[:] = self._workspace_columns_history.value
+
+    def is_open(self, page_id):
+        for column in self.columns:
+            if page_id in column:
+                return True
+        return False
+class BaseTheme(object):
+
+    def get_style(self, token_type):
+        if token_type in self.styles:
+            return self.styles[token_type]
+        return self.get_style(token_type.parent)
+class SolarizedTheme(BaseTheme):
+
+    base03  = "#002b36"
+    base02  = "#073642"
+    base01  = "#586e75"
+    base00  = "#657b83"
+    base0   = "#839496"
+    base1   = "#93a1a1"
+    base2   = "#eee8d5"
+    base3   = "#fdf6e3"
+    yellow  = "#b58900"
+    orange  = "#cb4b16"
+    red     = "#dc322f"
+    magenta = "#d33682"
+    violet  = "#6c71c4"
+    blue    = "#268bd2"
+    cyan    = "#2aa198"
+    green   = "#859900"
+
+    text    = "#2e3436"
+
+    styles = {
+        TokenType:                     Style(color=base00),
+        TokenType.Keyword:             Style(color=green),
+        TokenType.Keyword.Constant:    Style(color=cyan),
+        TokenType.Keyword.Declaration: Style(color=blue),
+        TokenType.Keyword.Namespace:   Style(color=orange),
+        TokenType.Name.Builtin:        Style(color=red),
+        TokenType.Name.Builtin.Pseudo: Style(color=blue),
+        TokenType.Name.Class:          Style(color=blue),
+        TokenType.Name.Decorator:      Style(color=blue),
+        TokenType.Name.Entity:         Style(color=violet),
+        TokenType.Name.Exception:      Style(color=yellow),
+        TokenType.Name.Function:       Style(color=blue),
+        TokenType.String:              Style(color=cyan),
+        TokenType.Number:              Style(color=cyan),
+        TokenType.Operator.Word:       Style(color=green),
+        TokenType.Comment:             Style(color=base1),
+        TokenType.RLiterate:           Style(color=text),
+        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),
+        TokenType.RLiterate.Strong:    Style(color=text, bold=True),
+        TokenType.RLiterate.Code:      Style(color=text, monospace=True),
+        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),
+        TokenType.RLiterate.Reference: Style(color=blue, italic=True),
+        TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),
+        TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),
+        TokenType.RLiterate.Sep:       Style(color=base1),
+    }
 class MainFrame(wx.Frame):
 
     def __init__(self, filepath):
@@ -1963,1206 +3161,6 @@ class SelectionableTextCtrl(wx.TextCtrl):
 
     def SetSelection(self, start, end):
         wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)
-class Document(Observable):
-
-    def __init__(self, document_dict=None):
-        Observable.__init__(self)
-        self._load(document_dict)
-
-    @classmethod
-    def from_file(cls, path):
-        if os.path.exists(path):
-            document = cls(load_json_from_file(path))
-        else:
-            document = cls()
-        document.listen(lambda event:
-            write_json_to_file(
-                path,
-                document.read_only_document_dict
-            )
-        )
-        return document
-    def _load(self, document_dict):
-        self._history = History(
-            DocumentDictWrapper(
-                self._convert_to_latest(
-                    self._empty_page()
-                    if document_dict is None else
-                    document_dict
-                )
-            ),
-            size=UNDO_BUFFER_SIZE
-        )
-    @property
-    def read_only_document_dict(self):
-        return self._history.value
-    @contextlib.contextmanager
-    def modify(self, name):
-        with self.notify():
-            with self._history.new_value(name) as value:
-                yield value
-
-    def get_undo_operation(self):
-        def undo():
-            with self.notify():
-                self._history.back()
-        if self._history.can_back():
-            return (self._history.back_name(), undo)
-
-    def get_redo_operation(self):
-        def redo():
-            with self.notify():
-                self._history.forward()
-        if self._history.can_forward():
-            return (self._history.forward_name(), redo)
-    def add_page(self, title="New page", parent_id=None):
-        with self.modify("Add page") as document_dict:
-            document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)
-
-    def _empty_page(self):
-        return {
-            "id": genid(),
-            "title": "New page...",
-            "children": [],
-            "paragraphs": [],
-        }
-    def get_page(self, page_id=None):
-        page_dict = self.read_only_document_dict.get_page_dict(page_id)
-        if page_dict is None:
-            return None
-        return Page(self, page_dict)
-    def add_paragraph(self, page_id, before_id=None):
-        with self.modify("Add paragraph") as document_dict:
-            paragraph = {
-                "id": genid(),
-                "type": "factory",
-            }
-            document_dict.add_paragraph_dict(paragraph, page_id, before_id=before_id)
-
-    def get_paragraph(self, page_id, paragraph_id):
-        for paragraph in self.get_page(page_id).paragraphs:
-            if paragraph.id == paragraph_id:
-                return paragraph
-    def rename_path(self, path, name):
-        with self.modify("Rename path") as document_dict:
-            for p in document_dict.paragraph_dict_iterator():
-                if p["type"] == "code":
-                    filelen = len(p["filepath"])
-                    chunklen = len(p["chunkpath"])
-                    if path.is_prefix(Path(p["filepath"], p["chunkpath"])):
-                        if path.length > filelen:
-                            p["chunkpath"][path.length-1-filelen] = name
-                        else:
-                            p["filepath"][path.length-1] = name
-                    else:
-                        for f in p["fragments"]:
-                            if f["type"] == "chunk":
-                                if path.is_prefix(Path(p["filepath"], p["chunkpath"]+f["path"])):
-                                    f["path"][path.length-1-filelen-chunklen] = name
-    def new_variable(self, name):
-        with self.modify("New variable") as document_dict:
-            variable_id = genid()
-            document_dict["variables"][variable_id] = name
-            return variable_id
-
-    def rename_variable(self, variable_id, name):
-        with self.modify("Rename variable") as document_dict:
-            document_dict["variables"][variable_id] = name
-
-    def lookup_variable(self, variable_id):
-        return self.read_only_document_dict["variables"].get(variable_id)
-    def _convert_to_latest(self, document_dict):
-        for fn in [
-            self._legacy_inline_text,
-            self._legacy_inline_code,
-            self._legacy_root_page,
-        ]:
-            document_dict = fn(document_dict)
-        return document_dict
-    def _legacy_inline_text(self, document_dict):
-        for paragraph in document_dict.get("paragraphs", []):
-            if paragraph["type"] in ["text", "quote", "image"] and "text" in paragraph:
-                paragraph["fragments"] = LegacyInlineTextParser().parse(paragraph["text"])
-                del paragraph["text"]
-            elif paragraph["type"] in ["list"] and "text" in paragraph:
-                paragraph["child_type"], paragraph["children"] = LegacyListParser(paragraph["text"]).parse_items()
-                del paragraph["text"]
-        for child in document_dict.get("children", []):
-            self._legacy_inline_text(child)
-        return document_dict
-    def _legacy_inline_code(self, document_dict):
-        for p in document_dict.get("paragraphs", []):
-            if p["type"] == "code" and "path" in p:
-                p["filepath"], p["chunkpath"] = split_legacy_path(p["path"])
-                del p["path"]
-            if p["type"] == "code" and "text" in p:
-                p["fragments"] = legacy_code_text_to_fragments(p["text"])
-                del p["text"]
-        for child in document_dict.get("children", []):
-            self._legacy_inline_code(child)
-        return document_dict
-    def _legacy_root_page(self, document_dict):
-        if "root_page" not in document_dict:
-            return {
-                "root_page": document_dict,
-                "variables": {},
-            }
-        else:
-            return document_dict
-class DocumentDictWrapper(dict):
-
-    def __init__(self, document_dict):
-        dict.__init__(self, document_dict)
-        self._pages = {}
-        self._parent_pages = {}
-        self._paragraphs = {}
-        self._cache_page(self["root_page"])
-
-    def _cache_page(self, page, parent_page=None):
-        self._pages[page["id"]] = page
-        self._parent_pages[page["id"]] = parent_page
-        for paragraph in page["paragraphs"]:
-            self._paragraphs[paragraph["id"]] = paragraph
-        for child in page["children"]:
-            self._cache_page(child, page)
-
-    def add_page_dict(self, page_dict, parent_id=None):
-        page_dict = copy.deepcopy(page_dict)
-        parent_page = self._pages[parent_id]
-        parent_page["children"].append(page_dict)
-        self._pages[page_dict["id"]] = page_dict
-        self._parent_pages[page_dict["id"]] = parent_page
-
-    def get_page_dict(self, page_id=None):
-        if page_id is None:
-            page_id = self["root_page"]["id"]
-        return self._pages.get(page_id, None)
-
-    def delete_page_dict(self, page_id):
-        if page_id == self["root_page"]["id"]:
-            return
-        page = self._pages[page_id]
-        parent_page = self._parent_pages[page_id]
-        index = index_with_id(parent_page["children"], page_id)
-        parent_page["children"].pop(index)
-        self._pages.pop(page_id)
-        self._parent_pages.pop(page_id)
-        for child in reversed(page["children"]):
-            parent_page["children"].insert(index, child)
-            self._parent_pages[child["id"]] = parent_page
-
-    def update_page_dict(self, page_id, data):
-        self._pages[page_id].update(copy.deepcopy(data))
-
-    def move_page_dict(self, page_id, parent_page_id, before_page_id):
-        if page_id == before_page_id:
-            return
-        parent = self._pages[parent_page_id]
-        while parent is not None:
-            if parent["id"] == page_id:
-                return
-            parent = self._parent_pages[parent["id"]]
-        parent = self._parent_pages[page_id]
-        page = parent["children"].pop(index_with_id(parent["children"], page_id))
-        new_parent = self._pages[parent_page_id]
-        self._parent_pages[page_id] = new_parent
-        if before_page_id is None:
-            new_parent["children"].append(page)
-        else:
-            new_parent["children"].insert(
-                index_with_id(new_parent["children"], before_page_id),
-                page
-            )
-
-    def paragraph_dict_iterator(self):
-        return self._paragraphs.values()
-
-    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):
-        paragraph_dict = copy.deepcopy(paragraph_dict)
-        paragraphs = self._pages[page_id]["paragraphs"]
-        if before_id is None:
-            paragraphs.append(paragraph_dict)
-        else:
-            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)
-        self._paragraphs[paragraph_dict["id"]] = paragraph_dict
-
-    def delete_paragraph_dict(self, page_id, paragraph_id):
-        paragraphs = self._pages[page_id]["paragraphs"]
-        paragraphs.pop(index_with_id(paragraphs, paragraph_id))
-        return self._paragraphs.pop(paragraph_id)
-
-    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):
-        if (page_id == target_page and
-            paragraph_id == before_paragraph):
-            return
-        self.add_paragraph_dict(
-            self.delete_paragraph_dict(page_id, paragraph_id),
-            target_page,
-            before_paragraph
-        )
-
-    def update_paragraph_dict(self, paragraph_id, data):
-        self._paragraphs[paragraph_id].update(copy.deepcopy(data))
-class Page(object):
-
-    def __init__(self, document, page_dict):
-        self._document = document
-        self._page_dict = page_dict
-
-    @property
-    def id(self):
-        return self._page_dict["id"]
-
-    @property
-    def title(self):
-        return self._page_dict["title"]
-
-    def set_title(self, title):
-        with self._document.modify("Change title") as document_dict:
-            document_dict.update_page_dict(self.id, {"title": title})
-
-    @property
-    def paragraphs(self):
-        return [
-            Paragraph.create(
-                self._document,
-                self,
-                paragraph_dict,
-                next_paragraph_dict["id"] if next_paragraph_dict is not None else None
-            )
-            for paragraph_dict, next_paragraph_dict
-            in zip(
-                self._page_dict["paragraphs"],
-                self._page_dict["paragraphs"][1:]+[None]
-            )
-        ]
-
-    @property
-    def children(self):
-        return [
-            Page(self._document, child_dict)
-            for child_dict
-            in self._page_dict["children"]
-        ]
-
-    def delete(self):
-        with self._document.modify("Delete page") as document_dict:
-            document_dict.delete_page_dict(self.id)
-
-    def move(self, parent_page_id, before_page_id):
-        with self._document.modify("Move page") as document_dict:
-            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)
-class Paragraph(object):
-
-    @staticmethod
-    def create(document, page, paragraph_dict, next_id):
-        return {
-            "text": TextParagraph,
-            "quote": QuoteParagraph,
-            "list": ListParagraph,
-            "code": CodeParagraph,
-            "image": ImageParagraph,
-        }.get(paragraph_dict["type"], Paragraph)(document, page, paragraph_dict, next_id)
-
-    def __init__(self, document, page, paragraph_dict, next_id):
-        self._document = document
-        self._page = page
-        self._paragraph_dict = paragraph_dict
-        self._next_id = next_id
-
-    @property
-    def id(self):
-        return self._paragraph_dict["id"]
-
-    @property
-    def next_id(self):
-        return self._next_id
-
-    @property
-    def type(self):
-        return self._paragraph_dict["type"]
-
-    @contextlib.contextmanager
-    def multi_update(self):
-        with self._document.modify("Edit paragraph"):
-            yield
-
-    def update(self, data):
-        with self._document.modify("Edit paragraph") as document_dict:
-            document_dict.update_paragraph_dict(self.id, data)
-
-    def delete(self):
-        with self._document.modify("Delete paragraph") as document_dict:
-            document_dict.delete_paragraph_dict(self._page.id, self.id)
-
-    def move(self, target_page, before_paragraph):
-        with self._document.modify("Move paragraph") as document_dict:
-            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
-
-    def duplicate(self):
-        with self._document.modify("Duplicate paragraph") as document_dict:
-            document_dict.add_paragraph_dict(
-                dict(self._paragraph_dict, id=genid()),
-                page_id=self._page.id,
-                before_id=self.next_id
-            )
-
-    @property
-    def filename(self):
-        return "paragraph.txt"
-class TextParagraph(Paragraph):
-
-    @property
-    def fragments(self):
-        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
-
-    @property
-    def tokens(self):
-        return [x.token for x in self.fragments]
-
-    def get_text_index(self, index):
-        return self._text_version.get_selection(index)[0]
-
-    @property
-    def text_version(self):
-        return self._text_version.text
-
-    @property
-    def _text_version(self):
-        text_version = TextVersion()
-        for fragment in self.fragments:
-            fragment.fill_text_version(text_version)
-        return text_version
-
-    @text_version.setter
-    def text_version(self, value):
-        self.update({"fragments": text_to_fragments(value)})
-class QuoteParagraph(TextParagraph):
-    pass
-class ListParagraph(Paragraph):
-
-    @property
-    def child_type(self):
-        return self._paragraph_dict["child_type"]
-
-    @property
-    def children(self):
-        return [ListItem(self._document, x) for x in self._paragraph_dict["children"]]
-
-    def get_text_index(self, list_and_fragment_index):
-        return self._text_version.get_selection(list_and_fragment_index)[0]
-
-    @property
-    def text_version(self):
-        return self._text_version.text
-
-    @property
-    def _text_version(self):
-        def list_item_to_text(text_version, child_type, item, indent=0, index=0):
-            text_version.add("    "*indent)
-            if child_type == "ordered":
-                text_version.add("{}. ".format(index+1))
-            else:
-                text_version.add("* ")
-            for fragment in item.fragments:
-                fragment.fill_text_version(text_version)
-            text_version.add("\n")
-            for index, child in enumerate(item.children):
-                with text_version.index(index):
-                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)
-        text_version = TextVersion()
-        for index, child in enumerate(self.children):
-            with text_version.index(index):
-                list_item_to_text(text_version, self.child_type, child, index=index)
-        return text_version
-
-    @text_version.setter
-    def text_version(self, value):
-        child_type, children = LegacyListParser(value).parse_items()
-        self.update({
-            "child_type": child_type,
-            "children": children
-        })
-class ListItem(object):
-
-    def __init__(self, document, item_dict):
-        self._document = document
-        self._item_dict = item_dict
-
-    @property
-    def fragments(self):
-        return TextFragment.create_list(self._document, self._item_dict["fragments"])
-
-    @property
-    def child_type(self):
-        return self._item_dict["child_type"]
-
-    @property
-    def children(self):
-        return [ListItem(self._document, x) for x in self._item_dict["children"]]
-
-    @property
-    def tokens(self):
-        return [x.token for x in self.fragments]
-class CodeParagraph(Paragraph):
-
-    @property
-    def path(self):
-        return Path(
-            [x for x in self._paragraph_dict["filepath"] if x],
-            [x for x in self._paragraph_dict["chunkpath"] if x]
-        )
-
-    @path.setter
-    def path(self, path):
-        self.update({
-            "filepath": copy.deepcopy(path.filepath),
-            "chunkpath": copy.deepcopy(path.chunkpath),
-        })
-    @property
-    def fragments(self):
-        return copy.deepcopy(self._paragraph_dict["fragments"])
-    @property
-    def text_version(self):
-        CONVERTERS = {
-            "chunk": self._chunk_fragment_to_text,
-            "variable": self._variable_fragment_to_text,
-            "code": lambda fragment: fragment["text"]
-        }
-        return "".join(
-            CONVERTERS[fragment["type"]](fragment)
-            for fragment
-            in self.fragments
-        )
-    @text_version.setter
-    def text_version(self, value):
-        with self.multi_update():
-            self.update({
-                "fragments": self._parse(value)
-            })
-
-    def _parse(self, value):
-        self._parsed_fragments = []
-        self._parse_buffer = ""
-        for line in value.splitlines():
-            match = re.match(self._chunk_fragment_re(), line)
-            if match:
-                self._parse_clear()
-                self._parsed_fragments.append({
-                    "type": "chunk",
-                    "path": match.group(2).split("/"),
-                    "prefix": match.group(1)
-                })
-            else:
-                while line:
-                    match = re.match(self._variable_fragment_re(), line)
-                    if match:
-                        self._parse_clear()
-                        self._parsed_fragments.append({
-                            "type": "variable",
-                            "id": self._get_variable_id(match.group(1))
-                        })
-                        line = line[len(match.group(0)):]
-                    else:
-                        self._parse_buffer += line[0]
-                        line = line[1:]
-                self._parse_buffer += "\n"
-        self._parse_clear()
-        return self._parsed_fragments
-
-    def _get_variable_id(self, identifier):
-        if self._document.lookup_variable(identifier) is None:
-            return self._document.new_variable(identifier)
-        else:
-            return identifier
-
-    def _parse_clear(self):
-        if self._parse_buffer:
-            self._parsed_fragments.append({"type": "code", "text": self._parse_buffer})
-        self._parse_buffer = ""
-
-    def _chunk_fragment_re(self):
-        start, end = self._chunk_delimiters()
-        return r"^(\s*){}(.*){}\s*$".format(re.escape(start), re.escape(end))
-
-    def _variable_fragment_re(self):
-        start, end = self._variable_delimiters()
-        return r"{}(.*?){}".format(re.escape(start), re.escape(end))
-    def _chunk_fragment_to_text(self, fragment):
-        start, end = self._chunk_delimiters()
-        return "{}{}{}{}\n".format(
-            fragment["prefix"],
-            start,
-            "/".join(fragment["path"]),
-            end
-        )
-
-    def _chunk_delimiters(self):
-        return ("<<", ">>")
-    def _variable_fragment_to_text(self, fragment):
-        start, end = self._variable_delimiters()
-        return "{}{}{}".format(
-            start,
-            fragment["id"],
-            end
-        )
-
-    def _variable_delimiters(self):
-        return ("__RL_", "__")
-
-    @property
-    def filename(self):
-        return self.path.filename
-
-    @property
-    def tokens(self):
-        try:
-            lexer = self._get_lexer()
-        except:
-            lexer = pygments.lexers.TextLexer(stripnl=False)
-        pygments_text, inserts, extras = self._pygments_text()
-        return self._pygments_tokens_to_tokens(
-            lexer.get_tokens(pygments_text),
-            inserts,
-            extras
-        )
-
-    def _pygments_text(self):
-        pygments_text = ""
-        inserts = defaultdict(list)
-        extras = defaultdict(dict)
-        for fragment in self.fragments:
-            if fragment["type"] == "chunk":
-                inserts[len(pygments_text)].append(Token(
-                    self._chunk_fragment_to_text(fragment),
-                    token_type=TokenType.RLiterate.Chunk,
-                    subpath=self.path.extend_chunk(fragment["path"])
-                ))
-            elif fragment["type"] == "variable":
-                name = self._document.lookup_variable(fragment["id"])
-                text = name if name is not None else fragment["id"]
-                for i in range(len(text)):
-                    extras[len(pygments_text)+i] = {"variable": fragment["id"]}
-                pygments_text += text
-            else:
-                pygments_text += fragment["text"]
-        return pygments_text, inserts, extras
-
-    @property
-    def language(self):
-        try:
-            return "".join(self._get_lexer().aliases[:1])
-        except:
-            return ""
-
-    def _get_lexer(self):
-        return pygments.lexers.get_lexer_for_filename(
-            self.path.filename,
-            stripnl=False
-        )
-
-    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts, extras):
-        pos = 0
-        tokens = []
-        for pygments_token, text in pygments_tokens:
-            for ch in text:
-                tokens.extend(inserts.get(pos, []))
-                tokens.append(Token(ch, token_type=pygments_token, **extras.get(pos, {})))
-                pos += 1
-        tokens.extend(inserts.get(pos, []))
-        return tokens
-class Path(object):
-
-    @classmethod
-    def from_text_version(cls, text):
-        try:
-            filepath_text, chunkpath_text = text.split(" // ", 1)
-        except:
-            filepath_text = text
-            chunkpath_text = ""
-        return cls(
-            filepath_text.split("/") if filepath_text else [],
-            chunkpath_text.split("/") if chunkpath_text else [],
-        )
-
-    @property
-    def text_version(self):
-        if self.has_both():
-            sep = " // "
-        else:
-            sep = ""
-        return "{}{}{}".format(
-            "/".join(self.filepath),
-            sep,
-            "/".join(self.chunkpath)
-        )
-
-    @property
-    def text_start(self):
-        return self.text_end - len(self.last)
-
-    @property
-    def text_end(self):
-        return len(self.text_version)
-
-    def extend_chunk(self, chunk):
-        return Path(
-            copy.deepcopy(self.filepath),
-            copy.deepcopy(self.chunkpath)+copy.deepcopy(chunk)
-        )
-
-    @property
-    def filename(self):
-        return self.filepath[-1] if self.filepath else ""
-
-    @property
-    def last(self):
-        if len(self.chunkpath) > 0:
-            return self.chunkpath[-1]
-        elif len(self.filepath) > 0:
-            return self.filepath[-1]
-        else:
-            return ""
-
-    @property
-    def is_empty(self):
-        return self.length == 0
-
-    @property
-    def length(self):
-        return len(self.chunkpath) + len(self.filepath)
-
-    def __init__(self, filepath, chunkpath):
-        self.filepath = filepath
-        self.chunkpath = chunkpath
-
-    def is_prefix(self, other):
-        if len(self.chunkpath) > 0:
-            return self.filepath == other.filepath and self.chunkpath == other.chunkpath[:len(self.chunkpath)]
-        else:
-            return self.filepath == other.filepath[:len(self.filepath)]
-
-    def has_both(self):
-        return len(self.filepath) > 0 and len(self.chunkpath) > 0
-
-    @property
-    def filepaths(self):
-        for index in range(len(self.filepath)):
-            yield (
-                self.filepath[index],
-                Path(self.filepath[:index+1], [])
-            )
-
-    @property
-    def chunkpaths(self):
-        for index in range(len(self.chunkpath)):
-            yield (
-                self.chunkpath[index],
-                Path(self.filepath[:], self.chunkpath[:index+1])
-            )
-class ImageParagraph(Paragraph):
-
-    @property
-    def fragments(self):
-        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
-
-    @property
-    def tokens(self):
-        return [x.token for x in self.fragments]
-
-    @property
-    def image_base64(self):
-        return self._paragraph_dict.get("image_base64", None)
-
-    @property
-    def text_version(self):
-        return fragments_to_text(self.fragments)
-
-    @text_version.setter
-    def text_version(self, value):
-        self.update({"fragments": text_to_fragments(value)})
-class TextFragment(object):
-
-    @staticmethod
-    def create_list(document, text_fragment_dicts):
-        return [
-            TextFragment.create(document, text_fragment_dict, index)
-            for index, text_fragment_dict
-            in enumerate(text_fragment_dicts)
-        ]
-
-    @staticmethod
-    def create(document, text_fragment_dict, index):
-        return {
-            "strong": StrongTextFragment,
-            "emphasis": EmphasisTextFragment,
-            "code": CodeTextFragment,
-            "reference": ReferenceTextFragment,
-            "link": LinkTextFragment,
-        }.get(text_fragment_dict["type"], TextFragment)(document, text_fragment_dict, index)
-
-    def __init__(self, document, text_fragment_dict, index):
-        self._document = document
-        self._text_fragment_dict = text_fragment_dict
-        self._index = index
-
-    @property
-    def type(self):
-        return self._text_fragment_dict["type"]
-
-    @property
-    def text(self):
-        return self._text_fragment_dict["text"]
-
-    @property
-    def token(self):
-        return Token(self.text, fragment_index=self._index)
-
-    def fill_text_version(self, text_version):
-        text_version.add_with_index(self.text, self._index)
-class StrongTextFragment(TextFragment):
-
-    @property
-    def token(self):
-        return Token(self.text, token_type=TokenType.RLiterate.Strong, fragment_index=self._index)
-
-    def fill_text_version(self, text_version):
-        text_version.add("**")
-        text_version.add_with_index(self.text, self._index)
-        text_version.add("**")
-class EmphasisTextFragment(TextFragment):
-
-    @property
-    def token(self):
-        return Token(self.text, token_type=TokenType.RLiterate.Emphasis, fragment_index=self._index)
-
-    def fill_text_version(self, text_version):
-        text_version.add("*")
-        text_version.add_with_index(self.text, self._index)
-        text_version.add("*")
-class CodeTextFragment(TextFragment):
-
-    @property
-    def token(self):
-        return Token(self.text, token_type=TokenType.RLiterate.Code, fragment_index=self._index)
-
-    def fill_text_version(self, text_version):
-        text_version.add("`")
-        text_version.add_with_index(self.text, self._index)
-        text_version.add("`")
-class ReferenceTextFragment(TextFragment):
-
-    @property
-    def page_id(self):
-        return self._text_fragment_dict["page_id"]
-
-    @property
-    def title(self):
-        if self.text:
-            return self.text
-        if self._document.get_page(self.page_id) is not None:
-            return self._document.get_page(self.page_id).title
-        return self.page_id
-
-    @property
-    def token(self):
-        return Token(self.title, token_type=TokenType.RLiterate.Reference, page_id=self.page_id, fragment_index=self._index)
-
-    def fill_text_version(self, text_version):
-        text_version.add("[[")
-        text_version.add_with_index(self.page_id, self._index)
-        if self.text:
-            text_version.add(":")
-            text_version.add(self.text)
-        text_version.add("]]")
-class LinkTextFragment(TextFragment):
-
-    @property
-    def url(self):
-        return self._text_fragment_dict["url"]
-
-    @property
-    def title(self):
-        if self.text:
-            return self.text
-        return self.url
-
-    @property
-    def token(self):
-        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)
-
-    def fill_text_version(self, text_version):
-        text_version.add("[")
-        text_version.add_with_index(self.text, self._index)
-        text_version.add("]")
-        text_version.add("(")
-        text_version.add(self.url)
-        text_version.add(")")
-class TextVersion(object):
-
-    def __init__(self):
-        self.text = ""
-        self.indicies = {}
-        self._index_prefix = []
-
-    def get_selection(self, index):
-        return self.indicies.get(index, (0, 0))
-
-    @contextlib.contextmanager
-    def index(self, index):
-        self._index_prefix.append(index)
-        yield
-        self._index_prefix.pop(-1)
-
-    def add_with_index(self, text, index):
-        start = len(self.text)
-        end = start + len(text)
-        self.indicies[tuple(self._index_prefix + [index])] = (start, end)
-        self.add(text)
-
-    def add(self, text):
-        self.text += text
-class LegacyInlineTextParser(object):
-
-    SPACE_RE = re.compile(r"\s+")
-    PATTERNS = [
-        (
-            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "strong",
-                "text": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "emphasis",
-                "text": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"`(.+?)`", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "code",
-                "text": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "reference",
-                "text": match.group(3),
-                "page_id": match.group(1),
-            }
-        ),
-        (
-            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
-            lambda parser, match: {
-                "type": "link",
-                "text": match.group(1),
-                "url": match.group(2),
-            }
-        ),
-    ]
-
-    def parse(self, text):
-        text = self._normalise_space(text)
-        fragments = []
-        partial = ""
-        while text:
-            result = self._get_special_fragment(text)
-            if result is None:
-                partial += text[0]
-                text = text[1:]
-            else:
-                match, fragment = result
-                if partial:
-                    fragments.append({"type": "text", "text": partial})
-                    partial = ""
-                fragments.append(fragment)
-                text = text[match.end(0):]
-        if partial:
-            fragments.append({"type": "text", "text": partial})
-        return fragments
-
-    def _normalise_space(self, text):
-        return self.SPACE_RE.sub(" ", text).strip()
-
-    def _get_special_fragment(self, text):
-        for pattern, fn in self.PATTERNS:
-            match = pattern.match(text)
-            if match:
-                return match, fn(self, match)
-class LegacyListParser(object):
-
-    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
-
-    def __init__(self, text):
-        self.lines = text.strip().split("\n")
-
-    def parse_items(self, level=0):
-        items = []
-        list_type = None
-        while True:
-            type_and_item = self.parse_item(level)
-            if type_and_item is None:
-                return list_type, items
-            else:
-                item_type, item = type_and_item
-                if list_type is None:
-                    list_type = item_type
-                items.append(item)
-
-    def parse_item(self, level):
-        parts = self.consume_bodies()
-        next_level = level + 1
-        item_type = None
-        if self.lines:
-            match = self.ITEM_START_RE.match(self.lines[0])
-            if match:
-                matched_level = len(match.group(1))
-                if matched_level >= level:
-                    parts.append(match.group(3))
-                    self.lines.pop(0)
-                    parts.extend(self.consume_bodies())
-                    next_level = matched_level + 1
-                    if "*" in match.group(2):
-                        item_type = "unordered"
-                    else:
-                        item_type = "ordered"
-        if parts:
-            child_type, children = self.parse_items(next_level)
-            return (item_type, {
-                "fragments": LegacyInlineTextParser().parse(" ".join(parts)),
-                "children": children,
-                "child_type": child_type,
-            })
-
-    def consume_bodies(self):
-        bodies = []
-        while self.lines:
-            if self.ITEM_START_RE.match(self.lines[0]):
-                break
-            else:
-                bodies.append(self.lines.pop(0))
-        return bodies
-class Layout(Observable):
-    def __init__(self, path):
-        Observable.__init__(self)
-        self.listen(lambda event: write_json_to_file(path, self.data))
-        if os.path.exists(path):
-            self.data = load_json_from_file(path)
-        else:
-            self.data = {}
-        self._toc = ensure_key(self.data, "toc", {})
-        self._toc_collapsed = ensure_key(self._toc, "collapsed", [])
-        self._workspace = ensure_key(self.data, "workspace", {})
-        self._workspace_columns = ensure_key(self._workspace, "columns", [])
-        self._workspace_columns_history = History(copy.deepcopy(self._workspace_columns), size=20)
-        if "scratch" in self._workspace:
-            if not self._workspace["columns"]:
-                self._workspace["columns"] = [self._workspace["scratch"]]
-            del self._workspace["scratch"]
-    def get_hoisted_page(self):
-        return self._toc.get("hoisted_page_id", None)
-
-    def set_hoisted_page(self, page_id):
-        with self.notify("toc"):
-            self._toc["hoisted_page_id"] = page_id
-    def is_collapsed(self, page_id):
-        return page_id in self._toc_collapsed
-
-    def toggle_collapsed(self, page_id):
-        with self.notify("toc"):
-            if page_id in self._toc_collapsed:
-                self._toc_collapsed.remove(page_id)
-            else:
-                self._toc_collapsed.append(page_id)
-    @property
-    def columns(self):
-        return [column[:] for column in self._workspace_columns]
-
-    def open_pages(self, page_ids, column_index=None):
-        with self.notify("workspace"):
-            with self._workspace_columns_history.new_value() as value:
-                if column_index is None:
-                    column_index = len(self._workspace_columns)
-                value[column_index:] = [page_ids[:]]
-                self._workspace_columns[:] = value
-
-    def can_back(self):
-        return self._workspace_columns_history.can_back()
-
-    def back(self):
-        with self.notify("workspace"):
-            self._workspace_columns_history.back()
-            self._workspace_columns[:] = self._workspace_columns_history.value
-
-    def can_forward(self):
-        return self._workspace_columns_history.can_forward()
-
-    def forward(self):
-        with self.notify("workspace"):
-            self._workspace_columns_history.forward()
-            self._workspace_columns[:] = self._workspace_columns_history.value
-
-    def is_open(self, page_id):
-        for column in self.columns:
-            if page_id in column:
-                return True
-        return False
-class BaseTheme(object):
-
-    def get_style(self, token_type):
-        if token_type in self.styles:
-            return self.styles[token_type]
-        return self.get_style(token_type.parent)
-class SolarizedTheme(BaseTheme):
-
-    base03  = "#002b36"
-    base02  = "#073642"
-    base01  = "#586e75"
-    base00  = "#657b83"
-    base0   = "#839496"
-    base1   = "#93a1a1"
-    base2   = "#eee8d5"
-    base3   = "#fdf6e3"
-    yellow  = "#b58900"
-    orange  = "#cb4b16"
-    red     = "#dc322f"
-    magenta = "#d33682"
-    violet  = "#6c71c4"
-    blue    = "#268bd2"
-    cyan    = "#2aa198"
-    green   = "#859900"
-
-    text    = "#2e3436"
-
-    styles = {
-        TokenType:                     Style(color=base00),
-        TokenType.Keyword:             Style(color=green),
-        TokenType.Keyword.Constant:    Style(color=cyan),
-        TokenType.Keyword.Declaration: Style(color=blue),
-        TokenType.Keyword.Namespace:   Style(color=orange),
-        TokenType.Name.Builtin:        Style(color=red),
-        TokenType.Name.Builtin.Pseudo: Style(color=blue),
-        TokenType.Name.Class:          Style(color=blue),
-        TokenType.Name.Decorator:      Style(color=blue),
-        TokenType.Name.Entity:         Style(color=violet),
-        TokenType.Name.Exception:      Style(color=yellow),
-        TokenType.Name.Function:       Style(color=blue),
-        TokenType.String:              Style(color=cyan),
-        TokenType.Number:              Style(color=cyan),
-        TokenType.Operator.Word:       Style(color=green),
-        TokenType.Comment:             Style(color=base1),
-        TokenType.RLiterate:           Style(color=text),
-        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),
-        TokenType.RLiterate.Strong:    Style(color=text, bold=True),
-        TokenType.RLiterate.Code:      Style(color=text, monospace=True),
-        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),
-        TokenType.RLiterate.Reference: Style(color=blue, italic=True),
-        TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),
-        TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),
-        TokenType.RLiterate.Sep:       Style(color=base1),
-    }
-class Project(Observable):
-
-    def __init__(self, filepath):
-        Observable.__init__(self)
-        self._active_editor = None
-        self._highlighted_variable = None
-        self.theme = SolarizedTheme()
-        self.document = Document.from_file(filepath)
-        self.document.listen(self.notify_forwarder("document"))
-        self.layout = Layout(os.path.join(
-            os.path.dirname(filepath),
-            ".{}.layout".format(os.path.basename(filepath))
-        ))
-        self.layout.listen(self.notify_forwarder("layout"))
-        FileGenerator().set_document(self.document)
-
-    def get_page(self, *args, **kwargs):
-        return self.document.get_page(*args, **kwargs)
-
-    def get_paragraph(self, *args, **kwargs):
-        return self.document.get_paragraph(*args, **kwargs)
-
-    def add_page(self, *args, **kwargs):
-        return self.document.add_page(*args, **kwargs)
-
-    def add_paragraph(self, *args, **kwargs):
-        return self.document.add_paragraph(*args, **kwargs)
-
-    def get_undo_operation(self, *args, **kwargs):
-        return self.document.get_undo_operation(*args, **kwargs)
-
-    def get_redo_operation(self, *args, **kwargs):
-        return self.document.get_redo_operation(*args, **kwargs)
-
-    def rename_path(self, *args, **kwargs):
-        return self.document.rename_path(*args, **kwargs)
-
-    def lookup_variable(self, *args, **kwargs):
-        return self.document.lookup_variable(*args, **kwargs)
-
-    def rename_variable(self, *args, **kwargs):
-        return self.document.rename_variable(*args, **kwargs)
-    def toggle_collapsed(self, *args, **kwargs):
-        return self.layout.toggle_collapsed(*args, **kwargs)
-
-    def is_collapsed(self, *args, **kwargs):
-        return self.layout.is_collapsed(*args, **kwargs)
-
-    @property
-    def columns(self):
-        return self.layout.columns
-
-    def is_open(self, *args, **kwargs):
-        return self.layout.is_open(*args, **kwargs)
-
-    def open_pages(self, *args, **kwargs):
-        if self.active_editor is None:
-            return self.layout.open_pages(*args, **kwargs)
-        else:
-            raise EditInProgress()
-
-    def can_back(self, *args, **kwargs):
-        return self.layout.can_back(*args, **kwargs)
-
-    def back(self, *args, **kwargs):
-        return self.layout.back(*args, **kwargs)
-
-    def can_forward(self, *args, **kwargs):
-        return self.layout.can_forward(*args, **kwargs)
-
-    def forward(self, *args, **kwargs):
-        return self.layout.forward(*args, **kwargs)
-
-    def get_hoisted_page(self, *args, **kwargs):
-        return self.layout.get_hoisted_page(*args, **kwargs)
-
-    def set_hoisted_page(self, *args, **kwargs):
-        return self.layout.set_hoisted_page(*args, **kwargs)
-    def get_style(self, *args, **kwargs):
-        return self.theme.get_style(*args, **kwargs)
-    @property
-    def active_editor(self):
-        return self._active_editor
-
-    @active_editor.setter
-    def active_editor(self, editor):
-        with self.notify("editor"):
-            self._active_editor = editor
-    @property
-    def highlighted_variable(self):
-        return self._highlighted_variable
-
-    @highlighted_variable.setter
-    def highlighted_variable(self, variable_id):
-        with self.notify("highlights"):
-            self._highlighted_variable = variable_id
-class EditInProgress(Exception):
-    pass
 class FileGenerator(object):
 
     def __init__(self):
@@ -3498,63 +3496,10 @@ class History(object):
     def forward(self):
         if self.can_forward():
             self._history_index += 1
-def set_clipboard_text(text):
-    if wx.TheClipboard.Open():
-        try:
-            wx.TheClipboard.SetData(wx.TextDataObject(text.encode("utf-8")))
-        finally:
-            wx.TheClipboard.Close()
-def post_token_click(widget, token):
-    wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
-def post_hovered_token_changed(widget, token):
-    wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
-def base64_to_bitmap(data):
-    try:
-        image = fit_image(wx.ImageFromStream(
-            StringIO.StringIO(base64.b64decode(data)),
-            wx.BITMAP_TYPE_ANY
-        ), PAGE_BODY_WIDTH)
-        return image.ConvertToBitmap()
-    except:
-        return wx.ArtProvider.GetBitmap(
-            wx.ART_MISSING_IMAGE,
-            wx.ART_BUTTON,
-            (16, 16)
-        )
-def bitmap_to_base64(bitmap):
-    output = StringIO.StringIO()
-    image = wx.ImageFromBitmap(bitmap)
-    image.SaveStream(output, wx.BITMAP_TYPE_PNG)
-    return base64.b64encode(output.getvalue())
-def fit_image(image, width):
-    if image.Width <= width:
-        return image
-    factor = float(width) / image.Width
-    return image.Scale(
-        int(image.Width*factor),
-        int(image.Height*factor),
-        wx.IMAGE_QUALITY_HIGH
-    )
-def post_edit_start(control, **extra):
-    wx.PostEvent(control, EditStart(0, extra=extra))
-def open_pages_gui(window, project, *args, **kwargs):
-    try:
-        project.open_pages(*args, **kwargs)
-    except EditInProgress:
-        show_edit_in_progress_error(window)
-def show_edit_in_progress_error(window):
-    dialog = wx.MessageDialog(
-        window,
-        "An edit is already in progress.",
-        style=wx.CENTRE|wx.ICON_ERROR|wx.OK
-    )
-    dialog.ShowModal()
-    dialog.Destroy()
-@contextlib.contextmanager
-def flicker_free_drawing(widget):
-    widget.Freeze()
-    yield
-    widget.Thaw()
+def index_with_id(items, item_id):
+    for index, item in enumerate(items):
+        if item["id"] == item_id:
+            return index
 def fragments_to_text(fragments):
     text_version = TextVersion()
     for fragment in fragments:
@@ -3592,10 +3537,99 @@ def legacy_code_text_to_fragments(text):
     if current_text:
         fragments.append({"type": "code", "text": current_text})
     return fragments
+def genid():
+    return uuid.uuid4().hex
 def ensure_key(a_dict, key, default):
     if key not in a_dict:
         a_dict[key] = default
     return a_dict[key]
+def pairs(items):
+    return zip(items, items[1:]+[None])
+def set_clipboard_text(text):
+    if wx.TheClipboard.Open():
+        try:
+            wx.TheClipboard.SetData(wx.TextDataObject(text.encode("utf-8")))
+        finally:
+            wx.TheClipboard.Close()
+def min_or_none(items, key):
+    if not items:
+        return None
+    return min(items, key=key)
+def post_token_click(widget, token):
+    wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
+def post_hovered_token_changed(widget, token):
+    wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
+def base64_to_bitmap(data):
+    try:
+        image = fit_image(wx.ImageFromStream(
+            StringIO.StringIO(base64.b64decode(data)),
+            wx.BITMAP_TYPE_ANY
+        ), PAGE_BODY_WIDTH)
+        return image.ConvertToBitmap()
+    except:
+        return wx.ArtProvider.GetBitmap(
+            wx.ART_MISSING_IMAGE,
+            wx.ART_BUTTON,
+            (16, 16)
+        )
+def bitmap_to_base64(bitmap):
+    output = StringIO.StringIO()
+    image = wx.ImageFromBitmap(bitmap)
+    image.SaveStream(output, wx.BITMAP_TYPE_PNG)
+    return base64.b64encode(output.getvalue())
+def fit_image(image, width):
+    if image.Width <= width:
+        return image
+    factor = float(width) / image.Width
+    return image.Scale(
+        int(image.Width*factor),
+        int(image.Height*factor),
+        wx.IMAGE_QUALITY_HIGH
+    )
+def edit_in_gvim(text, filename):
+    with tempfile.NamedTemporaryFile(suffix="-rliterate-external-"+filename) as f:
+        f.write(text)
+        f.flush()
+        p = subprocess.Popen(["gvim", "--nofork", f.name])
+        while p.poll() is None:
+            wx.Yield()
+            time.sleep(0.1)
+        f.seek(0)
+        return f.read()
+def post_edit_start(control, **extra):
+    wx.PostEvent(control, EditStart(0, extra=extra))
+def find_first(items, action):
+    for item in items:
+        result = action(item)
+        if result is not None:
+            return result
+    return None
+def open_pages_gui(window, project, *args, **kwargs):
+    try:
+        project.open_pages(*args, **kwargs)
+    except EditInProgress:
+        show_edit_in_progress_error(window)
+def show_edit_in_progress_error(window):
+    dialog = wx.MessageDialog(
+        window,
+        "An edit is already in progress.",
+        style=wx.CENTRE|wx.ICON_ERROR|wx.OK
+    )
+    dialog.ShowModal()
+    dialog.Destroy()
+@contextlib.contextmanager
+def flicker_free_drawing(widget):
+    widget.Freeze()
+    yield
+    widget.Thaw()
+def create_font(monospace=False, size=10, bold=False):
+    return wx.Font(
+        size,
+        wx.FONTFAMILY_TELETYPE if monospace else wx.FONTFAMILY_DEFAULT,
+        wx.FONTSTYLE_NORMAL,
+        wx.FONTWEIGHT_BOLD if bold else wx.FONTWEIGHT_NORMAL,
+        False
+    )
 def is_prefix(left, right):
     return left == right[:len(left)]
 def load_json_from_file(path):
@@ -3616,53 +3650,6 @@ def safely_write_file(path):
     ) as tmp:
         yield tmp
     os.rename(tmp.name, path)
-def genid():
-    return uuid.uuid4().hex
-
-
-def create_font(monospace=False, size=10, bold=False):
-    return wx.Font(
-        size,
-        wx.FONTFAMILY_TELETYPE if monospace else wx.FONTFAMILY_DEFAULT,
-        wx.FONTSTYLE_NORMAL,
-        wx.FONTWEIGHT_BOLD if bold else wx.FONTWEIGHT_NORMAL,
-        False
-    )
-
-
-def find_first(items, action):
-    for item in items:
-        result = action(item)
-        if result is not None:
-            return result
-    return None
-
-
-def pairs(items):
-    return zip(items, items[1:]+[None])
-
-
-def min_or_none(items, key):
-    if not items:
-        return None
-    return min(items, key=key)
-
-
-def index_with_id(items, item_id):
-    for index, item in enumerate(items):
-        if item["id"] == item_id:
-            return index
-def edit_in_gvim(text, filename):
-    with tempfile.NamedTemporaryFile(suffix="-rliterate-external-"+filename) as f:
-        f.write(text)
-        f.flush()
-        p = subprocess.Popen(["gvim", "--nofork", f.name])
-        while p.poll() is None:
-            wx.Yield()
-            time.sleep(0.1)
-        f.seek(0)
-        return f.read()
-
 
 if __name__ == "__main__":
     if sys.argv[2:] == ["--html"]:

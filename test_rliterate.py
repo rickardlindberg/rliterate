@@ -1,16 +1,12 @@
-# This file is automatically extracted from rliterate.rliterate.
-
+# This file is extracted from rliterate.rliterate.
+# DO NOT EDIT MANUALLY!
 
 import pytest
 
 from rliterate import *
-
-
 @pytest.fixture
 def tmpfile(tmpdir):
     return str(tmpdir.join("test.rliterate"))
-
-
 INLINE_TEXT = "This **is** very *cool*. [[106af6f8665c45e8ab751993a6abc876:page]] is it. Some `code`. [link](http://example.com)."
 FRAGMENTS = [
     {"type": "text",      "text": "This "},
@@ -179,12 +175,12 @@ def test_converts_legacy_root_document(tmpfile):
         "root_page": root_page,
         "variables": {},
     }
-def write_read_document(tmpfile, document):
-    write_json_to_file(tmpfile, document)
-    doc = Document.from_file(tmpfile)
+def write_read_document(path, document):
+    write_json_to_file(path, document)
+    doc = Document.from_file(path)
     with doc.notify():
         pass
-    return load_json_from_file(tmpfile)
+    return load_json_from_file(path)
 def test_reads_legacy_scratch_pages(tmpfile):
     write_json_to_file(tmpfile, {
         "workspace": {
