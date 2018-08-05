@@ -5508,7 +5508,7 @@
 ],
 "fragments":[
 {
-"text":"class Document(Observable):\n\n    @classmethod\n    def from_file(cls, path):\n        return cls(path)\n\n    def __init__(self, path):\n        Observable.__init__(self)\n",
+"text":"class Document(Observable):\n\n    def __init__(self, document_dict=None):\n        Observable.__init__(self)\n",
 "type":"code"
 },
 {
@@ -5547,6 +5547,23 @@
 {
 "chunkpath":[
 "classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@classmethod\ndef from_file(cls, path):\n    if os.path.exists(path):\n        document = cls(load_json_from_file(path))\n    else:\n        document = cls()\n    document.listen(lambda event: write_json_to_file(path, document._document_dict))\n    return document\n",
+"type":"code"
+}
+],
+"id":"53de8670b4164bc7a0ab502d2960da63",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
 "Document",
 "__init__"
 ],
@@ -5555,7 +5572,7 @@
 ],
 "fragments":[
 {
-"text":"self._load(path)\n",
+"text":"self._load(document_dict)\n",
 "type":"code"
 }
 ],
@@ -5572,7 +5589,7 @@
 ],
 "fragments":[
 {
-"text":"def _load(self, path):\n    if os.path.exists(path):\n        document_dict = self._handle_legacy(load_json_from_file(path))\n    else:\n        document_dict = self._empty_page()\n    self._history = History(DocumentDictWrapper(document_dict), size=10)\n",
+"text":"def _load(self, document_dict):\n    self._history = History(\n        DocumentDictWrapper(\n            self._handle_legacy(\n                self._empty_page()\n                if document_dict is None else\n                document_dict\n            )\n        ),\n        size=10\n    )\n",
 "type":"code"
 },
 {
@@ -5615,34 +5632,6 @@
 }
 ],
 "id":"f2c5232417964cbabc4f03f310b3a0a4",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Saving:",
-"type":"text"
-}
-],
-"id":"01abd458b8a04bd7957621e8b3bc70c4",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"Document",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self.listen(lambda event: write_json_to_file(path, self._document_dict))\n",
-"type":"code"
-}
-],
-"id":"b3b9797ca57548e68c19f895842842eb",
 "type":"code"
 }
 ],
@@ -6114,7 +6103,7 @@
 "type":"chunk"
 },
 {
-"text":"        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(\".{}.layout\".format(filepath))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n\n",
+"text":"        self.theme = SolarizedTheme()\n        self.document = Document.from_file(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n\n",
 "type":"code"
 },
 {

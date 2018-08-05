@@ -1897,21 +1897,29 @@ class SelectionableTextCtrl(wx.TextCtrl):
         wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)
 class Document(Observable):
 
+    def __init__(self, document_dict=None):
+        Observable.__init__(self)
+        self._load(document_dict)
+
     @classmethod
     def from_file(cls, path):
-        return cls(path)
-
-    def __init__(self, path):
-        Observable.__init__(self)
-        self._load(path)
-        self.listen(lambda event: write_json_to_file(path, self._document_dict))
-
-    def _load(self, path):
         if os.path.exists(path):
-            document_dict = self._handle_legacy(load_json_from_file(path))
+            document = cls(load_json_from_file(path))
         else:
-            document_dict = self._empty_page()
-        self._history = History(DocumentDictWrapper(document_dict), size=10)
+            document = cls()
+        document.listen(lambda event: write_json_to_file(path, document._document_dict))
+        return document
+    def _load(self, document_dict):
+        self._history = History(
+            DocumentDictWrapper(
+                self._handle_legacy(
+                    self._empty_page()
+                    if document_dict is None else
+                    document_dict
+                )
+            ),
+            size=10
+        )
 
     @property
     def _document_dict(self):
@@ -2993,7 +3001,10 @@ class Project(Observable):
         self.theme = SolarizedTheme()
         self.document = Document.from_file(filepath)
         self.document.listen(self.notify_forwarder("document"))
-        self.layout = Layout(".{}.layout".format(filepath))
+        self.layout = Layout(os.path.join(
+            os.path.dirname(filepath),
+            ".{}.layout".format(os.path.basename(filepath))
+        ))
         self.layout.listen(self.notify_forwarder("layout"))
         FileGenerator().set_document(self.document)
 
