@@ -1974,7 +1974,7 @@ class Document(Observable):
             document = cls(load_json_from_file(path))
         else:
             document = cls()
-        document.listen(lambda event: write_json_to_file(path, document._document_dict))
+        document.listen(lambda event: write_json_to_file(path, document.read_only_document_dict))
         return document
     def _load(self, document_dict):
         self._history = History(
@@ -1989,7 +1989,7 @@ class Document(Observable):
         )
 
     @property
-    def _document_dict(self):
+    def read_only_document_dict(self):
         return self._history.value
     @contextlib.contextmanager
     def modify(self, name):
@@ -2022,7 +2022,7 @@ class Document(Observable):
             "paragraphs": [],
         }
     def get_page(self, page_id=None):
-        page_dict = self._document_dict.get_page_dict(page_id)
+        page_dict = self.read_only_document_dict.get_page_dict(page_id)
         if page_dict is None:
             return None
         return Page(self, page_dict)
@@ -2065,7 +2065,7 @@ class Document(Observable):
             document_dict["variables"][variable_id] = name
 
     def lookup_variable(self, variable_id):
-        return self._document_dict["variables"].get(variable_id)
+        return self.read_only_document_dict["variables"].get(variable_id)
     def _handle_legacy(self, document_dict):
         for fn in [
             self._legacy_inline_text,

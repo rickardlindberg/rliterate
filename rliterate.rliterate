@@ -4549,7 +4549,15 @@
 ],
 "fragments":[
 {
-"text":"def get_page(self, page_id=None):\n    page_dict = self._document_dict.get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n",
+"text":"def get_page(self, page_id=None):\n    page_dict = self.",
+"type":"code"
+},
+{
+"id":"b7da0c1f7b7845c8a2c816963948740d",
+"type":"variable"
+},
+{
+"text":".get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n",
 "type":"code"
 }
 ],
@@ -5303,7 +5311,15 @@
 ],
 "fragments":[
 {
-"text":"def new_variable(self, name):\n    with self.modify(\"New variable\") as document_dict:\n        variable_id = genid()\n        document_dict[\"variables\"][variable_id] = name\n        return variable_id\n\ndef rename_variable(self, variable_id, name):\n    with self.modify(\"Rename variable\") as document_dict:\n        document_dict[\"variables\"][variable_id] = name\n\ndef lookup_variable(self, variable_id):\n    return self._document_dict[\"variables\"].get(variable_id)\n",
+"text":"def new_variable(self, name):\n    with self.modify(\"New variable\") as document_dict:\n        variable_id = genid()\n        document_dict[\"variables\"][variable_id] = name\n        return variable_id\n\ndef rename_variable(self, variable_id, name):\n    with self.modify(\"Rename variable\") as document_dict:\n        document_dict[\"variables\"][variable_id] = name\n\ndef lookup_variable(self, variable_id):\n    return self.",
+"type":"code"
+},
+{
+"id":"b7da0c1f7b7845c8a2c816963948740d",
+"type":"variable"
+},
+{
+"text":"[\"variables\"].get(variable_id)\n",
 "type":"code"
 }
 ],
@@ -6308,7 +6324,15 @@
 ],
 "fragments":[
 {
-"text":"@classmethod\ndef from_file(cls, path):\n    if os.path.exists(path):\n        document = cls(load_json_from_file(path))\n    else:\n        document = cls()\n    document.listen(lambda event: write_json_to_file(path, document._document_dict))\n    return document\n",
+"text":"@classmethod\ndef from_file(cls, path):\n    if os.path.exists(path):\n        document = cls(load_json_from_file(path))\n    else:\n        document = cls()\n    document.listen(lambda event: write_json_to_file(path, document.",
+"type":"code"
+},
+{
+"id":"b7da0c1f7b7845c8a2c816963948740d",
+"type":"variable"
+},
+{
+"text":"))\n    return document\n",
 "type":"code"
 }
 ],
@@ -6354,7 +6378,15 @@
 "type":"chunk"
 },
 {
-"text":"\n@property\ndef _document_dict(self):\n    return self._history.value\n",
+"text":"\n@property\ndef ",
+"type":"code"
+},
+{
+"id":"b7da0c1f7b7845c8a2c816963948740d",
+"type":"variable"
+},
+{
+"text":"(self):\n    return self._history.value\n",
 "type":"code"
 }
 ],
@@ -8808,6 +8840,7 @@
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
+"b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
