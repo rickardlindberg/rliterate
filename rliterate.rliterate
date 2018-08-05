@@ -2320,7 +2320,15 @@
 ],
 "fragments":[
 {
-"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if self.project is None:\n            return\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
+"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if self.project is None:\n            return\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return find_first(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
 "type":"code"
 }
 ],
@@ -2514,7 +2522,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
+"text":"(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
 "type":"code"
 },
 {
@@ -2616,7 +2632,15 @@
 ],
 "fragments":[
 {
-"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=PAGE_BODY_WIDTH-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=lambda event: base.ShowContextMenu(),\n            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.token = None\n\n    def _on_mouse_move(self, event):\n        token = self.GetToken(event.Position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
+"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=lambda event: base.ShowContextMenu(),\n            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.token = None\n\n    def _on_mouse_move(self, event):\n        token = self.GetToken(event.Position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
 "type":"code"
 }
 ],
@@ -2880,7 +2904,15 @@
 ],
 "fragments":[
 {
-"text":"def _create_path(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = TokenView(\n        panel,\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        max_width=PAGE_BODY_WIDTH-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, subpath=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.path_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._path_double_click\n    )\n    return panel\n\ndef _create_path_tokens(self, path):\n    tokens = []\n    last_subpath = None\n    for (index, (name, subpath)) in enumerate(path.filepaths):\n        if index > 0:\n            tokens.append(Token(\n                \"/\",\n                token_type=TokenType.RLiterate.Sep,\n                prev_subpath=last_subpath,\n                next_subpath=subpath\n            ))\n        tokens.append(Token(\n            name,\n            token_type=TokenType.RLiterate.Path,\n            subpath=subpath\n        ))\n        last_subpath = subpath\n    if path.has_both():\n        tokens.append(Token(\n            \" \",\n            token_type=TokenType.RLiterate.Sep,\n            prev_subpath=last_subpath,\n            next_subpath=list(path.chunkpaths)[0][1]\n        ))\n        for (index, (name, subpath)) in enumerate(path.chunkpaths):\n            if index > 0:\n                tokens.append(Token(\n                    \"/\",\n                    token_type=TokenType.RLiterate.Sep,\n                    prev_subpath=last_subpath,\n                    next_subpath=subpath\n                ))\n            tokens.append(Token(\n                name,\n                token_type=TokenType.RLiterate.Chunk,\n                subpath=subpath\n            ))\n            last_subpath = subpath\n    return tokens\n",
+"text":"def _create_path(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = TokenView(\n        panel,\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        max_width=",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, subpath=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.path_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._path_double_click\n    )\n    return panel\n\ndef _create_path_tokens(self, path):\n    tokens = []\n    last_subpath = None\n    for (index, (name, subpath)) in enumerate(path.filepaths):\n        if index > 0:\n            tokens.append(Token(\n                \"/\",\n                token_type=TokenType.RLiterate.Sep,\n                prev_subpath=last_subpath,\n                next_subpath=subpath\n            ))\n        tokens.append(Token(\n            name,\n            token_type=TokenType.RLiterate.Path,\n            subpath=subpath\n        ))\n        last_subpath = subpath\n    if path.has_both():\n        tokens.append(Token(\n            \" \",\n            token_type=TokenType.RLiterate.Sep,\n            prev_subpath=last_subpath,\n            next_subpath=list(path.chunkpaths)[0][1]\n        ))\n        for (index, (name, subpath)) in enumerate(path.chunkpaths):\n            if index > 0:\n                tokens.append(Token(\n                    \"/\",\n                    token_type=TokenType.RLiterate.Sep,\n                    prev_subpath=last_subpath,\n                    next_subpath=subpath\n                ))\n            tokens.append(Token(\n                name,\n                token_type=TokenType.RLiterate.Chunk,\n                subpath=subpath\n            ))\n            last_subpath = subpath\n    return tokens\n",
 "type":"code"
 }
 ],
@@ -2907,7 +2939,15 @@
 ],
 "fragments":[
 {
-"text":"def _create_code(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = TokenView(\n        panel,\n        self.project,\n        self._highlight_variables(self.paragraph.tokens),\n        max_width=PAGE_BODY_WIDTH-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, body_token=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.body_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._body_double_click\n    )\n    return panel\n\ndef _highlight_variables(self, tokens):\n    def foo(token):\n        if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get(\"variable\"):\n            return token.with_extra(\"",
+"text":"def _create_code(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = TokenView(\n        panel,\n        self.project,\n        self._highlight_variables(self.paragraph.tokens),\n        max_width=",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, body_token=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.body_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._body_double_click\n    )\n    return panel\n\ndef _highlight_variables(self, tokens):\n    def foo(token):\n        if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get(\"variable\"):\n            return token.with_extra(\"",
 "type":"code"
 },
 {
@@ -3223,7 +3263,15 @@
 "type":"variable"
 },
 {
-"text":"))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def Save(self):\n        value = {\"",
+"text":"))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), ",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":").ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def Save(self):\n        value = {\"",
 "type":"code"
 },
 {
@@ -3247,7 +3295,15 @@
 ],
 "fragments":[
 {
-"text":"def base64_to_bitmap(data):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), PAGE_BODY_WIDTH)\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (16, 16)\n        )\n",
+"text":"def base64_to_bitmap(data):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), ",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":")\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (16, 16)\n        )\n",
 "type":"code"
 }
 ],
@@ -4357,7 +4413,11 @@
 ],
 "fragments":[
 {
-"text":"PAGE_BODY_WIDTH = 600\nPAGE_PADDING = 13\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\nCONTAINER_BORDER = PARAGRAPH_SPACE\n",
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":" = 600\nPAGE_PADDING = 13\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\nCONTAINER_BORDER = PARAGRAPH_SPACE\n",
 "type":"code"
 }
 ],
@@ -8739,6 +8799,7 @@
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "507782d786b84d209eef461ecd0b4544":"fragments",
+"52a4cb0c44124d518647a92eb25a876d":"PAGE_BODY_WIDTH",
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
