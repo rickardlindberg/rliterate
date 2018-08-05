@@ -1498,9 +1498,11 @@ class CodeView(wx.Panel):
             )
             menu.AppendSeparator()
             for page in self._find_variable_pages(self.project.get_page(), rename_value):
+                def create_open_page_handler(page):
+                    return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
                 menu.AppendItem(
                     "{}".format(page.title),
-                    lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
+                    create_open_page_handler(page)
                 )
             self.PopupMenu(menu)
             menu.Destroy()
