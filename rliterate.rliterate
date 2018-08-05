@@ -1082,7 +1082,15 @@
 ],
 "fragments":[
 {
-"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.active_editor.Cancel(),\n    short_help=\"Cancel\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('G')),\n        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),\n    ]\n)\n",
+"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.active_editor.",
+"type":"code"
+},
+{
+"id":"1d1c2a7d8f224b5aa30e0709f167a68e",
+"type":"variable"
+},
+{
+"text":"(),\n    short_help=\"Cancel\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('G')),\n        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),\n    ]\n)\n",
 "type":"code"
 }
 ],
@@ -2482,7 +2490,23 @@
 ],
 "fragments":[
 {
-"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n\n    def ",
+"text":"class Title(",
+"type":"code"
+},
+{
+"id":"e327d4d3650047bc9eedb2a21d4c2613",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        ",
+"type":"code"
+},
+{
+"id":"e327d4d3650047bc9eedb2a21d4c2613",
+"type":"variable"
+},
+{
+"text":".__init__(self, parent, project)\n\n    def ",
 "type":"code"
 },
 {
@@ -2542,7 +2566,15 @@
 ],
 "fragments":[
 {
-"text":"class Text(ParagraphBase):\n\n    def ",
+"text":"class Text(",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"):\n\n    def ",
 "type":"code"
 },
 {
@@ -2748,7 +2780,15 @@
 ],
 "fragments":[
 {
-"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def ",
+"text":"class List(",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"):\n\n    INDENT = 20\n\n    def ",
 "type":"code"
 },
 {
@@ -3069,7 +3109,15 @@
 ],
 "fragments":[
 {
-"text":"class Code(ParagraphBase):\n\n    def ",
+"text":"class Code(",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"):\n\n    def ",
 "type":"code"
 },
 {
@@ -3127,7 +3175,15 @@
 ],
 "fragments":[
 {
-"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def ",
+"text":"class Image(",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"):\n\n    PADDING = 30\n\n    def ",
 "type":"code"
 },
 {
@@ -3256,7 +3312,15 @@
 ],
 "fragments":[
 {
-"text":"class Factory(ParagraphBase):\n\n    def ",
+"text":"class Factory(",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"):\n\n    def ",
 "type":"code"
 },
 {
@@ -3327,7 +3391,31 @@
 ],
 "fragments":[
 {
-"text":"class ParagraphBase(Editable):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.page_id = page_id\n        self.paragraph = paragraph\n        Editable.__init__(self, parent, project)\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"New paragraph before\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.id\n            )\n        )\n        menu.AppendItem(\n            \"New paragraph after\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id\n            )\n        )\n        menu.AppendItem(\n            \"Duplicate\",\n            lambda: self.paragraph.duplicate()\n        )\n        if hasattr(self.paragraph, \"text_version\"):\n            menu.AppendItem(\n                \"Edit in gvim\",\n                lambda: setattr(\n                    self.paragraph,\n                    \"text_version\",\n                    edit_in_gvim(\n                        self.paragraph.text_version,\n                        self.paragraph.filename\n                    )\n                )\n            )\n        menu.AppendSeparator()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"e327d4d3650047bc9eedb2a21d4c2613",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, project, page_id, paragraph):\n        self.page_id = page_id\n        self.paragraph = paragraph\n        ",
+"type":"code"
+},
+{
+"id":"e327d4d3650047bc9eedb2a21d4c2613",
+"type":"variable"
+},
+{
+"text":".__init__(self, parent, project)\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"New paragraph before\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.id\n            )\n        )\n        menu.AppendItem(\n            \"New paragraph after\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id\n            )\n        )\n        menu.AppendItem(\n            \"Duplicate\",\n            lambda: self.paragraph.duplicate()\n        )\n        if hasattr(self.paragraph, \"text_version\"):\n            menu.AppendItem(\n                \"Edit in gvim\",\n                lambda: setattr(\n                    self.paragraph,\n                    \"text_version\",\n                    edit_in_gvim(\n                        self.paragraph.text_version,\n                        self.paragraph.filename\n                    )\n                )\n            )\n        menu.AppendSeparator()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
 "type":"code"
 }
 ],
@@ -3459,7 +3547,15 @@
 ],
 "fragments":[
 {
-"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"e327d4d3650047bc9eedb2a21d4c2613",
+"type":"variable"
+},
+{
+"text":"(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.",
 "type":"code"
 },
 {
@@ -3475,7 +3571,15 @@
 "type":"variable"
 },
 {
-"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def Cancel(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
+"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def ",
+"type":"code"
+},
+{
+"id":"1d1c2a7d8f224b5aa30e0709f167a68e",
+"type":"variable"
+},
+{
+"text":"(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
 "type":"code"
 }
 ],
@@ -8626,7 +8730,9 @@
 "title":"RLiterate"
 },
 "variables":{
+"07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "1644b9094da3457895ba66eb283b4a9f":"fragments",
+"1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
 "1e117025a0e14327ba6598fb696799a3":"fragments",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
@@ -8648,6 +8754,7 @@
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "de16dfdd628d459ba5af528db2604934":"fragments",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
+"e327d4d3650047bc9eedb2a21d4c2613":"Editable",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
