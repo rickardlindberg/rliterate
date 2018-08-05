@@ -2482,7 +2482,23 @@
 ],
 "fragments":[
 {
-"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n\n    def CreateView(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def CreateEdit(self, extra):\n        edit = SelectionableTextCtrl(\n            self,\n            style=wx.TE_PROCESS_ENTER,\n            value=self.page.title\n        )\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        edit.SetSelection(*extra[\"selection\"])\n        return edit\n",
+"text":"class Title(Editable):\n\n    def __init__(self, parent, project, page):\n        self.page = page\n        Editable.__init__(self, parent, project)\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.Font = create_font(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=PAGE_BODY_WIDTH\n        )\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
+"type":"code"
+},
+{
+"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
+"type":"variable"
+},
+{
+"text":"(self, extra):\n        edit = SelectionableTextCtrl(\n            self,\n            style=wx.TE_PROCESS_ENTER,\n            value=self.page.title\n        )\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        edit.SetSelection(*extra[\"selection\"])\n        return edit\n",
 "type":"code"
 }
 ],
@@ -2526,7 +2542,23 @@
 ],
 "fragments":[
 {
-"text":"class Text(ParagraphBase):\n\n    def CreateView(self):\n        return TextView(\n            self,\n            self.project,\n            [\n                token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n                for token in self.paragraph.tokens\n            ],\n            self\n        )\n\n    def CreateEdit(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
+"text":"class Text(ParagraphBase):\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        return TextView(\n            self,\n            self.project,\n            [\n                token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n                for token in self.paragraph.tokens\n            ],\n            self\n        )\n\n    def ",
+"type":"code"
+},
+{
+"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
+"type":"variable"
+},
+{
+"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
 "type":"code"
 }
 ],
@@ -2675,7 +2707,15 @@
 ],
 "fragments":[
 {
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        self.text_view = TextView(\n            view,\n            self.project,\n            [\n                token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n                for token in self.paragraph.tokens\n            ],\n            self,\n            indented=self.INDENT\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(self.text_view, flag=wx.EXPAND, proportion=1)\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
+"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        view = wx.Panel(self)\n        self.text_view = TextView(\n            view,\n            self.project,\n            [\n                token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n                for token in self.paragraph.tokens\n            ],\n            self,\n            indented=self.INDENT\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add((self.INDENT, 1))\n        sizer.Add(self.text_view, flag=wx.EXPAND, proportion=1)\n        view.SetSizer(sizer)\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
@@ -2708,7 +2748,23 @@
 ],
 "fragments":[
 {
-"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def CreateEdit(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def add_items(self, view, sizer, items, child_type, indicies=[]):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*len(indicies), 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    [\n                        token.with_extra(\n                            \"text_index\",\n                            tuple(indicies+[index]+[token.extra[\"fragment_index\"]])\n                        )\n                        for token in item.tokens\n                    ],\n                    self,\n                    indented=self.INDENT*len(indicies)+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return TokenView(\n            view,\n            self.project,\n            [Token(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
+"text":"class List(ParagraphBase):\n\n    INDENT = 20\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def ",
+"type":"code"
+},
+{
+"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
+"type":"variable"
+},
+{
+"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def add_items(self, view, sizer, items, child_type, indicies=[]):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*len(indicies), 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    [\n                        token.with_extra(\n                            \"text_index\",\n                            tuple(indicies+[index]+[token.extra[\"fragment_index\"]])\n                        )\n                        for token in item.tokens\n                    ],\n                    self,\n                    indented=self.INDENT*len(indicies)+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            sizer.Add(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, sizer, item.children, item.child_type, indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return TokenView(\n            view,\n            self.project,\n            [Token(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
 "type":"code"
 }
 ],
@@ -3013,7 +3069,23 @@
 ],
 "fragments":[
 {
-"text":"class Code(ParagraphBase):\n\n    def CreateView(self):\n        return CodeView(self, self.project, self.paragraph, self)\n\n    def CreateEdit(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n",
+"text":"class Code(ParagraphBase):\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        return CodeView(self, self.project, self.paragraph, self)\n\n    def ",
+"type":"code"
+},
+{
+"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
+"type":"variable"
+},
+{
+"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n",
 "type":"code"
 }
 ],
@@ -3055,7 +3127,23 @@
 ],
 "fragments":[
 {
-"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def CreateEdit(self, extra):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
+"text":"class Image(ParagraphBase):\n\n    PADDING = 30\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def ",
+"type":"code"
+},
+{
+"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
+"type":"variable"
+},
+{
+"text":"(self, extra):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
 "type":"code"
 }
 ],
@@ -3168,7 +3256,15 @@
 ],
 "fragments":[
 {
-"text":"class Factory(ParagraphBase):\n\n    def CreateView(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=lambda event: self.ShowContextMenu()\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"",
+"text":"class Factory(ParagraphBase):\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=lambda event: self.ShowContextMenu()\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"",
 "type":"code"
 },
 {
@@ -3363,7 +3459,23 @@
 ],
 "fragments":[
 {
-"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.CreateView()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.active_editor is not None:\n            show_edit_in_progress_error(self)\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.CreateEdit(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def Cancel(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
+"text":"class Editable(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.active_editor is not None:\n            show_edit_in_progress_error(self)\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.",
+"type":"code"
+},
+{
+"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
+"type":"variable"
+},
+{
+"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def Cancel(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
 "type":"code"
 }
 ],
@@ -8524,6 +8636,8 @@
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
+"6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
+"740055857bb244038c203cea23c1af69":"CreateView",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
