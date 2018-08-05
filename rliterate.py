@@ -232,7 +232,7 @@ class TokenView(wx.Panel):
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
         for token, style, box in self.token_positions:
-            style.apply_to_wx_dc(dc, self.GetFont())
+            style.apply_to_wx_dc(dc, self.GetFont(), highlight=token.extra.get("highlight", False))
             dc.DrawText(token.text, box.X, box.Y)
     def GetToken(self, position):
         for token, style, box in self.token_positions:
@@ -331,7 +331,7 @@ class Style(object):
         self.italic = italic
         self.monospace = monospace
 
-    def apply_to_wx_dc(self, dc, base_font):
+    def apply_to_wx_dc(self, dc, base_font, highlight=False):
         font = base_font
         if self.bold:
             font = font.Bold()
@@ -347,8 +347,14 @@ class Style(object):
                 weight=font.GetWeight(),
                 underline=font.GetUnderlined(),
             )
+        if highlight:
+            dc.SetTextForeground("#fcf4df")
+            dc.SetTextBackground("#b58900")
+            dc.SetBackgroundMode(wx.SOLID)
+        else:
+            dc.SetTextForeground(self.color_rgb)
+            dc.SetBackgroundMode(wx.TRANSPARENT)
         dc.SetFont(font)
-        dc.SetTextForeground(self.color_rgb)
 class Observable(object):
 
     def __init__(self):
@@ -868,7 +874,8 @@ class Workspace(CompactScrolledWindow):
         self.project_listener = Listener(
             self._re_render_from_event,
             "document",
-            "layout.workspace"
+            "layout.workspace",
+            "highlights"
         )
         self.SetProject(project)
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
@@ -1427,7 +1434,7 @@ class CodeView(wx.Panel):
         self.body_token_view = TokenView(
             panel,
             self.project,
-            self.paragraph.tokens,
+            self._highlight_variables(self.paragraph.tokens),
             max_width=PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1446,6 +1453,13 @@ class CodeView(wx.Panel):
             double_click=self._body_double_click
         )
         return panel
+
+    def _highlight_variables(self, tokens):
+        def foo(token):
+            if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get("variable"):
+                return token.with_extra("highlight", True)
+            return token
+        return [foo(token) for token in tokens]
     def _token_move(self, event):
         token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("subpath") is not None:
@@ -1495,6 +1509,10 @@ class CodeView(wx.Panel):
             menu.AppendItem(
                 "Copy id",
                 lambda: set_clipboard_text(token.extra["variable"])
+            )
+            menu.AppendItem(
+                "Highlight",
+                lambda: setattr(self.project, "highlighted_variable", token.extra["variable"])
             )
             menu.AppendSeparator()
             for page in self._find_variable_pages(self.project.get_page(), rename_value):
@@ -3024,6 +3042,7 @@ class Project(Observable):
     def __init__(self, filepath):
         Observable.__init__(self)
         self._active_editor = None
+        self._highlighted_variable = None
         self.theme = SolarizedTheme()
         self.document = Document.from_file(filepath)
         self.document.listen(self.notify_forwarder("document"))
@@ -3106,6 +3125,14 @@ class Project(Observable):
     def active_editor(self, editor):
         with self.notify("editor"):
             self._active_editor = editor
+    @property
+    def highlighted_variable(self):
+        return self._highlighted_variable
+
+    @highlighted_variable.setter
+    def highlighted_variable(self, variable_id):
+        with self.notify("highlights"):
+            self._highlighted_variable = variable_id
 class EditInProgress(Exception):
     pass
 class FileGenerator(object):

@@ -2251,7 +2251,15 @@
 ],
 "fragments":[
 {
-"text":"def __init__(self, parent, project):\n    CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\",\n        \"layout.workspace\"\n    )\n    self.SetProject(project)\n",
+"text":"def __init__(self, parent, project):\n    CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\",\n        \"layout.workspace\",\n        \"",
+"type":"code"
+},
+{
+"id":"f4daeaff58a34b459a28c0bc7c51a8cd",
+"type":"variable"
+},
+{
+"text":"\"\n    )\n    self.SetProject(project)\n",
 "type":"code"
 },
 {
@@ -2803,7 +2811,15 @@
 ],
 "fragments":[
 {
-"text":"def _create_code(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = TokenView(\n        panel,\n        self.project,\n        self.paragraph.tokens,\n        max_width=PAGE_BODY_WIDTH-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, body_token=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.body_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._body_double_click\n    )\n    return panel\n",
+"text":"def _create_code(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = TokenView(\n        panel,\n        self.project,\n        self._highlight_variables(self.paragraph.tokens),\n        max_width=PAGE_BODY_WIDTH-2*self.PADDING\n    )\n    sizer = wx.BoxSizer(wx.HORIZONTAL)\n    sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)\n    panel.SetSizer(sizer)\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, body_token=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.body_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._body_double_click\n    )\n    return panel\n\ndef _highlight_variables(self, tokens):\n    def foo(token):\n        if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get(\"variable\"):\n            return token.with_extra(\"",
+"type":"code"
+},
+{
+"id":"d102ad411943476d9d432a286f9cbe55",
+"type":"variable"
+},
+{
+"text":"\", True)\n        return token\n    return [foo(token) for token in tokens]\n",
 "type":"code"
 }
 ],
@@ -2840,7 +2856,15 @@
 ],
 "fragments":[
 {
-"text":"def _token_move(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.EventObject.SetDefaultCursor()\n    return CONTINUE_PROCESSING\n\ndef _token_right_click(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        def rename():\n            dialog = RenamePathDialog(\n                self,\n                self.project,\n                token.extra[\"subpath\"]\n            )\n            dialog.ShowModal()\n            dialog.Destroy()\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"subpath\"].last),\n            rename\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        def rename():\n            dialog = wx.TextEntryDialog(\n                self,\n                message=rename_message,\n                caption=\"Rename variable\",\n                defaultValue=rename_value\n            )\n            if dialog.ShowModal() == wx.ID_OK:\n                self.project.rename_variable(token.extra[\"variable\"], dialog.Value)\n            dialog.Destroy()\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            rename_message,\n            rename\n        )\n        menu.AppendItem(\n            \"Copy id\",\n            lambda: set_clipboard_text(token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        for page in self._find_variable_pages(self.project.get_page(), rename_value):\n            def create_open_page_handler(page):\n                return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n            menu.AppendItem(\n                \"{}\".format(page.title),\n                create_open_page_handler(page)\n            )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, page, name):\n    if self._page_has_variable(page, name):\n        yield page\n    for child in page.children:\n        for child_page in self._find_variable_pages(child, name):\n            yield child_page\n\ndef _page_has_variable(self, page, name):\n    for paragraph in page.paragraphs:\n        if paragraph.type == \"code\":\n            for fragment in paragraph.",
+"text":"def _token_move(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.EventObject.SetDefaultCursor()\n    return CONTINUE_PROCESSING\n\ndef _token_right_click(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        def rename():\n            dialog = RenamePathDialog(\n                self,\n                self.project,\n                token.extra[\"subpath\"]\n            )\n            dialog.ShowModal()\n            dialog.Destroy()\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"subpath\"].last),\n            rename\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        def rename():\n            dialog = wx.TextEntryDialog(\n                self,\n                message=rename_message,\n                caption=\"Rename variable\",\n                defaultValue=rename_value\n            )\n            if dialog.ShowModal() == wx.ID_OK:\n                self.project.rename_variable(token.extra[\"variable\"], dialog.Value)\n            dialog.Destroy()\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            rename_message,\n            rename\n        )\n        menu.AppendItem(\n            \"Copy id\",\n            lambda: set_clipboard_text(token.extra[\"variable\"])\n        )\n        menu.AppendItem(\n            \"Highlight\",\n            lambda: setattr(self.project, \"",
+"type":"code"
+},
+{
+"id":"b89d6b27982b458d9b9318ed8fa709e2",
+"type":"variable"
+},
+{
+"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        for page in self._find_variable_pages(self.project.get_page(), rename_value):\n            def create_open_page_handler(page):\n                return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n            menu.AppendItem(\n                \"{}\".format(page.title),\n                create_open_page_handler(page)\n            )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, page, name):\n    if self._page_has_variable(page, name):\n        yield page\n    for child in page.children:\n        for child_page in self._find_variable_pages(child, name):\n            yield child_page\n\ndef _page_has_variable(self, page, name):\n    for paragraph in page.paragraphs:\n        if paragraph.type == \"code\":\n            for fragment in paragraph.",
 "type":"code"
 },
 {
@@ -3664,7 +3688,23 @@
 ],
 "fragments":[
 {
-"text":"def _calculate_token_positions(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.token_positions = []\n    x = 0\n    y = 0\n    max_x, max_y = dc.GetTextExtent(\"M\")\n    line_height_pixels = int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n    for token in self.tokens:\n        for subtoken in token.split():\n            if subtoken.is_newline():\n                x = 0\n                y += line_height_pixels\n                max_y = max(max_y, y)\n                continue\n            style = self.project.get_style(subtoken.token_type)\n            style.apply_to_wx_dc(dc, self.GetFont())\n            w, h = dc.GetTextExtent(subtoken.text)\n            if x > 0 and x+w > self.max_width:\n                x = 0\n                y += line_height_pixels\n            if x == 0 and self.skip_extra_space:\n                if self.token_positions and self.token_positions[-1][0].is_space():\n                    self.token_positions.pop(-1)\n                if subtoken.is_space():\n                    continue\n            self.token_positions.append((subtoken, style, wx.Rect(x, y, w, h)))\n            max_x = max(max_x, x+w)\n            max_y = max(max_y, y+line_height_pixels)\n            x += w\n    self.SetMinSize((max_x, max_y))\n",
+"text":"def _calculate_token_positions(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.token_positions = []\n    x = 0\n    y = 0\n    max_x, max_y = dc.GetTextExtent(\"M\")\n    line_height_pixels = int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n    for token in self.tokens:\n        for subtoken in token.split():\n            if subtoken.is_newline():\n                x = 0\n                y += line_height_pixels\n                max_y = max(max_y, y)\n                continue\n            style = self.project.",
+"type":"code"
+},
+{
+"id":"693482dc04b14cac9b3fe810dcae59a5",
+"type":"variable"
+},
+{
+"text":"(subtoken.token_type)\n            style.",
+"type":"code"
+},
+{
+"id":"553573ef13bd4f7a8713699b743e494a",
+"type":"variable"
+},
+{
+"text":"(dc, self.GetFont())\n            w, h = dc.GetTextExtent(subtoken.text)\n            if x > 0 and x+w > self.max_width:\n                x = 0\n                y += line_height_pixels\n            if x == 0 and self.skip_extra_space:\n                if self.token_positions and self.token_positions[-1][0].is_space():\n                    self.token_positions.pop(-1)\n                if subtoken.is_space():\n                    continue\n            self.token_positions.append((subtoken, style, wx.Rect(x, y, w, h)))\n            max_x = max(max_x, x+w)\n            max_y = max(max_y, y+line_height_pixels)\n            x += w\n    self.SetMinSize((max_x, max_y))\n",
 "type":"code"
 }
 ],
@@ -3709,7 +3749,23 @@
 ],
 "fragments":[
 {
-"text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for token, style, box in self.token_positions:\n        style.apply_to_wx_dc(dc, self.GetFont())\n        dc.DrawText(token.text, box.X, box.Y)\n",
+"text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for token, style, box in self.token_positions:\n        style.",
+"type":"code"
+},
+{
+"id":"553573ef13bd4f7a8713699b743e494a",
+"type":"variable"
+},
+{
+"text":"(dc, self.GetFont(), highlight=token.extra.get(\"",
+"type":"code"
+},
+{
+"id":"d102ad411943476d9d432a286f9cbe55",
+"type":"variable"
+},
+{
+"text":"\", False))\n        dc.DrawText(token.text, box.X, box.Y)\n",
 "type":"code"
 }
 ],
@@ -6421,7 +6477,23 @@
 ],
 "fragments":[
 {
-"text":"class BaseTheme(object):\n\n    def get_style(self, token_type):\n        if token_type in self.styles:\n            return self.styles[token_type]\n        return self.get_style(token_type.parent)\n",
+"text":"class BaseTheme(object):\n\n    def ",
+"type":"code"
+},
+{
+"id":"693482dc04b14cac9b3fe810dcae59a5",
+"type":"variable"
+},
+{
+"text":"(self, token_type):\n        if token_type in self.styles:\n            return self.styles[token_type]\n        return self.",
+"type":"code"
+},
+{
+"id":"693482dc04b14cac9b3fe810dcae59a5",
+"type":"variable"
+},
+{
+"text":"(token_type.parent)\n",
 "type":"code"
 }
 ],
@@ -6437,7 +6509,15 @@
 ],
 "fragments":[
 {
-"text":"class Style(object):\n\n    def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):\n        self.color = color\n        self.color_rgb = tuple([\n            int(x, 16)\n            for x\n            in (color[1:3], color[3:5], color[5:7])\n        ])\n        self.bold = bold\n        self.underlined = underlined\n        self.italic = italic\n        self.monospace = monospace\n\n    def apply_to_wx_dc(self, dc, base_font):\n        font = base_font\n        if self.bold:\n            font = font.Bold()\n        if self.underlined:\n            font = font.Underlined()\n        if self.italic:\n            font = font.Italic()\n        if self.monospace:\n            font = wx.Font(\n                pointSize=font.GetPointSize(),\n                family=wx.FONTFAMILY_TELETYPE,\n                style=font.GetStyle(),\n                weight=font.GetWeight(),\n                underline=font.GetUnderlined(),\n            )\n        dc.SetFont(font)\n        dc.SetTextForeground(self.color_rgb)\n",
+"text":"class Style(object):\n\n    def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):\n        self.color = color\n        self.color_rgb = tuple([\n            int(x, 16)\n            for x\n            in (color[1:3], color[3:5], color[5:7])\n        ])\n        self.bold = bold\n        self.underlined = underlined\n        self.italic = italic\n        self.monospace = monospace\n\n    def ",
+"type":"code"
+},
+{
+"id":"553573ef13bd4f7a8713699b743e494a",
+"type":"variable"
+},
+{
+"text":"(self, dc, base_font, highlight=False):\n        font = base_font\n        if self.bold:\n            font = font.Bold()\n        if self.underlined:\n            font = font.Underlined()\n        if self.italic:\n            font = font.Italic()\n        if self.monospace:\n            font = wx.Font(\n                pointSize=font.GetPointSize(),\n                family=wx.FONTFAMILY_TELETYPE,\n                style=font.GetStyle(),\n                weight=font.GetWeight(),\n                underline=font.GetUnderlined(),\n            )\n        if highlight:\n            dc.SetTextForeground(\"#fcf4df\")\n            dc.SetTextBackground(\"#b58900\")\n            dc.SetBackgroundMode(wx.SOLID)\n        else:\n            dc.SetTextForeground(self.color_rgb)\n            dc.SetBackgroundMode(wx.TRANSPARENT)\n        dc.SetFont(font)\n",
 "type":"code"
 }
 ],
@@ -6605,7 +6685,23 @@
 ],
 "fragments":[
 {
-"text":"def get_style(self, *args, **kwargs):\n    return self.theme.get_style(*args, **kwargs)\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"693482dc04b14cac9b3fe810dcae59a5",
+"type":"variable"
+},
+{
+"text":"(self, *args, **kwargs):\n    return self.theme.",
+"type":"code"
+},
+{
+"id":"693482dc04b14cac9b3fe810dcae59a5",
+"type":"variable"
+},
+{
+"text":"(*args, **kwargs)\n",
 "type":"code"
 }
 ],
@@ -6615,7 +6711,7 @@
 {
 "fragments":[
 {
-"text":"Wrapper for theme:",
+"text":"Misc:",
 "type":"text"
 }
 ],
@@ -6655,6 +6751,97 @@
 }
 ],
 "id":"d18b28ee44ea4fffbd9c2ecf75f0e938",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Project",
+"__init__"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"self.",
+"type":"code"
+},
+{
+"id":"bab7b7c32bd84606952fd1aa50993b6d",
+"type":"variable"
+},
+{
+"text":" = None\n",
+"type":"code"
+}
+],
+"id":"15f734f257ac43c9b1d3da3632eac835",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Project"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef ",
+"type":"code"
+},
+{
+"id":"b89d6b27982b458d9b9318ed8fa709e2",
+"type":"variable"
+},
+{
+"text":"(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"bab7b7c32bd84606952fd1aa50993b6d",
+"type":"variable"
+},
+{
+"text":"\n\n@",
+"type":"code"
+},
+{
+"id":"b89d6b27982b458d9b9318ed8fa709e2",
+"type":"variable"
+},
+{
+"text":".setter\ndef ",
+"type":"code"
+},
+{
+"id":"b89d6b27982b458d9b9318ed8fa709e2",
+"type":"variable"
+},
+{
+"text":"(self, variable_id):\n    with self.notify(\"",
+"type":"code"
+},
+{
+"id":"f4daeaff58a34b459a28c0bc7c51a8cd",
+"type":"variable"
+},
+{
+"text":"\"):\n        self.",
+"type":"code"
+},
+{
+"id":"bab7b7c32bd84606952fd1aa50993b6d",
+"type":"variable"
+},
+{
+"text":" = variable_id\n",
+"type":"code"
+}
+],
+"id":"5e9d1e7020f4474da7e6788380c57d7e",
 "type":"code"
 },
 {
@@ -8253,6 +8440,26 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Remove unused variables",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Is variable highlighting done in the correct place?",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
@@ -8296,15 +8503,21 @@
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "507782d786b84d209eef461ecd0b4544":"fragments",
+"553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
+"693482dc04b14cac9b3fe810dcae59a5":"get_style",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
+"b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
+"bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
+"d102ad411943476d9d432a286f9cbe55":"highlight",
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "de16dfdd628d459ba5af528db2604934":"fragments",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
+"f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
 "fb8af53f33454166a0737b02b9413a0e":"fragments"
 }
