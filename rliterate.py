@@ -1515,11 +1515,19 @@ class CodeView(wx.Panel):
                 lambda: setattr(self.project, "highlighted_variable", token.extra["variable"])
             )
             menu.AppendSeparator()
-            for page in self._find_variable_pages(self.project.get_page(), rename_value):
-                def create_open_page_handler(page):
-                    return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
+            menu.AppendItem("Usages:", lambda: None)
+            def create_open_page_handler(page):
+                return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
+            for page, full_title in self._find_variable_usages(self.project.get_page(), token.extra["variable"]):
                 menu.AppendItem(
-                    "{}".format(page.title),
+                    "{}".format(full_title),
+                    create_open_page_handler(page)
+                )
+            menu.AppendSeparator()
+            menu.AppendItem("Possible usages:", lambda: None)
+            for page, full_title in self._find_variable_pages(self.project.get_page(), rename_value):
+                menu.AppendItem(
+                    "{}".format(full_title),
                     create_open_page_handler(page)
                 )
             self.PopupMenu(menu)
@@ -1527,11 +1535,18 @@ class CodeView(wx.Panel):
         else:
             return CONTINUE_PROCESSING
 
-    def _find_variable_pages(self, page, name):
+    def _find_variable_pages(self, page, name, parents=[]):
         if self._page_has_variable(page, name):
-            yield page
+            yield page, " / ".join(page.title for page in parents+[page])
         for child in page.children:
-            for child_page in self._find_variable_pages(child, name):
+            for child_page in self._find_variable_pages(child, name, parents+[page]):
+                yield child_page
+
+    def _find_variable_usages(self, page, variable_id, parents=[]):
+        if self._page_uses_variable(page, variable_id):
+            yield page, " / ".join(page.title for page in parents+[page])
+        for child in page.children:
+            for child_page in self._find_variable_usages(child, variable_id, parents+[page]):
                 yield child_page
 
     def _page_has_variable(self, page, name):
@@ -1540,6 +1555,14 @@ class CodeView(wx.Panel):
                 for fragment in paragraph.fragments:
                     if fragment["type"] == "code":
                         if re.search(r"\b{}\b".format(re.escape(name)), fragment["text"]):
+                            return True
+
+    def _page_uses_variable(self, page, variable_id):
+        for paragraph in page.paragraphs:
+            if paragraph.type == "code":
+                for fragment in paragraph.fragments:
+                    if fragment["type"] == "variable":
+                        if fragment["id"] == variable_id:
                             return True
 
     def _path_double_click(self, event):

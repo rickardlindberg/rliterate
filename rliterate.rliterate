@@ -2864,7 +2864,7 @@
 "type":"variable"
 },
 {
-"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        for page in self._find_variable_pages(self.project.get_page(), rename_value):\n            def create_open_page_handler(page):\n                return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n            menu.AppendItem(\n                \"{}\".format(page.title),\n                create_open_page_handler(page)\n            )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, page, name):\n    if self._page_has_variable(page, name):\n        yield page\n    for child in page.children:\n        for child_page in self._find_variable_pages(child, name):\n            yield child_page\n\ndef _page_has_variable(self, page, name):\n    for paragraph in page.paragraphs:\n        if paragraph.type == \"code\":\n            for fragment in paragraph.",
+"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Usages:\", lambda: None)\n        def create_open_page_handler(page):\n            return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n        for page, full_title in self._find_variable_usages(self.project.get_page(), token.extra[\"variable\"]):\n            menu.AppendItem(\n                \"{}\".format(full_title),\n                create_open_page_handler(page)\n            )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Possible usages:\", lambda: None)\n        for page, full_title in self._find_variable_pages(self.project.get_page(), rename_value):\n            menu.AppendItem(\n                \"{}\".format(full_title),\n                create_open_page_handler(page)\n            )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, page, name, parents=[]):\n    if self._page_has_variable(page, name):\n        yield page, \" / \".join(page.title for page in parents+[page])\n    for child in page.children:\n        for child_page in self._find_variable_pages(child, name, parents+[page]):\n            yield child_page\n\ndef _find_variable_usages(self, page, variable_id, parents=[]):\n    if self._page_uses_variable(page, variable_id):\n        yield page, \" / \".join(page.title for page in parents+[page])\n    for child in page.children:\n        for child_page in self._find_variable_usages(child, variable_id, parents+[page]):\n            yield child_page\n\ndef _page_has_variable(self, page, name):\n    for paragraph in page.paragraphs:\n        if paragraph.type == \"code\":\n            for fragment in paragraph.",
 "type":"code"
 },
 {
@@ -2872,7 +2872,15 @@
 "type":"variable"
 },
 {
-"text":":\n                if fragment[\"type\"] == \"code\":\n                    if re.search(r\"\\b{}\\b\".format(re.escape(name)), fragment[\"text\"]):\n                        return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
+"text":":\n                if fragment[\"type\"] == \"code\":\n                    if re.search(r\"\\b{}\\b\".format(re.escape(name)), fragment[\"text\"]):\n                        return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for paragraph in page.paragraphs:\n        if paragraph.type == \"code\":\n            for fragment in paragraph.",
+"type":"code"
+},
+{
+"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
+"type":"variable"
+},
+{
+"text":":\n                if fragment[\"type\"] == \"variable\":\n                    if fragment[\"id\"] == variable_id:\n                        return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
 "type":"code"
 }
 ],
@@ -8457,6 +8465,16 @@
 "fragments":[
 {
 "text":"Is variable highlighting done in the correct place?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Add support for variables in text fragments",
 "type":"text"
 }
 ]
