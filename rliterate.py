@@ -3114,19 +3114,28 @@ class FileGenerator(object):
                     self._render(f, key)
 
     def _render(self, f, key, prefix=""):
+        text_buffer = ""
         for paragraph in self._parts[key]:
             for fragment in paragraph.fragments:
                 if fragment["type"] == "chunk":
-                    self._render(f, (key[0], key[1]+tuple(fragment["path"])), prefix=prefix+fragment["prefix"])
-                elif fragment["type"] == "variable":
-                    name = self.document.lookup_variable(fragment["id"])
-                    f.write(name if name is not None else fragment["id"])
-                else:
-                    for line in fragment["text"].splitlines():
+                    for line in text_buffer.splitlines():
                         if len(line) > 0:
                             f.write(prefix)
                             f.write(line)
                         f.write("\n")
+                    text_buffer = ""
+                    self._render(f, (key[0], key[1]+tuple(fragment["path"])), prefix=prefix+fragment["prefix"])
+                elif fragment["type"] == "variable":
+                    name = self.document.lookup_variable(fragment["id"])
+                    text_buffer += name if name is not None else fragment["id"]
+                else:
+                    text_buffer += fragment["text"]
+        for line in text_buffer.splitlines():
+            if len(line) > 0:
+                f.write(prefix)
+                f.write(line)
+            f.write("\n")
+        text_buffer = ""
 
     def _get_filepath(self, key):
         if len(key[0]) > 0 and len(key[1]) == 0:
