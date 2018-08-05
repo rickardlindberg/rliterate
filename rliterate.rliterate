@@ -6260,7 +6260,7 @@
 "children":[],
 "fragments":[
 {
-"text":"It saves the JSON object back to file when it changes.",
+"text":"It saves the JSON object back to file when it changes (if it was opened from a file).",
 "type":"text"
 }
 ]
