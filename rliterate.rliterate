@@ -4399,33 +4399,6 @@
 "id":"5c3647a616b8495f8bebd268be84377d",
 "paragraphs":[],
 "title":"wxPython utilities"
-},
-{
-"children":[],
-"id":"4495f053ab2d41a2a4ec70f55e929b9f",
-"paragraphs":[
-{
-"chunkpath":[
-"constants"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":" = 600\nPAGE_PADDING = 13\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\nCONTAINER_BORDER = PARAGRAPH_SPACE\n",
-"type":"code"
-}
-],
-"id":"e3e222b97d124ce0af6eba3cead75f90",
-"type":"code"
-}
-],
-"title":"Constants"
 }
 ],
 "id":"e418766e480b41b1844c8d754b3746fc",
@@ -4445,6 +4418,85 @@
 },
 {
 "children":[
+{
+"children":[],
+"id":"c0ca0270ab9645ae9e225267153f2484",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"There are only three ways in which a document should be modified:",
+"type":"text"
+}
+],
+"id":"495763d06d964a2aab268548311d0ad9",
+"type":"text"
+},
+{
+"child_type":"ordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Via the ",
+"type":"text"
+},
+{
+"text":"modify",
+"type":"code"
+},
+{
+"text":" method",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Via undo",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Via redo",
+"type":"text"
+}
+]
+}
+],
+"id":"1cbcf0fd5edd4b78816abe3fa6ba6dd5",
+"type":"list"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.notify():\n        with self._history.new_value(name) as value:\n            yield value\n\ndef get_undo_operation(self):\n    def undo():\n        with self.notify():\n            self._history.back()\n    if self._history.can_back():\n        return (self._history.back_name(), undo)\n\ndef get_redo_operation(self):\n    def redo():\n        with self.notify():\n            self._history.forward()\n    if self._history.can_forward():\n        return (self._history.forward_name(), redo)\n",
+"type":"code"
+}
+],
+"id":"f2c5232417964cbabc4f03f310b3a0a4",
+"type":"code"
+}
+],
+"title":"Modifying"
+},
 {
 "children":[],
 "id":"2f0a69c6ad7e4b84b4b3bfa55aebd182",
@@ -4474,7 +4526,7 @@
 "filepath":[],
 "fragments":[
 {
-"text":"{\n  \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n  \"title\": \"Root\",\n  \"paragraphs\": [\n    {\n      \"id\": \"8f0a9f84821540e89d7c9ca93ed0fbe7\",\n      \"type\": \"text\",\n      \"",
+"text":"{\n  \"root_page\": {\n    \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n    \"title\": \"Root\",\n    \"paragraphs\": [\n      {\n        \"id\": \"8f0a9f84821540e89d7c9ca93ed0fbe7\",\n        \"type\": \"text\",\n        \"",
 "type":"code"
 },
 {
@@ -4482,7 +4534,7 @@
 "type":"variable"
 },
 {
-"text":"\": [\n        {\"text\": \"This \", \"type\": \"text\" },\n        {\"text\": \"is\",    \"type\": \"strong\" },\n        {\"text\": \"cool\",  \"type\": \"emphasis\" }\n      ]\n    },\n    ...\n  ],\n  \"children\": [ ... ]\n}\n",
+"text":"\": [\n          {\"text\": \"This \", \"type\": \"text\" },\n          {\"text\": \"is\",    \"type\": \"strong\" },\n          {\"text\": \"cool\",  \"type\": \"emphasis\" }\n        ]\n      },\n      ...\n    ],\n    \"children\": [ ... ]\n  },\n  \"variables\": { ... }\n}\n",
 "type":"code"
 }
 ],
@@ -4492,7 +4544,7 @@
 {
 "fragments":[
 {
-"text":"The root object represents a page. It has a unique id, a title, paragraphs, and child pages. Paragraphs also have unique ids and different attributes depending on type. (The text paragraph has a list of text fragments with different styles.)",
+"text":"The root object represents a document. It has a root page and variables. The root page has a unique id, a title, paragraphs, and child pages. Paragraphs also have unique ids and different attributes depending on type. (The text paragraph has a list of text fragments with different styles.)",
 "type":"text"
 }
 ],
@@ -4508,7 +4560,15 @@
 ],
 "fragments":[
 {
-"text":"class DocumentDictWrapper(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        page_dict = copy.deepcopy(page_dict)\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self[\"root_page\"][\"id\"]\n        return self._pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        if page_id == self[\"root_page\"][\"id\"]:\n            return\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(copy.deepcopy(data))\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"a1a3aea5bbb04e38811ba056bf5fc139",
+"type":"variable"
+},
+{
+"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        page_dict = copy.deepcopy(page_dict)\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self[\"root_page\"][\"id\"]\n        return self._pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        if page_id == self[\"root_page\"][\"id\"]:\n            return\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(copy.deepcopy(data))\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n",
 "type":"code"
 }
 ],
@@ -6172,7 +6232,15 @@
 ],
 "fragments":[
 {
-"text":"def _handle_legacy(self, document_dict):\n    for fn in [\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"d6cbae294f8e4eec91f8a110b0d29761",
+"type":"variable"
+},
+{
+"text":"(self, document_dict):\n    for fn in [\n",
 "type":"code"
 },
 {
@@ -6199,7 +6267,7 @@
 {
 "fragments":[
 {
-"text":"An RLiterate document is a JSON object stored in a file. The ",
+"text":"An RLiterate document is a JSON object (hereafter called the document dict) stored in a file. The ",
 "type":"text"
 },
 {
@@ -6240,7 +6308,7 @@
 "children":[],
 "fragments":[
 {
-"text":"It provides \"rich\" wrappers for different pars of the document.",
+"text":"It provides \"rich\" wrappers for different pars of the document dict that provide friendly interfaces for querying and editing.",
 "type":"text"
 }
 ]
@@ -6250,7 +6318,7 @@
 "children":[],
 "fragments":[
 {
-"text":"It provides undo/redo mechanism for changes.",
+"text":"It provides an undo/redo mechanism.",
 "type":"text"
 }
 ]
@@ -6260,7 +6328,7 @@
 "children":[],
 "fragments":[
 {
-"text":"It saves the JSON object back to file when it changes (if it was opened from a file).",
+"text":"It saves the document dict back to file (if the document was opened from a file).",
 "type":"text"
 }
 ]
@@ -6268,6 +6336,32 @@
 ],
 "id":"3b48f03c91b34a4db9007d1271e6f7f3",
 "type":"list"
+},
+{
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"Document",
+"type":"code"
+},
+{
+"text":" class is initialized with a documetn dict (or ",
+"type":"text"
+},
+{
+"text":"None",
+"type":"code"
+},
+{
+"text":" to create a new document):",
+"type":"text"
+}
+],
+"id":"ee245646bb074d07b5e0f0aa526bd23a",
+"type":"text"
 },
 {
 "chunkpath":[
@@ -6278,19 +6372,15 @@
 ],
 "fragments":[
 {
-"text":"class Document(Observable):\n\n    def __init__(self, document_dict=None):\n        Observable.__init__(self)\n",
+"text":"class Document(Observable):\n\n    def __init__(self, document_dict=None):\n        Observable.__init__(self)\n        self.",
 "type":"code"
 },
 {
-"path":[
-"Document",
-"__init__"
-],
-"prefix":"        ",
-"type":"chunk"
+"id":"9e987210a686490c823a44d09e783833",
+"type":"variable"
 },
 {
-"text":"\n",
+"text":"(document_dict)\n\n",
 "type":"code"
 },
 {
@@ -6307,7 +6397,15 @@
 {
 "fragments":[
 {
-"text":"Loading:",
+"text":"The default constructor does not know anything about files. It just creates an in-memory document. The ",
+"type":"text"
+},
+{
+"text":"from_file",
+"type":"code"
+},
+{
+"text":" constructor reads a document from file and also writes it back to file when it changes:",
 "type":"text"
 }
 ],
@@ -6324,7 +6422,7 @@
 ],
 "fragments":[
 {
-"text":"@classmethod\ndef from_file(cls, path):\n    if os.path.exists(path):\n        document = cls(load_json_from_file(path))\n    else:\n        document = cls()\n    document.listen(lambda event: write_json_to_file(path, document.",
+"text":"@classmethod\ndef from_file(cls, path):\n    if os.path.exists(path):\n        document = cls(load_json_from_file(path))\n    else:\n        document = cls()\n    document.listen(lambda event:\n        write_json_to_file(\n            path,\n            document.",
 "type":"code"
 },
 {
@@ -6332,7 +6430,7 @@
 "type":"variable"
 },
 {
-"text":"))\n    return document\n",
+"text":"\n        )\n    )\n    return document\n",
 "type":"code"
 }
 ],
@@ -6340,22 +6438,61 @@
 "type":"code"
 },
 {
-"chunkpath":[
-"classes",
-"Document",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
 "fragments":[
 {
-"text":"self._load(document_dict)\n",
-"type":"code"
+"text":"Loading is the same in both cases and involves",
+"type":"text"
 }
 ],
-"id":"1b08f81f956d4a07bcf9bb5bd035227e",
-"type":"code"
+"id":"e17a270a05d846c2973d259cce30ea6f",
+"type":"text"
+},
+{
+"child_type":"ordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Creating a new empty document dict if none was passed",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Convert the document dict to the latest format",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Wrap it",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Put it in a history object for undo/redo",
+"type":"text"
+}
+]
+}
+],
+"id":"e74bd7999b4f4e2b81bbf899cb8f34b5",
+"type":"list"
 },
 {
 "chunkpath":[
@@ -6367,18 +6504,82 @@
 ],
 "fragments":[
 {
-"text":"def _load(self, document_dict):\n    self._history = History(\n        DocumentDictWrapper(\n            self._handle_legacy(\n                self._empty_page()\n                if document_dict is None else\n                document_dict\n            )\n        ),\n        size=10\n    )\n",
+"text":"def ",
 "type":"code"
 },
 {
-"path":[
-"Post load"
-],
-"prefix":"    ",
-"type":"chunk"
+"id":"9e987210a686490c823a44d09e783833",
+"type":"variable"
 },
 {
-"text":"\n@property\ndef ",
+"text":"(self, document_dict):\n    self._history = History(\n        ",
+"type":"code"
+},
+{
+"id":"a1a3aea5bbb04e38811ba056bf5fc139",
+"type":"variable"
+},
+{
+"text":"(\n            self.",
+"type":"code"
+},
+{
+"id":"d6cbae294f8e4eec91f8a110b0d29761",
+"type":"variable"
+},
+{
+"text":"(\n                self._empty_page()\n                if document_dict is None else\n                document_dict\n            )\n        ),\n        size=",
+"type":"code"
+},
+{
+"id":"f0c23b7747d64c099e653337bb185c00",
+"type":"variable"
+},
+{
+"text":"\n    )\n",
+"type":"code"
+}
+],
+"id":"4b50dfd6dcd64c59b9d3a53346944a5d",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"The current document dict can be accessed via the ",
+"type":"text"
+},
+{
+"text":"read_only_document_dict",
+"type":"code"
+},
+{
+"text":" property. But it should be considered read only. For undo/redo to work properly, all edits must go through ",
+"type":"text"
+},
+{
+"text":"modify",
+"type":"code"
+},
+{
+"text":".",
+"type":"text"
+}
+],
+"id":"54525c52f8a04347baba3c893feef9a5",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef ",
 "type":"code"
 },
 {
@@ -6390,34 +6591,7 @@
 "type":"code"
 }
 ],
-"id":"4b50dfd6dcd64c59b9d3a53346944a5d",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Modifying:",
-"type":"text"
-}
-],
-"id":"495763d06d964a2aab268548311d0ad9",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"Document"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.notify():\n        with self._history.new_value(name) as value:\n            yield value\n\ndef get_undo_operation(self):\n    def undo():\n        with self.notify():\n            self._history.back()\n    if self._history.can_back():\n        return (self._history.back_name(), undo)\n\ndef get_redo_operation(self):\n    def redo():\n        with self.notify():\n            self._history.forward()\n    if self._history.can_forward():\n        return (self._history.forward_name(), redo)\n",
-"type":"code"
-}
-],
-"id":"f2c5232417964cbabc4f03f310b3a0a4",
+"id":"bc45428e3cfd4935a9b81d9bbb04c326",
 "type":"code"
 }
 ],
@@ -7593,6 +7767,41 @@
 }
 ],
 "title":"Main files"
+},
+{
+"children":[],
+"id":"4495f053ab2d41a2a4ec70f55e929b9f",
+"paragraphs":[
+{
+"chunkpath":[
+"constants"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":" = 600\nPAGE_PADDING = 13\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\nCONTAINER_BORDER = PARAGRAPH_SPACE\n",
+"type":"code"
+},
+{
+"id":"f0c23b7747d64c099e653337bb185c00",
+"type":"variable"
+},
+{
+"text":" = 10\n",
+"type":"code"
+}
+],
+"id":"e3e222b97d124ce0af6eba3cead75f90",
+"type":"code"
+}
+],
+"title":"Constants"
 }
 ],
 "id":"4d689acb540d40ecb8b828701bb5bf74",
@@ -8839,17 +9048,21 @@
 "740055857bb244038c203cea23c1af69":"CreateView",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
+"9e987210a686490c823a44d09e783833":"_load",
+"a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
+"d6cbae294f8e4eec91f8a110b0d29761":"_convert_to_latest",
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "de16dfdd628d459ba5af528db2604934":"fragments",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
 "e327d4d3650047bc9eedb2a21d4c2613":"Editable",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
+"f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
 "fb8af53f33454166a0737b02b9413a0e":"fragments"

@@ -34,6 +34,7 @@ PAGE_PADDING = 13
 SHADOW_SIZE = 2
 PARAGRAPH_SPACE = 15
 CONTAINER_BORDER = PARAGRAPH_SPACE
+UNDO_BUFFER_SIZE = 10
 class Editable(wx.Panel):
 
     def __init__(self, parent, project):
@@ -1974,20 +1975,24 @@ class Document(Observable):
             document = cls(load_json_from_file(path))
         else:
             document = cls()
-        document.listen(lambda event: write_json_to_file(path, document.read_only_document_dict))
+        document.listen(lambda event:
+            write_json_to_file(
+                path,
+                document.read_only_document_dict
+            )
+        )
         return document
     def _load(self, document_dict):
         self._history = History(
             DocumentDictWrapper(
-                self._handle_legacy(
+                self._convert_to_latest(
                     self._empty_page()
                     if document_dict is None else
                     document_dict
                 )
             ),
-            size=10
+            size=UNDO_BUFFER_SIZE
         )
-
     @property
     def read_only_document_dict(self):
         return self._history.value
@@ -2066,7 +2071,7 @@ class Document(Observable):
 
     def lookup_variable(self, variable_id):
         return self.read_only_document_dict["variables"].get(variable_id)
-    def _handle_legacy(self, document_dict):
+    def _convert_to_latest(self, document_dict):
         for fn in [
             self._legacy_inline_text,
             self._legacy_inline_code,
