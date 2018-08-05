@@ -9588,7 +9588,7 @@
 {
 "fragments":[
 {
-"text":"RLiterate is a tool for authoring documents. You can think of it as a programmer's version of a word processor. This book describes RLiterate and also includes the complete implementation of the program.",
+"text":"RLiterate is a tool for authoring documents. You can think of it as a programmer's version of a word processor. This book describes RLiterate and also includes the complete implementation of the program presented in small pieces.",
 "type":"text"
 }
 ],
