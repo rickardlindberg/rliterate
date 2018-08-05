@@ -963,12 +963,15 @@ class Column(CompactScrolledWindow):
         if self.project is None:
             return
         if event.token.token_type == TokenType.RLiterate.Reference:
-            open_pages_gui(self, self.project,
-                [event.token.extra["page_id"]],
-                column_index=self.index+1
-            )
+            self.OpenPage(event.token.extra["page_id"])
         elif event.token.token_type == TokenType.RLiterate.Link:
             webbrowser.open(event.token.extra["url"])
+
+    def OpenPage(self, page_id):
+        open_pages_gui(self, self.project,
+            [page_id],
+            column_index=self.index+1
+        )
 
     def _setup_layout(self):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1493,10 +1496,31 @@ class CodeView(wx.Panel):
                 "Copy id",
                 lambda: set_clipboard_text(token.extra["variable"])
             )
+            menu.AppendSeparator()
+            for page in self._find_variable_pages(self.project.get_page(), rename_value):
+                menu.AppendItem(
+                    "{}".format(page.title),
+                    lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
+                )
             self.PopupMenu(menu)
             menu.Destroy()
         else:
             return CONTINUE_PROCESSING
+
+    def _find_variable_pages(self, page, name):
+        if self._page_has_variable(page, name):
+            yield page
+        for child in page.children:
+            for child_page in self._find_variable_pages(child, name):
+                yield child_page
+
+    def _page_has_variable(self, page, name):
+        for paragraph in page.paragraphs:
+            if paragraph.type == "code":
+                for fragment in paragraph.fragments:
+                    if fragment["type"] == "code":
+                        if re.search(r"\b{}\b".format(re.escape(name)), fragment["text"]):
+                            return True
 
     def _path_double_click(self, event):
         edge_token = event.EventObject.GetClosestToken(event.Position)
