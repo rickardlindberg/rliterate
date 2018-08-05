@@ -4351,7 +4351,15 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef fragments(self):\n    return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n",
+"text":"@property\ndef ",
+"type":"code"
+},
+{
+"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
+"type":"variable"
+},
+{
+"text":"(self):\n    return copy.deepcopy(self._paragraph_dict[\"fragments\"])\n",
 "type":"code"
 }
 ],
@@ -7879,5 +7887,7 @@
 ],
 "title":"RLiterate"
 },
-"variables":{}
+"variables":{
+"2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments"
+}
 }
