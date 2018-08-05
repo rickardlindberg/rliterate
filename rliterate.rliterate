@@ -7629,47 +7629,6 @@
 ]
 },
 {
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Need a way to \"connect\" variables",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Base it on pygments syntax?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Show references: what other pages use this variable?",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Keep a list of variables so than renames can easily be done",
-"type":"text"
-}
-]
-},
-{
 "child_type":null,
 "children":[],
 "fragments":[
@@ -7875,6 +7834,16 @@
 },
 {
 "text":" call in code view context menu",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Highlight possible variables on a page",
 "type":"text"
 }
 ]
