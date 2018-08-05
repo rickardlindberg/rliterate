@@ -1447,6 +1447,8 @@ class CodeView(wx.Panel):
         token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("subpath") is not None:
             event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+        elif token is not None and token.extra.get("variable") is not None:
+            event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         else:
             event.EventObject.SetDefaultCursor()
         return CONTINUE_PROCESSING
@@ -1466,6 +1468,30 @@ class CodeView(wx.Panel):
             menu.AppendItem(
                 "Rename '{}'".format(token.extra["subpath"].last),
                 rename
+            )
+            self.PopupMenu(menu)
+            menu.Destroy()
+        elif token is not None and token.extra.get("variable") is not None:
+            def rename():
+                dialog = wx.TextEntryDialog(
+                    self,
+                    message=rename_message,
+                    caption="Rename variable",
+                    defaultValue=rename_value
+                )
+                if dialog.ShowModal() == wx.ID_OK:
+                    self.project.rename_variable(token.extra["variable"], dialog.Value)
+                dialog.Destroy()
+            rename_value = self.project.lookup_variable(token.extra["variable"]) or token.extra["variable"]
+            rename_message = "Rename '{}'".format(rename_value)
+            menu = ParagraphContextMenu()
+            menu.AppendItem(
+                rename_message,
+                rename
+            )
+            menu.AppendItem(
+                "Copy id",
+                lambda: set_clipboard_text(token.extra["variable"])
             )
             self.PopupMenu(menu)
             menu.Destroy()
@@ -2368,7 +2394,7 @@ class CodeParagraph(Paragraph):
         if self._document.lookup_variable(identifier) is None:
             return self._document.new_variable(identifier)
         else:
-            return self._document.lookup_variable(identifier)
+            return identifier
 
     def _parse_clear(self):
         if self._parse_buffer:
@@ -2414,15 +2440,17 @@ class CodeParagraph(Paragraph):
             lexer = self._get_lexer()
         except:
             lexer = pygments.lexers.TextLexer(stripnl=False)
-        pygments_text, inserts = self._pygments_text()
+        pygments_text, inserts, extras = self._pygments_text()
         return self._pygments_tokens_to_tokens(
             lexer.get_tokens(pygments_text),
-            inserts
+            inserts,
+            extras
         )
 
     def _pygments_text(self):
         pygments_text = ""
         inserts = defaultdict(list)
+        extras = defaultdict(dict)
         for fragment in self.fragments:
             if fragment["type"] == "chunk":
                 inserts[len(pygments_text)].append(Token(
@@ -2432,10 +2460,13 @@ class CodeParagraph(Paragraph):
                 ))
             elif fragment["type"] == "variable":
                 name = self._document.lookup_variable(fragment["id"])
-                pygments_text += name if name is not None else fragment["id"]
+                text = name if name is not None else fragment["id"]
+                for i in range(len(text)):
+                    extras[len(pygments_text)+i] = {"variable": fragment["id"]}
+                pygments_text += text
             else:
                 pygments_text += fragment["text"]
-        return pygments_text, inserts
+        return pygments_text, inserts, extras
 
     @property
     def language(self):
@@ -2450,13 +2481,13 @@ class CodeParagraph(Paragraph):
             stripnl=False
         )
 
-    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts):
+    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts, extras):
         pos = 0
         tokens = []
         for pygments_token, text in pygments_tokens:
             for ch in text:
                 tokens.extend(inserts.get(pos, []))
-                tokens.append(Token(ch, token_type=pygments_token))
+                tokens.append(Token(ch, token_type=pygments_token, **extras.get(pos, {})))
                 pos += 1
         tokens.extend(inserts.get(pos, []))
         return tokens
@@ -2986,6 +3017,12 @@ class Project(Observable):
 
     def rename_path(self, *args, **kwargs):
         return self.document.rename_path(*args, **kwargs)
+
+    def lookup_variable(self, *args, **kwargs):
+        return self.document.lookup_variable(*args, **kwargs)
+
+    def rename_variable(self, *args, **kwargs):
+        return self.document.rename_variable(*args, **kwargs)
     def toggle_collapsed(self, *args, **kwargs):
         return self.layout.toggle_collapsed(*args, **kwargs)
 
