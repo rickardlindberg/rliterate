@@ -5,6 +5,23 @@
 "children":[
 {
 "children":[],
+"id":"a82ca1817f5d48aa887cb0dcf5e3a520",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"RLiterate documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what make RLiterate documents special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documents can also be exported to different formats for display in different mediums.",
+"type":"text"
+}
+],
+"id":"fb1a6842fe1f4642a2aa21113a2ad179",
+"type":"text"
+}
+],
+"title":"Document model"
+},
+{
+"children":[],
 "id":"7f14d9ec23c0425c89039ea68dfdac16",
 "paragraphs":[
 {
@@ -155,25 +172,34 @@
 {
 "fragments":[
 {
-"text":"This chapter gives an overview of what types of document you can create with RLiterate.",
+"text":"This chapter gives an overview of what types of document you can create with RLiterate and presents the main features of the program.",
 "type":"text"
 }
 ],
 "id":"570a8f432f324f14a23db6ede35af90f",
 "type":"text"
-},
-{
-"fragments":[
-{
-"text":"RLiterate documents have pages organized in a hierarchy. Pages have a title and paragraphs. Paragraphs can be of different types. The different paragraph types is what make RLiterate documents special. Code paragraphs for example enable literate programming by allowing chunks of code to be defined and then be automatically assembled into the final source file. Text paragraphs are used for writing prose. RLiterate documents can also be exported to different formats for display in different mediums.",
-"type":"text"
-}
-],
-"id":"fb1a6842fe1f4642a2aa21113a2ad179",
-"type":"text"
 }
 ],
 "title":"A tour of RLiterate"
+},
+{
+"children":[
+{
+"children":[],
+"id":"ade63b73a6784f32a55165f40ba33512",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"RLiterate is currently a prototype. Experimentation is encouraged, but it may have serious bugs.",
+"type":"text"
+}
+],
+"id":"cd4c7cdfe0ac49b3bfd8327a71690756",
+"type":"text"
+}
+],
+"title":"Status"
 },
 {
 "children":[],
@@ -330,8 +356,6 @@
 "title":"Installing"
 },
 {
-"children":[
-{
 "children":[],
 "id":"85bb3ad476d540bb8b6bfed905d158f0",
 "paragraphs":[
@@ -461,12 +485,77 @@
 "title":"Diffing *.rliterate files"
 }
 ],
-"id":"28b1947216874cedaf4ea69c2e2574b4",
-"paragraphs":[],
-"title":"Tips & tricks"
+"id":"74c155785f304195838aa299b8cc5467",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"This chapter gives practical advice for using RLiterate on your computer.",
+"type":"text"
+}
+],
+"id":"5400870328424bc99c54cecfba4e038f",
+"type":"text"
+}
+],
+"title":"Getting started"
 },
 {
 "children":[
+{
+"children":[],
+"id":"77153cc8631d41f2be05b8855ca4f5a1",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"I started to think about what would become RLiterate when I read the paper ",
+"type":"text"
+},
+{
+"text":"Active Essays on the Web",
+"type":"link",
+"url":"http://www.vpri.org/pdf/tr2009002_active_essays.pdf"
+},
+{
+"text":". In it they talk about embedding code in documents that the reader can interact with. They also mention ",
+"type":"text"
+},
+{
+"text":"Literate programming",
+"type":"link",
+"url":"https://en.wikipedia.org/wiki/Literate_programming"
+},
+{
+"text":" as having a related goal.",
+"type":"text"
+}
+],
+"id":"491cebce6de04e43a2695237c1359ca4",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"At the time I was working on a program that I thought would be nice to write in this way. I wanted to write an article about the program and have the code for the program embedded in the article. I could have used a literate programming tool for this, but the interactive aspect of active essays made me think that a tool would be much more powerful if the document could be edited \"live\", similar to ",
+"type":"text"
+},
+{
+"text":"WYSIWYG",
+"type":"link",
+"url":"https://en.wikipedia.org/wiki/WYSIWYG"
+},
+{
+"text":" editors. Literate programming tools I were aware of worked by editing plain text files with a special syntax for code and documentation blocks, thus lacking the interactive aspect.",
+"type":"text"
+}
+],
+"id":"54adfab3c5a2436d95fda4bdd95849c7",
+"type":"text"
+}
+],
+"title":"The idea"
+},
 {
 "children":[],
 "id":"9b46f6326dda497fabbc1ef7f5247422",
@@ -568,7 +657,12 @@
 "children":[],
 "fragments":[
 {
-"text":"leo and smallest federated wiki inspired TOC and seeing a single page/node at a time",
+"text":"Leo",
+"type":"link",
+"url":"http://leoeditor.com/"
+},
+{
+"text":" and smallest federated wiki inspired TOC and seeing a single page/node at a time",
 "type":"text"
 }
 ]
@@ -863,48 +957,11 @@
 {
 "fragments":[
 {
-"text":"I started to think about what would become RLiterate when I read the paper ",
-"type":"text"
-},
-{
-"text":"Active Essays on the Web",
-"type":"link",
-"url":"http://www.vpri.org/pdf/tr2009002_active_essays.pdf"
-},
-{
-"text":". In it they talk about embedding code in documents that the reader can interact with. They also mention ",
-"type":"text"
-},
-{
-"text":"Literate programming",
-"type":"link",
-"url":"https://en.wikipedia.org/wiki/Literate_programming"
-},
-{
-"text":" as having a related goal.",
+"text":"This chapter explains why RLiterate exists and how it came about.",
 "type":"text"
 }
 ],
-"id":"491cebce6de04e43a2695237c1359ca4",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"At the time I was working on a program that I thought would be nice to write in this way. I wanted to write an article about the program and have the code for the program embedded in the article. I could have used a literate programming tool for this, but the interactive aspect of active essays made me think that a tool would be much more powerful if the document could be edited \"live\", similar to ",
-"type":"text"
-},
-{
-"text":"WYSIWYG",
-"type":"link",
-"url":"https://en.wikipedia.org/wiki/WYSIWYG"
-},
-{
-"text":" editors. Literate programming tools I were aware of worked by editing plain text files with a special syntax for code and documentation blocks, thus lacking the interactive aspect.",
-"type":"text"
-}
-],
-"id":"54adfab3c5a2436d95fda4bdd95849c7",
+"id":"51a8b27010da47efb8f7b7d988631664",
 "type":"text"
 }
 ],
@@ -8378,7 +8435,7 @@
 {
 "fragments":[
 {
-"text":"This chapter gives a complete description of the implementation of RLiterate.",
+"text":"This chapter gives a complete description of the implementation of RLiterate presented in small pieces.",
 "type":"text"
 }
 ],
@@ -8389,8 +8446,10 @@
 "title":"Implementation"
 },
 {
+"children":[
+{
 "children":[],
-"id":"cc36000ed12f4bfe88cefa2987fdb5cd",
+"id":"a6dbde4ee7ec4f5a9ac4f83bff4fa48f",
 "paragraphs":[
 {
 "fragments":[
@@ -8423,7 +8482,7 @@
 "type":"text"
 }
 ],
-"title":"Things I learned"
+"title":"Notes on wxPython"
 },
 {
 "children":[],
@@ -8914,6 +8973,37 @@
 "fragments":[
 {
 "text":"Fonts",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Body width",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"TOC width",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Sizes",
 "type":"text"
 }
 ]
@@ -9574,6 +9664,25 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Make ",
+"type":"text"
+},
+{
+"page_id":"600aa145cf474a6aa732a4c4edb5f44b",
+"text":null,
+"type":"reference"
+},
+{
+"text":" more complete",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
@@ -9581,6 +9690,22 @@
 }
 ],
 "title":"TODO"
+}
+],
+"id":"cc36000ed12f4bfe88cefa2987fdb5cd",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"This chapter documents some insights I've had during the development of RLiterate.",
+"type":"text"
+}
+],
+"id":"8dc398af33d24f8b88afa7ea96cc067a",
+"type":"text"
+}
+],
+"title":"Retrospective"
 }
 ],
 "id":"956ae4613f144e3581d420995a7ef046",
