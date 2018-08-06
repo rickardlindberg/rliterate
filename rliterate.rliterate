@@ -8486,6 +8486,33 @@
 },
 {
 "children":[],
+"id":"2123dd3f4364404b896ffdb36235298a",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"RLiterate started out as a prototype to learn what the program wanted to be. It proved to be useful, and it sparked new ideas of what it might want to be.",
+"type":"text"
+}
+],
+"id":"3a65b3430e504fb9a199e3979a1f8dc3",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"At some point it might not be useful to continue work on RLiterate. It might be more appropriate to do a complete rewrite with the learnings found from the first prototype. Instead of continuing building on the first prototype until it becomes a monster, make a new, better, more beautiful version. And continue doing so for version 2, 3, ... and so on.",
+"type":"text"
+}
+],
+"id":"8c3fcb28ec2b442d9a58a0121a00b2f7",
+"type":"text"
+}
+],
+"title":"Future"
+},
+{
+"children":[],
 "id":"0a165f3042ee4350b9bebb61213b44c5",
 "paragraphs":[
 {
