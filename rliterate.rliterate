@@ -65,7 +65,7 @@
 {
 "fragments":[
 {
-"text":"Code paragraphs enable literate programming.",
+"text":"TODO: Explain how code paragraphs enable literate programming.",
 "type":"text"
 }
 ],
@@ -8599,6 +8599,23 @@
 },
 {
 "children":[],
+"id":"dfce15dd3c42483baf83dfee6699b672",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"Literate programming treats any target programming language as an assembly language. RLiterate is not written in Python. It is written in natural language and uses Python as an assembly language.",
+"type":"text"
+}
+],
+"id":"c2251764eaaa44e88a0b6886a3c3959c",
+"type":"text"
+}
+],
+"title":"Python as an assemly language"
+},
+{
+"children":[],
 "id":"2123dd3f4364404b896ffdb36235298a",
 "paragraphs":[
 {
@@ -8921,16 +8938,6 @@
 ]
 },
 {
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Literate programming treats any target programming language as an assembly language",
-"type":"text"
-}
-]
-},
-{
 "child_type":"unordered",
 "children":[
 {
@@ -9191,7 +9198,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Make conversion functions between paragraph types more complete",
+"text":"Make conversion functions between paragraph types more complete? Or remove it alltogether?",
 "type":"text"
 }
 ]
@@ -9218,30 +9225,21 @@
 "type":"text"
 }
 ]
-}
-],
-"fragments":[
-{
-"text":"Warning system",
-"type":"text"
-}
-]
 },
 {
 "child_type":null,
 "children":[],
 "fragments":[
 {
-"text":"Explain how code paragraphs enable literate programming (",
+"text":"Warn if variable is unused",
 "type":"text"
-},
+}
+]
+}
+],
+"fragments":[
 {
-"page_id":"6c34776183394824824be039e65de531",
-"text":null,
-"type":"reference"
-},
-{
-"text":")",
+"text":"Warning system",
 "type":"text"
 }
 ]
@@ -9632,7 +9630,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Listeners always get notified. It is there job to figure out if action is needed.",
+"text":"Listeners always get notified. It is their job to figure out if action is needed.",
 "type":"text"
 }
 ]
