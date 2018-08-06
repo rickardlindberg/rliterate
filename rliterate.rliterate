@@ -8616,6 +8616,23 @@
 },
 {
 "children":[],
+"id":"3c5fdc552110475fb8f4b13f4f73eec1",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"If I can not clearly explain a part of RLiterate, I probably don't understand it well enough myslef. I might have written code that does sort of what I want, but I don't fully understand it. The act of writing literate programs forces me to understand everything better.",
+"type":"text"
+}
+],
+"id":"4cce589b5fd94b6ba2cd10e6253dde57",
+"type":"text"
+}
+],
+"title":"Clear thinking => clearn writing"
+},
+{
+"children":[],
 "id":"2123dd3f4364404b896ffdb36235298a",
 "paragraphs":[
 {
