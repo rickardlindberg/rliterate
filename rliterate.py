@@ -851,19 +851,13 @@ class CodeParagraph(Paragraph):
         })
     @property
     def fragments(self):
-        return copy.deepcopy(self._paragraph_dict["fragments"])
+        return CodeFragment.create_list(self._document, self, self._paragraph_dict["fragments"])
     @property
     def text_version(self):
-        CONVERTERS = {
-            "chunk": self._chunk_fragment_to_text,
-            "variable": self._variable_fragment_to_text,
-            "code": lambda fragment: fragment["text"]
-        }
-        return "".join(
-            CONVERTERS[fragment["type"]](fragment)
-            for fragment
-            in self.fragments
-        )
+        text_version = TextVersion()
+        for fragment in self.fragments:
+            fragment.fill_text_version(text_version)
+        return text_version.text
     @text_version.setter
     def text_version(self, value):
         with self.multi_update():
@@ -912,33 +906,21 @@ class CodeParagraph(Paragraph):
         self._parse_buffer = ""
 
     def _chunk_fragment_re(self):
-        start, end = self._chunk_delimiters()
+        start, end = self.chunk_delimiters
         return r"^(\s*){}(.*){}\s*$".format(re.escape(start), re.escape(end))
 
     def _variable_fragment_re(self):
-        start, end = self._variable_delimiters()
+        start, end = self.variable_delimiters
         return r"{}(.*?){}".format(re.escape(start), re.escape(end))
-    def _chunk_fragment_to_text(self, fragment):
-        start, end = self._chunk_delimiters()
-        return "{}{}{}{}\n".format(
-            fragment["prefix"],
-            start,
-            "/".join(fragment["path"]),
-            end
-        )
-
-    def _chunk_delimiters(self):
+    @property
+    def chunk_delimiters(self):
         return ("<<", ">>")
-    def _variable_fragment_to_text(self, fragment):
-        start, end = self._variable_delimiters()
-        return "{}{}{}".format(
-            start,
-            fragment["id"],
-            end
+    @property
+    def variable_delimiters(self):
+        return (
+            "__RL_",
+            "__"
         )
-
-    def _variable_delimiters(self):
-        return ("__RL_", "__")
 
     @property
     def filename(self):
@@ -962,20 +944,21 @@ class CodeParagraph(Paragraph):
         inserts = defaultdict(list)
         extras = defaultdict(dict)
         for fragment in self.fragments:
-            if fragment["type"] == "chunk":
+            if fragment.type == "chunk":
+                text_version = TextVersion()
+                fragment.fill_text_version(text_version)
                 inserts[len(pygments_text)].append(Token(
-                    self._chunk_fragment_to_text(fragment),
+                    text_version.text,
                     token_type=TokenType.RLiterate.Chunk,
-                    subpath=self.path.extend_chunk(fragment["path"])
+                    subpath=self.path.extend_chunk(fragment.path)
                 ))
-            elif fragment["type"] == "variable":
-                name = self._document.lookup_variable(fragment["id"])
-                text = name if name is not None else fragment["id"]
+            elif fragment.type == "variable":
+                text = fragment.name
                 for i in range(len(text)):
-                    extras[len(pygments_text)+i] = {"variable": fragment["id"]}
+                    extras[len(pygments_text)+i] = {"variable": fragment.id}
                 pygments_text += text
             else:
-                pygments_text += fragment["text"]
+                pygments_text += fragment.text
         return pygments_text, inserts, extras
 
     @property
@@ -1090,6 +1073,82 @@ class Path(object):
                 self.chunkpath[index],
                 Path(self.filepath[:], self.chunkpath[:index+1])
             )
+class CodeFragment(object):
+
+    @staticmethod
+    def create_list(document, code_paragraph, code_fragment_dicts):
+        return [
+            CodeFragment.create(document, code_paragraph, code_fragment_dict)
+            for code_fragment_dict
+            in code_fragment_dicts
+        ]
+
+    @staticmethod
+    def create(document, code_paragraph, code_fragment_dict):
+        return {
+            "variable": VariableCodeFragment,
+            "chunk": ChunkCodeFragment,
+            "code": CodeCodeFragment,
+        }.get(code_fragment_dict["type"], CodeFragment)(document, code_paragraph, code_fragment_dict)
+
+    def __init__(self, document, code_paragraph, code_fragment_dict):
+        self._document = document
+        self._code_paragraph = code_paragraph
+        self._code_fragment_dict = code_fragment_dict
+
+    @property
+    def type(self):
+        return self._code_fragment_dict["type"]
+class VariableCodeFragment(CodeFragment):
+
+    @property
+    def id(self):
+        return self._code_fragment_dict["id"]
+
+    @property
+    def name(self):
+        name = self._document.lookup_variable(self.id)
+        if name is None:
+            return fragment.id
+        else:
+            return name
+
+    def fill_text_version(self, text_version):
+        start, end = self._code_paragraph.variable_delimiters
+        text_version.add(start)
+        text_version.add(self.id)
+        text_version.add(end)
+class ChunkCodeFragment(CodeFragment):
+
+    @property
+    def prefix(self):
+        return self._code_fragment_dict["prefix"]
+
+    @property
+    def path(self):
+        return copy.deepcopy(self._code_fragment_dict["path"])
+
+    def fill_text_version(self, text_version):
+        start, end = self._code_paragraph.chunk_delimiters
+        text_version.add(self.prefix)
+        text_version.add(start)
+        text_version.add("/".join(self.path))
+        text_version.add(end)
+        text_version.add("\n")
+class CodeCodeFragment(CodeFragment):
+
+    @property
+    def text(self):
+        return self._code_fragment_dict["text"]
+
+    @property
+    def text_version(self):
+        text_version = TextVersion()
+        self.fill_text_version(text_version)
+        return text_version.text
+
+    def fill_text_version(self, text_version):
+        text_version.add(self.text)
 class ImageParagraph(Paragraph):
 
     @property
@@ -2752,16 +2811,16 @@ class CodeView(wx.Panel):
         for paragraph in page.paragraphs:
             if paragraph.type == "code":
                 for fragment in paragraph.fragments:
-                    if fragment["type"] == "code":
-                        if re.search(r"\b{}\b".format(re.escape(name)), fragment["text"]):
+                    if fragment.type == "code":
+                        if re.search(r"\b{}\b".format(re.escape(name)), fragment.text):
                             return True
 
     def _page_uses_variable(self, page, variable_id):
         for paragraph in page.paragraphs:
             if paragraph.type == "code":
                 for fragment in paragraph.fragments:
-                    if fragment["type"] == "variable":
-                        if fragment["id"] == variable_id:
+                    if fragment.type == "variable":
+                        if fragment.id == variable_id:
                             return True
 
     def _path_double_click(self, event):
@@ -3177,19 +3236,18 @@ class FileGenerator(object):
         text_buffer = ""
         for paragraph in self._parts[key]:
             for fragment in paragraph.fragments:
-                if fragment["type"] == "chunk":
+                if fragment.type == "chunk":
                     for line in text_buffer.splitlines():
                         if len(line) > 0:
                             f.write(prefix)
                             f.write(line)
                         f.write("\n")
                     text_buffer = ""
-                    self._render(f, (key[0], key[1]+tuple(fragment["path"])), prefix=prefix+fragment["prefix"])
-                elif fragment["type"] == "variable":
-                    name = self.document.lookup_variable(fragment["id"])
-                    text_buffer += name if name is not None else fragment["id"]
+                    self._render(f, (key[0], key[1]+tuple(fragment.path)), prefix=prefix+fragment.prefix)
+                elif fragment.type == "variable":
+                    text_buffer += fragment.name
                 else:
-                    text_buffer += fragment["text"]
+                    text_buffer += fragment.text
         for line in text_buffer.splitlines():
             if len(line) > 0:
                 f.write(prefix)
