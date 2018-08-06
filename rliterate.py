@@ -2672,38 +2672,38 @@ class CodeView(wx.Panel):
     def _token_right_click(self, event):
         token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("subpath") is not None:
-            def rename():
-                dialog = RenamePathDialog(
-                    self,
-                    self.project,
-                    token.extra["subpath"]
-                )
-                dialog.ShowModal()
-                dialog.Destroy()
             menu = ParagraphContextMenu()
             menu.AppendItem(
                 "Rename '{}'".format(token.extra["subpath"].last),
-                rename
+                lambda: show_text_entry(
+                    self,
+                    title="Rename path",
+                    body="Rename '{}'".format(token.extra["subpath"].last),
+                    value=token.extra["subpath"].last,
+                    ok_fn=lambda value: self.project.rename_path(
+                        token.extra["subpath"],
+                        value
+                    )
+                )
             )
             self.PopupMenu(menu)
             menu.Destroy()
         elif token is not None and token.extra.get("variable") is not None:
-            def rename():
-                dialog = wx.TextEntryDialog(
-                    self,
-                    message=rename_message,
-                    caption="Rename variable",
-                    defaultValue=rename_value
-                )
-                if dialog.ShowModal() == wx.ID_OK:
-                    self.project.rename_variable(token.extra["variable"], dialog.Value)
-                dialog.Destroy()
             rename_value = self.project.lookup_variable(token.extra["variable"]) or token.extra["variable"]
             rename_message = "Rename '{}'".format(rename_value)
             menu = ParagraphContextMenu()
             menu.AppendItem(
                 rename_message,
-                rename
+                lambda: show_text_entry(
+                    self,
+                    title="Rename variable",
+                    body=rename_message,
+                    value=rename_value,
+                    ok_fn=lambda value: self.project.rename_variable(
+                        token.extra["variable"],
+                        value
+                    )
+                )
             )
             menu.AppendItem(
                 "Copy id",
@@ -2986,25 +2986,6 @@ class ParagraphContextMenu(wx.Menu):
             lambda event: fn(),
             self.Append(wx.NewId(), text)
         )
-class RenamePathDialog(wx.Dialog):
-
-    def __init__(self, parent, project, path):
-        wx.Dialog.__init__(self, parent, title="Rename path")
-        self._project = project
-        self._path = path
-        self._create_gui()
-
-    def _create_gui(self):
-        self._text = wx.TextCtrl(self, value=self._path.last, size=(400, -1))
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self._text, flag=wx.EXPAND)
-        sizer.Add(self.CreateButtonSizer(wx.OK|wx.CANCEL), flag=wx.ALL)
-        self.SetSizerAndFit(sizer)
-        self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)
-
-    def _on_ok(self, event):
-        self._project.rename_path(self._path, self._text.Value)
-        self.Close()
 class RliterateDataObject(wx.CustomDataObject):
 
     def __init__(self, kind, json=None):
@@ -3630,6 +3611,16 @@ def create_font(monospace=False, size=10, bold=False):
         wx.FONTWEIGHT_BOLD if bold else wx.FONTWEIGHT_NORMAL,
         False
     )
+def show_text_entry(parent, **kwargs):
+    dialog = wx.TextEntryDialog(
+        parent,
+        message=kwargs.get("body", ""),
+        caption=kwargs.get("title", ""),
+        defaultValue=kwargs.get("value", "")
+    )
+    if dialog.ShowModal() == wx.ID_OK:
+        kwargs.get("ok_fn", lambda value: None)(dialog.Value)
+    dialog.Destroy()
 def is_prefix(left, right):
     return left == right[:len(left)]
 def load_json_from_file(path):

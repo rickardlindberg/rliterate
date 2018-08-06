@@ -6466,7 +6466,87 @@
 ],
 "fragments":[
 {
-"text":"def _token_move(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.EventObject.SetDefaultCursor()\n    return CONTINUE_PROCESSING\n\ndef _token_right_click(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        def rename():\n            dialog = RenamePathDialog(\n                self,\n                self.project,\n                token.extra[\"subpath\"]\n            )\n            dialog.ShowModal()\n            dialog.Destroy()\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"subpath\"].last),\n            rename\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        def rename():\n            dialog = wx.TextEntryDialog(\n                self,\n                message=rename_message,\n                caption=\"Rename variable\",\n                defaultValue=rename_value\n            )\n            if dialog.ShowModal() == wx.ID_OK:\n                self.project.rename_variable(token.extra[\"variable\"], dialog.Value)\n            dialog.Destroy()\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            rename_message,\n            rename\n        )\n        menu.AppendItem(\n            \"Copy id\",\n            lambda: set_clipboard_text(token.extra[\"variable\"])\n        )\n        menu.AppendItem(\n            \"Highlight\",\n            lambda: setattr(self.project, \"",
+"text":"def _token_move(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.EventObject.SetDefaultCursor()\n    return CONTINUE_PROCESSING\n\ndef _token_right_click(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"subpath\"].last),\n            lambda: ",
+"type":"code"
+},
+{
+"id":"2ecf3894ef4c4fc4a894d7001e6ddce5",
+"type":"variable"
+},
+{
+"text":"(\n                self,\n                ",
+"type":"code"
+},
+{
+"id":"8ba62478399c42fc960555b7ed9c8fce",
+"type":"variable"
+},
+{
+"text":"=\"Rename path\",\n                ",
+"type":"code"
+},
+{
+"id":"536483b5a3d64ef5981b4c77a3df6f71",
+"type":"variable"
+},
+{
+"text":"=\"Rename '{}'\".format(token.extra[\"subpath\"].last),\n                ",
+"type":"code"
+},
+{
+"id":"d4d8284a9d5f4e0abbbbc328581ef877",
+"type":"variable"
+},
+{
+"text":"=token.extra[\"subpath\"].last,\n                ",
+"type":"code"
+},
+{
+"id":"c0363497d8b6457ea2e652a9f8ec0afe",
+"type":"variable"
+},
+{
+"text":"=lambda value: self.project.rename_path(\n                    token.extra[\"subpath\"],\n                    value\n                )\n            )\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ParagraphContextMenu()\n        menu.AppendItem(\n            rename_message,\n            lambda: ",
+"type":"code"
+},
+{
+"id":"2ecf3894ef4c4fc4a894d7001e6ddce5",
+"type":"variable"
+},
+{
+"text":"(\n                self,\n                ",
+"type":"code"
+},
+{
+"id":"8ba62478399c42fc960555b7ed9c8fce",
+"type":"variable"
+},
+{
+"text":"=\"Rename variable\",\n                ",
+"type":"code"
+},
+{
+"id":"536483b5a3d64ef5981b4c77a3df6f71",
+"type":"variable"
+},
+{
+"text":"=rename_message,\n                ",
+"type":"code"
+},
+{
+"id":"d4d8284a9d5f4e0abbbbc328581ef877",
+"type":"variable"
+},
+{
+"text":"=rename_value,\n                ",
+"type":"code"
+},
+{
+"id":"c0363497d8b6457ea2e652a9f8ec0afe",
+"type":"variable"
+},
+{
+"text":"=lambda value: self.project.rename_variable(\n                    token.extra[\"variable\"],\n                    value\n                )\n            )\n        )\n        menu.AppendItem(\n            \"Copy id\",\n            lambda: set_clipboard_text(token.extra[\"variable\"])\n        )\n        menu.AppendItem(\n            \"Highlight\",\n            lambda: setattr(self.project, \"",
 "type":"code"
 },
 {
@@ -7250,36 +7330,6 @@
 "children":[
 {
 "children":[],
-"id":"3cc8fc7c578a42de913136fe8a28b7ec",
-"paragraphs":[
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class RenamePathDialog(wx.Dialog):\n\n    def __init__(self, parent, project, path):\n        wx.Dialog.__init__(self, parent, title=\"Rename path\")\n        self._project = project\n        self._path = path\n        self._create_gui()\n\n    def _create_gui(self):\n        self._text = wx.TextCtrl(self, value=self._path.last, size=(400, -1))\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        sizer.Add(self._text, flag=wx.EXPAND)\n        sizer.Add(self.CreateButtonSizer(wx.OK|wx.CANCEL), flag=wx.ALL)\n        self.SetSizerAndFit(sizer)\n        self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)\n\n    def _on_ok(self, event):\n        self._project.rename_path(self._path, self._text.Value)\n        self.Close()\n",
-"type":"code"
-}
-],
-"id":"fbfa8d5a6a944778a1b5ad79f095e7ea",
-"type":"code"
-}
-],
-"title":"Rename path"
-}
-],
-"id":"56165a57dbf4495b8a2394758f338521",
-"paragraphs":[],
-"title":"Dialogs"
-},
-{
-"children":[
-{
-"children":[],
 "id":"de31abba62b94730be1653a4b9e76f44",
 "paragraphs":[
 {
@@ -7978,6 +8028,69 @@
 }
 ],
 "title":"Font helpers"
+},
+{
+"children":[],
+"id":"0c7b72e5320342be8953d5dfa97c9f1a",
+"paragraphs":[
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"2ecf3894ef4c4fc4a894d7001e6ddce5",
+"type":"variable"
+},
+{
+"text":"(parent, **kwargs):\n    dialog = wx.TextEntryDialog(\n        parent,\n        message=kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"536483b5a3d64ef5981b4c77a3df6f71",
+"type":"variable"
+},
+{
+"text":"\", \"\"),\n        caption=kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"8ba62478399c42fc960555b7ed9c8fce",
+"type":"variable"
+},
+{
+"text":"\", \"\"),\n        defaultValue=kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"d4d8284a9d5f4e0abbbbc328581ef877",
+"type":"variable"
+},
+{
+"text":"\", \"\")\n    )\n    if dialog.ShowModal() == wx.ID_OK:\n        kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"c0363497d8b6457ea2e652a9f8ec0afe",
+"type":"variable"
+},
+{
+"text":"\", lambda value: None)(dialog.Value)\n    dialog.Destroy()\n",
+"type":"code"
+}
+],
+"id":"a4e4f04388d543c0a9f027fe261074f4",
+"type":"code"
+}
+],
+"title":"Text entry helper"
 }
 ],
 "id":"5c3647a616b8495f8bebd268be84377d",
@@ -9768,11 +9881,14 @@
 "1e117025a0e14327ba6598fb696799a3":"fragments",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
+"2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
+"3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "52a4cb0c44124d518647a92eb25a876d":"PAGE_BODY_WIDTH",
+"536483b5a3d64ef5981b4c77a3df6f71":"body",
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
@@ -9780,6 +9896,7 @@
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
 "740055857bb244038c203cea23c1af69":"CreateView",
 "885085190cef47709dd3922b7c386fab":"fragments",
+"8ba62478399c42fc960555b7ed9c8fce":"title",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
 "9e987210a686490c823a44d09e783833":"_load",
@@ -9791,8 +9908,10 @@
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
+"c0363497d8b6457ea2e652a9f8ec0afe":"ok_fn",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
+"d4d8284a9d5f4e0abbbbc328581ef877":"value",
 "d6cbae294f8e4eec91f8a110b0d29761":"_convert_to_latest",
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
