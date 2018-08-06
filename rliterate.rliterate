@@ -8103,12 +8103,39 @@
 {
 "fragments":[
 {
-"text":"The main GUI is written in wxPython.",
+"text":"The main GUI is written in wxPython. I chose it for two reasons:",
 "type":"text"
 }
 ],
 "id":"a2e1e037cb3044b2a16bb15471199701",
 "type":"text"
+},
+{
+"child_type":"ordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"I know it quite well",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"It provides a reasonable good cross platform experience",
+"type":"text"
+}
+]
+}
+],
+"id":"c7bbbe5638d94bbfba220e65447e8133",
+"type":"list"
 }
 ],
 "title":"wxPython GUI"
@@ -9765,7 +9792,16 @@
 "type":"code"
 },
 {
-"text":" call in code view context menu",
+"text":" call in ",
+"type":"text"
+},
+{
+"page_id":"c2e755bb14d441e18f3f64a7e1ff69ae",
+"text":"code view",
+"type":"reference"
+},
+{
+"text":" context menu",
 "type":"text"
 }
 ]
@@ -9835,6 +9871,47 @@
 },
 {
 "text":" more complete",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Show full page title in tooltip (Root / Foo / Bar)?",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Open next sibling below me",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Open first child to the right of me",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Add navigation functions at the bottom of a page",
 "type":"text"
 }
 ]
