@@ -2327,7 +2327,10 @@ class PageContainer(wx.Panel):
 class PagePanel(wx.Panel):
 
     def __init__(self, parent, project, page_id):
-        wx.Panel.__init__(self, parent)
+        wx.Panel.__init__(self, parent, size=(
+            project.PAGE_BODY_WIDTH,
+            -1
+        ))
         self.project = project
         self.page_id = page_id
         self._render()

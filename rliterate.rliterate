@@ -6265,7 +6265,15 @@
 ],
 "fragments":[
 {
-"text":"class PagePanel(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n",
+"text":"class PagePanel(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent, size=(\n            project.",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":",\n            -1\n        ))\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n",
 "type":"code"
 },
 {
@@ -6278,6 +6286,16 @@
 ],
 "id":"1994c9452817497c92e1d51cf6a050bc",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"Setting a minimus size on the page panel is necessary becuase size calculations does not seem to always be correct in a scrolling container.",
+"type":"text"
+}
+],
+"id":"3858507ab0da45eda81c72ff5444f9d8",
+"type":"text"
 }
 ],
 "title":"Page"
@@ -10406,6 +10424,16 @@
 "fragments":[
 {
 "text":"Replace some context menus with floating popups?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Settings dialog interferes with keyboard shortcut (focus problem)",
 "type":"text"
 }
 ]
