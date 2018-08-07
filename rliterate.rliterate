@@ -3690,6 +3690,67 @@
 "type":"code"
 },
 {
+"chunkpath":[
+"classes",
+"Project"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":" = 600\n",
+"type":"code"
+},
+{
+"id":"76b9d362e0714c1da27953dd46e8ef0b",
+"type":"variable"
+},
+{
+"text":" = 13\n",
+"type":"code"
+},
+{
+"id":"df94156ca33b47a1beb10346870806ec",
+"type":"variable"
+},
+{
+"text":" = 2\n",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":" = 15\n",
+"type":"code"
+},
+{
+"id":"6a754b8a39e24518b76e88d57a89eff6",
+"type":"variable"
+},
+{
+"text":" = ",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":"\n",
+"type":"code"
+}
+],
+"id":"e3e222b97d124ce0af6eba3cead75f90",
+"type":"code"
+},
+{
 "fragments":[
 {
 "text":"Wrapper methods for document:",
@@ -5538,33 +5599,6 @@
 {
 "children":[
 {
-"children":[],
-"id":"4495f053ab2d41a2a4ec70f55e929b9f",
-"paragraphs":[
-{
-"chunkpath":[
-"constants"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":" = 600\nPAGE_PADDING = 13\nSHADOW_SIZE = 2\nPARAGRAPH_SPACE = 15\nCONTAINER_BORDER = PARAGRAPH_SPACE\n",
-"type":"code"
-}
-],
-"id":"e3e222b97d124ce0af6eba3cead75f90",
-"type":"code"
-}
-],
-"title":"Constants"
-},
-{
 "children":[
 {
 "children":[],
@@ -5599,7 +5633,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.sizer.AddSpacer(self.project.",
+"type":"code"
+},
+{
+"id":"76b9d362e0714c1da27953dd46e8ef0b",
+"type":"variable"
+},
+{
+"text":")\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
 "type":"code"
 },
 {
@@ -5911,7 +5953,7 @@
 "type":"variable"
 },
 {
-"text":"(CompactScrolledWindow):\n\n    def __init__(self, parent, project, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(",
+"text":"(CompactScrolledWindow):\n\n    def __init__(self, parent, project, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(\n                project.",
 "type":"code"
 },
 {
@@ -5919,7 +5961,47 @@
 "type":"variable"
 },
 {
-"text":"+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = project\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, page_ids):\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if self.project.get_page(page_id) is not None:\n                container = PageContainer(self, self.project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return ",
+"text":"+\n                2*project.",
+"type":"code"
+},
+{
+"id":"6a754b8a39e24518b76e88d57a89eff6",
+"type":"variable"
+},
+{
+"text":"+\n                project.",
+"type":"code"
+},
+{
+"id":"76b9d362e0714c1da27953dd46e8ef0b",
+"type":"variable"
+},
+{
+"text":"+\n                project.",
+"type":"code"
+},
+{
+"id":"df94156ca33b47a1beb10346870806ec",
+"type":"variable"
+},
+{
+"text":",\n                -1\n            )\n        )\n        self.project = project\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, page_ids):\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(self.project.",
+"type":"code"
+},
+{
+"id":"76b9d362e0714c1da27953dd46e8ef0b",
+"type":"variable"
+},
+{
+"text":")\n        for page_id in page_ids:\n            if self.project.get_page(page_id) is not None:\n                container = PageContainer(self, self.project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=self.project.",
+"type":"code"
+},
+{
+"id":"76b9d362e0714c1da27953dd46e8ef0b",
+"type":"variable"
+},
+{
+"text":"\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return ",
 "type":"code"
 },
 {
@@ -5960,7 +6042,31 @@
 ],
 "fragments":[
 {
-"text":"class PageContainer(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    def _render(self):\n        self.SetBackgroundColour((150, 150, 150))\n        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.inner_container = wx.Panel(self)\n        self.inner_container.SetBackgroundColour((255, 255, 255))\n        self.inner_container.SetSizer(self.inner_sizer)\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(\n            self.inner_container,\n            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n            border=SHADOW_SIZE\n        )\n        self.SetSizer(self.sizer)\n        self.inner_sizer.AddSpacer(CONTAINER_BORDER)\n        self.page = PagePanel(self.inner_container, self.project, self.page_id)\n        self.inner_sizer.Add(\n            self.page,\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n            border=CONTAINER_BORDER\n        )\n\n    def FindClosestDropPoint(self, screen_pos):\n        return self.page.FindClosestDropPoint(screen_pos)\n",
+"text":"class PageContainer(wx.Panel):\n\n    def __init__(self, parent, project, page_id):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    def _render(self):\n        self.SetBackgroundColour((150, 150, 150))\n        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)\n        self.inner_container = wx.Panel(self)\n        self.inner_container.SetBackgroundColour((255, 255, 255))\n        self.inner_container.SetSizer(self.inner_sizer)\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(\n            self.inner_container,\n            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n            border=self.project.",
+"type":"code"
+},
+{
+"id":"df94156ca33b47a1beb10346870806ec",
+"type":"variable"
+},
+{
+"text":"\n        )\n        self.SetSizer(self.sizer)\n        self.inner_sizer.AddSpacer(self.project.",
+"type":"code"
+},
+{
+"id":"6a754b8a39e24518b76e88d57a89eff6",
+"type":"variable"
+},
+{
+"text":")\n        self.page = PagePanel(self.inner_container, self.project, self.page_id)\n        self.inner_sizer.Add(\n            self.page,\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n            border=self.project.",
+"type":"code"
+},
+{
+"id":"6a754b8a39e24518b76e88d57a89eff6",
+"type":"variable"
+},
+{
+"text":"\n        )\n\n    def FindClosestDropPoint(self, screen_pos):\n        return self.page.FindClosestDropPoint(screen_pos)\n",
 "type":"code"
 }
 ],
@@ -5986,7 +6092,23 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.sizer.Add(paragraph, flag=wx.EXPAND)\n    divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)\n    self.sizer.Add(divider, flag=wx.EXPAND)\n    return divider\n\ndef _render_add_button(self):\n    add_button = wx.BitmapButton(\n        self,\n        bitmap=wx.ArtProvider.GetBitmap(\n            wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON,\n            (16, 16)\n        ),\n        style=wx.NO_BORDER\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n    self.sizer.Add(\n        add_button,\n        flag=wx.TOP|wx.ALIGN_RIGHT,\n        border=PARAGRAPH_SPACE\n    )\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
+"text":"def _render(self):\n    self.sizer = wx.BoxSizer(wx.VERTICAL)\n    self.SetSizer(self.sizer)\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.sizer.Add(paragraph, flag=wx.EXPAND)\n    divider = Divider(self, padding=(self.project.",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":"-3)/2, height=3)\n    self.sizer.Add(divider, flag=wx.EXPAND)\n    return divider\n\ndef _render_add_button(self):\n    add_button = wx.BitmapButton(\n        self,\n        bitmap=wx.ArtProvider.GetBitmap(\n            wx.ART_ADD_BOOKMARK,\n            wx.ART_BUTTON,\n            (16, 16)\n        ),\n        style=wx.NO_BORDER\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n    self.sizer.Add(\n        add_button,\n        flag=wx.TOP|wx.ALIGN_RIGHT,\n        border=self.project.",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":"\n    )\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
 "type":"code"
 }
 ],
@@ -6161,7 +6283,7 @@
 "type":"variable"
 },
 {
-"text":"(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=",
+"text":"(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=self.project.",
 "type":"code"
 },
 {
@@ -6271,7 +6393,7 @@
 ],
 "fragments":[
 {
-"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=",
+"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=project.",
 "type":"code"
 },
 {
@@ -6559,7 +6681,7 @@
 ],
 "fragments":[
 {
-"text":"def _create_path(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = TokenView(\n        panel,\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        max_width=",
+"text":"def _create_path(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = TokenView(\n        panel,\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        max_width=self.project.",
 "type":"code"
 },
 {
@@ -6594,7 +6716,7 @@
 ],
 "fragments":[
 {
-"text":"def _create_code(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = TokenView(\n        panel,\n        self.project,\n        self._highlight_variables(self.paragraph.tokens),\n        max_width=",
+"text":"def _create_code(self):\n    panel = wx.Panel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = TokenView(\n        panel,\n        self.project,\n        self._highlight_variables(self.paragraph.tokens),\n        max_width=self.project.",
 "type":"code"
 },
 {
@@ -6974,7 +7096,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=base64_to_bitmap(self.paragraph.image_base64)\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def ",
+"text":"(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        bitmap = wx.StaticBitmap(\n            view,\n            bitmap=",
+"type":"code"
+},
+{
+"id":"a6d32657c47b44f59594cd7d8030b0d6",
+"type":"variable"
+},
+{
+"text":"(\n                self.paragraph.image_base64,\n                self.project.",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"\n            )\n        )\n        sizer.Add(\n            bitmap,\n            flag=wx.ALIGN_CENTER\n        )\n        sizer.Add(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.SetSizer(sizer)\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def ",
 "type":"code"
 },
 {
@@ -7006,15 +7144,15 @@
 "type":"variable"
 },
 {
-"text":"(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))\n        sizer.Add(self.image, flag=wx.ALIGN_CENTER)\n        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.",
+"text":"(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(\n            self,\n            bitmap=",
 "type":"code"
 },
 {
-"id":"fb8af53f33454166a0737b02b9413a0e",
+"id":"a6d32657c47b44f59594cd7d8030b0d6",
 "type":"variable"
 },
 {
-"text":"))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), ",
+"text":"(\n                paragraph.image_base64,\n                self.project.",
 "type":"code"
 },
 {
@@ -7022,7 +7160,23 @@
 "type":"variable"
 },
 {
-"text":").ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def Save(self):\n        value = {\"",
+"text":"\n            )\n        )\n        sizer.Add(self.image, flag=wx.ALIGN_CENTER)\n        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.",
+"type":"code"
+},
+{
+"id":"fb8af53f33454166a0737b02b9413a0e",
+"type":"variable"
+},
+{
+"text":"))\n        sizer.Add(self.text, flag=wx.EXPAND)\n        paste_button = wx.Button(self, label=\"Paste\")\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        sizer.Add(paste_button)\n        self.SetSizer(sizer)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(\n                wx.ImageFromBitmap(bitmap),\n                self.project.",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"\n            ).ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def Save(self):\n        value = {\"",
 "type":"code"
 },
 {
@@ -7046,15 +7200,15 @@
 ],
 "fragments":[
 {
-"text":"def base64_to_bitmap(data):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), ",
+"text":"def ",
 "type":"code"
 },
 {
-"id":"52a4cb0c44124d518647a92eb25a876d",
+"id":"a6d32657c47b44f59594cd7d8030b0d6",
 "type":"variable"
 },
 {
-"text":")\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (16, 16)\n        )\n",
+"text":"(data, max_width):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), max_width)\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (16, 16)\n        )\n",
 "type":"code"
 }
 ],
@@ -7135,7 +7289,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=lambda event: self.ShowContextMenu()\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=PARAGRAPH_SPACE\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"",
+"text":"(self):\n        view = wx.Panel(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=lambda event: self.ShowContextMenu()\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        self.vsizer = wx.BoxSizer(wx.VERTICAL)\n        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.vsizer.Add(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=self.project.",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":"\n        )\n        self.vsizer.Add(\n            self.hsizer,\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=self.project.",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":"\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"",
 "type":"code"
 },
 {
@@ -7175,7 +7345,15 @@
 "type":"variable"
 },
 {
-"text":"\": [{\"type\": \"text\", \"text\": \"Enter image text here...\"}],\n        })\n        self.vsizer.AddSpacer(PARAGRAPH_SPACE)\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _add_button(self, text, value):\n        def click_handler(event):\n            if self.project.active_editor is None:\n                self.paragraph.update(value)\n            else:\n                show_edit_in_progress_error(self)\n        button = wx.Button(self, label=text)\n        button.Bind(wx.EVT_BUTTON, click_handler)\n        self.hsizer.Add(button, flag=wx.ALL, border=2)\n",
+"text":"\": [{\"type\": \"text\", \"text\": \"Enter image text here...\"}],\n        })\n        self.vsizer.AddSpacer(self.project.",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":")\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _add_button(self, text, value):\n        def click_handler(event):\n            if self.project.active_editor is None:\n                self.paragraph.update(value)\n            else:\n                show_edit_in_progress_error(self)\n        button = wx.Button(self, label=text)\n        button.Bind(wx.EVT_BUTTON, click_handler)\n        self.hsizer.Add(button, flag=wx.ALL, border=2)\n",
 "type":"code"
 }
 ],
@@ -10190,6 +10368,7 @@
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
+"30eeb77f05c34590a6498edb391d0916":"PARAGRAPH_SPACE",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
@@ -10199,9 +10378,11 @@
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
+"6a754b8a39e24518b76e88d57a89eff6":"CONTAINER_BORDER",
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
 "740055857bb244038c203cea23c1af69":"CreateView",
+"76b9d362e0714c1da27953dd46e8ef0b":"PAGE_PADDING",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
@@ -10210,6 +10391,7 @@
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a5bace68289b40e78df93409e362a63b":"from_file",
+"a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
 "a886e97ceb3d427c8190487d23d12bc1":"Column",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
@@ -10226,6 +10408,7 @@
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
 "de16dfdd628d459ba5af528db2604934":"fragments",
+"df94156ca33b47a1beb10346870806ec":"SHADOW_SIZE",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
 "e1443402d3ec4bb4805c51cba497246d":"chunk_delimiters",
 "e327d4d3650047bc9eedb2a21d4c2613":"Editable",

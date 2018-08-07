@@ -24,11 +24,6 @@ import wx
 import wx.richtext
 import wx.lib.newevent
 UNDO_BUFFER_SIZE = 10
-PAGE_BODY_WIDTH = 600
-PAGE_PADDING = 13
-SHADOW_SIZE = 2
-PARAGRAPH_SPACE = 15
-CONTAINER_BORDER = PARAGRAPH_SPACE
 TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
 HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
 CONTINUE_PROCESSING = object()
@@ -1453,6 +1448,11 @@ class Project(Observable):
         self.layout.listen(self.notify_forwarder("layout"))
         FileGenerator(self.document)
 
+    PAGE_BODY_WIDTH = 600
+    PAGE_PADDING = 13
+    SHADOW_SIZE = 2
+    PARAGRAPH_SPACE = 15
+    CONTAINER_BORDER = PARAGRAPH_SPACE
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
@@ -2149,7 +2149,7 @@ class Workspace(CompactScrolledWindow):
         with flicker_free_drawing(self):
             self.SetBackgroundColour((200, 200, 200))
             self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-            self.sizer.AddSpacer(PAGE_PADDING)
+            self.sizer.AddSpacer(self.project.PAGE_PADDING)
             self.SetSizer(self.sizer)
             self.columns = []
             self._re_render()
@@ -2206,7 +2206,13 @@ class Column(CompactScrolledWindow):
             self,
             parent,
             style=wx.VSCROLL,
-            size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)
+            size=(
+                project.PAGE_BODY_WIDTH+
+                2*project.CONTAINER_BORDER+
+                project.PAGE_PADDING+
+                project.SHADOW_SIZE,
+                -1
+            )
         )
         self.project = project
         self.index = index
@@ -2243,14 +2249,14 @@ class Column(CompactScrolledWindow):
     def SetPages(self, page_ids):
         self.containers = []
         self.sizer.Clear(True)
-        self.sizer.AddSpacer(PAGE_PADDING)
+        self.sizer.AddSpacer(self.project.PAGE_PADDING)
         for page_id in page_ids:
             if self.project.get_page(page_id) is not None:
                 container = PageContainer(self, self.project, page_id)
                 self.sizer.Add(
                     container,
                     flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-                    border=PAGE_PADDING
+                    border=self.project.PAGE_PADDING
                 )
                 self.containers.append(container)
         if page_ids == self._page_ids:
@@ -2283,15 +2289,15 @@ class PageContainer(wx.Panel):
         self.sizer.Add(
             self.inner_container,
             flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
-            border=SHADOW_SIZE
+            border=self.project.SHADOW_SIZE
         )
         self.SetSizer(self.sizer)
-        self.inner_sizer.AddSpacer(CONTAINER_BORDER)
+        self.inner_sizer.AddSpacer(self.project.CONTAINER_BORDER)
         self.page = PagePanel(self.inner_container, self.project, self.page_id)
         self.inner_sizer.Add(
             self.page,
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-            border=CONTAINER_BORDER
+            border=self.project.CONTAINER_BORDER
         )
 
     def FindClosestDropPoint(self, screen_pos):
@@ -2333,7 +2339,7 @@ class PagePanel(wx.Panel):
 
     def _render_paragraph(self, paragraph):
         self.sizer.Add(paragraph, flag=wx.EXPAND)
-        divider = Divider(self, padding=(PARAGRAPH_SPACE-3)/2, height=3)
+        divider = Divider(self, padding=(self.project.PARAGRAPH_SPACE-3)/2, height=3)
         self.sizer.Add(divider, flag=wx.EXPAND)
         return divider
 
@@ -2351,7 +2357,7 @@ class PagePanel(wx.Panel):
         self.sizer.Add(
             add_button,
             flag=wx.TOP|wx.ALIGN_RIGHT,
-            border=PARAGRAPH_SPACE
+            border=self.project.PARAGRAPH_SPACE
         )
 
     def _on_add_button(self, event):
@@ -2390,7 +2396,7 @@ class Title(Editable):
             self,
             self.project,
             [Token(self.page.title)],
-            max_width=PAGE_BODY_WIDTH
+            max_width=self.project.PAGE_BODY_WIDTH
         )
         MouseEventHelper.bind(
             [view],
@@ -2457,7 +2463,7 @@ class TextView(TokenView):
             project,
             tokens,
             line_height=1.2,
-            max_width=PAGE_BODY_WIDTH-indented,
+            max_width=project.PAGE_BODY_WIDTH-indented,
             skip_extra_space=True
         )
         MouseEventHelper.bind(
@@ -2625,7 +2631,7 @@ class CodeView(wx.Panel):
             panel,
             self.project,
             self._create_path_tokens(self.paragraph.path),
-            max_width=PAGE_BODY_WIDTH-2*self.PADDING
+            max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
@@ -2690,7 +2696,7 @@ class CodeView(wx.Panel):
             panel,
             self.project,
             self._highlight_variables(self.paragraph.tokens),
-            max_width=PAGE_BODY_WIDTH-2*self.PADDING
+            max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
@@ -2911,7 +2917,10 @@ class Image(ParagraphBase):
         sizer = wx.BoxSizer(wx.VERTICAL)
         bitmap = wx.StaticBitmap(
             view,
-            bitmap=base64_to_bitmap(self.paragraph.image_base64)
+            bitmap=base64_to_bitmap(
+                self.paragraph.image_base64,
+                self.project.PAGE_BODY_WIDTH
+            )
         )
         sizer.Add(
             bitmap,
@@ -2946,7 +2955,13 @@ class ImageEdit(wx.Panel):
         self.project = project
         self.paragraph = paragraph
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.image = wx.StaticBitmap(self, bitmap=base64_to_bitmap(paragraph.image_base64))
+        self.image = wx.StaticBitmap(
+            self,
+            bitmap=base64_to_bitmap(
+                paragraph.image_base64,
+                self.project.PAGE_BODY_WIDTH
+            )
+        )
         sizer.Add(self.image, flag=wx.ALIGN_CENTER)
         self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments))
         sizer.Add(self.text, flag=wx.EXPAND)
@@ -2963,7 +2978,10 @@ class ImageEdit(wx.Panel):
             wx.TheClipboard.Close()
         if success:
             bitmap = image_data.GetBitmap()
-            self.image.SetBitmap(fit_image(wx.ImageFromBitmap(bitmap), PAGE_BODY_WIDTH).ConvertToBitmap())
+            self.image.SetBitmap(fit_image(
+                wx.ImageFromBitmap(bitmap),
+                self.project.PAGE_BODY_WIDTH
+            ).ConvertToBitmap())
             self.image_base64 = bitmap_to_base64(bitmap)
             self.GetTopLevelParent().ChildReRendered()
 
@@ -2987,12 +3005,12 @@ class Factory(ParagraphBase):
         self.vsizer.Add(
             wx.StaticText(view, label="Factory"),
             flag=wx.TOP|wx.ALIGN_CENTER,
-            border=PARAGRAPH_SPACE
+            border=self.project.PARAGRAPH_SPACE
         )
         self.vsizer.Add(
             self.hsizer,
             flag=wx.TOP|wx.ALIGN_CENTER,
-            border=PARAGRAPH_SPACE
+            border=self.project.PARAGRAPH_SPACE
         )
         self._add_button("Text", {
             "type": "text",
@@ -3021,7 +3039,7 @@ class Factory(ParagraphBase):
             "type": "image",
             "fragments": [{"type": "text", "text": "Enter image text here..."}],
         })
-        self.vsizer.AddSpacer(PARAGRAPH_SPACE)
+        self.vsizer.AddSpacer(self.project.PARAGRAPH_SPACE)
         view.SetSizer(self.vsizer)
         return view
 
@@ -3579,12 +3597,12 @@ def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):
     wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
-def base64_to_bitmap(data):
+def base64_to_bitmap(data, max_width):
     try:
         image = fit_image(wx.ImageFromStream(
             StringIO.StringIO(base64.b64decode(data)),
             wx.BITMAP_TYPE_ANY
-        ), PAGE_BODY_WIDTH)
+        ), max_width)
         return image.ConvertToBitmap()
     except:
         return wx.ArtProvider.GetBitmap(
