@@ -1586,6 +1586,23 @@
 },
 {
 "chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef filename(self):\n    return self.path.filename\n",
+"type":"code"
+}
+],
+"id":"c561d7582d4743949713d514b28477b7",
+"type":"code"
+},
+{
+"chunkpath":[
 "classes"
 ],
 "filepath":[
@@ -1719,16 +1736,6 @@
 "id":"328abedb1f3840929e519c2056634a9e",
 "paragraphs":[
 {
-"fragments":[
-{
-"text":"Code fragments include body text and chunks.",
-"type":"text"
-}
-],
-"id":"d8084614389e4d16b1b04087511e0cd0",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes",
 "CodeParagraph"
@@ -1746,7 +1753,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    return CodeFragment.create_list(self._document, self, self._paragraph_dict[\"",
+"text":"(self):\n    return CodeFragment.create_list(\n        self._document,\n        self,\n        self._paragraph_dict[\"",
 "type":"code"
 },
 {
@@ -1754,11 +1761,27 @@
 "type":"variable"
 },
 {
-"text":"\"])\n",
+"text":"\"]\n    )\n",
 "type":"code"
 }
 ],
 "id":"4527d0fd662b40bd886cc5fbc6bdd3b3",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class CodeFragment(object):\n\n    @staticmethod\n    def create_list(document, code_paragraph, code_fragment_dicts):\n        return [\n            CodeFragment.create(document, code_paragraph, code_fragment_dict)\n            for code_fragment_dict\n            in code_fragment_dicts\n        ]\n\n    @staticmethod\n    def create(document, code_paragraph, code_fragment_dict):\n        return {\n            \"variable\": VariableCodeFragment,\n            \"chunk\": ChunkCodeFragment,\n            \"code\": CodeCodeFragment,\n        }.get(code_fragment_dict[\"type\"], CodeFragment)(document, code_paragraph, code_fragment_dict)\n\n    def __init__(self, document, code_paragraph, code_fragment_dict):\n        self._document = document\n        self._code_paragraph = code_paragraph\n        self._code_fragment_dict = code_fragment_dict\n\n    @property\n    def type(self):\n        return self._code_fragment_dict[\"type\"]\n",
+"type":"code"
+}
+],
+"id":"78a90a66a532460ab18a3f1fc453fecc",
 "type":"code"
 },
 {
@@ -1846,16 +1869,86 @@
 ],
 "id":"b8876217fc6747f3b501f98c29e3f0ad",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"Chunk fragments:",
-"type":"text"
 }
 ],
-"id":"79e743ac50e94da19416a9da6cf982fa",
-"type":"text"
+"title":"Fragments"
+},
+{
+"children":[],
+"id":"f18544ee287749ada6678c38f6658db5",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef tokens(self):\n    pygments_text, inserts, extras = self._pygments_text()\n    return self._pygments_tokens_to_tokens(\n        self.",
+"type":"code"
+},
+{
+"id":"ade5b9257f8c4cb5aabd19de472e2e5e",
+"type":"variable"
+},
+{
+"text":".get_tokens(pygments_text),\n        inserts,\n        extras\n    )\n\ndef _pygments_text(self):\n    pygments_text = \"\"\n    inserts = defaultdict(list)\n    extras = defaultdict(dict)\n    for fragment in self.",
+"type":"code"
+},
+{
+"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
+"type":"variable"
+},
+{
+"text":":\n        if fragment.type == \"chunk\":\n            text_version = TextVersion()\n            fragment.fill_text_version(text_version)\n            inserts[len(pygments_text)].append(Token(\n                text_version.text,\n                token_type=TokenType.RLiterate.Chunk,\n                subpath=self.path.extend_chunk(fragment.path)\n            ))\n        elif fragment.type == \"variable\":\n            text = fragment.name\n            for i in range(len(text)):\n                extras[len(pygments_text)+i] = {\"variable\": fragment.id}\n            pygments_text += text\n        else:\n            pygments_text += fragment.text\n    return pygments_text, inserts, extras\n\ndef _pygments_tokens_to_tokens(self, pygments_tokens, inserts, extras):\n    pos = 0\n    tokens = []\n    for pygments_token, text in pygments_tokens:\n        for ch in text:\n            tokens.extend(inserts.get(pos, []))\n            tokens.append(Token(ch, token_type=pygments_token, **extras.get(pos, {})))\n            pos += 1\n    tokens.extend(inserts.get(pos, []))\n    return tokens\n",
+"type":"code"
+}
+],
+"id":"8abec079960f4d9a86b59c4744183d59",
+"type":"code"
+}
+],
+"title":"Tokens"
+},
+{
+"children":[],
+"id":"183cf3e125a54c7988c9c22be20f29fe",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef language(self):\n    return \"\".join(self.",
+"type":"code"
+},
+{
+"id":"ade5b9257f8c4cb5aabd19de472e2e5e",
+"type":"variable"
+},
+{
+"text":".aliases[:1])\n\n@property\ndef ",
+"type":"code"
+},
+{
+"id":"ade5b9257f8c4cb5aabd19de472e2e5e",
+"type":"variable"
+},
+{
+"text":"(self):\n    try:\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n    except:\n        return pygments.lexers.TextLexer(stripnl=False)\n",
+"type":"code"
+}
+],
+"id":"02fd99d0cc544e42bbec9593f8382d21",
+"type":"code"
 },
 {
 "chunkpath":[
@@ -1883,16 +1976,6 @@
 "type":"code"
 },
 {
-"fragments":[
-{
-"text":"Variable fragments:",
-"type":"text"
-}
-],
-"id":"580eabe0764d43efadb0e8d3893e4bf6",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes",
 "CodeParagraph"
@@ -1916,25 +1999,9 @@
 ],
 "id":"43e624edbcbf40e4aa4f043a909e4d71",
 "type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class CodeFragment(object):\n\n    @staticmethod\n    def create_list(document, code_paragraph, code_fragment_dicts):\n        return [\n            CodeFragment.create(document, code_paragraph, code_fragment_dict)\n            for code_fragment_dict\n            in code_fragment_dicts\n        ]\n\n    @staticmethod\n    def create(document, code_paragraph, code_fragment_dict):\n        return {\n            \"variable\": VariableCodeFragment,\n            \"chunk\": ChunkCodeFragment,\n            \"code\": CodeCodeFragment,\n        }.get(code_fragment_dict[\"type\"], CodeFragment)(document, code_paragraph, code_fragment_dict)\n\n    def __init__(self, document, code_paragraph, code_fragment_dict):\n        self._document = document\n        self._code_paragraph = code_paragraph\n        self._code_fragment_dict = code_fragment_dict\n\n    @property\n    def type(self):\n        return self._code_fragment_dict[\"type\"]\n",
-"type":"code"
 }
 ],
-"id":"78a90a66a532460ab18a3f1fc453fecc",
-"type":"code"
-}
-],
-"title":"Fragments"
+"title":"Language"
 }
 ],
 "id":"74b0c8c33aa0436cbd01d16e205a738c",
@@ -1957,18 +2024,6 @@
 ],
 "prefix":"    ",
 "type":"chunk"
-},
-{
-"text":"\n    @property\n    def filename(self):\n        return self.path.filename\n\n    @property\n    def tokens(self):\n        try:\n            lexer = self._get_lexer()\n        except:\n            lexer = pygments.lexers.TextLexer(stripnl=False)\n        pygments_text, inserts, extras = self._pygments_text()\n        return self._pygments_tokens_to_tokens(\n            lexer.get_tokens(pygments_text),\n            inserts,\n            extras\n        )\n\n    def _pygments_text(self):\n        pygments_text = \"\"\n        inserts = defaultdict(list)\n        extras = defaultdict(dict)\n        for fragment in self.",
-"type":"code"
-},
-{
-"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
-"type":"variable"
-},
-{
-"text":":\n            if fragment.type == \"chunk\":\n                text_version = TextVersion()\n                fragment.fill_text_version(text_version)\n                inserts[len(pygments_text)].append(Token(\n                    text_version.text,\n                    token_type=TokenType.RLiterate.Chunk,\n                    subpath=self.path.extend_chunk(fragment.path)\n                ))\n            elif fragment.type == \"variable\":\n                text = fragment.name\n                for i in range(len(text)):\n                    extras[len(pygments_text)+i] = {\"variable\": fragment.id}\n                pygments_text += text\n            else:\n                pygments_text += fragment.text\n        return pygments_text, inserts, extras\n\n    @property\n    def language(self):\n        try:\n            return \"\".join(self._get_lexer().aliases[:1])\n        except:\n            return \"\"\n\n    def _get_lexer(self):\n        return pygments.lexers.get_lexer_for_filename(\n            self.path.filename,\n            stripnl=False\n        )\n\n    def _pygments_tokens_to_tokens(self, pygments_tokens, inserts, extras):\n        pos = 0\n        tokens = []\n        for pygments_token, text in pygments_tokens:\n            for ch in text:\n                tokens.extend(inserts.get(pos, []))\n                tokens.append(Token(ch, token_type=pygments_token, **extras.get(pos, {})))\n                pos += 1\n        tokens.extend(inserts.get(pos, []))\n        return tokens\n",
-"type":"code"
 }
 ],
 "id":"40f7c112c54549b8851482fc2fafe614",
@@ -10039,6 +10094,57 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Editors should have no modes? Just WYSIWYG graphical editors?",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Insert paragraph before/after is just replaced with a plus button that appears in between to paragraphs.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Popups are more apparent? More discoverable UI design?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Bottom line: operations should be possible more directly.",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Replace some context menus with floating popups?",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
@@ -10119,6 +10225,7 @@
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a5bace68289b40e78df93409e362a63b":"from_file",
+"ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",

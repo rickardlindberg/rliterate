@@ -850,8 +850,15 @@ class CodeParagraph(Paragraph):
             "chunkpath": copy.deepcopy(path.chunkpath),
         })
     @property
+    def filename(self):
+        return self.path.filename
+    @property
     def fragments(self):
-        return CodeFragment.create_list(self._document, self, self._paragraph_dict["fragments"])
+        return CodeFragment.create_list(
+            self._document,
+            self,
+            self._paragraph_dict["fragments"]
+        )
     @property
     def text_version(self):
         text_version = TextVersion()
@@ -913,28 +920,10 @@ class CodeParagraph(Paragraph):
         start, end = self.variable_delimiters
         return r"{}(.*?){}".format(re.escape(start), re.escape(end))
     @property
-    def chunk_delimiters(self):
-        return ("<<", ">>")
-    @property
-    def variable_delimiters(self):
-        return (
-            "__RL_",
-            "__"
-        )
-
-    @property
-    def filename(self):
-        return self.path.filename
-
-    @property
     def tokens(self):
-        try:
-            lexer = self._get_lexer()
-        except:
-            lexer = pygments.lexers.TextLexer(stripnl=False)
         pygments_text, inserts, extras = self._pygments_text()
         return self._pygments_tokens_to_tokens(
-            lexer.get_tokens(pygments_text),
+            self.pygments_lexer.get_tokens(pygments_text),
             inserts,
             extras
         )
@@ -961,19 +950,6 @@ class CodeParagraph(Paragraph):
                 pygments_text += fragment.text
         return pygments_text, inserts, extras
 
-    @property
-    def language(self):
-        try:
-            return "".join(self._get_lexer().aliases[:1])
-        except:
-            return ""
-
-    def _get_lexer(self):
-        return pygments.lexers.get_lexer_for_filename(
-            self.path.filename,
-            stripnl=False
-        )
-
     def _pygments_tokens_to_tokens(self, pygments_tokens, inserts, extras):
         pos = 0
         tokens = []
@@ -984,6 +960,28 @@ class CodeParagraph(Paragraph):
                 pos += 1
         tokens.extend(inserts.get(pos, []))
         return tokens
+    @property
+    def language(self):
+        return "".join(self.pygments_lexer.aliases[:1])
+
+    @property
+    def pygments_lexer(self):
+        try:
+            return pygments.lexers.get_lexer_for_filename(
+                self.filename,
+                stripnl=False
+            )
+        except:
+            return pygments.lexers.TextLexer(stripnl=False)
+    @property
+    def chunk_delimiters(self):
+        return ("<<", ">>")
+    @property
+    def variable_delimiters(self):
+        return (
+            "__RL_",
+            "__"
+        )
 class Path(object):
 
     @classmethod
