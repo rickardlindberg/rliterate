@@ -3675,7 +3675,7 @@
 "type":"variable"
 },
 {
-"text":"(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator(self.document)\n\n",
+"text":"(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator(self.document)\n        self._foo = 600\n\n",
 "type":"code"
 },
 {
@@ -3699,11 +3699,31 @@
 ],
 "fragments":[
 {
+"text":"@property\ndef ",
+"type":"code"
+},
+{
 "id":"52a4cb0c44124d518647a92eb25a876d",
 "type":"variable"
 },
 {
-"text":" = 600\n",
+"text":"(self):\n    return self._foo\n\n@",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":".setter\ndef ",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"(self, value):\n    with self.notify(\"document\"):\n        self._foo = value\n\n",
 "type":"code"
 },
 {
@@ -4857,6 +4877,49 @@
 },
 {
 "children":[],
+"id":"481c21c312a94d3fba68c657008e4d35",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"ToolBar",
+"init tools"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"settings_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is None\n)\n",
+"type":"code"
+}
+],
+"id":"51ced62f340547c8b2f0b02c9727d0c7",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"ToolBar",
+"init tools"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"settings_group.add_tool(\n    wx.ART_HELP_SETTINGS,\n    lambda: SettingsDialog(main_frame, self.project).Show(),\n    short_help=\"Settings\"\n)\n",
+"type":"code"
+}
+],
+"id":"2e12023bfbd142e3964b3cc9a0b18994",
+"type":"code"
+}
+],
+"title":"Settings"
+},
+{
+"children":[],
 "id":"5829ea156b114d31875e20ad4e032b1e",
 "paragraphs":[
 {
@@ -4955,7 +5018,7 @@
 ],
 "fragments":[
 {
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._tool_groups.populate(self),\n            \"document\", \"layout\", \"editor\"\n        )\n\n    def _init_tools(self):\n        self._tool_groups = ToolGroups(self.GetTopLevelParent())\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._tool_groups.populate(self),\n            \"document\", \"layout\", \"editor\"\n        )\n\n    def _init_tools(self):\n        main_frame = self.GetTopLevelParent()\n        self._tool_groups = ToolGroups(main_frame)\n",
 "type":"code"
 },
 {
@@ -5953,7 +6016,7 @@
 "type":"variable"
 },
 {
-"text":"(CompactScrolledWindow):\n\n    def __init__(self, parent, project, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(\n                project.",
+"text":"(CompactScrolledWindow):\n\n    def __init__(self, parent, project, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=self._get_size(project)\n        )\n        self.project = project\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def _get_size(self, project):\n        return (\n            project.",
 "type":"code"
 },
 {
@@ -5961,7 +6024,7 @@
 "type":"variable"
 },
 {
-"text":"+\n                2*project.",
+"text":"+\n            2*project.",
 "type":"code"
 },
 {
@@ -5969,7 +6032,7 @@
 "type":"variable"
 },
 {
-"text":"+\n                project.",
+"text":"+\n            project.",
 "type":"code"
 },
 {
@@ -5977,7 +6040,7 @@
 "type":"variable"
 },
 {
-"text":"+\n                project.",
+"text":"+\n            project.",
 "type":"code"
 },
 {
@@ -5985,7 +6048,7 @@
 "type":"variable"
 },
 {
-"text":",\n                -1\n            )\n        )\n        self.project = project\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, page_ids):\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(self.project.",
+"text":",\n            -1\n        )\n\n    def SetPages(self, page_ids):\n        self.containers = []\n        self.MinSize = self._get_size(self.project)\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(self.project.",
 "type":"code"
 },
 {
@@ -7684,6 +7747,45 @@
 }
 ],
 "title":"Workspace"
+},
+{
+"children":[],
+"id":"5abfd32519c646ef8682281de9980786",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class SettingsDialog(wx.Dialog):\n\n    def __init__(self, parent, project):\n        wx.Dialog.__init__(self, parent)\n        self.project = project\n        self._init_gui()\n\n    def _init_gui(self):\n        spin = wx.SpinCtrl(\n            self,\n            value=\"{}\".format(self.project.",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"),\n            min=100,\n            max=10000\n        )\n        self.Bind(\n            wx.EVT_SPINCTRL,\n            lambda event: setattr(\n                self.project,\n                \"",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":"\",\n                event.Value\n            )\n        )\n",
+"type":"code"
+}
+],
+"id":"4d24e74b3f274797a147a935a5f733a6",
+"type":"code"
+}
+],
+"title":"Settings"
 },
 {
 "children":[

@@ -1447,8 +1447,17 @@ class Project(Observable):
         ))
         self.layout.listen(self.notify_forwarder("layout"))
         FileGenerator(self.document)
+        self._foo = 600
 
-    PAGE_BODY_WIDTH = 600
+    @property
+    def PAGE_BODY_WIDTH(self):
+        return self._foo
+
+    @PAGE_BODY_WIDTH.setter
+    def PAGE_BODY_WIDTH(self, value):
+        with self.notify("document"):
+            self._foo = value
+
     PAGE_PADDING = 13
     SHADOW_SIZE = 2
     PARAGRAPH_SPACE = 15
@@ -1697,7 +1706,8 @@ class ToolBar(wx.ToolBar):
         )
 
     def _init_tools(self):
-        self._tool_groups = ToolGroups(self.GetTopLevelParent())
+        main_frame = self.GetTopLevelParent()
+        self._tool_groups = ToolGroups(main_frame)
         editor_group = self._tool_groups.add_group(
             lambda: self.project.active_editor is not None
         )
@@ -1751,6 +1761,14 @@ class ToolBar(wx.ToolBar):
             lambda: self.project.get_redo_operation()[1](),
             short_help=lambda: "Redo" if self.project.get_redo_operation() is None else "Redo '{}'".format(self.project.get_redo_operation()[0]),
             enabled_fn=lambda: self.project.get_redo_operation() is not None
+        )
+        settings_group = self._tool_groups.add_group(
+            lambda: self.project.active_editor is None
+        )
+        settings_group.add_tool(
+            wx.ART_HELP_SETTINGS,
+            lambda: SettingsDialog(main_frame, self.project).Show(),
+            short_help="Settings"
         )
         quit_group = self._tool_groups.add_group()
         quit_group.add_tool(
@@ -2206,13 +2224,7 @@ class Column(CompactScrolledWindow):
             self,
             parent,
             style=wx.VSCROLL,
-            size=(
-                project.PAGE_BODY_WIDTH+
-                2*project.CONTAINER_BORDER+
-                project.PAGE_PADDING+
-                project.SHADOW_SIZE,
-                -1
-            )
+            size=self._get_size(project)
         )
         self.project = project
         self.index = index
@@ -2246,8 +2258,18 @@ class Column(CompactScrolledWindow):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
 
+    def _get_size(self, project):
+        return (
+            project.PAGE_BODY_WIDTH+
+            2*project.CONTAINER_BORDER+
+            project.PAGE_PADDING+
+            project.SHADOW_SIZE,
+            -1
+        )
+
     def SetPages(self, page_ids):
         self.containers = []
+        self.MinSize = self._get_size(self.project)
         self.sizer.Clear(True)
         self.sizer.AddSpacer(self.project.PAGE_PADDING)
         for page_id in page_ids:
@@ -3059,6 +3081,28 @@ class ParagraphContextMenu(wx.Menu):
             wx.EVT_MENU,
             lambda event: fn(),
             self.Append(wx.NewId(), text)
+        )
+class SettingsDialog(wx.Dialog):
+
+    def __init__(self, parent, project):
+        wx.Dialog.__init__(self, parent)
+        self.project = project
+        self._init_gui()
+
+    def _init_gui(self):
+        spin = wx.SpinCtrl(
+            self,
+            value="{}".format(self.project.PAGE_BODY_WIDTH),
+            min=100,
+            max=10000
+        )
+        self.Bind(
+            wx.EVT_SPINCTRL,
+            lambda event: setattr(
+                self.project,
+                "PAGE_BODY_WIDTH",
+                event.Value
+            )
         )
 class RliterateDataObject(wx.CustomDataObject):
 
