@@ -1439,6 +1439,10 @@ class Project(Observable):
         Observable.__init__(self)
         self._active_editor = None
         self._highlighted_variable = None
+        self.title="{} ({})".format(
+            os.path.basename(filepath),
+            os.path.dirname(os.path.abspath(filepath))
+        )
         self.theme = SolarizedTheme()
         self.document = Document.from_file(filepath)
         self.document.listen(self.notify_forwarder("document"))
@@ -1652,23 +1656,19 @@ class SolarizedTheme(BaseTheme):
     }
 class MainFrame(wx.Frame):
 
-    def __init__(self, filepath):
+    def __init__(self, project):
         wx.Frame.__init__(
             self,
             None,
             size=(920, 500),
-            title="{} ({}) - RLiterate".format(
-                os.path.basename(filepath),
-                os.path.dirname(os.path.abspath(filepath))
-            )
+            title="{} - RLiterate".format(project.title)
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)
+        sizer.Add(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)
         self.SetSizer(sizer)
 
-    def _create_main_panel(self, filepath):
+    def _create_main_panel(self, project):
         self._panel = wx.Panel(self)
-        project = Project(filepath)
         self.SetToolBar(ToolBar(self._panel, project))
         workspace = Workspace(self._panel, project)
         toc = TableOfContents(self._panel, project)
@@ -3705,6 +3705,6 @@ if __name__ == "__main__":
         sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())
     else:
         app = wx.App()
-        main_frame = MainFrame(filepath=sys.argv[1])
+        main_frame = MainFrame(Project(sys.argv[1]))
         main_frame.Show()
         app.MainLoop()

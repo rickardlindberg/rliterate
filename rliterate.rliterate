@@ -3667,7 +3667,7 @@
 "type":"chunk"
 },
 {
-"text":"        self.theme = SolarizedTheme()\n        self.document = Document.",
+"text":"        self.title=\"{} ({})\".format(\n            os.path.basename(filepath),\n            os.path.dirname(os.path.abspath(filepath))\n        )\n        self.theme = SolarizedTheme()\n        self.document = Document.",
 "type":"code"
 },
 {
@@ -4489,7 +4489,15 @@
 ],
 "fragments":[
 {
-"text":"class MainFrame(wx.Frame):\n\n    def __init__(self, filepath):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} ({}) - RLiterate\".format(\n                os.path.basename(filepath),\n                os.path.dirname(os.path.abspath(filepath))\n            )\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(filepath), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, filepath):\n        self._panel = wx.Panel(self)\n        project = Project(filepath)\n        self.SetToolBar(ToolBar(self._panel, project))\n        workspace = Workspace(self._panel, project)\n        toc = TableOfContents(self._panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self._panel.SetSizer(sizer)\n        return self._panel\n\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"0210b654a92741d198946966e8e5b82e",
+"type":"variable"
+},
+{
+"text":"(wx.Frame):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, project):\n        self._panel = wx.Panel(self)\n        self.SetToolBar(ToolBar(self._panel, project))\n        workspace = Workspace(self._panel, project)\n        toc = TableOfContents(self._panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self._panel.SetSizer(sizer)\n        return self._panel\n\n",
 "type":"code"
 },
 {
@@ -8636,7 +8644,15 @@
 "type":"variable"
 },
 {
-"text":"(sys.argv[1])).build())\nelse:\n    app = wx.App()\n    main_frame = MainFrame(filepath=sys.argv[1])\n    main_frame.Show()\n    app.MainLoop()\n",
+"text":"(sys.argv[1])).build())\nelse:\n    app = wx.App()\n    main_frame = ",
+"type":"code"
+},
+{
+"id":"0210b654a92741d198946966e8e5b82e",
+"type":"variable"
+},
+{
+"text":"(Project(sys.argv[1]))\n    main_frame.Show()\n    app.MainLoop()\n",
 "type":"code"
 }
 ],
@@ -10197,6 +10213,7 @@
 "title":"RLiterate"
 },
 "variables":{
+"0210b654a92741d198946966e8e5b82e":"MainFrame",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "1644b9094da3457895ba66eb283b4a9f":"fragments",
 "1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
