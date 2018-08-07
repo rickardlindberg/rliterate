@@ -5599,7 +5599,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(\n                self.project,\n                page_ids\n            )\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = Column(self, index=len(self.columns))\n    self.sizer.Add(column, flag=wx.EXPAND)\n    return column\n",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
+"type":"code"
+},
+{
+"id":"a886e97ceb3d427c8190487d23d12bc1",
+"type":"variable"
+},
+{
+"text":"(self, project=self.project, index=len(self.columns))\n    self.sizer.Add(column, flag=wx.EXPAND)\n    return column\n",
 "type":"code"
 }
 ],
@@ -5895,7 +5903,15 @@
 ],
 "fragments":[
 {
-"text":"class Column(CompactScrolledWindow):\n\n    def __init__(self, parent, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"a886e97ceb3d427c8190487d23d12bc1",
+"type":"variable"
+},
+{
+"text":"(CompactScrolledWindow):\n\n    def __init__(self, parent, project, index):\n        CompactScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=(",
 "type":"code"
 },
 {
@@ -5903,7 +5919,7 @@
 "type":"variable"
 },
 {
-"text":"+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = None\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if self.project is None:\n            return\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, project, page_ids):\n        self.project = project\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if project.get_page(page_id) is not None:\n                container = PageContainer(self, project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return ",
+"text":"+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)\n        )\n        self.project = project\n        self.index = index\n        self._page_ids = []\n        self._setup_layout()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _setup_layout(self):\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.SetSizer(self.sizer)\n\n    def SetPages(self, page_ids):\n        self.containers = []\n        self.sizer.Clear(True)\n        self.sizer.AddSpacer(PAGE_PADDING)\n        for page_id in page_ids:\n            if self.project.get_page(page_id) is not None:\n                container = PageContainer(self, self.project, page_id)\n                self.sizer.Add(\n                    container,\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=PAGE_PADDING\n                )\n                self.containers.append(container)\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return ",
 "type":"code"
 },
 {
@@ -10194,6 +10210,7 @@
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a5bace68289b40e78df93409e362a63b":"from_file",
+"a886e97ceb3d427c8190487d23d12bc1":"Column",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",

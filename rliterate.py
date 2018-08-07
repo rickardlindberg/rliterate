@@ -2159,10 +2159,7 @@ class Workspace(CompactScrolledWindow):
             column_count_changed = self._ensure_num_columns(len(self.project.columns))
             last_column_changed_pages = False
             for index, page_ids in enumerate(self.project.columns):
-                last_column_changed_pages = self.columns[index].SetPages(
-                    self.project,
-                    page_ids
-                )
+                last_column_changed_pages = self.columns[index].SetPages(page_ids)
             self.GetTopLevelParent().ChildReRendered()
             if column_count_changed or last_column_changed_pages:
                 self.ScrollToEnd()
@@ -2178,7 +2175,7 @@ class Workspace(CompactScrolledWindow):
         return count_changed
 
     def _add_column(self):
-        column = Column(self, index=len(self.columns))
+        column = Column(self, project=self.project, index=len(self.columns))
         self.sizer.Add(column, flag=wx.EXPAND)
         return column
     def _re_render_from_event(self, event):
@@ -2204,14 +2201,14 @@ class WorkspaceDropTarget(DropPointDropTarget):
         )
 class Column(CompactScrolledWindow):
 
-    def __init__(self, parent, index):
+    def __init__(self, parent, project, index):
         CompactScrolledWindow.__init__(
             self,
             parent,
             style=wx.VSCROLL,
             size=(PAGE_BODY_WIDTH+2*CONTAINER_BORDER+PAGE_PADDING+SHADOW_SIZE, -1)
         )
-        self.project = None
+        self.project = project
         self.index = index
         self._page_ids = []
         self._setup_layout()
@@ -2228,8 +2225,6 @@ class Column(CompactScrolledWindow):
             event.widget.SetDefaultCursor()
 
     def _on_token_click(self, event):
-        if self.project is None:
-            return
         if event.token.token_type == TokenType.RLiterate.Reference:
             self.OpenPage(event.token.extra["page_id"])
         elif event.token.token_type == TokenType.RLiterate.Link:
@@ -2245,14 +2240,13 @@ class Column(CompactScrolledWindow):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
 
-    def SetPages(self, project, page_ids):
-        self.project = project
+    def SetPages(self, page_ids):
         self.containers = []
         self.sizer.Clear(True)
         self.sizer.AddSpacer(PAGE_PADDING)
         for page_id in page_ids:
-            if project.get_page(page_id) is not None:
-                container = PageContainer(self, project, page_id)
+            if self.project.get_page(page_id) is not None:
+                container = PageContainer(self, self.project, page_id)
                 self.sizer.Add(
                     container,
                     flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
