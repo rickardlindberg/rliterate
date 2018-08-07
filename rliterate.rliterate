@@ -3675,7 +3675,7 @@
 "type":"variable"
 },
 {
-"text":"(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator().set_document(self.document)\n\n",
+"text":"(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator(self.document)\n\n",
 "type":"code"
 },
 {
@@ -4551,7 +4551,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4579,7 +4579,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4607,7 +4607,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4640,7 +4640,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4668,7 +4668,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4696,7 +4696,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4721,7 +4721,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4749,7 +4749,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4777,7 +4777,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4802,7 +4802,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4820,7 +4820,7 @@
 "chunkpath":[
 "classes",
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "filepath":[
 "rliterate.py"
@@ -4894,19 +4894,19 @@
 ],
 "fragments":[
 {
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self.project_listener = Listener(\n            lambda event: self._tool_groups.populate(self),\n            \"document\", \"layout\", \"editor\"\n        )\n        self._tool_groups = ToolGroups(parent)\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._tool_groups.populate(self),\n            \"document\", \"layout\", \"editor\"\n        )\n\n    def _init_tools(self):\n        self._tool_groups = ToolGroups(self.GetTopLevelParent())\n",
 "type":"code"
 },
 {
 "path":[
 "ToolBar",
-"__init__"
+"init tools"
 ],
 "prefix":"        ",
 "type":"chunk"
 },
 {
-"text":"        self.SetProject(project)\n\n    def SetProject(self, project):\n        self.project = project\n        self.project_listener.set_observable(self.project)\n",
+"text":"        self._tool_groups.populate(self)\n",
 "type":"code"
 }
 ],
@@ -5289,7 +5289,19 @@
 ],
 "fragments":[
 {
-"text":"class TableOfContents(wx.Panel):\n",
+"text":"class TableOfContents(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent, size=(250, -1))\n        self._init_project(project)\n",
+"type":"code"
+},
+{
+"path":[
+"TableOfContents",
+"__init__"
+],
+"prefix":"        ",
+"type":"chunk"
+},
+{
+"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            self._re_render_from_event,\n            \"document\", \"layout.toc\", \"layout.workspace\"\n        )\n\n",
 "type":"code"
 },
 {
@@ -5301,34 +5313,6 @@
 }
 ],
 "id":"19989e3da6004e61b58d3a570b52d9fc",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"TableOfContents"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def __init__(self, parent, project):\n    wx.Panel.__init__(self, parent, size=(250, -1))\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\", \"layout.toc\", \"layout.workspace\"\n    )\n    self.SetProject(project)\n",
-"type":"code"
-},
-{
-"path":[
-"__init__"
-],
-"prefix":"    ",
-"type":"chunk"
-},
-{
-"text":"    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
-"type":"code"
-}
-],
-"id":"985f041571444f9c9c62cb0905e144c8",
 "type":"code"
 },
 {
@@ -5842,7 +5826,27 @@
 ],
 "fragments":[
 {
-"text":"class Workspace(CompactScrolledWindow):\n",
+"text":"class Workspace(CompactScrolledWindow):\n\n    def __init__(self, parent, project):\n        CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)\n        self._init_project(project)\n",
+"type":"code"
+},
+{
+"path":[
+"Workspace",
+"__init__"
+],
+"prefix":"        ",
+"type":"chunk"
+},
+{
+"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            self._re_render_from_event,\n            \"document\",\n            \"layout.workspace\",\n            \"",
+"type":"code"
+},
+{
+"id":"f4daeaff58a34b459a28c0bc7c51a8cd",
+"type":"variable"
+},
+{
+"text":"\"\n        )\n\n",
 "type":"code"
 },
 {
@@ -5854,42 +5858,6 @@
 }
 ],
 "id":"a9f5b20c21c244d583d9b4f808ac8753",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Workspace"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def __init__(self, parent, project):\n    CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)\n    self.project_listener = Listener(\n        self._re_render_from_event,\n        \"document\",\n        \"layout.workspace\",\n        \"",
-"type":"code"
-},
-{
-"id":"f4daeaff58a34b459a28c0bc7c51a8cd",
-"type":"variable"
-},
-{
-"text":"\"\n    )\n    self.SetProject(project)\n",
-"type":"code"
-},
-{
-"path":[
-"__init__"
-],
-"prefix":"    ",
-"type":"chunk"
-},
-{
-"text":"    self._render()\n\ndef SetProject(self, project):\n    self.project = project\n    self.project_listener.set_observable(self.project)\n",
-"type":"code"
-}
-],
-"id":"0af9efe473c140fd93a87c18050ab77e",
 "type":"code"
 }
 ],
@@ -8352,7 +8320,7 @@
 ],
 "fragments":[
 {
-"text":"class FileGenerator(object):\n\n    def __init__(self):\n        self.listener = Listener(lambda event: self._generate())\n\n    def set_document(self, document):\n        self.document = document\n        self.listener.set_observable(self.document)\n\n    def _generate(self):\n        self._parts = defaultdict(list)\n        self._collect_parts(self.document.get_page())\n        self._generate_files()\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n        for child in page.children:\n            self._collect_parts(child)\n\n    def _generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                with open(filepath, \"w\") as f:\n                    self._render(f, key)\n\n    def _render(self, f, key, prefix=\"\"):\n        text_buffer = \"\"\n        for paragraph in self._parts[key]:\n            for fragment in paragraph.",
+"text":"class FileGenerator(object):\n\n    def __init__(self, document):\n        self.document = document\n        self.document.listen(lambda event: self._generate())\n\n    def _generate(self):\n        self._parts = defaultdict(list)\n        self._collect_parts(self.document.get_page())\n        self._generate_files()\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n        for child in page.children:\n            self._collect_parts(child)\n\n    def _generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                with open(filepath, \"w\") as f:\n                    self._render(f, key)\n\n    def _render(self, f, key, prefix=\"\"):\n        text_buffer = \"\"\n        for paragraph in self._parts[key]:\n            for fragment in paragraph.",
 "type":"code"
 },
 {
@@ -8467,22 +8435,6 @@
 }
 ],
 "id":"56eaa5b767f44049b536742e79bd22ce",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class Listener(object):\n\n    def __init__(self, fn, *events):\n        self.fn = fn\n        self.events = events\n        self.observable = None\n\n    def set_observable(self, observable):\n        if self.observable is not None:\n            self.observable.unlisten(self.fn, *self.events)\n        self.observable = observable\n        self.observable.listen(self.fn, *self.events)\n        self.fn(\"\")\n",
-"type":"code"
-}
-],
-"id":"bc097616885847ec889aa3b44a2af116",
 "type":"code"
 }
 ],

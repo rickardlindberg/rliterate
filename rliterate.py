@@ -1451,7 +1451,7 @@ class Project(Observable):
             ".{}.layout".format(os.path.basename(filepath))
         ))
         self.layout.listen(self.notify_forwarder("layout"))
-        FileGenerator().set_document(self.document)
+        FileGenerator(self.document)
 
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
@@ -1686,11 +1686,18 @@ class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
         wx.ToolBar.__init__(self, parent, *args, **kwargs)
-        self.project_listener = Listener(
+        self._init_project(project)
+        self._init_tools()
+
+    def _init_project(self, project):
+        self.project = project
+        self.project.listen(
             lambda event: self._tool_groups.populate(self),
             "document", "layout", "editor"
         )
-        self._tool_groups = ToolGroups(parent)
+
+    def _init_tools(self):
+        self._tool_groups = ToolGroups(self.GetTopLevelParent())
         editor_group = self._tool_groups.add_group(
             lambda: self.project.active_editor is not None
         )
@@ -1754,11 +1761,7 @@ class ToolBar(wx.ToolBar):
                 (wx.ACCEL_CTRL, ord('Q')),
             ]
         )
-        self.SetProject(project)
-
-    def SetProject(self, project):
-        self.project = project
-        self.project_listener.set_observable(self.project)
+        self._tool_groups.populate(self)
 class ToolGroups(object):
 
     def __init__(self, frame):
@@ -1853,19 +1856,20 @@ class Tool(object):
             )
         toolbar.SetToolShortHelp(self.id, text)
 class TableOfContents(wx.Panel):
+
     def __init__(self, parent, project):
         wx.Panel.__init__(self, parent, size=(250, -1))
-        self.project_listener = Listener(
-            self._re_render_from_event,
-            "document", "layout.toc", "layout.workspace"
-        )
-        self.SetProject(project)
+        self._init_project(project)
         self.SetDropTarget(TableOfContentsDropTarget(self, self.project))
         self._render()
 
-    def SetProject(self, project):
+    def _init_project(self, project):
         self.project = project
-        self.project_listener.set_observable(self.project)
+        self.project.listen(
+            self._re_render_from_event,
+            "document", "layout.toc", "layout.workspace"
+        )
+
     def _re_render_from_event(self, event):
         wx.CallAfter(self._re_render)
     def _render(self):
@@ -2125,21 +2129,22 @@ class PageContextMenu(wx.Menu):
             delete_item
         )
 class Workspace(CompactScrolledWindow):
+
     def __init__(self, parent, project):
         CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
-        self.project_listener = Listener(
+        self._init_project(project)
+        self.SetDropTarget(WorkspaceDropTarget(self, self.project))
+        self._render()
+
+    def _init_project(self, project):
+        self.project = project
+        self.project.listen(
             self._re_render_from_event,
             "document",
             "layout.workspace",
             "highlights"
         )
-        self.SetProject(project)
-        self.SetDropTarget(WorkspaceDropTarget(self, self.project))
-        self._render()
 
-    def SetProject(self, project):
-        self.project = project
-        self.project_listener.set_observable(self.project)
     def _render(self):
         with flicker_free_drawing(self):
             self.SetBackgroundColour((200, 200, 200))
@@ -3201,12 +3206,9 @@ class SelectionableTextCtrl(wx.TextCtrl):
         wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)
 class FileGenerator(object):
 
-    def __init__(self):
-        self.listener = Listener(lambda event: self._generate())
-
-    def set_document(self, document):
+    def __init__(self, document):
         self.document = document
-        self.listener.set_observable(self.document)
+        self.document.listen(lambda event: self._generate())
 
     def _generate(self):
         self._parts = defaultdict(list)
@@ -3475,19 +3477,6 @@ class DiffBuilder(object):
 
     def _write(self, text):
         self.parts.append(text)
-class Listener(object):
-
-    def __init__(self, fn, *events):
-        self.fn = fn
-        self.events = events
-        self.observable = None
-
-    def set_observable(self, observable):
-        if self.observable is not None:
-            self.observable.unlisten(self.fn, *self.events)
-        self.observable = observable
-        self.observable.listen(self.fn, *self.events)
-        self.fn("")
 class History(object):
 
     def __init__(self, initial_value, size=10):
