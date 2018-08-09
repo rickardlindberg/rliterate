@@ -1680,9 +1680,11 @@ class MainFrame(wx.Frame):
     def _create_main_panel(self, project):
         self._panel = wx.Panel(self)
         self.SetToolBar(ToolBar(self._panel, project))
-        workspace = Workspace(self._panel, project)
+        self._focus_panel = wx.Panel(self)
         toc = TableOfContents(self._panel, project)
+        workspace = Workspace(self._panel, project)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self._focus_panel)
         sizer.Add(toc, flag=wx.EXPAND, proportion=0)
         sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
         self._panel.SetSizer(sizer)
@@ -1690,6 +1692,7 @@ class MainFrame(wx.Frame):
 
     def ChildReRendered(self):
         self.Layout()
+        self._focus_panel.SetFocus()
 class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
