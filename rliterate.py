@@ -1886,12 +1886,10 @@ class TableOfContents(wx.Panel):
     def _init_project(self, project):
         self.project = project
         self.project.listen(
-            self._re_render_from_event,
+            lambda event: self._re_render(),
             "document", "layout.toc", "layout.workspace"
         )
 
-    def _re_render_from_event(self, event):
-        wx.CallAfter(self._re_render)
     def _render(self):
         with flicker_free_drawing(self):
             self.sizer = wx.BoxSizer(wx.VERTICAL)

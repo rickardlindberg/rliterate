@@ -5497,7 +5497,7 @@
 "type":"chunk"
 },
 {
-"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            self._re_render_from_event,\n            \"document\", \"layout.toc\", \"layout.workspace\"\n        )\n\n",
+"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._re_render(),\n            \"document\", \"layout.toc\", \"layout.workspace\"\n        )\n\n",
 "type":"code"
 },
 {
@@ -5509,33 +5509,6 @@
 }
 ],
 "id":"19989e3da6004e61b58d3a570b52d9fc",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"This seems to be needed for some reason:",
-"type":"text"
-}
-],
-"id":"a1ec06a34b604de99e5102a82fe00f1b",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"TableOfContents"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _re_render_from_event(self, event):\n    wx.CallAfter(self._re_render)\n",
-"type":"code"
-}
-],
-"id":"05d68cdb54b84316862f03915d6030a4",
 "type":"code"
 }
 ],
