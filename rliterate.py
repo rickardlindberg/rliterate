@@ -1463,6 +1463,9 @@ class Project(Observable):
     SHADOW_SIZE = 2
     PARAGRAPH_SPACE = 15
     CONTAINER_BORDER = PARAGRAPH_SPACE
+    @property
+    def editor_font(self):
+        return {"monospace": True, "size": 9}
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
@@ -2524,7 +2527,7 @@ class TextEdit(MultilineTextCtrl):
             start = index + extra["token"].index
             end = start + len(extra["token"].text)
             self.SetSelection(start, end)
-        self.Font = create_font(monospace=True)
+        self.Font = create_font(**project.editor_font)
         self.project = project
         self.paragraph = paragraph
 
@@ -2879,7 +2882,7 @@ class CodeEditor(wx.Panel):
         self._focus()
 
     def _create_gui(self):
-        self.Font = create_font(monospace=True)
+        self.Font = create_font(**self.project.editor_font)
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.vsizer.Add(
             self._create_path(),
@@ -2974,7 +2977,7 @@ class ImageEdit(wx.Panel):
 
     def __init__(self, parent, project, paragraph, view):
         wx.Panel.__init__(self, parent)
-        self.Font = create_font(monospace=True)
+        self.Font = create_font(**project.editor_font)
         self.project = project
         self.paragraph = paragraph
         sizer = wx.BoxSizer(wx.VERTICAL)

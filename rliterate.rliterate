@@ -3771,6 +3771,31 @@
 "type":"code"
 },
 {
+"chunkpath":[
+"classes",
+"Project"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef ",
+"type":"code"
+},
+{
+"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
+"type":"variable"
+},
+{
+"text":"(self):\n    return {\"monospace\": True, \"size\": 9}\n",
+"type":"code"
+}
+],
+"id":"c15088f8de804007aaa45888db5bcd6f",
+"type":"code"
+},
+{
 "fragments":[
 {
 "text":"Wrapper methods for document:",
@@ -6614,7 +6639,15 @@
 "type":"variable"
 },
 {
-"text":"(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
+"text":"(**project.",
+"type":"code"
+},
+{
+"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
+"type":"variable"
+},
+{
+"text":")\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
 "type":"code"
 }
 ],
@@ -7053,7 +7086,15 @@
 "type":"variable"
 },
 {
-"text":"(monospace=True)\n    self.vsizer = wx.BoxSizer(wx.VERTICAL)\n    self.vsizer.Add(\n        self._create_path(),\n        flag=wx.ALL|wx.EXPAND\n    )\n    self.vsizer.Add(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,\n        proportion=1\n    )\n    self.SetSizer(self.vsizer)\n\ndef _create_path(self):\n    self.path = SelectionableTextCtrl(\n        self,\n        value=self.paragraph.path.text_version\n    )\n    return self.path\n\ndef _create_code(self):\n    self.text = MultilineTextCtrl(\n        self,\n        value=self.paragraph.text_version\n    )\n    return self.text\n",
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
+"type":"variable"
+},
+{
+"text":")\n    self.vsizer = wx.BoxSizer(wx.VERTICAL)\n    self.vsizer.Add(\n        self._create_path(),\n        flag=wx.ALL|wx.EXPAND\n    )\n    self.vsizer.Add(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,\n        proportion=1\n    )\n    self.SetSizer(self.vsizer)\n\ndef _create_path(self):\n    self.path = SelectionableTextCtrl(\n        self,\n        value=self.paragraph.path.text_version\n    )\n    return self.path\n\ndef _create_code(self):\n    self.text = MultilineTextCtrl(\n        self,\n        value=self.paragraph.text_version\n    )\n    return self.text\n",
 "type":"code"
 }
 ],
@@ -7259,7 +7300,15 @@
 "type":"variable"
 },
 {
-"text":"(monospace=True)\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(\n            self,\n            bitmap=",
+"text":"(**project.",
+"type":"code"
+},
+{
+"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
+"type":"variable"
+},
+{
+"text":")\n        self.project = project\n        self.paragraph = paragraph\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.image = wx.StaticBitmap(\n            self,\n            bitmap=",
 "type":"code"
 },
 {
@@ -10807,6 +10856,7 @@
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
 "c0363497d8b6457ea2e652a9f8ec0afe":"ok_fn",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
+"c56b4a82a7d4441ab6ceb5610217a3c5":"editor_font",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d3f9252875944a4e94cbb00851a7384f":"variable_delimiters",
 "d4d8284a9d5f4e0abbbbc328581ef877":"value",
