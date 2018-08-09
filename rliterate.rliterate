@@ -5776,7 +5776,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
+"text":")\n        self.SetSizer(self.sizer)\n        self.columns = []\n        wx.CallAfter(self._re_render)\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
 "type":"code"
 },
 {
@@ -5835,6 +5835,40 @@
 ],
 "id":"c881d2542f834261b1060e001e991f85",
 "type":"quote"
+},
+{
+"fragments":[
+{
+"text":"On ",
+"type":"text"
+},
+{
+"text":"CallAfter",
+"type":"code"
+},
+{
+"text":" in ",
+"type":"text"
+},
+{
+"text":"_render",
+"type":"code"
+},
+{
+"text":": The layout is not \"ready\" at this point, and sizer reports size (0, 0), so ",
+"type":"text"
+},
+{
+"text":"ScrollToEnd",
+"type":"code"
+},
+{
+"text":" does not work.",
+"type":"text"
+}
+],
+"id":"3072a65bad8c4b9eb59ea3f1d05bb6fc",
+"type":"text"
 }
 ],
 "title":"Rendering"

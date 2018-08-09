@@ -2172,7 +2172,7 @@ class Workspace(CompactScrolledWindow):
             self.sizer.AddSpacer(self.project.PAGE_PADDING)
             self.SetSizer(self.sizer)
             self.columns = []
-            self._re_render()
+            wx.CallAfter(self._re_render)
 
     def _re_render(self):
         with flicker_free_drawing(self):
