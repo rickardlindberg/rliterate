@@ -52,8 +52,9 @@ class Editable(wx.Panel):
             self.project.active_editor = self
 
     def Save(self):
+        project = self.project
         self.edit.Save()
-        self.project.active_editor = None
+        project.active_editor = None
 
     def Cancel(self):
         with flicker_free_drawing(self):
@@ -334,7 +335,7 @@ class CompactScrolledWindow(wx.ScrolledWindow):
         self.Scroll(0, 0)
 
     def ScrollToEnd(self):
-        self.Scroll(*self.Size)
+        self.Scroll(*(self.GetSizer().Size - self.Size))
 class MultilineTextCtrl(wx.richtext.RichTextCtrl):
 
     MIN_HEIGHT = 50
@@ -2157,7 +2158,7 @@ class Workspace(CompactScrolledWindow):
     def _init_project(self, project):
         self.project = project
         self.project.listen(
-            self._re_render_from_event,
+            lambda event: self._re_render(),
             "document",
             "layout.workspace",
             "highlights"
@@ -2173,6 +2174,7 @@ class Workspace(CompactScrolledWindow):
             self._re_render()
 
     def _re_render(self):
+        scroll_pos = self.GetViewStart()
         with flicker_free_drawing(self):
             column_count_changed = self._ensure_num_columns(len(self.project.columns))
             last_column_changed_pages = False
@@ -2181,6 +2183,8 @@ class Workspace(CompactScrolledWindow):
             self.GetTopLevelParent().ChildReRendered()
             if column_count_changed or last_column_changed_pages:
                 self.ScrollToEnd()
+            else:
+                self.Scroll(*scroll_pos)
 
     def _ensure_num_columns(self, num):
         count_changed = False
@@ -2196,8 +2200,6 @@ class Workspace(CompactScrolledWindow):
         column = Column(self, project=self.project, index=len(self.columns))
         self.sizer.Add(column, flag=wx.EXPAND)
         return column
-    def _re_render_from_event(self, event):
-        wx.CallAfter(self._re_render)
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
             self.columns,

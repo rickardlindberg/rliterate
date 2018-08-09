@@ -3905,7 +3905,31 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef active_editor(self):\n    return self._active_editor\n\n@active_editor.setter\ndef active_editor(self, editor):\n    with self.notify(\"editor\"):\n        self._active_editor = editor\n",
+"text":"@property\ndef ",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":"(self):\n    return self._active_editor\n\n@",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":".setter\ndef ",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":"(self, editor):\n    with self.notify(\"editor\"):\n        self._active_editor = editor\n",
 "type":"code"
 }
 ],
@@ -4639,7 +4663,15 @@
 ],
 "fragments":[
 {
-"text":"editor_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is not None\n)\n",
+"text":"editor_group = self._tool_groups.add_group(\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" is not None\n)\n",
 "type":"code"
 }
 ],
@@ -4667,7 +4699,15 @@
 ],
 "fragments":[
 {
-"text":"editor_group.add_tool(\n    wx.ART_FILE_SAVE,\n    lambda: self.project.active_editor.Save(),\n    short_help=\"Save\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('S')),\n        (wx.ACCEL_CTRL, wx.WXK_RETURN),\n    ]\n)\n",
+"text":"editor_group.add_tool(\n    wx.ART_FILE_SAVE,\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":".Save(),\n    short_help=\"Save\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('S')),\n        (wx.ACCEL_CTRL, wx.WXK_RETURN),\n    ]\n)\n",
 "type":"code"
 }
 ],
@@ -4695,7 +4735,15 @@
 ],
 "fragments":[
 {
-"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.active_editor.",
+"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -4728,7 +4776,15 @@
 ],
 "fragments":[
 {
-"text":"navigation_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is None\n)\n",
+"text":"navigation_group = self._tool_groups.add_group(\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" is None\n)\n",
 "type":"code"
 }
 ],
@@ -4809,7 +4865,15 @@
 ],
 "fragments":[
 {
-"text":"undo_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is None\n)\n",
+"text":"undo_group = self._tool_groups.add_group(\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" is None\n)\n",
 "type":"code"
 }
 ],
@@ -4890,7 +4954,15 @@
 ],
 "fragments":[
 {
-"text":"settings_group = self._tool_groups.add_group(\n    lambda: self.project.active_editor is None\n)\n",
+"text":"settings_group = self._tool_groups.add_group(\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" is None\n)\n",
 "type":"code"
 }
 ],
@@ -5704,7 +5776,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
+"text":")\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    scroll_pos = self.GetViewStart()\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n        else:\n            self.Scroll(*scroll_pos)\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
 "type":"code"
 },
 {
@@ -5718,20 +5790,6 @@
 ],
 "id":"d5dd19fb0dac4111b42932071e6a0c2f",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"Layout",
-"type":"code"
-},
-{
-"text":" is called on the parent. Otherwise scrollbars don't seem to update appropriately.",
-"type":"text"
-}
-],
-"id":"db2d5c4540ff42baa0cc1232134f310b",
-"type":"text"
 },
 {
 "fragments":[
@@ -5777,37 +5835,6 @@
 ],
 "id":"c881d2542f834261b1060e001e991f85",
 "type":"quote"
-},
-{
-"fragments":[
-{
-"text":"wx.CallAfter",
-"type":"code"
-},
-{
-"text":" seems to be needed to correctly update scrollbars on an event notification. Resizing the window also works.",
-"type":"text"
-}
-],
-"id":"fe799c6fd8484a9095d88a7f3faaf4bd",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"Workspace"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _re_render_from_event(self, event):\n    wx.CallAfter(self._re_render)\n",
-"type":"code"
-}
-],
-"id":"8e4e54c3a9fe453cbb9e6298c51a700e",
-"type":"code"
 }
 ],
 "title":"Rendering"
@@ -5951,7 +5978,7 @@
 "type":"chunk"
 },
 {
-"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            self._re_render_from_event,\n            \"document\",\n            \"layout.workspace\",\n            \"",
+"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._re_render(),\n            \"document\",\n            \"layout.workspace\",\n            \"",
 "type":"code"
 },
 {
@@ -7434,7 +7461,15 @@
 "type":"variable"
 },
 {
-"text":")\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _add_button(self, text, value):\n        def click_handler(event):\n            if self.project.active_editor is None:\n                self.paragraph.update(value)\n            else:\n                show_edit_in_progress_error(self)\n        button = wx.Button(self, label=text)\n        button.Bind(wx.EVT_BUTTON, click_handler)\n        self.hsizer.Add(button, flag=wx.ALL, border=2)\n",
+"text":")\n        view.SetSizer(self.vsizer)\n        return view\n\n    def _add_button(self, text, value):\n        def click_handler(event):\n            if self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" is None:\n                self.paragraph.update(value)\n            else:\n                show_edit_in_progress_error(self)\n        button = wx.Button(self, label=text)\n        button.Bind(wx.EVT_BUTTON, click_handler)\n        self.hsizer.Add(button, flag=wx.ALL, border=2)\n",
 "type":"code"
 }
 ],
@@ -7661,7 +7696,15 @@
 "type":"variable"
 },
 {
-"text":"()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.active_editor is not None:\n            show_edit_in_progress_error(self)\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.",
+"text":"()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" is not None:\n            show_edit_in_progress_error(self)\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.",
 "type":"code"
 },
 {
@@ -7669,7 +7712,23 @@
 "type":"variable"
 },
 {
-"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = self\n\n    def Save(self):\n        self.edit.Save()\n        self.project.active_editor = None\n\n    def ",
+"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" = self\n\n    def Save(self):\n        project = self.project\n        self.edit.Save()\n        project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" = None\n\n    def ",
 "type":"code"
 },
 {
@@ -7677,7 +7736,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.active_editor = None\n",
+"text":"(self):\n        with flicker_free_drawing(self):\n            self.edit.Destroy()\n            self.sizer.Show(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" = None\n",
 "type":"code"
 }
 ],
@@ -8336,7 +8403,7 @@
 ],
 "fragments":[
 {
-"text":"def ScrollToBeginning(self):\n    self.Scroll(0, 0)\n\ndef ScrollToEnd(self):\n    self.Scroll(*self.Size)\n",
+"text":"def ScrollToBeginning(self):\n    self.Scroll(0, 0)\n\ndef ScrollToEnd(self):\n    self.Scroll(*(self.GetSizer().Size - self.Size))\n",
 "type":"code"
 }
 ],
@@ -10516,6 +10583,7 @@
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
+"95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
 "9e987210a686490c823a44d09e783833":"_load",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
