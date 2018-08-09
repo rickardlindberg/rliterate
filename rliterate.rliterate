@@ -5530,7 +5530,15 @@
 ],
 "fragments":[
 {
-"text":"class TableOfContentsDropTarget(DropPointDropTarget):\n\n    def __init__(self, toc, project):\n        DropPointDropTarget.__init__(self, toc, \"page\")\n        self.project = project\n\n    def OnDataDropped(self, dropped_page, drop_point):\n        self.project.get_page(dropped_page[\"page_id\"]).move(\n            parent_page_id=drop_point.parent_page_id,\n            before_page_id=drop_point.before_page_id\n        )\n",
+"text":"class TableOfContentsDropTarget(DropPointDropTarget):\n\n    def __init__(self, toc, project):\n        DropPointDropTarget.__init__(self, toc, \"page\")\n        self.project = project\n\n    def ",
+"type":"code"
+},
+{
+"id":"2f0a877612fe4295ac6ad4ef7309d965",
+"type":"variable"
+},
+{
+"text":"(self, dropped_page, drop_point):\n        self.project.get_page(dropped_page[\"page_id\"]).move(\n            parent_page_id=drop_point.parent_page_id,\n            before_page_id=drop_point.before_page_id\n        )\n",
 "type":"code"
 }
 ],
@@ -5582,7 +5590,15 @@
 ],
 "fragments":[
 {
-"text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = (client_x, client_y) = self.page_container.ScreenToClient(screen_pos)\n    if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(client_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(client_x)\n            )\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(self, screen_pos):\n    client_pos = (client_x, client_y) = self.page_container.ScreenToClient(screen_pos)\n    if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        y_distances = defaultdict(list)\n        for drop_point in self.drop_points:\n            y_distances[drop_point.y_distance_to(client_y)].append(drop_point)\n        if y_distances:\n            return min(\n                y_distances[min(y_distances.keys())],\n                key=lambda drop_point: drop_point.x_distance_to(client_x)\n            )\n",
 "type":"code"
 }
 ],
@@ -6104,7 +6120,15 @@
 ],
 "fragments":[
 {
-"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace, project):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.project = project\n\n    def OnDataDropped(self, dropped_paragraph, drop_point):\n        self.project.get_paragraph(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
+"text":"class WorkspaceDropTarget(DropPointDropTarget):\n\n    def __init__(self, workspace, project):\n        DropPointDropTarget.__init__(self, workspace, \"paragraph\")\n        self.project = project\n\n    def ",
+"type":"code"
+},
+{
+"id":"2f0a877612fe4295ac6ad4ef7309d965",
+"type":"variable"
+},
+{
+"text":"(self, dropped_paragraph, drop_point):\n        self.project.get_paragraph(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
 "type":"code"
 }
 ],
@@ -6131,7 +6155,15 @@
 ],
 "fragments":[
 {
-"text":"def FindClosestDropPoint(self, screen_pos):\n    return ",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(self, screen_pos):\n    return ",
 "type":"code"
 },
 {
@@ -6139,7 +6171,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        self.columns,\n        lambda column: column.FindClosestDropPoint(screen_pos)\n    )\n",
+"text":"(\n        self.columns,\n        lambda column: column.",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(screen_pos)\n    )\n",
 "type":"code"
 }
 ],
@@ -6339,7 +6379,15 @@
 "type":"variable"
 },
 {
-"text":"\n                    )\n                )\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def FindClosestDropPoint(self, screen_pos):\n        return ",
+"text":"\n                    )\n                )\n        if page_ids == self._page_ids:\n            return False\n        else:\n            self.ScrollToBeginning()\n            self._page_ids = page_ids\n            return True\n\n    def ",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(self, screen_pos):\n        return ",
 "type":"code"
 },
 {
@@ -6347,7 +6395,15 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.containers,\n            lambda container: container.FindClosestDropPoint(screen_pos)\n        )\n",
+"text":"(\n            self.containers,\n            lambda container: container.",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(screen_pos)\n        )\n",
 "type":"code"
 }
 ],
@@ -6452,7 +6508,23 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n\n    def FindClosestDropPoint(self, screen_pos):\n        return self.page.FindClosestDropPoint(screen_pos)\n",
+"text":"\n        )\n\n    def ",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(self, screen_pos):\n        return self.page.",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(screen_pos)\n",
 "type":"code"
 }
 ],
@@ -6558,7 +6630,15 @@
 ],
 "fragments":[
 {
-"text":"def FindClosestDropPoint(self, screen_pos):\n    client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)\n    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        return ",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(self, screen_pos):\n    client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)\n    if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:\n        return ",
 "type":"code"
 },
 {
@@ -8618,12 +8698,54 @@
 ],
 "fragments":[
 {
-"text":"class DropPointDropTarget(wx.DropTarget):\n\n    def __init__(self, window, kind):\n        wx.DropTarget.__init__(self)\n        self.window = window\n        self.last_drop_point = None\n        self.rliterate_data = RliterateDataObject(kind)\n        self.DataObject = self.rliterate_data\n\n    def OnDragOver(self, x, y, defResult):\n        self._hide_last_drop_point()\n        drop_point = self._find_closest_drop_point(x, y)\n        if drop_point is not None and defResult == wx.DragMove:\n            drop_point.Show()\n            self.last_drop_point = drop_point\n            return wx.DragMove\n        return wx.DragNone\n\n    def OnData(self, x, y, defResult):\n        self._hide_last_drop_point()\n        drop_point = self._find_closest_drop_point(x, y)\n        if drop_point is not None and self.GetData():\n            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)\n        return defResult\n\n    def OnLeave(self):\n        self._hide_last_drop_point()\n\n    def _find_closest_drop_point(self, x, y):\n        return self.window.FindClosestDropPoint(\n            self.window.ClientToScreen((x, y))\n        )\n\n    def _hide_last_drop_point(self):\n        if self.last_drop_point is not None:\n            self.last_drop_point.Hide()\n            self.last_drop_point = None\n",
+"text":"class DropPointDropTarget(wx.DropTarget):\n\n    def __init__(self, window, kind):\n        wx.DropTarget.__init__(self)\n        self.window = window\n        self.last_drop_point = None\n        self.rliterate_data = RliterateDataObject(kind)\n        self.DataObject = self.rliterate_data\n\n    def OnDragOver(self, x, y, defResult):\n        self._hide_last_drop_point()\n        drop_point = self._find_closest_drop_point(x, y)\n        if drop_point is not None and defResult == wx.DragMove:\n            drop_point.Show()\n            self.last_drop_point = drop_point\n            return wx.DragMove\n        return wx.DragNone\n\n    def OnData(self, x, y, defResult):\n        self._hide_last_drop_point()\n        drop_point = self._find_closest_drop_point(x, y)\n        if drop_point is not None and self.GetData():\n            wx.CallAfter(self.",
+"type":"code"
+},
+{
+"id":"2f0a877612fe4295ac6ad4ef7309d965",
+"type":"variable"
+},
+{
+"text":", self.rliterate_data.get_json(), drop_point)\n        return defResult\n\n    def OnLeave(self):\n        self._hide_last_drop_point()\n\n    def _find_closest_drop_point(self, x, y):\n        return self.window.",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(\n            self.window.ClientToScreen((x, y))\n        )\n\n    def _hide_last_drop_point(self):\n        if self.last_drop_point is not None:\n            self.last_drop_point.Hide()\n            self.last_drop_point = None\n",
 "type":"code"
 }
 ],
 "id":"1ae68af41cdc472c848edf7b65cd9557",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"If ",
+"type":"text"
+},
+{
+"text":"wx.CallAfter",
+"type":"code"
+},
+{
+"text":" is not used when calling ",
+"type":"text"
+},
+{
+"text":"OnDataDropped",
+"type":"code"
+},
+{
+"text":", the application will not close propery. Not sure why, but this works for now.",
+"type":"text"
+}
+],
+"id":"758e36b6f17f475e91d666265cc17a89",
+"type":"text"
 }
 ],
 "title":"Drop point drop target"
@@ -11512,6 +11634,7 @@
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
+"2f0a877612fe4295ac6ad4ef7309d965":"OnDataDropped",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
 "30eeb77f05c34590a6498edb391d0916":"PARAGRAPH_SPACE",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
@@ -11554,6 +11677,7 @@
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
 "c0363497d8b6457ea2e652a9f8ec0afe":"ok_fn",
+"c25dba288acc4daba02327df732b1a7a":"FindClosestDropPoint",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
 "c56b4a82a7d4441ab6ceb5610217a3c5":"editor_font",
 "d102ad411943476d9d432a286f9cbe55":"highlight",

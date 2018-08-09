@@ -238,7 +238,7 @@ class DropPointDropTarget(wx.DropTarget):
         self._hide_last_drop_point()
         drop_point = self._find_closest_drop_point(x, y)
         if drop_point is not None and self.GetData():
-            self.OnDataDropped(self.rliterate_data.get_json(), drop_point)
+            wx.CallAfter(self.OnDataDropped, self.rliterate_data.get_json(), drop_point)
         return defResult
 
     def OnLeave(self):
