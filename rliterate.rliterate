@@ -3788,7 +3788,39 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    return {\"monospace\": True, \"size\": 9}\n",
+"text":"(self):\n    return {\"monospace\": True, \"size\": 9}\n\n@property\ndef ",
+"type":"code"
+},
+{
+"id":"8970b68862714f158948f8ec1c68acb1",
+"type":"variable"
+},
+{
+"text":"(self):\n    return {\"size\": 10}\n\n@property\ndef ",
+"type":"code"
+},
+{
+"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
+"type":"variable"
+},
+{
+"text":"(self):\n    return {\"size\": 16}\n\n@property\ndef ",
+"type":"code"
+},
+{
+"id":"aa80683234dc421f81d21fbda0b91758",
+"type":"variable"
+},
+{
+"text":"(self):\n    return {\"monospace\": True}\n\n@property\ndef ",
+"type":"code"
+},
+{
+"id":"39e45626d4804403be92d31444a1281c",
+"type":"variable"
+},
+{
+"text":"(self):\n    return {\"size\": 10}\n",
 "type":"code"
 }
 ],
@@ -5604,7 +5636,31 @@
 "type":"variable"
 },
 {
-"text":"(bold=True)\n    text = wx.StaticText(self)\n    text.SetLabelText(self.page.title)\n    self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)\n    self.SetSizer(self.sizer)\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n",
+"text":"(**dict(self.project.",
+"type":"code"
+},
+{
+"id":"8970b68862714f158948f8ec1c68acb1",
+"type":"variable"
+},
+{
+"text":", bold=True))\n    else:\n        self.Font = ",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"8970b68862714f158948f8ec1c68acb1",
+"type":"variable"
+},
+{
+"text":")\n    text = wx.StaticText(self)\n    text.SetLabelText(self.page.title)\n    self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)\n    self.SetSizer(self.sizer)\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n",
 "type":"code"
 }
 ],
@@ -6423,7 +6479,15 @@
 "type":"variable"
 },
 {
-"text":"(size=16)\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=self.project.",
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
+"type":"variable"
+},
+{
+"text":")\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=self.project.",
 "type":"code"
 },
 {
@@ -6541,7 +6605,23 @@
 "type":"variable"
 },
 {
-"text":"-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=lambda event: base.ShowContextMenu(),\n            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.token = None\n\n    def _on_mouse_move(self, event):\n        token = self.GetToken(event.Position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
+"text":"-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=lambda event: base.ShowContextMenu(),\n            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.Font = ",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**project.",
+"type":"code"
+},
+{
+"id":"39e45626d4804403be92d31444a1281c",
+"type":"variable"
+},
+{
+"text":")\n        self.token = None\n\n    def _on_mouse_move(self, event):\n        token = self.GetToken(event.Position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
 "type":"code"
 }
 ],
@@ -6737,7 +6817,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        view = wx.Panel(self)\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def ",
+"text":"(self):\n        view = wx.Panel(self)\n        view.Font = ",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"39e45626d4804403be92d31444a1281c",
+"type":"variable"
+},
+{
+"text":")\n        sizer = wx.BoxSizer(wx.VERTICAL)\n        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)\n        view.SetSizer(sizer)\n        return view\n\n    def ",
 "type":"code"
 },
 {
@@ -6802,7 +6898,15 @@
 "type":"variable"
 },
 {
-"text":"(monospace=True)\n    sizer = wx.BoxSizer(wx.VERTICAL)\n    if not self.paragraph.path.is_empty:\n        sizer.Add(\n            self._create_path(),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n    sizer.Add(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetSizer(sizer)\n    self.SetBackgroundColour((243, 236, 219))\n",
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"aa80683234dc421f81d21fbda0b91758",
+"type":"variable"
+},
+{
+"text":")\n    sizer = wx.BoxSizer(wx.VERTICAL)\n    if not self.paragraph.path.is_empty:\n        sizer.Add(\n            self._create_path(),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n    sizer.Add(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetSizer(sizer)\n    self.SetBackgroundColour((243, 236, 219))\n",
 "type":"code"
 }
 ],
@@ -10824,6 +10928,7 @@
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
 "30eeb77f05c34590a6498edb391d0916":"PARAGRAPH_SPACE",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
+"39e45626d4804403be92d31444a1281c":"text_font",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "507782d786b84d209eef461ecd0b4544":"fragments",
@@ -10838,6 +10943,7 @@
 "740055857bb244038c203cea23c1af69":"CreateView",
 "76b9d362e0714c1da27953dd46e8ef0b":"PAGE_PADDING",
 "885085190cef47709dd3922b7c386fab":"fragments",
+"8970b68862714f158948f8ec1c68acb1":"toc_font",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
@@ -10848,6 +10954,7 @@
 "a5bace68289b40e78df93409e362a63b":"from_file",
 "a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
 "a886e97ceb3d427c8190487d23d12bc1":"Column",
+"aa80683234dc421f81d21fbda0b91758":"code_font",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
@@ -10860,6 +10967,7 @@
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d3f9252875944a4e94cbb00851a7384f":"variable_delimiters",
 "d4d8284a9d5f4e0abbbbc328581ef877":"value",
+"d4f8ea56ca9c4eb0a49487a85d4be2a9":"title_font",
 "d6cbae294f8e4eec91f8a110b0d29761":"_convert_to_latest",
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",

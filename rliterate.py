@@ -1466,6 +1466,22 @@ class Project(Observable):
     @property
     def editor_font(self):
         return {"monospace": True, "size": 9}
+
+    @property
+    def toc_font(self):
+        return {"size": 10}
+
+    @property
+    def title_font(self):
+        return {"size": 16}
+
+    @property
+    def code_font(self):
+        return {"monospace": True}
+
+    @property
+    def text_font(self):
+        return {"size": 10}
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
@@ -2035,7 +2051,9 @@ class TableOfContentsRow(wx.Panel):
         else:
             self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
         if self.project.is_open(self.page.id):
-            self.Font = create_font(bold=True)
+            self.Font = create_font(**dict(self.project.toc_font, bold=True))
+        else:
+            self.Font = create_font(**self.project.toc_font)
         text = wx.StaticText(self)
         text.SetLabelText(self.page.title)
         self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
@@ -2417,7 +2435,7 @@ class Title(Editable):
         Editable.__init__(self, parent, project)
 
     def CreateView(self):
-        self.Font = create_font(size=16)
+        self.Font = create_font(**self.project.title_font)
         view = TokenView(
             self,
             self.project,
@@ -2500,6 +2518,7 @@ class TextView(TokenView):
             move=self._on_mouse_move,
             click=self._on_click
         )
+        self.Font = create_font(**project.text_font)
         self.token = None
 
     def _on_mouse_move(self, event):
@@ -2566,6 +2585,7 @@ class List(ParagraphBase):
 
     def CreateView(self):
         view = wx.Panel(self)
+        view.Font = create_font(**self.project.text_font)
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)
         view.SetSizer(sizer)
@@ -2637,7 +2657,7 @@ class CodeView(wx.Panel):
         self._create_gui()
 
     def _create_gui(self):
-        self.Font = create_font(monospace=True)
+        self.Font = create_font(**self.project.code_font)
         sizer = wx.BoxSizer(wx.VERTICAL)
         if not self.paragraph.path.is_empty:
             sizer.Add(
