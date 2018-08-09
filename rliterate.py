@@ -1675,7 +1675,7 @@ class MainFrame(wx.Frame):
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)
-        self.SetSizer(sizer)
+        self.SetSizerAndFit(sizer)
 
     def _create_main_panel(self, project):
         self._panel = wx.Panel(self)
