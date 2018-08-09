@@ -51,17 +51,17 @@ class Editable(wx.Panel):
             self.GetTopLevelParent().ChildReRendered()
             self.project.active_editor = self
 
-    def Save(self):
-        project = self.project
-        self.edit.Save()
-        project.active_editor = None
-
     def Cancel(self):
         with flicker_free_drawing(self):
             self.edit.Destroy()
             self.sizer.Show(self.view)
             self.GetTopLevelParent().ChildReRendered()
             self.project.active_editor = None
+
+    def Save(self):
+        project = self.project
+        self.edit.Save()
+        project.active_editor = None
 class Style(object):
 
     def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):

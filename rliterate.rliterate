@@ -7720,15 +7720,7 @@
 "type":"variable"
 },
 {
-"text":" = self\n\n    def Save(self):\n        project = self.project\n        self.edit.Save()\n        project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" = None\n\n    def ",
+"text":" = self\n\n    def ",
 "type":"code"
 },
 {
@@ -7744,12 +7736,86 @@
 "type":"variable"
 },
 {
-"text":" = None\n",
+"text":" = None\n\n",
 "type":"code"
+},
+{
+"path":[
+"Editable"
+],
+"prefix":"    ",
+"type":"chunk"
 }
 ],
 "id":"79cd58077311436295ce672e07703388",
 "type":"code"
+},
+{
+"chunkpath":[
+"base base classes",
+"Editable"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def Save(self):\n    project = self.project\n    self.edit.Save()\n    project.",
+"type":"code"
+},
+{
+"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
+"type":"variable"
+},
+{
+"text":" = None\n",
+"type":"code"
+}
+],
+"id":"0c9a855becd6478fb28ef113fff99f5b",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"When ",
+"type":"text"
+},
+{
+"text":"Save",
+"type":"code"
+},
+{
+"text":" is called, the workspace will re-render and this ",
+"type":"text"
+},
+{
+"text":"Editable",
+"type":"code"
+},
+{
+"text":" will be destroyed. ",
+"type":"text"
+},
+{
+"text":"self",
+"type":"code"
+},
+{
+"text":" therefore referes to an object whose C++ counterpart has been destroyed. We therefore assign project to a local variable to avoid accessing ",
+"type":"text"
+},
+{
+"text":"self",
+"type":"code"
+},
+{
+"text":" after the save.",
+"type":"text"
+}
+],
+"id":"6f16229444d945c4b4e77734d1de0488",
+"type":"text"
 },
 {
 "chunkpath":[
