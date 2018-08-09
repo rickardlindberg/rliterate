@@ -10696,7 +10696,15 @@
 "children":[],
 "fragments":[
 {
-"text":"Make hoisted page a property? (Setter did not work well inside lambda)",
+"text":"Make hoisted page a property? (Setter did not work well inside lambda. Can use ",
+"type":"text"
+},
+{
+"text":"setattr",
+"type":"code"
+},
+{
+"text":")",
 "type":"text"
 }
 ]
@@ -10722,11 +10730,22 @@
 ]
 },
 {
+"child_type":"unordered",
+"children":[
+{
 "child_type":null,
 "children":[],
 "fragments":[
 {
-"text":"Refactoring: split paragraph where clicked?",
+"text":"Split paragraph where clicked?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Refactorings",
 "type":"text"
 }
 ]
