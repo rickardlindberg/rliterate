@@ -1675,7 +1675,7 @@ class MainFrame(wx.Frame):
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)
-        self.SetSizerAndFit(sizer)
+        self.SetSizer(sizer)
 
     def _create_main_panel(self, project):
         self._panel = wx.Panel(self)
@@ -1690,8 +1690,6 @@ class MainFrame(wx.Frame):
 
     def ChildReRendered(self):
         self.Layout()
-        if wx.Window.FindFocus() is None:
-            self._panel.SetFocus()
 class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
@@ -2174,7 +2172,6 @@ class Workspace(CompactScrolledWindow):
             self._re_render()
 
     def _re_render(self):
-        scroll_pos = self.GetViewStart()
         with flicker_free_drawing(self):
             column_count_changed = self._ensure_num_columns(len(self.project.columns))
             last_column_changed_pages = False
@@ -2183,8 +2180,6 @@ class Workspace(CompactScrolledWindow):
             self.GetTopLevelParent().ChildReRendered()
             if column_count_changed or last_column_changed_pages:
                 self.ScrollToEnd()
-            else:
-                self.Scroll(*scroll_pos)
 
     def _ensure_num_columns(self, num):
         count_changed = False

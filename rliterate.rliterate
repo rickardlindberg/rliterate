@@ -4602,7 +4602,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Frame):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)\n        self.SetSizerAndFit(sizer)\n\n    def _create_main_panel(self, project):\n        self._panel = wx.Panel(self)\n        self.SetToolBar(ToolBar(self._panel, project))\n        workspace = Workspace(self._panel, project)\n        toc = TableOfContents(self._panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self._panel.SetSizer(sizer)\n        return self._panel\n\n",
+"text":"(wx.Frame):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)\n        self.SetSizer(sizer)\n\n    def _create_main_panel(self, project):\n        self._panel = wx.Panel(self)\n        self.SetToolBar(ToolBar(self._panel, project))\n        workspace = Workspace(self._panel, project)\n        toc = TableOfContents(self._panel, project)\n        sizer = wx.BoxSizer(wx.HORIZONTAL)\n        sizer.Add(toc, flag=wx.EXPAND, proportion=0)\n        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)\n        self._panel.SetSizer(sizer)\n        return self._panel\n\n",
 "type":"code"
 },
 {
@@ -4636,7 +4636,7 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    self.Layout()\n    if wx.Window.FindFocus() is None:\n        self._panel.SetFocus()\n",
+"text":"def ChildReRendered(self):\n    self.Layout()\n",
 "type":"code"
 }
 ],
@@ -5776,7 +5776,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    scroll_pos = self.GetViewStart()\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n        else:\n            self.Scroll(*scroll_pos)\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
+"text":")\n        self.SetSizer(self.sizer)\n        self.columns = []\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    column = ",
 "type":"code"
 },
 {
@@ -9317,6 +9317,64 @@
 }
 ],
 "title":"Scrollbars"
+},
+{
+"children":[],
+"id":"a97dbe809b44455badf7907ea9ea369b",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"Problem to investigate: does accelerator table stop working after a layout?",
+"type":"text"
+}
+],
+"id":"6c2cd33e6dd047d0b0d83e895cd774f8",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"example_accelerator_table.py"
+],
+"fragments":[
+{
+"text":"class Frame(wx.Frame):\n\n    def __init__(self):\n        wx.Frame.__init__(self, None)\n\n        a_id = wx.NewId()\n        b_id = wx.NewId()\n\n        entries = [wx.AcceleratorEntry() for i in xrange(2)]\n\n        entries[0].Set(wx.ACCEL_CTRL, ord('A'), a_id)\n        entries[1].Set(wx.ACCEL_CTRL, ord('B'), b_id)\n\n        accel = wx.AcceleratorTable(entries)\n        self.SetAcceleratorTable(accel)\n\n        self.Bind(wx.EVT_MENU, self._a_event, id=a_id)\n        self.Bind(wx.EVT_MENU, self._b_event, id=b_id)\n\n        self.panel = wx.ScrolledWindow(self)\n        self.panel.SetScrollRate(10, 10)\n\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self._populate()\n        self.panel.SetSizer(self.sizer)\n\n    def _populate(self):\n        self.sizer.Clear(True)\n        for index in range(10):\n            self.sizer.Add(wx.TextCtrl(self.panel, value=\"label {}\".format(index)))\n        self.panel.SetFocus()\n\n    def _a_event(self, event):\n        print(\"a\")\n        self._populate()\n        self.panel.Layout()\n\n    def _b_event(self, event):\n        print(\"b\")\n",
+"type":"code"
+}
+],
+"id":"093dc43ce46f48efaa5730741e8746f1",
+"type":"code"
+},
+{
+"chunkpath":[],
+"filepath":[
+"example_accelerator_table.py"
+],
+"fragments":[
+{
+"text":"import wx\n\n",
+"type":"code"
+},
+{
+"path":[
+"classes"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"text":"\napp = wx.App()\nframe = Frame()\nframe.Show()\napp.MainLoop()\n",
+"type":"code"
+}
+],
+"id":"60a835103f2241ebb4d908282a5b1801",
+"type":"code"
+}
+],
+"title":"Accelerator table"
 }
 ],
 "id":"a6dbde4ee7ec4f5a9ac4f83bff4fa48f",
