@@ -62,6 +62,42 @@ class Editable(wx.Panel):
         project = self.project
         self.edit.Save()
         project.active_editor = None
+class BoxSizerMixin(object):
+
+    def __init__(self, orientation):
+        self.Sizer = wx.BoxSizer(orientation)
+
+    def AppendChild(self, window, **kwargs):
+        self.Sizer.Add(window, **kwargs)
+        return window
+
+    def InsertChild(self, position, window, **kwargs):
+        self.Sizer.Insert(position, window, **kwargs)
+        return window
+
+    def AppendSpace(self, size):
+        if self.Sizer.Orientation == wx.HORIZONTAL:
+            self.Sizer.Add((size, 1))
+        else:
+            self.Sizer.Add((1, size))
+
+    def AppendStretch(self, proportion):
+        self.Sizer.AddStretchSpacer(proportion)
+
+    def RemoveChildren(self):
+        self.Sizer.Clear(True)
+class VerticalPanel(wx.Panel, BoxSizerMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent, **kwargs)
+        BoxSizerMixin.__init__(self, wx.VERTICAL)
+
+
+class HorizontalPanel(wx.Panel, BoxSizerMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent, **kwargs)
+        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
 class Style(object):
 
     def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
@@ -336,6 +372,17 @@ class CompactScrolledWindow(wx.ScrolledWindow):
 
     def ScrollToEnd(self):
         self.Scroll(*(self.GetSizer().Size - self.Size))
+class VerticalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):
+
+    def __init__(self, *args, **kwargs):
+        CompactScrolledWindow.__init__(self, *args, **kwargs)
+        BoxSizerMixin.__init__(self, wx.VERTICAL)
+
+class HorizontalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):
+
+    def __init__(self, *args, **kwargs):
+        CompactScrolledWindow.__init__(self, *args, **kwargs)
+        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
 class MultilineTextCtrl(wx.richtext.RichTextCtrl):
 
     MIN_HEIGHT = 50
@@ -1683,7 +1730,7 @@ class SolarizedTheme(BaseTheme):
         TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),
         TokenType.RLiterate.Sep:       Style(color=base1),
     }
-class MainFrame(wx.Frame):
+class MainFrame(wx.Frame, BoxSizerMixin):
 
     def __init__(self, project):
         wx.Frame.__init__(
@@ -1692,22 +1739,16 @@ class MainFrame(wx.Frame):
             size=(920, 500),
             title="{} - RLiterate".format(project.title)
         )
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)
-        self.SetSizer(sizer)
+        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
+        self.AppendChild(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)
 
     def _create_main_panel(self, project):
-        self._panel = wx.Panel(self)
-        self.SetToolBar(ToolBar(self._panel, project))
-        self._focus_panel = wx.Panel(self)
-        toc = TableOfContents(self._panel, project)
-        workspace = Workspace(self._panel, project)
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self._focus_panel)
-        sizer.Add(toc, flag=wx.EXPAND, proportion=0)
-        sizer.Add(workspace, flag=wx.EXPAND, proportion=1)
-        self._panel.SetSizer(sizer)
-        return self._panel
+        panel = HorizontalPanel(self)
+        self.SetToolBar(ToolBar(panel, project))
+        self._focus_panel = panel.AppendChild(wx.Panel(self))
+        panel.AppendChild(TableOfContents(panel, project), flag=wx.EXPAND, proportion=0)
+        panel.AppendChild(Workspace(panel, project), flag=wx.EXPAND, proportion=1)
+        return panel
 
     def ChildReRendered(self):
         self.Layout()
@@ -1894,10 +1935,10 @@ class Tool(object):
                 " / ".join(x.ToString() for x in self.accelerator_entries())
             )
         toolbar.SetToolShortHelp(self.id, text)
-class TableOfContents(wx.Panel):
+class TableOfContents(VerticalPanel):
 
     def __init__(self, parent, project):
-        wx.Panel.__init__(self, parent, size=(250, -1))
+        VerticalPanel.__init__(self, parent, size=(250, -1))
         self._init_project(project)
         self.SetDropTarget(TableOfContentsDropTarget(self, self.project))
         self._render()
@@ -1911,13 +1952,8 @@ class TableOfContents(wx.Panel):
 
     def _render(self):
         with flicker_free_drawing(self):
-            self.sizer = wx.BoxSizer(wx.VERTICAL)
-            self.SetSizer(self.sizer)
             self.unhoist_button = None
-            self.page_sizer = wx.BoxSizer(wx.VERTICAL)
-            self.page_container = CompactScrolledWindow(self)
-            self.page_container.SetSizer(self.page_sizer)
-            self.sizer.Add(self.page_container, flag=wx.EXPAND, proportion=1)
+            self.page_container = self.AppendChild(VerticalScrolledWindow(self), flag=wx.EXPAND, proportion=1)
             self.SetBackgroundColour((255, 255, 255))
             self._re_render()
 
@@ -1927,18 +1963,21 @@ class TableOfContents(wx.Panel):
             if self.unhoist_button is not None:
                 self.unhoist_button.Destroy()
                 self.unhoist_button = None
-            self.page_sizer.Clear(True)
+            self.page_container.RemoveChildren()
             self._render_unhoist_button()
             self._render_page_container()
             self.GetTopLevelParent().ChildReRendered()
     def _render_unhoist_button(self):
         if self._get_hoisted_page() is not None:
-            self.unhoist_button = wx.Button(self, label="unhoist")
+            self.unhoist_button = self.InsertChild(
+                0,
+                wx.Button(self, label="unhoist"),
+                flag=wx.EXPAND
+            )
             self.unhoist_button.Bind(
                 wx.EVT_BUTTON,
                 lambda event: self.project.set_hoisted_page(None)
             )
-            self.sizer.Insert(0, self.unhoist_button, flag=wx.EXPAND)
     def _render_page_container(self):
         if self._get_hoisted_page() is None:
             self._render_page(self.project.get_page())
@@ -1953,13 +1992,12 @@ class TableOfContents(wx.Panel):
 
     def _render_page(self, page, indentation=0):
         is_collapsed = self.project.is_collapsed(page.id)
-        self.page_sizer.Add(
+        self.page_container.AppendChild(
             TableOfContentsRow(self.page_container, self.project, page, indentation),
             flag=wx.EXPAND
         )
-        divider = Divider(self.page_container, padding=0, height=2)
-        self.page_sizer.Add(
-            divider,
+        divider = self.page_container.AppendChild(
+            Divider(self.page_container, padding=0, height=2),
             flag=wx.EXPAND
         )
         if is_collapsed or len(page.children) == 0:
@@ -2030,10 +2068,10 @@ class TableOfContentsDropTarget(DropPointDropTarget):
             parent_page_id=drop_point.parent_page_id,
             before_page_id=drop_point.before_page_id
         )
-class TableOfContentsRow(wx.Panel):
+class TableOfContentsRow(HorizontalPanel):
 
     def __init__(self, parent, project, page, indentation):
-        wx.Panel.__init__(self, parent)
+        HorizontalPanel.__init__(self, parent)
         self.project = project
         self.page = page
         self.indentation = indentation
@@ -2043,21 +2081,16 @@ class TableOfContentsRow(wx.Panel):
     INDENTATION_SIZE = 16
 
     def _render(self):
-        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add((self.indentation*self.INDENTATION_SIZE, 1))
+        self.AppendSpace(self.indentation*self.INDENTATION_SIZE)
         if self.page.children:
-            button = TableOfContentsButton(self, self.project, self.page)
-            self.sizer.Add(button, flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
+            self.AppendChild(TableOfContentsButton(self, self.project, self.page), flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
         else:
-            self.sizer.Add((TableOfContentsButton.SIZE+1+self.BORDER, 1))
+            self.AppendSpace(TableOfContentsButton.SIZE+1+self.BORDER)
         if self.project.is_open(self.page.id):
             self.Font = create_font(**dict(self.project.toc_font, bold=True))
         else:
             self.Font = create_font(**self.project.toc_font)
-        text = wx.StaticText(self)
-        text.SetLabelText(self.page.title)
-        self.sizer.Add(text, flag=wx.ALL, border=self.BORDER)
-        self.SetSizer(self.sizer)
+        text = self.AppendChild(wx.StaticText(self, label=self.page.title), flag=wx.ALL, border=self.BORDER)
         self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)
         self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
         for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
@@ -2167,10 +2200,10 @@ class PageContextMenu(wx.Menu):
             lambda event: self.page.delete(),
             delete_item
         )
-class Workspace(CompactScrolledWindow):
+class Workspace(HorizontalScrolledWindow):
 
     def __init__(self, parent, project):
-        CompactScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
+        HorizontalScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
         self._init_project(project)
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
         self._render()
@@ -2187,9 +2220,7 @@ class Workspace(CompactScrolledWindow):
     def _render(self):
         with flicker_free_drawing(self):
             self.SetBackgroundColour((200, 200, 200))
-            self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-            self.sizer.AddSpacer(self.project.PAGE_PADDING)
-            self.SetSizer(self.sizer)
+            self.AppendSpace(self.project.PAGE_PADDING)
             self.columns = []
             wx.CallAfter(self._re_render)
 
@@ -2214,9 +2245,10 @@ class Workspace(CompactScrolledWindow):
         return count_changed
 
     def _add_column(self):
-        column = Column(self, project=self.project, index=len(self.columns))
-        self.sizer.Add(column, flag=wx.EXPAND)
-        return column
+        return self.AppendChild(
+            Column(self, project=self.project, index=len(self.columns)),
+            flag=wx.EXPAND
+        )
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
             self.columns,
@@ -2236,10 +2268,10 @@ class WorkspaceDropTarget(DropPointDropTarget):
             target_page=drop_point.page_id,
             before_paragraph=drop_point.next_paragraph_id
         )
-class Column(CompactScrolledWindow):
+class Column(VerticalScrolledWindow):
 
     def __init__(self, parent, project, index):
-        CompactScrolledWindow.__init__(
+        VerticalScrolledWindow.__init__(
             self,
             parent,
             style=wx.VSCROLL,
@@ -2248,7 +2280,6 @@ class Column(CompactScrolledWindow):
         self.project = project
         self.index = index
         self._page_ids = []
-        self._setup_layout()
         self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
         self.Bind(EVT_TOKEN_CLICK, self._on_token_click)
 
@@ -2273,10 +2304,6 @@ class Column(CompactScrolledWindow):
             column_index=self.index+1
         )
 
-    def _setup_layout(self):
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.sizer)
-
     def _get_size(self, project):
         return (
             project.PAGE_BODY_WIDTH+
@@ -2289,17 +2316,17 @@ class Column(CompactScrolledWindow):
     def SetPages(self, page_ids):
         self.containers = []
         self.MinSize = self._get_size(self.project)
-        self.sizer.Clear(True)
-        self.sizer.AddSpacer(self.project.PAGE_PADDING)
+        self.RemoveChildren()
+        self.AppendSpace(self.project.PAGE_PADDING)
         for page_id in page_ids:
             if self.project.get_page(page_id) is not None:
-                container = PageContainer(self, self.project, page_id)
-                self.sizer.Add(
-                    container,
-                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-                    border=self.project.PAGE_PADDING
+                self.containers.append(
+                    self.AppendChild(
+                        PageContainer(self, self.project, page_id),
+                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+                        border=self.project.PAGE_PADDING
+                    )
                 )
-                self.containers.append(container)
         if page_ids == self._page_ids:
             return False
         else:
@@ -2312,41 +2339,35 @@ class Column(CompactScrolledWindow):
             self.containers,
             lambda container: container.FindClosestDropPoint(screen_pos)
         )
-class PageContainer(wx.Panel):
+class PageContainer(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
-        wx.Panel.__init__(self, parent)
+        VerticalPanel.__init__(self, parent)
         self.project = project
         self.page_id = page_id
         self._render()
 
     def _render(self):
         self.SetBackgroundColour((150, 150, 150))
-        self.inner_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.inner_container = wx.Panel(self)
-        self.inner_container.SetBackgroundColour((255, 255, 255))
-        self.inner_container.SetSizer(self.inner_sizer)
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(
-            self.inner_container,
+        self.inner_container = self.AppendChild(
+            VerticalPanel(self),
             flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
             border=self.project.SHADOW_SIZE
         )
-        self.SetSizer(self.sizer)
-        self.inner_sizer.AddSpacer(self.project.CONTAINER_BORDER)
-        self.page = PagePanel(self.inner_container, self.project, self.page_id)
-        self.inner_sizer.Add(
-            self.page,
+        self.inner_container.SetBackgroundColour((255, 255, 255))
+        self.inner_container.AppendSpace(self.project.CONTAINER_BORDER)
+        self.page = self.inner_container.AppendChild(
+            PagePanel(self.inner_container, self.project, self.page_id),
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
             border=self.project.CONTAINER_BORDER
         )
 
     def FindClosestDropPoint(self, screen_pos):
         return self.page.FindClosestDropPoint(screen_pos)
-class PagePanel(wx.Panel):
+class PagePanel(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
-        wx.Panel.__init__(self, parent, size=(
+        VerticalPanel.__init__(self, parent, size=(
             project.PAGE_BODY_WIDTH,
             -1
         ))
@@ -2355,8 +2376,6 @@ class PagePanel(wx.Panel):
         self._render()
 
     def _render(self):
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.sizer)
         self.drop_points = []
         page = self.project.get_page(self.page_id)
         divider = self._render_paragraph(Title(self, self.project, page))
@@ -2382,27 +2401,31 @@ class PagePanel(wx.Panel):
         self._render_add_button()
 
     def _render_paragraph(self, paragraph):
-        self.sizer.Add(paragraph, flag=wx.EXPAND)
-        divider = Divider(self, padding=(self.project.PARAGRAPH_SPACE-3)/2, height=3)
-        self.sizer.Add(divider, flag=wx.EXPAND)
-        return divider
+        self.AppendChild(paragraph, flag=wx.EXPAND)
+        return self.AppendChild(
+            Divider(
+                self,
+                padding=(self.project.PARAGRAPH_SPACE-3)/2,
+                height=3
+            ),
+            flag=wx.EXPAND
+        )
 
     def _render_add_button(self):
-        add_button = wx.BitmapButton(
-            self,
-            bitmap=wx.ArtProvider.GetBitmap(
-                wx.ART_ADD_BOOKMARK,
-                wx.ART_BUTTON,
-                (16, 16)
+        add_button = self.AppendChild(
+            wx.BitmapButton(
+                self,
+                bitmap=wx.ArtProvider.GetBitmap(
+                    wx.ART_ADD_BOOKMARK,
+                    wx.ART_BUTTON,
+                    (16, 16)
+                ),
+                style=wx.NO_BORDER
             ),
-            style=wx.NO_BORDER
-        )
-        add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
-        self.sizer.Add(
-            add_button,
             flag=wx.TOP|wx.ALIGN_RIGHT,
             border=self.project.PARAGRAPH_SPACE
         )
+        add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
 
     def _on_add_button(self, event):
         self.project.add_paragraph(self.page_id)
@@ -2557,21 +2580,22 @@ class Quote(Text):
     INDENT = 20
 
     def CreateView(self):
-        view = wx.Panel(self)
-        self.text_view = TextView(
-            view,
-            self.project,
-            [
-                token.with_extra("text_index", (token.extra["fragment_index"],))
-                for token in self.paragraph.tokens
-            ],
-            self,
-            indented=self.INDENT
+        view = HorizontalPanel(self)
+        view.AppendSpace(self.INDENT)
+        self.text_view = view.AppendChild(
+            TextView(
+                view,
+                self.project,
+                [
+                    token.with_extra("text_index", (token.extra["fragment_index"],))
+                    for token in self.paragraph.tokens
+                ],
+                self,
+                indented=self.INDENT
+            ),
+            flag=wx.EXPAND,
+            proportion=1
         )
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add((self.INDENT, 1))
-        sizer.Add(self.text_view, flag=wx.EXPAND, proportion=1)
-        view.SetSizer(sizer)
         return view
 
     def AddContextMenuItems(self, menu):
@@ -2584,11 +2608,9 @@ class List(ParagraphBase):
     INDENT = 20
 
     def CreateView(self):
-        view = wx.Panel(self)
+        view = VerticalPanel(self)
         view.Font = create_font(**self.project.text_font)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self.add_items(view, sizer, self.paragraph.children, self.paragraph.child_type)
-        view.SetSizer(sizer)
+        self.add_items(view, self.paragraph.children, self.paragraph.child_type)
         return view
 
     def CreateEdit(self, extra):
@@ -2600,7 +2622,7 @@ class List(ParagraphBase):
             extra
         )
 
-    def add_items(self, view, sizer, items, child_type, indicies=[]):
+    def add_items(self, view, items, child_type, indicies=[]):
         for index, item in enumerate(items):
             inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
             inner_sizer.Add((self.INDENT*len(indicies), 1))
@@ -2622,8 +2644,8 @@ class List(ParagraphBase):
                 ),
                 proportion=1
             )
-            sizer.Add(inner_sizer, flag=wx.EXPAND)
-            self.add_items(view, sizer, item.children, item.child_type, indicies+[index])
+            view.AppendChild(inner_sizer, flag=wx.EXPAND)
+            self.add_items(view, item.children, item.child_type, indicies+[index])
 
     def _create_bullet_widget(self, view, list_type, index):
         return TokenView(
@@ -2644,13 +2666,13 @@ class Code(ParagraphBase):
 
     def CreateEdit(self, extra):
         return CodeEditor(self, self.project, self.paragraph, self.view, extra)
-class CodeView(wx.Panel):
+class CodeView(VerticalPanel):
 
     BORDER = 0
     PADDING = 5
 
     def __init__(self, parent, project, paragraph, base):
-        wx.Panel.__init__(self, parent)
+        VerticalPanel.__init__(self, parent)
         self.project = project
         self.paragraph = paragraph
         self.base = base
@@ -2658,30 +2680,29 @@ class CodeView(wx.Panel):
 
     def _create_gui(self):
         self.Font = create_font(**self.project.code_font)
-        sizer = wx.BoxSizer(wx.VERTICAL)
         if not self.paragraph.path.is_empty:
-            sizer.Add(
+            self.AppendChild(
                 self._create_path(),
                 flag=wx.ALL|wx.EXPAND, border=self.BORDER
             )
-        sizer.Add(
+        self.AppendChild(
             self._create_code(),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
-        self.SetSizer(sizer)
         self.SetBackgroundColour((243, 236, 219))
     def _create_path(self):
-        panel = wx.Panel(self)
+        panel = HorizontalPanel(self)
         panel.SetBackgroundColour((248, 241, 223))
-        self.path_token_view = TokenView(
-            panel,
-            self.project,
-            self._create_path_tokens(self.paragraph.path),
-            max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
+        self.path_token_view = panel.AppendChild(
+            TokenView(
+                panel,
+                self.project,
+                self._create_path_tokens(self.paragraph.path),
+                max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
+            ),
+            flag=wx.ALL|wx.EXPAND,
+            border=self.PADDING
         )
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.path_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING)
-        panel.SetSizer(sizer)
         self.base.BindMouse(
             self,
             [panel],
@@ -2736,17 +2757,19 @@ class CodeView(wx.Panel):
                 last_subpath = subpath
         return tokens
     def _create_code(self):
-        panel = wx.Panel(self)
+        panel = HorizontalPanel(self)
         panel.SetBackgroundColour((253, 246, 227))
-        self.body_token_view = TokenView(
-            panel,
-            self.project,
-            self._highlight_variables(self.paragraph.tokens),
-            max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
+        self.body_token_view = panel.AppendChild(
+            TokenView(
+                panel,
+                self.project,
+                self._highlight_variables(self.paragraph.tokens),
+                max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
+            ),
+            flag=wx.ALL|wx.EXPAND,
+            border=self.PADDING,
+            proportion=1
         )
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.body_token_view, flag=wx.ALL|wx.EXPAND, border=self.PADDING, proportion=1)
-        panel.SetSizer(sizer)
         self.base.BindMouse(
             self,
             [panel],
@@ -2890,10 +2913,10 @@ class CodeView(wx.Panel):
             self,
             body_token=event.EventObject.GetToken(event.Position)
         )
-class CodeEditor(wx.Panel):
+class CodeEditor(VerticalPanel):
 
     def __init__(self, parent, project, paragraph, view, extra):
-        wx.Panel.__init__(self, parent, size=(-1, max(90, view.Size[1])))
+        VerticalPanel.__init__(self, parent, size=(-1, max(90, view.Size[1])))
         self.project = project
         self.paragraph = paragraph
         self.view = view
@@ -2903,31 +2926,21 @@ class CodeEditor(wx.Panel):
 
     def _create_gui(self):
         self.Font = create_font(**self.project.editor_font)
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.vsizer.Add(
-            self._create_path(),
+        self.path = self.AppendChild(
+            SelectionableTextCtrl(
+                self,
+                value=self.paragraph.path.text_version
+            ),
             flag=wx.ALL|wx.EXPAND
         )
-        self.vsizer.Add(
-            self._create_code(),
+        self.text = self.AppendChild(
+            MultilineTextCtrl(
+                self,
+                value=self.paragraph.text_version
+            ),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,
             proportion=1
         )
-        self.SetSizer(self.vsizer)
-
-    def _create_path(self):
-        self.path = SelectionableTextCtrl(
-            self,
-            value=self.paragraph.path.text_version
-        )
-        return self.path
-
-    def _create_code(self):
-        self.text = MultilineTextCtrl(
-            self,
-            value=self.paragraph.text_version
-        )
-        return self.text
     def _focus(self):
         if "subpath" in self.extra:
             self._focus_path(self.extra["subpath"], self.extra.get("edge"))
@@ -2959,20 +2972,18 @@ class Image(ParagraphBase):
     PADDING = 30
 
     def CreateView(self):
-        view = wx.Panel(self)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        bitmap = wx.StaticBitmap(
-            view,
-            bitmap=base64_to_bitmap(
-                self.paragraph.image_base64,
-                self.project.PAGE_BODY_WIDTH
-            )
-        )
-        sizer.Add(
-            bitmap,
+        view = VerticalPanel(self)
+        bitmap = view.AppendChild(
+            wx.StaticBitmap(
+                view,
+                bitmap=base64_to_bitmap(
+                    self.paragraph.image_base64,
+                    self.project.PAGE_BODY_WIDTH
+                )
+            ),
             flag=wx.ALIGN_CENTER
         )
-        sizer.Add(
+        view.AppendChild(
             TextView(
                 view,
                 self.project,
@@ -2982,7 +2993,6 @@ class Image(ParagraphBase):
             ),
             flag=wx.ALIGN_CENTER
         )
-        view.SetSizer(sizer)
         self.BindMouse(view, [view, bitmap])
         return view
 
@@ -2993,28 +3003,31 @@ class Image(ParagraphBase):
             self.paragraph,
             self.view
         )
-class ImageEdit(wx.Panel):
+class ImageEdit(VerticalPanel):
 
     def __init__(self, parent, project, paragraph, view):
-        wx.Panel.__init__(self, parent)
+        VerticalPanel.__init__(self, parent)
         self.Font = create_font(**project.editor_font)
         self.project = project
         self.paragraph = paragraph
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self.image = wx.StaticBitmap(
-            self,
-            bitmap=base64_to_bitmap(
-                paragraph.image_base64,
-                self.project.PAGE_BODY_WIDTH
-            )
+        self.image = self.AppendChild(
+            wx.StaticBitmap(
+                self,
+                bitmap=base64_to_bitmap(
+                    paragraph.image_base64,
+                    self.project.PAGE_BODY_WIDTH
+                )
+            ),
+            flag=wx.ALIGN_CENTER
         )
-        sizer.Add(self.image, flag=wx.ALIGN_CENTER)
-        self.text = MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments))
-        sizer.Add(self.text, flag=wx.EXPAND)
-        paste_button = wx.Button(self, label="Paste")
+        self.text = self.AppendChild(
+            MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments)),
+            flag=wx.EXPAND
+        )
+        paste_button = self.AppendChild(
+            wx.Button(self, label="Paste")
+        )
         paste_button.Bind(wx.EVT_BUTTON, self._on_paste)
-        sizer.Add(paste_button)
-        self.SetSizer(sizer)
         self.image_base64 = None
 
     def _on_paste(self, event):
@@ -3039,22 +3052,20 @@ class ImageEdit(wx.Panel):
 class Factory(ParagraphBase):
 
     def CreateView(self):
-        view = wx.Panel(self)
+        view = VerticalPanel(self)
         MouseEventHelper.bind(
             [view],
             drag=self.DoDragDrop,
             right_click=lambda event: self.ShowContextMenu()
         )
         view.SetBackgroundColour((240, 240, 240))
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.vsizer.Add(
+        view.AppendChild(
             wx.StaticText(view, label="Factory"),
             flag=wx.TOP|wx.ALIGN_CENTER,
             border=self.project.PARAGRAPH_SPACE
         )
-        self.vsizer.Add(
-            self.hsizer,
+        self.button_panel = view.AppendChild(
+            HorizontalPanel(view),
             flag=wx.TOP|wx.ALIGN_CENTER,
             border=self.project.PARAGRAPH_SPACE
         )
@@ -3085,8 +3096,7 @@ class Factory(ParagraphBase):
             "type": "image",
             "fragments": [{"type": "text", "text": "Enter image text here..."}],
         })
-        self.vsizer.AddSpacer(self.project.PARAGRAPH_SPACE)
-        view.SetSizer(self.vsizer)
+        view.AppendSpace(self.project.PARAGRAPH_SPACE)
         return view
 
     def _add_button(self, text, value):
@@ -3095,9 +3105,12 @@ class Factory(ParagraphBase):
                 self.paragraph.update(value)
             else:
                 show_edit_in_progress_error(self)
-        button = wx.Button(self, label=text)
+        button = self.button_panel.AppendChild(
+            wx.Button(self.button_panel, label=text),
+            flag=wx.ALL,
+            border=2
+        )
         button.Bind(wx.EVT_BUTTON, click_handler)
-        self.hsizer.Add(button, flag=wx.ALL, border=2)
 class ParagraphContextMenu(wx.Menu):
 
     def AppendItem(self, text, fn):
@@ -3140,19 +3153,19 @@ class RliterateDataObject(wx.CustomDataObject):
 
     def get_json(self):
         return json.loads(self.GetData())
-class Divider(wx.Panel):
+class Divider(VerticalPanel):
 
     def __init__(self, parent, padding=0, height=1):
-        wx.Panel.__init__(self, parent, size=(-1, height+2*padding))
+        VerticalPanel.__init__(self, parent, size=(-1, height+2*padding))
         self.line = wx.Panel(self, size=(-1, height))
         self.line.SetBackgroundColour((255, 100, 0))
         self.line.Hide()
-        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.vsizer.AddStretchSpacer(1)
-        self.vsizer.Add(self.hsizer, flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.vsizer.AddStretchSpacer(1)
-        self.SetSizer(self.vsizer)
+        self.AppendStretch(1)
+        self.hsizer = self.AppendChild(
+            wx.BoxSizer(wx.HORIZONTAL),
+            flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN
+        )
+        self.AppendStretch(1)
 
     def Show(self, left_space=0):
         with flicker_free_drawing(self):
