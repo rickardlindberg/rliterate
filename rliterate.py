@@ -704,6 +704,10 @@ class Page(object):
         return self._document.get_parent_page(self.id)
 
     @property
+    def full_title(self):
+        return " / ".join(page.title for page in self.chain)
+
+    @property
     def chain(self):
         result = []
         page = self
@@ -2641,6 +2645,7 @@ class Title(Editable):
             [Token(self.page.title)],
             max_width=self.project.PAGE_BODY_WIDTH
         )
+        view.SetToolTipString(self.page.full_title)
         MouseEventHelper.bind(
             [view],
             double_click=lambda event: self._post_edit_start_from_token_view(event.Position)
@@ -3024,16 +3029,16 @@ class CodeView(VerticalPanel):
             menu.AppendItem("Usages:", lambda: None)
             def create_open_page_handler(page):
                 return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
-            for page, full_title in self._find_variable_usages(token.extra["variable"]):
+            for page in self._find_variable_usages(token.extra["variable"]):
                 menu.AppendItem(
-                    "{}".format(full_title),
+                    "{}".format(page.full_title),
                     create_open_page_handler(page)
                 )
             menu.AppendSeparator()
             menu.AppendItem("Possible usages:", lambda: None)
-            for page, full_title in self._find_variable_pages(rename_value):
+            for page in self._find_variable_pages(rename_value):
                 menu.AppendItem(
-                    "{}".format(full_title),
+                    "{}".format(page.full_title),
                     create_open_page_handler(page)
                 )
             self.PopupMenu(menu)
@@ -3044,12 +3049,12 @@ class CodeView(VerticalPanel):
     def _find_variable_pages(self, name):
         for page in self.project.iter_pages():
             if self._page_has_variable(page, name):
-                yield page, " / ".join(page.title for page in page.chain)
+                yield page
 
     def _find_variable_usages(self, variable_id):
         for page in self.project.iter_pages():
             if self._page_uses_variable(page, variable_id):
-                yield page, " / ".join(page.title for page in page.chain)
+                yield page
 
     def _page_has_variable(self, page, name):
         pattern = re.compile(r"\b{}\b".format(re.escape(name)))
