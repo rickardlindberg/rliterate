@@ -1748,7 +1748,7 @@
 ],
 "fragments":[
 {
-"text":"class VariableCodeFragment(CodeFragment):\n\n    @property\n    def id(self):\n        return self._code_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self._document.lookup_variable(self.id)\n        if name is None:\n            return fragment.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        start, end = self._code_paragraph.",
+"text":"class VariableCodeFragment(CodeFragment):\n\n    @property\n    def id(self):\n        return self._code_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self._document.lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        start, end = self._code_paragraph.",
 "type":"code"
 },
 {

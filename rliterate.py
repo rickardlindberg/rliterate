@@ -1228,7 +1228,7 @@ class VariableCodeFragment(CodeFragment):
     def name(self):
         name = self._document.lookup_variable(self.id)
         if name is None:
-            return fragment.id
+            return self.id
         else:
             return name
 
