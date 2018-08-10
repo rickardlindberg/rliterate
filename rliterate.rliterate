@@ -10637,6 +10637,16 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Can only scroll in one direction with mouse wheel",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
