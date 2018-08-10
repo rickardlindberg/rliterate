@@ -11067,6 +11067,29 @@
 "child_type":"unordered",
 "children":[
 {
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Nicer looking dialog",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Persistance",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
 "child_type":"unordered",
 "children":[
 {
@@ -11162,6 +11185,14 @@
 "fragments":[
 {
 "text":"Allow configuration of",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Settings",
 "type":"text"
 }
 ]
