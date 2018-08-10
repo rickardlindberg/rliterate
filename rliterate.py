@@ -810,6 +810,84 @@ class TextParagraph(Paragraph):
     @text_version.setter
     def text_version(self, value):
         self.update({"fragments": text_to_fragments(value)})
+class TextParser(object):
+
+    SPACE_RE = re.compile(r"\s+")
+    PATTERNS = [
+        (
+            re.compile(r"\*\*(.+?)\*\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "strong",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\*(.+?)\*", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "emphasis",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"``(.+?)``", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "variable",
+                "id": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"`(.+?)`", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "code",
+                "text": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[\[(.+?)(:(.+?))?\]\]", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "reference",
+                "text": match.group(3),
+                "page_id": match.group(1),
+            }
+        ),
+        (
+            re.compile(r"\[(.*?)\]\((.+?)\)", flags=re.DOTALL),
+            lambda parser, match: {
+                "type": "link",
+                "text": match.group(1),
+                "url": match.group(2),
+            }
+        ),
+    ]
+
+    def parse(self, text):
+        text = self._normalise_space(text)
+        fragments = []
+        partial = ""
+        while text:
+            result = self._get_special_fragment(text)
+            if result is None:
+                partial += text[0]
+                text = text[1:]
+            else:
+                match, fragment = result
+                if partial:
+                    fragments.append({"type": "text", "text": partial})
+                    partial = ""
+                fragments.append(fragment)
+                text = text[match.end(0):]
+        if partial:
+            fragments.append({"type": "text", "text": partial})
+        return fragments
+
+    def _normalise_space(self, text):
+        return self.SPACE_RE.sub(" ", text).strip()
+
+    def _get_special_fragment(self, text):
+        for pattern, fn in self.PATTERNS:
+            match = pattern.match(text)
+            if match:
+                return match, fn(self, match)
 class QuoteParagraph(TextParagraph):
     pass
 class ListParagraph(Paragraph):
@@ -1227,6 +1305,7 @@ class TextFragment(object):
             "strong": StrongTextFragment,
             "emphasis": EmphasisTextFragment,
             "code": CodeTextFragment,
+            "variable": VariableTextFragment,
             "reference": ReferenceTextFragment,
             "link": LinkTextFragment,
         }.get(text_fragment_dict["type"], TextFragment)(document, text_fragment_dict, index)
@@ -1280,6 +1359,28 @@ class CodeTextFragment(TextFragment):
         text_version.add("`")
         text_version.add_with_index(self.text, self._index)
         text_version.add("`")
+class VariableTextFragment(TextFragment):
+
+    @property
+    def id(self):
+        return self._text_fragment_dict["id"]
+
+    @property
+    def name(self):
+        name = self._document.lookup_variable(self.id)
+        if name is None:
+            return self.id
+        else:
+            return name
+
+    def fill_text_version(self, text_version):
+        text_version.add("``")
+        text_version.add_with_index(self.id, self._index)
+        text_version.add("``")
+
+    @property
+    def token(self):
+        return Token(self.name, token_type=TokenType.RLiterate.Variable, fragment_index=self._index)
 class ReferenceTextFragment(TextFragment):
 
     @property
@@ -1724,6 +1825,7 @@ class SolarizedTheme(BaseTheme):
         TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),
         TokenType.RLiterate.Strong:    Style(color=text, bold=True),
         TokenType.RLiterate.Code:      Style(color=text, monospace=True),
+        TokenType.RLiterate.Variable:  Style(color=text, monospace=True, italic=True),
         TokenType.RLiterate.Link:      Style(color=blue, underlined=True),
         TokenType.RLiterate.Reference: Style(color=blue, italic=True),
         TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),
@@ -3631,7 +3733,7 @@ def fragments_to_text(fragments):
 
 
 def text_to_fragments(text):
-    return LegacyInlineTextParser().parse(text)
+    return TextParser().parse(text)
 def split_legacy_path(path):
     filepath = []
     chunkpath = []

@@ -1425,7 +1425,15 @@
 "type":"variable"
 },
 {
-"text":"\": text_to_fragments(value)})\n",
+"text":"\": ",
+"type":"code"
+},
+{
+"id":"74949da897df45e6862e45ffe667fc6e",
+"type":"variable"
+},
+{
+"text":"(value)})\n",
 "type":"code"
 }
 ],
@@ -1457,11 +1465,91 @@
 "type":"variable"
 },
 {
-"text":":\n        fragment.fill_text_version(text_version)\n    return text_version.text\n\n\ndef text_to_fragments(text):\n    return LegacyInlineTextParser().parse(text)\n",
+"text":":\n        fragment.fill_text_version(text_version)\n    return text_version.text\n\n\ndef ",
+"type":"code"
+},
+{
+"id":"74949da897df45e6862e45ffe667fc6e",
+"type":"variable"
+},
+{
+"text":"(text):\n    return ",
+"type":"code"
+},
+{
+"id":"307841bedc3c4f2cba2dbbf68a410075",
+"type":"variable"
+},
+{
+"text":"().parse(text)\n",
 "type":"code"
 }
 ],
 "id":"8b18fb0b9c4c49b0a2bd117d760f4d05",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"307841bedc3c4f2cba2dbbf68a410075",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    SPACE_RE = re.compile(r\"\\s+\")\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"strong\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"emphasis\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"``(.+?)``\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"variable\",\n                \"id\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"code\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[\\[(.+?)(:(.+?))?\\]\\]\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"reference\",\n                \"text\": match.group(3),\n                \"page_id\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"link\",\n                \"text\": match.group(1),\n                \"url\": match.group(2),\n            }\n        ),\n    ]\n\n    def parse(self, text):\n        text = self._normalise_space(text)\n        ",
+"type":"code"
+},
+{
+"id":"f63325de85e5449ab06aa46ef2d90278",
+"type":"variable"
+},
+{
+"text":" = []\n        partial = \"\"\n        while text:\n            result = self._get_special_fragment(text)\n            if result is None:\n                partial += text[0]\n                text = text[1:]\n            else:\n                match, fragment = result\n                if partial:\n                    ",
+"type":"code"
+},
+{
+"id":"f63325de85e5449ab06aa46ef2d90278",
+"type":"variable"
+},
+{
+"text":".append({\"type\": \"text\", \"text\": partial})\n                    partial = \"\"\n                ",
+"type":"code"
+},
+{
+"id":"f63325de85e5449ab06aa46ef2d90278",
+"type":"variable"
+},
+{
+"text":".append(fragment)\n                text = text[match.end(0):]\n        if partial:\n            ",
+"type":"code"
+},
+{
+"id":"f63325de85e5449ab06aa46ef2d90278",
+"type":"variable"
+},
+{
+"text":".append({\"type\": \"text\", \"text\": partial})\n        return ",
+"type":"code"
+},
+{
+"id":"f63325de85e5449ab06aa46ef2d90278",
+"type":"variable"
+},
+{
+"text":"\n\n    def _normalise_space(self, text):\n        return self.SPACE_RE.sub(\" \", text).strip()\n\n    def _get_special_fragment(self, text):\n        for pattern, fn in self.PATTERNS:\n            match = pattern.match(text)\n            if match:\n                return match, fn(self, match)\n",
+"type":"code"
+}
+],
+"id":"6abedd71fccd4377af2523b08c961365",
 "type":"code"
 }
 ],
@@ -2085,7 +2173,15 @@
 "type":"variable"
 },
 {
-"text":"\": text_to_fragments(value)})\n",
+"text":"\": ",
+"type":"code"
+},
+{
+"id":"74949da897df45e6862e45ffe667fc6e",
+"type":"variable"
+},
+{
+"text":"(value)})\n",
 "type":"code"
 }
 ],
@@ -2207,6 +2303,29 @@
 },
 {
 "children":[],
+"id":"68336456310c49009ac2bf53620257e6",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class VariableTextFragment(TextFragment):\n\n    @property\n    def id(self):\n        return self._text_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self._document.lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"``\")\n        text_version.add_with_index(self.id, self._index)\n        text_version.add(\"``\")\n\n    @property\n    def token(self):\n        return Token(self.name, token_type=TokenType.RLiterate.Variable, fragment_index=self._index)\n",
+"type":"code"
+}
+],
+"id":"ce734c9048bf421698c7f5f4ed990122",
+"type":"code"
+}
+],
+"title":"Variable"
+},
+{
+"children":[],
 "id":"1cacb064ca4749ac9e6470dc14922deb",
 "paragraphs":[
 {
@@ -2263,7 +2382,7 @@
 ],
 "fragments":[
 {
-"text":"class TextFragment(object):\n\n    @staticmethod\n    def create_list(document, text_fragment_dicts):\n        return [\n            TextFragment.create(document, text_fragment_dict, index)\n            for index, text_fragment_dict\n            in enumerate(text_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, text_fragment_dict, index):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict, index)\n\n    def __init__(self, document, text_fragment_dict, index):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n        self._index = index\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def token(self):\n        return Token(self.text, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add_with_index(self.text, self._index)\n",
+"text":"class TextFragment(object):\n\n    @staticmethod\n    def create_list(document, text_fragment_dicts):\n        return [\n            TextFragment.create(document, text_fragment_dict, index)\n            for index, text_fragment_dict\n            in enumerate(text_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, text_fragment_dict, index):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"variable\": VariableTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict, index)\n\n    def __init__(self, document, text_fragment_dict, index):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n        self._index = index\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def token(self):\n        return Token(self.text, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add_with_index(self.text, self._index)\n",
 "type":"code"
 }
 ],
@@ -2662,7 +2781,15 @@
 "type":"variable"
 },
 {
-"text":"\"] = LegacyInlineTextParser().parse(paragraph[\"text\"])\n            del paragraph[\"text\"]\n        elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n            paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n            del paragraph[\"text\"]\n    for child in document_dict.get(\"children\", []):\n        self._legacy_inline_text(child)\n    return document_dict\n",
+"text":"\"] = ",
+"type":"code"
+},
+{
+"id":"4156ce918f5d4d50aea214acc1a8fb1a",
+"type":"variable"
+},
+{
+"text":"().parse(paragraph[\"text\"])\n            del paragraph[\"text\"]\n        elif paragraph[\"type\"] in [\"list\"] and \"text\" in paragraph:\n            paragraph[\"child_type\"], paragraph[\"children\"] = LegacyListParser(paragraph[\"text\"]).parse_items()\n            del paragraph[\"text\"]\n    for child in document_dict.get(\"children\", []):\n        self._legacy_inline_text(child)\n    return document_dict\n",
 "type":"code"
 }
 ],
@@ -2678,7 +2805,15 @@
 ],
 "fragments":[
 {
-"text":"class LegacyInlineTextParser(object):\n\n    SPACE_RE = re.compile(r\"\\s+\")\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"strong\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"emphasis\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"code\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[\\[(.+?)(:(.+?))?\\]\\]\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"reference\",\n                \"text\": match.group(3),\n                \"page_id\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"link\",\n                \"text\": match.group(1),\n                \"url\": match.group(2),\n            }\n        ),\n    ]\n\n    def parse(self, text):\n        text = self._normalise_space(text)\n        ",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"4156ce918f5d4d50aea214acc1a8fb1a",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    SPACE_RE = re.compile(r\"\\s+\")\n    PATTERNS = [\n        (\n            re.compile(r\"\\*\\*(.+?)\\*\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"strong\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\*(.+?)\\*\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"emphasis\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"`(.+?)`\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"code\",\n                \"text\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[\\[(.+?)(:(.+?))?\\]\\]\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"reference\",\n                \"text\": match.group(3),\n                \"page_id\": match.group(1),\n            }\n        ),\n        (\n            re.compile(r\"\\[(.*?)\\]\\((.+?)\\)\", flags=re.DOTALL),\n            lambda parser, match: {\n                \"type\": \"link\",\n                \"text\": match.group(1),\n                \"url\": match.group(2),\n            }\n        ),\n    ]\n\n    def parse(self, text):\n        text = self._normalise_space(text)\n        ",
 "type":"code"
 },
 {
@@ -2742,7 +2877,15 @@
 "type":"variable"
 },
 {
-"text":"\": LegacyInlineTextParser().parse(\" \".join(parts)),\n                \"children\": children,\n                \"child_type\": child_type,\n            })\n\n    def consume_bodies(self):\n        bodies = []\n        while self.lines:\n            if self.ITEM_START_RE.match(self.lines[0]):\n                break\n            else:\n                bodies.append(self.lines.pop(0))\n        return bodies\n",
+"text":"\": ",
+"type":"code"
+},
+{
+"id":"4156ce918f5d4d50aea214acc1a8fb1a",
+"type":"variable"
+},
+{
+"text":"().parse(\" \".join(parts)),\n                \"children\": children,\n                \"child_type\": child_type,\n            })\n\n    def consume_bodies(self):\n        bodies = []\n        while self.lines:\n            if self.ITEM_START_RE.match(self.lines[0]):\n                break\n            else:\n                bodies.append(self.lines.pop(0))\n        return bodies\n",
 "type":"code"
 }
 ],
@@ -4572,7 +4715,7 @@
 ],
 "fragments":[
 {
-"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n\n    styles = {\n        TokenType:                     Style(color=base00),\n        TokenType.Keyword:             Style(color=green),\n        TokenType.Keyword.Constant:    Style(color=cyan),\n        TokenType.Keyword.Declaration: Style(color=blue),\n        TokenType.Keyword.Namespace:   Style(color=orange),\n        TokenType.Name.Builtin:        Style(color=red),\n        TokenType.Name.Builtin.Pseudo: Style(color=blue),\n        TokenType.Name.Class:          Style(color=blue),\n        TokenType.Name.Decorator:      Style(color=blue),\n        TokenType.Name.Entity:         Style(color=violet),\n        TokenType.Name.Exception:      Style(color=yellow),\n        TokenType.Name.Function:       Style(color=blue),\n        TokenType.String:              Style(color=cyan),\n        TokenType.Number:              Style(color=cyan),\n        TokenType.Operator.Word:       Style(color=green),\n        TokenType.Comment:             Style(color=base1),\n        TokenType.RLiterate:           Style(color=text),\n        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),\n        TokenType.RLiterate.Strong:    Style(color=text, bold=True),\n        TokenType.RLiterate.Code:      Style(color=text, monospace=True),\n        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),\n        TokenType.RLiterate.Reference: Style(color=blue, italic=True),\n        TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),\n        TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),\n        TokenType.RLiterate.Sep:       Style(color=base1),\n    }\n",
+"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n\n    styles = {\n        TokenType:                     Style(color=base00),\n        TokenType.Keyword:             Style(color=green),\n        TokenType.Keyword.Constant:    Style(color=cyan),\n        TokenType.Keyword.Declaration: Style(color=blue),\n        TokenType.Keyword.Namespace:   Style(color=orange),\n        TokenType.Name.Builtin:        Style(color=red),\n        TokenType.Name.Builtin.Pseudo: Style(color=blue),\n        TokenType.Name.Class:          Style(color=blue),\n        TokenType.Name.Decorator:      Style(color=blue),\n        TokenType.Name.Entity:         Style(color=violet),\n        TokenType.Name.Exception:      Style(color=yellow),\n        TokenType.Name.Function:       Style(color=blue),\n        TokenType.String:              Style(color=cyan),\n        TokenType.Number:              Style(color=cyan),\n        TokenType.Operator.Word:       Style(color=green),\n        TokenType.Comment:             Style(color=base1),\n        TokenType.RLiterate:           Style(color=text),\n        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),\n        TokenType.RLiterate.Strong:    Style(color=text, bold=True),\n        TokenType.RLiterate.Code:      Style(color=text, monospace=True),\n        TokenType.RLiterate.Variable:  Style(color=text, monospace=True, italic=True),\n        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),\n        TokenType.RLiterate.Reference: Style(color=blue, italic=True),\n        TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),\n        TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),\n        TokenType.RLiterate.Sep:       Style(color=base1),\n    }\n",
 "type":"code"
 }
 ],
@@ -7996,7 +8139,15 @@
 "type":"variable"
 },
 {
-"text":"\": text_to_fragments(self.text.Value)}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.paragraph.update(value)\n",
+"text":"\": ",
+"type":"code"
+},
+{
+"id":"74949da897df45e6862e45ffe667fc6e",
+"type":"variable"
+},
+{
+"text":"(self.text.Value)}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.paragraph.update(value)\n",
 "type":"code"
 }
 ],
@@ -11523,16 +11674,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Add support for variables in text fragments",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Support file-less chunks? Useful for banners and copyright notices.",
 "type":"text"
 }
@@ -11710,6 +11851,7 @@
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "2f0a877612fe4295ac6ad4ef7309d965":"OnDataDropped",
+"307841bedc3c4f2cba2dbbf68a410075":"TextParser",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
 "30eeb77f05c34590a6498edb391d0916":"PARAGRAPH_SPACE",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
@@ -11718,6 +11860,7 @@
 "359755e756af4e708b237cd9753ae046":"AppendChild",
 "39e45626d4804403be92d31444a1281c":"text_font",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
+"4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
 "507782d786b84d209eef461ecd0b4544":"fragments",
@@ -11731,6 +11874,7 @@
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
 "740055857bb244038c203cea23c1af69":"CreateView",
+"74949da897df45e6862e45ffe667fc6e":"text_to_fragments",
 "76b9d362e0714c1da27953dd46e8ef0b":"PAGE_PADDING",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8970b68862714f158948f8ec1c68acb1":"toc_font",
