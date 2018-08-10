@@ -91,8 +91,6 @@ class VerticalPanel(wx.Panel, BoxSizerMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         BoxSizerMixin.__init__(self, wx.VERTICAL)
-
-
 class HorizontalPanel(wx.Panel, BoxSizerMixin):
 
     def __init__(self, parent, **kwargs):

@@ -9886,11 +9886,27 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel, BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent, **kwargs)\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n\n\nclass HorizontalPanel(wx.Panel, BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent, **kwargs)\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
+"text":"(wx.Panel, BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent, **kwargs)\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n",
 "type":"code"
 }
 ],
 "id":"0109b25ba5e047bda4a3a349c5804e31",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class HorizontalPanel(wx.Panel, BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent, **kwargs)\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
+"type":"code"
+}
+],
+"id":"72985f3cbb2a4fbda2f876beec564231",
 "type":"code"
 }
 ],
