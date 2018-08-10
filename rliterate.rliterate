@@ -5345,7 +5345,15 @@
 "type":"variable"
 },
 {
-"text":"(VerticalScrolledWindow(self), flag=wx.EXPAND, proportion=1)\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        if self.unhoist_button is not None:\n            self.unhoist_button.Destroy()\n            self.unhoist_button = None\n        self.page_container.",
+"text":"(\n            ",
+"type":"code"
+},
+{
+"id":"3457c112c47c41a293d77cc79f99badf",
+"type":"variable"
+},
+{
+"text":"(self),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        if self.unhoist_button is not None:\n            self.unhoist_button.Destroy()\n            self.unhoist_button = None\n        self.page_container.",
 "type":"code"
 },
 {
@@ -6230,7 +6238,23 @@
 ],
 "fragments":[
 {
-"text":"class Workspace(HorizontalScrolledWindow):\n\n    def __init__(self, parent, project):\n        HorizontalScrolledWindow.__init__(self, parent, style=wx.HSCROLL)\n        self._init_project(project)\n",
+"text":"class Workspace(",
+"type":"code"
+},
+{
+"id":"8d2b6dc31cdb4b2dba29488fa3263c53",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, project):\n        ",
+"type":"code"
+},
+{
+"id":"8d2b6dc31cdb4b2dba29488fa3263c53",
+"type":"variable"
+},
+{
+"text":".__init__(self, parent, style=wx.HSCROLL)\n        self._init_project(project)\n",
 "type":"code"
 },
 {
@@ -6307,7 +6331,23 @@
 "type":"variable"
 },
 {
-"text":"(VerticalScrolledWindow):\n\n    def __init__(self, parent, project, index):\n        VerticalScrolledWindow.__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=self._get_size(project)\n        )\n        self.project = project\n        self.index = index\n        self._page_ids = []\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _get_size(self, project):\n        return (\n            project.",
+"text":"(",
+"type":"code"
+},
+{
+"id":"3457c112c47c41a293d77cc79f99badf",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, project, index):\n        ",
+"type":"code"
+},
+{
+"id":"3457c112c47c41a293d77cc79f99badf",
+"type":"variable"
+},
+{
+"text":".__init__(\n            self,\n            parent,\n            style=wx.VSCROLL,\n            size=self._get_size(project)\n        )\n        self.project = project\n        self.index = index\n        self._page_ids = []\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n    def _on_hovered_token_changed(self, event):\n        if event.token is not None and event.token.token_type in [\n            TokenType.RLiterate.Link,\n            TokenType.RLiterate.Reference,\n        ]:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n        else:\n            event.widget.SetDefaultCursor()\n\n    def _on_token_click(self, event):\n        if event.token.token_type == TokenType.RLiterate.Reference:\n            self.OpenPage(event.token.extra[\"page_id\"])\n        elif event.token.token_type == TokenType.RLiterate.Link:\n            webbrowser.open(event.token.extra[\"url\"])\n\n    def OpenPage(self, page_id):\n        open_pages_gui(self, self.project,\n            [page_id],\n            column_index=self.index+1\n        )\n\n    def _get_size(self, project):\n        return (\n            project.",
 "type":"code"
 },
 {
@@ -9271,7 +9311,23 @@
 ],
 "fragments":[
 {
-"text":"class VerticalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):\n\n    def __init__(self, *args, **kwargs):\n        CompactScrolledWindow.__init__(self, *args, **kwargs)\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n\nclass HorizontalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):\n\n    def __init__(self, *args, **kwargs):\n        CompactScrolledWindow.__init__(self, *args, **kwargs)\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"3457c112c47c41a293d77cc79f99badf",
+"type":"variable"
+},
+{
+"text":"(CompactScrolledWindow, BoxSizerMixin):\n\n    def __init__(self, *args, **kwargs):\n        CompactScrolledWindow.__init__(self, *args, **kwargs)\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n\nclass ",
+"type":"code"
+},
+{
+"id":"8d2b6dc31cdb4b2dba29488fa3263c53",
+"type":"variable"
+},
+{
+"text":"(CompactScrolledWindow, BoxSizerMixin):\n\n    def __init__(self, *args, **kwargs):\n        CompactScrolledWindow.__init__(self, *args, **kwargs)\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
 "type":"code"
 }
 ],
@@ -11657,6 +11713,7 @@
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
 "30eeb77f05c34590a6498edb391d0916":"PARAGRAPH_SPACE",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
+"3457c112c47c41a293d77cc79f99badf":"VerticalScrolledWindow",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "359755e756af4e708b237cd9753ae046":"AppendChild",
 "39e45626d4804403be92d31444a1281c":"text_font",
@@ -11679,6 +11736,7 @@
 "8970b68862714f158948f8ec1c68acb1":"toc_font",
 "898556fcc0094d959568f97b261a5f5c":"RemoveChildren",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
+"8d2b6dc31cdb4b2dba29488fa3263c53":"HorizontalScrolledWindow",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",

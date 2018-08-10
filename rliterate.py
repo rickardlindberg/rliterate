@@ -1953,7 +1953,11 @@ class TableOfContents(VerticalPanel):
     def _render(self):
         with flicker_free_drawing(self):
             self.unhoist_button = None
-            self.page_container = self.AppendChild(VerticalScrolledWindow(self), flag=wx.EXPAND, proportion=1)
+            self.page_container = self.AppendChild(
+                VerticalScrolledWindow(self),
+                flag=wx.EXPAND,
+                proportion=1
+            )
             self.SetBackgroundColour((255, 255, 255))
             self._re_render()
 
