@@ -3581,8 +3581,8 @@
 "type":"text"
 },
 {
-"text":"from_file",
-"type":"code"
+"id":"a5bace68289b40e78df93409e362a63b",
+"type":"variable"
 },
 {
 "text":" constructor reads a document from file and also writes it back to file when it changes:",
