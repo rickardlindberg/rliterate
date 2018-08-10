@@ -499,8 +499,22 @@ class Document(Observable):
             "children": [],
             "paragraphs": [],
         }
+
+    def iter_pages(self):
+        def iter_pages(page):
+            yield page
+            for child in page.children:
+                for sub_page in iter_pages(child):
+                    yield sub_page
+        return iter_pages(self.get_page())
     def get_page(self, page_id=None):
         page_dict = self.read_only_document_dict.get_page_dict(page_id)
+        if page_dict is None:
+            return None
+        return Page(self, page_dict)
+
+    def get_parent_page(self, page_id):
+        page_dict = self.read_only_document_dict.get_parent_page_dict(page_id)
         if page_dict is None:
             return None
         return Page(self, page_dict)
@@ -611,6 +625,9 @@ class DocumentDictWrapper(dict):
             page_id = self["root_page"]["id"]
         return self._pages.get(page_id, None)
 
+    def get_parent_page_dict(self, page_id):
+        return self._parent_pages.get(page_id, None)
+
     def delete_page_dict(self, page_id):
         if page_id == self["root_page"]["id"]:
             return
@@ -681,6 +698,29 @@ class Page(object):
     def __init__(self, document, page_dict):
         self._document = document
         self._page_dict = page_dict
+
+    @property
+    def parent(self):
+        return self._document.get_parent_page(self.id)
+
+    @property
+    def chain(self):
+        result = []
+        page = self
+        while page is not None:
+            result.insert(0, page)
+            page = page.parent
+        return result
+
+    def iter_code_fragments(self):
+        for paragraph in self.paragraphs:
+            for fragment in paragraph.iter_code_fragments():
+                yield fragment
+
+    def iter_text_fragments(self):
+        for paragraph in self.paragraphs:
+            for fragment in paragraph.iter_text_fragments():
+                yield fragment
 
     @property
     def id(self):
@@ -783,6 +823,12 @@ class Paragraph(object):
     @property
     def filename(self):
         return "paragraph.txt"
+
+    def iter_code_fragments(self):
+        return iter([])
+
+    def iter_text_fragments(self):
+        return iter([])
 class TextParagraph(Paragraph):
 
     @property
@@ -810,6 +856,9 @@ class TextParagraph(Paragraph):
     @text_version.setter
     def text_version(self, value):
         self.update({"fragments": text_to_fragments(value)})
+
+    def iter_text_fragments(self):
+        return iter(self.fragments)
 class TextParser(object):
 
     SPACE_RE = re.compile(r"\s+")
@@ -934,6 +983,11 @@ class ListParagraph(Paragraph):
             "child_type": child_type,
             "children": children
         })
+
+    def iter_text_fragments(self):
+        for item in self.children:
+            for fragment in item.iter_text_fragments():
+                yield fragment
 class ListItem(object):
 
     def __init__(self, document, item_dict):
@@ -955,6 +1009,13 @@ class ListItem(object):
     @property
     def tokens(self):
         return [x.token for x in self.fragments]
+
+    def iter_text_fragments(self):
+        for fragment in self.fragments:
+            yield fragment
+        for child in self.children:
+            for fragment in child.iter_text_fragments():
+                yield fragment
 class CodeParagraph(Paragraph):
 
     @property
@@ -980,6 +1041,9 @@ class CodeParagraph(Paragraph):
             self,
             self._paragraph_dict["fragments"]
         )
+
+    def iter_code_fragments(self):
+        return iter(self.fragments)
     @property
     def text_version(self):
         text_version = TextVersion()
@@ -1289,6 +1353,9 @@ class ImageParagraph(Paragraph):
     @text_version.setter
     def text_version(self, value):
         self.update({"fragments": text_to_fragments(value)})
+
+    def iter_text_fragments(self):
+        return iter(self.fragments)
 class TextFragment(object):
 
     @staticmethod
@@ -1632,6 +1699,9 @@ class Project(Observable):
         return {"size": 10}
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
+
+    def iter_pages(self, *args, **kwargs):
+        return self.document.iter_pages(*args, **kwargs)
 
     def get_paragraph(self, *args, **kwargs):
         return self.document.get_paragraph(*args, **kwargs)
@@ -2954,14 +3024,14 @@ class CodeView(VerticalPanel):
             menu.AppendItem("Usages:", lambda: None)
             def create_open_page_handler(page):
                 return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
-            for page, full_title in self._find_variable_usages(self.project.get_page(), token.extra["variable"]):
+            for page, full_title in self._find_variable_usages(token.extra["variable"]):
                 menu.AppendItem(
                     "{}".format(full_title),
                     create_open_page_handler(page)
                 )
             menu.AppendSeparator()
             menu.AppendItem("Possible usages:", lambda: None)
-            for page, full_title in self._find_variable_pages(self.project.get_page(), rename_value):
+            for page, full_title in self._find_variable_pages(rename_value):
                 menu.AppendItem(
                     "{}".format(full_title),
                     create_open_page_handler(page)
@@ -2971,35 +3041,34 @@ class CodeView(VerticalPanel):
         else:
             return CONTINUE_PROCESSING
 
-    def _find_variable_pages(self, page, name, parents=[]):
-        if self._page_has_variable(page, name):
-            yield page, " / ".join(page.title for page in parents+[page])
-        for child in page.children:
-            for child_page in self._find_variable_pages(child, name, parents+[page]):
-                yield child_page
+    def _find_variable_pages(self, name):
+        for page in self.project.iter_pages():
+            if self._page_has_variable(page, name):
+                yield page, " / ".join(page.title for page in page.chain)
 
-    def _find_variable_usages(self, page, variable_id, parents=[]):
-        if self._page_uses_variable(page, variable_id):
-            yield page, " / ".join(page.title for page in parents+[page])
-        for child in page.children:
-            for child_page in self._find_variable_usages(child, variable_id, parents+[page]):
-                yield child_page
+    def _find_variable_usages(self, variable_id):
+        for page in self.project.iter_pages():
+            if self._page_uses_variable(page, variable_id):
+                yield page, " / ".join(page.title for page in page.chain)
 
     def _page_has_variable(self, page, name):
-        for paragraph in page.paragraphs:
-            if paragraph.type == "code":
-                for fragment in paragraph.fragments:
-                    if fragment.type == "code":
-                        if re.search(r"\b{}\b".format(re.escape(name)), fragment.text):
-                            return True
+        pattern = re.compile(r"\b{}\b".format(re.escape(name)))
+        for text_fragment in page.iter_text_fragments():
+            if text_fragment.type == "code":
+                if pattern.search(text_fragment.text):
+                    return True
+        for code_fragment in page.iter_code_fragments():
+            if code_fragment.type == "code":
+                if pattern.search(code_fragment.text):
+                    return True
 
     def _page_uses_variable(self, page, variable_id):
-        for paragraph in page.paragraphs:
-            if paragraph.type == "code":
-                for fragment in paragraph.fragments:
-                    if fragment.type == "variable":
-                        if fragment.id == variable_id:
-                            return True
+        for text_fragment in page.iter_text_fragments():
+            if text_fragment.type == "variable" and text_fragment.id == variable_id:
+                return True
+        for code_fragment in page.iter_code_fragments():
+            if code_fragment.type == "variable" and code_fragment.id == variable_id:
+                return True
 
     def _path_double_click(self, event):
         edge_token = event.EventObject.GetClosestToken(event.Position)

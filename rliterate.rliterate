@@ -1271,7 +1271,7 @@
 "type":"variable"
 },
 {
-"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        page_dict = copy.deepcopy(page_dict)\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self[\"root_page\"][\"id\"]\n        return self._pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        if page_id == self[\"root_page\"][\"id\"]:\n            return\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(copy.deepcopy(data))\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n",
+"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def add_page_dict(self, page_dict, parent_id=None):\n        page_dict = copy.deepcopy(page_dict)\n        parent_page = self._pages[parent_id]\n        parent_page[\"children\"].append(page_dict)\n        self._pages[page_dict[\"id\"]] = page_dict\n        self._parent_pages[page_dict[\"id\"]] = parent_page\n\n    def get_page_dict(self, page_id=None):\n        if page_id is None:\n            page_id = self[\"root_page\"][\"id\"]\n        return self._pages.get(page_id, None)\n\n    def get_parent_page_dict(self, page_id):\n        return self._parent_pages.get(page_id, None)\n\n    def delete_page_dict(self, page_id):\n        if page_id == self[\"root_page\"][\"id\"]:\n            return\n        page = self._pages[page_id]\n        parent_page = self._parent_pages[page_id]\n        index = index_with_id(parent_page[\"children\"], page_id)\n        parent_page[\"children\"].pop(index)\n        self._pages.pop(page_id)\n        self._parent_pages.pop(page_id)\n        for child in reversed(page[\"children\"]):\n            parent_page[\"children\"].insert(index, child)\n            self._parent_pages[child[\"id\"]] = parent_page\n\n    def update_page_dict(self, page_id, data):\n        self._pages[page_id].update(copy.deepcopy(data))\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n",
 "type":"code"
 }
 ],
@@ -1319,7 +1319,7 @@
 ],
 "fragments":[
 {
-"text":"def add_page(self, title=\"New page\", parent_id=None):\n    with self.modify(\"Add page\") as document_dict:\n        document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)\n\ndef _empty_page(self):\n    return {\n        \"id\": genid(),\n        \"title\": \"New page...\",\n        \"children\": [],\n        \"paragraphs\": [],\n    }\n",
+"text":"def add_page(self, title=\"New page\", parent_id=None):\n    with self.modify(\"Add page\") as document_dict:\n        document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)\n\ndef _empty_page(self):\n    return {\n        \"id\": genid(),\n        \"title\": \"New page...\",\n        \"children\": [],\n        \"paragraphs\": [],\n    }\n\ndef iter_pages(self):\n    def iter_pages(page):\n        yield page\n        for child in page.children:\n            for sub_page in iter_pages(child):\n                yield sub_page\n    return iter_pages(self.get_page())\n",
 "type":"code"
 }
 ],
@@ -1344,7 +1344,15 @@
 "type":"variable"
 },
 {
-"text":".get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n",
+"text":".get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n\ndef get_parent_page(self, page_id):\n    page_dict = self.",
+"type":"code"
+},
+{
+"id":"b7da0c1f7b7845c8a2c816963948740d",
+"type":"variable"
+},
+{
+"text":".get_parent_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n",
 "type":"code"
 }
 ],
@@ -1360,7 +1368,7 @@
 ],
 "fragments":[
 {
-"text":"class Page(object):\n\n    def __init__(self, document, page_dict):\n        self._document = document\n        self._page_dict = page_dict\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        with self._document.modify(\"Change title\") as document_dict:\n            document_dict.update_page_dict(self.id, {\"title\": title})\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(\n                self._document,\n                self,\n                paragraph_dict,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for paragraph_dict, next_paragraph_dict\n            in zip(\n                self._page_dict[\"paragraphs\"],\n                self._page_dict[\"paragraphs\"][1:]+[None]\n            )\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n\n    def delete(self):\n        with self._document.modify(\"Delete page\") as document_dict:\n            document_dict.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.modify(\"Move page\") as document_dict:\n            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)\n",
+"text":"class Page(object):\n\n    def __init__(self, document, page_dict):\n        self._document = document\n        self._page_dict = page_dict\n\n    @property\n    def parent(self):\n        return self._document.get_parent_page(self.id)\n\n    @property\n    def chain(self):\n        result = []\n        page = self\n        while page is not None:\n            result.insert(0, page)\n            page = page.parent\n        return result\n\n    def iter_code_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_code_fragments():\n                yield fragment\n\n    def iter_text_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_text_fragments():\n                yield fragment\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        with self._document.modify(\"Change title\") as document_dict:\n            document_dict.update_page_dict(self.id, {\"title\": title})\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(\n                self._document,\n                self,\n                paragraph_dict,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for paragraph_dict, next_paragraph_dict\n            in zip(\n                self._page_dict[\"paragraphs\"],\n                self._page_dict[\"paragraphs\"][1:]+[None]\n            )\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n\n    def delete(self):\n        with self._document.modify(\"Delete page\") as document_dict:\n            document_dict.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.modify(\"Move page\") as document_dict:\n            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)\n",
 "type":"code"
 }
 ],
@@ -1433,7 +1441,7 @@
 "type":"variable"
 },
 {
-"text":"(value)})\n",
+"text":"(value)})\n\n    def iter_text_fragments(self):\n        return iter(self.fragments)\n",
 "type":"code"
 }
 ],
@@ -1599,7 +1607,7 @@
 "type":"variable"
 },
 {
-"text":":\n                fragment.fill_text_version(text_version)\n            text_version.add(\"\\n\")\n            for index, child in enumerate(item.children):\n                with text_version.index(index):\n                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)\n        text_version = TextVersion()\n        for index, child in enumerate(self.children):\n            with text_version.index(index):\n                list_item_to_text(text_version, self.child_type, child, index=index)\n        return text_version\n\n    @text_version.setter\n    def text_version(self, value):\n        child_type, children = LegacyListParser(value).parse_items()\n        self.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n",
+"text":":\n                fragment.fill_text_version(text_version)\n            text_version.add(\"\\n\")\n            for index, child in enumerate(item.children):\n                with text_version.index(index):\n                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)\n        text_version = TextVersion()\n        for index, child in enumerate(self.children):\n            with text_version.index(index):\n                list_item_to_text(text_version, self.child_type, child, index=index)\n        return text_version\n\n    @text_version.setter\n    def text_version(self, value):\n        child_type, children = LegacyListParser(value).parse_items()\n        self.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n\n    def iter_text_fragments(self):\n        for item in self.children:\n            for fragment in item.iter_text_fragments():\n                yield fragment\n",
 "type":"code"
 }
 ],
@@ -1639,7 +1647,7 @@
 "type":"variable"
 },
 {
-"text":"]\n",
+"text":"]\n\n    def iter_text_fragments(self):\n        for fragment in self.fragments:\n            yield fragment\n        for child in self.children:\n            for fragment in child.iter_text_fragments():\n                yield fragment\n",
 "type":"code"
 }
 ],
@@ -1849,7 +1857,7 @@
 "type":"variable"
 },
 {
-"text":"\"]\n    )\n",
+"text":"\"]\n    )\n\ndef iter_code_fragments(self):\n    return iter(self.fragments)\n",
 "type":"code"
 }
 ],
@@ -2181,7 +2189,7 @@
 "type":"variable"
 },
 {
-"text":"(value)})\n",
+"text":"(value)})\n\n    def iter_text_fragments(self):\n        return iter(self.fragments)\n",
 "type":"code"
 }
 ],
@@ -2220,7 +2228,7 @@
 ],
 "fragments":[
 {
-"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self._document.modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(self._paragraph_dict, id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n",
+"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self._document.modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(self._paragraph_dict, id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
 "type":"code"
 }
 ],
@@ -3990,7 +3998,7 @@
 ],
 "fragments":[
 {
-"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
+"text":"def get_page(self, *args, **kwargs):\n    return self.document.get_page(*args, **kwargs)\n\ndef iter_pages(self, *args, **kwargs):\n    return self.document.iter_pages(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
 "type":"code"
 }
 ],
@@ -6998,7 +7006,15 @@
 "type":"variable"
 },
 {
-"text":")\n        view = TokenView(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=self.project.",
+"text":")\n        view = ",
+"type":"code"
+},
+{
+"id":"3060a3fbc04a4a708019d11f6efa737b",
+"type":"variable"
+},
+{
+"text":"(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=self.project.",
 "type":"code"
 },
 {
@@ -7108,7 +7124,23 @@
 ],
 "fragments":[
 {
-"text":"class TextView(TokenView):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        TokenView.__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=project.",
+"text":"class TextView(",
+"type":"code"
+},
+{
+"id":"3060a3fbc04a4a708019d11f6efa737b",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        ",
+"type":"code"
+},
+{
+"id":"3060a3fbc04a4a708019d11f6efa737b",
+"type":"variable"
+},
+{
+"text":".__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=project.",
 "type":"code"
 },
 {
@@ -7384,7 +7416,15 @@
 "type":"variable"
 },
 {
-"text":"(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, item.children, item.child_type, indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return TokenView(\n            view,\n            self.project,\n            [Token(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
+"text":"(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, item.children, item.child_type, indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return ",
+"type":"code"
+},
+{
+"id":"3060a3fbc04a4a708019d11f6efa737b",
+"type":"variable"
+},
+{
+"text":"(\n            view,\n            self.project,\n            [Token(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
 "type":"code"
 }
 ],
@@ -7516,7 +7556,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        TokenView(\n            panel,\n            self.project,\n            self._create_path_tokens(self.paragraph.path),\n            max_width=self.project.",
+"text":"(\n        ",
+"type":"code"
+},
+{
+"id":"3060a3fbc04a4a708019d11f6efa737b",
+"type":"variable"
+},
+{
+"text":"(\n            panel,\n            self.project,\n            self._create_path_tokens(self.paragraph.path),\n            max_width=self.project.",
 "type":"code"
 },
 {
@@ -7559,7 +7607,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        TokenView(\n            panel,\n            self.project,\n            self._highlight_variables(self.paragraph.tokens),\n            max_width=self.project.",
+"text":"(\n        ",
+"type":"code"
+},
+{
+"id":"3060a3fbc04a4a708019d11f6efa737b",
+"type":"variable"
+},
+{
+"text":"(\n            panel,\n            self.project,\n            self._highlight_variables(self.paragraph.tokens),\n            max_width=self.project.",
 "type":"code"
 },
 {
@@ -7700,23 +7756,7 @@
 "type":"variable"
 },
 {
-"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Usages:\", lambda: None)\n        def create_open_page_handler(page):\n            return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n        for page, full_title in self._find_variable_usages(self.project.get_page(), token.extra[\"variable\"]):\n            menu.AppendItem(\n                \"{}\".format(full_title),\n                create_open_page_handler(page)\n            )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Possible usages:\", lambda: None)\n        for page, full_title in self._find_variable_pages(self.project.get_page(), rename_value):\n            menu.AppendItem(\n                \"{}\".format(full_title),\n                create_open_page_handler(page)\n            )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, page, name, parents=[]):\n    if self._page_has_variable(page, name):\n        yield page, \" / \".join(page.title for page in parents+[page])\n    for child in page.children:\n        for child_page in self._find_variable_pages(child, name, parents+[page]):\n            yield child_page\n\ndef _find_variable_usages(self, page, variable_id, parents=[]):\n    if self._page_uses_variable(page, variable_id):\n        yield page, \" / \".join(page.title for page in parents+[page])\n    for child in page.children:\n        for child_page in self._find_variable_usages(child, variable_id, parents+[page]):\n            yield child_page\n\ndef _page_has_variable(self, page, name):\n    for paragraph in page.paragraphs:\n        if paragraph.type == \"code\":\n            for fragment in paragraph.",
-"type":"code"
-},
-{
-"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
-"type":"variable"
-},
-{
-"text":":\n                if fragment.type == \"code\":\n                    if re.search(r\"\\b{}\\b\".format(re.escape(name)), fragment.text):\n                        return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for paragraph in page.paragraphs:\n        if paragraph.type == \"code\":\n            for fragment in paragraph.",
-"type":"code"
-},
-{
-"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
-"type":"variable"
-},
-{
-"text":":\n                if fragment.type == \"variable\":\n                    if fragment.id == variable_id:\n                        return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
+"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Usages:\", lambda: None)\n        def create_open_page_handler(page):\n            return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n        for page, full_title in self._find_variable_usages(token.extra[\"variable\"]):\n            menu.AppendItem(\n                \"{}\".format(full_title),\n                create_open_page_handler(page)\n            )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Possible usages:\", lambda: None)\n        for page, full_title in self._find_variable_pages(rename_value):\n            menu.AppendItem(\n                \"{}\".format(full_title),\n                create_open_page_handler(page)\n            )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, name):\n    for page in self.project.iter_pages():\n        if self._page_has_variable(page, name):\n            yield page, \" / \".join(page.title for page in page.chain)\n\ndef _find_variable_usages(self, variable_id):\n    for page in self.project.iter_pages():\n        if self._page_uses_variable(page, variable_id):\n            yield page, \" / \".join(page.title for page in page.chain)\n\ndef _page_has_variable(self, page, name):\n    pattern = re.compile(r\"\\b{}\\b\".format(re.escape(name)))\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"code\":\n            if pattern.search(text_fragment.text):\n                return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"code\":\n            if pattern.search(code_fragment.text):\n                return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"variable\" and text_fragment.id == variable_id:\n            return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"variable\" and code_fragment.id == variable_id:\n            return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
 "type":"code"
 }
 ],
@@ -9096,7 +9136,15 @@
 ],
 "fragments":[
 {
-"text":"class TokenView(wx.Panel):\n\n    def __init__(self, parent, project, tokens, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.tokens = tokens\n        self.line_height = kwargs.get(\"line_height\", 1)\n        self.max_width = kwargs.get(\"max_width\", 100)\n        self.skip_extra_space = kwargs.get(\"skip_extra_space\", False)\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"3060a3fbc04a4a708019d11f6efa737b",
+"type":"variable"
+},
+{
+"text":"(wx.Panel):\n\n    def __init__(self, parent, project, tokens, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.tokens = tokens\n        self.line_height = kwargs.get(\"line_height\", 1)\n        self.max_width = kwargs.get(\"max_width\", 100)\n        self.skip_extra_space = kwargs.get(\"skip_extra_space\", False)\n",
 "type":"code"
 },
 {
@@ -11851,6 +11899,7 @@
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "2f0a877612fe4295ac6ad4ef7309d965":"OnDataDropped",
+"3060a3fbc04a4a708019d11f6efa737b":"TokenView",
 "307841bedc3c4f2cba2dbbf68a410075":"TextParser",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
 "30eeb77f05c34590a6498edb391d0916":"PARAGRAPH_SPACE",
