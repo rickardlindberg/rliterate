@@ -10617,6 +10617,33 @@
 },
 {
 "children":[],
+"id":"be4017f5ebd848809614724ad8361062",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"RLiterate works in modes: view and edit. This is in conflict with \"no modes\". ProjecturED is more direct. It can show multiple projections of the same data structure, but full direct editing is available in both projections. RLiterate can show two projections (view and edit) but only supports edits in one.",
+"type":"text"
+}
+],
+"id":"ae9cd0eb452947af890cfeb41ff4a5aa",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Support for more direct editing might be desierable. But I'm a Vim user, and I think modes are powerful. I need to investigate this area more. Can direct manipulation feel as \"precise\" as different modes?",
+"type":"text"
+}
+],
+"id":"9b2cf3338b7843ebb133924bc03e7a52",
+"type":"text"
+}
+],
+"title":"Direct manipulation"
+},
+{
+"children":[],
 "id":"2123dd3f4364404b896ffdb36235298a",
 "paragraphs":[
 {
