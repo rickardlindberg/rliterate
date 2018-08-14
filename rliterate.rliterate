@@ -12008,6 +12008,33 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"copy.deepcopy",
+"type":"code"
+},
+{
+"text":" is probably needed in ",
+"type":"text"
+},
+{
+"text":"Pragraph.duplicate",
+"type":"code"
+},
+{
+"text":" ",
+"type":"text"
+},
+{
+"page_id":"00d70d4faee841deba24ba21564eb11b",
+"text":null,
+"type":"reference"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
