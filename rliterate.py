@@ -2268,13 +2268,18 @@ class TableOfContentsRow(HorizontalPanel):
             self.Font = create_font(**dict(self.project.toc_font, bold=True))
         else:
             self.Font = create_font(**self.project.toc_font)
-        text = self.AppendChild(wx.StaticText(self, label=self.page.title), flag=wx.ALL, border=self.BORDER)
+        text = self.AppendChild(self._label(), flag=wx.ALL, border=self.BORDER)
         self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)
         self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
         for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
             helper.OnClick = self._on_click
             helper.OnRightClick = self._on_right_click
             helper.OnDrag = self._on_drag
+
+    def _label(self):
+        label = wx.StaticText(self)
+        label.SetLabelText(self.page.title)
+        return label
     def _on_click(self):
         open_pages_gui(self, self.project, [self.page.id], column_index=0)
 

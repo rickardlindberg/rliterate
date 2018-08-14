@@ -5979,12 +5979,34 @@
 "type":"variable"
 },
 {
-"text":"(wx.StaticText(self, label=self.page.title), flag=wx.ALL, border=self.BORDER)\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n",
+"text":"(self._label(), flag=wx.ALL, border=self.BORDER)\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _label(self):\n    label = wx.StaticText(self)\n    label.SetLabelText(self.page.title)\n    return label\n",
 "type":"code"
 }
 ],
 "id":"e7222f9d1f2e4c6dbcdee098b3f75ca4",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"SetLabelText",
+"type":"code"
+},
+{
+"text":" is needed, otherwise '&' characters are not rendered in ",
+"type":"text"
+},
+{
+"text":"wx.StaticText",
+"type":"code"
+},
+{
+"text":".",
+"type":"text"
+}
+],
+"id":"9decd109e6244b559602400fdebb32ac",
+"type":"text"
 },
 {
 "fragments":[
