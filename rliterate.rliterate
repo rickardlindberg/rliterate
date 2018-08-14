@@ -10632,11 +10632,40 @@
 {
 "fragments":[
 {
-"text":"Support for more direct editing might be desierable. But I'm a Vim user, and I think modes are powerful. I need to investigate this area more. Can direct manipulation feel as \"precise\" as different modes?",
+"text":"Support for more direct editing might be desierable. But I'm a Vim user, and I think modes are powerful. I need to investigate this area more. Can direct manipulation feel as \"precise\" as different modes? How can automatic save work if there is no explicit \"edit ends\"?",
 "type":"text"
 }
 ],
 "id":"9b2cf3338b7843ebb133924bc03e7a52",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"PDF by Lary Tesler about modes: ",
+"type":"text"
+},
+{
+"text":"A Personal History of Modeless Text Editing and Cut/Copy-Paste ",
+"type":"link",
+"url":"http://delivery.acm.org/10.1145/2220000/2212896/p70-tesler.pdf"
+},
+{
+"text":".",
+"type":"text"
+}
+],
+"id":"35d11444a2d24727a2c040f16e3aa9f1",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"If modes must be used, it should be visually clearly indicated that you are in a mode.",
+"type":"text"
+}
+],
+"id":"c4a31ff1f421477086c7cb7bea96dd81",
 "type":"text"
 }
 ],
@@ -11956,6 +11985,26 @@
 "fragments":[
 {
 "text":"Replace some context menus with floating popups?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Investigate ProjecturED's data structure (loops, \"clones\")",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Text control should ensure selected text is visible in view (scroll if needed)",
 "type":"text"
 }
 ]
