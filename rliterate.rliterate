@@ -12002,6 +12002,24 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Can ",
+"type":"text"
+},
+{
+"text":"wx.PopupWindow",
+"type":"code"
+},
+{
+"text":" be used?",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
