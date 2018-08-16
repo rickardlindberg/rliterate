@@ -1701,7 +1701,6 @@ class Project(Observable):
             os.path.basename(filepath),
             os.path.dirname(os.path.abspath(filepath))
         )
-        self.theme = SolarizedTheme()
         self.document = Document.from_file(filepath)
         self.document.listen(self.notify_forwarder("document"))
         self.layout = Layout.from_file(os.path.join(
@@ -1719,36 +1718,8 @@ class Project(Observable):
         FileGenerator(self.document)
 
     @property
-    def PAGE_BODY_WIDTH(self):
-        return self.global_settings.page_body_width
-
-    @PAGE_BODY_WIDTH.setter
-    def PAGE_BODY_WIDTH(self, value):
-        self.global_settings.page_body_width = value
-
-    PAGE_PADDING = 13
-    SHADOW_SIZE = 2
-    PARAGRAPH_SPACE = 15
-    CONTAINER_BORDER = PARAGRAPH_SPACE
-    @property
-    def editor_font(self):
-        return {"monospace": True, "size": 9}
-
-    @property
-    def toc_font(self):
-        return {"size": 10}
-
-    @property
-    def title_font(self):
-        return {"size": 16}
-
-    @property
-    def code_font(self):
-        return {"monospace": True}
-
-    @property
-    def text_font(self):
-        return {"size": 10}
+    def theme(self):
+        return self.global_settings
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
@@ -1817,7 +1788,7 @@ class Project(Observable):
     def hoisted_page(self, value):
         self.layout.hoisted_page = value
     def get_style(self, *args, **kwargs):
-        return self.theme.get_style(*args, **kwargs)
+        return SolarizedTheme().get_style(*args, **kwargs)
     @property
     def active_editor(self):
         return self._active_editor
@@ -1838,7 +1809,36 @@ class EditInProgress(Exception):
     pass
 class GlobalSettings(JsonSettings):
 
-    page_body_width = JsonSettings.property("theme.page_body_width", 600)
+    page_body_width = JsonSettings.property(
+        "theme.page_body_width", 600
+    )
+    page_padding = JsonSettings.property(
+        "theme.page_padding", 13
+    )
+    shadow_size = JsonSettings.property(
+        "theme.shadow_size", 2
+    )
+    paragraph_space = JsonSettings.property(
+        "theme.paragraph_space", 15
+    )
+    container_border = JsonSettings.property(
+        "theme.container_border", 15
+    )
+    editor_font = JsonSettings.property(
+        "theme.fonts.editor", {"monospace": True, "size": 9}
+    )
+    toc_font = JsonSettings.property(
+        "theme.fonts.toc", {"size": 10}
+    )
+    title_font = JsonSettings.property(
+        "theme.fonts.title", {"size": 16}
+    )
+    code_font = JsonSettings.property(
+        "theme.fonts.code", {"monospace": True}
+    )
+    text_font = JsonSettings.property(
+        "theme.fonts.text", {"size": 10}
+    )
 class Layout(JsonSettings):
 
     def __init__(self, *args, **kwargs):
@@ -2315,9 +2315,9 @@ class TableOfContentsRow(HorizontalPanel):
         else:
             self.AppendSpace(TableOfContentsButton.SIZE+1+self.BORDER)
         if self.project.is_open(self.page.id):
-            self.Font = create_font(**dict(self.project.toc_font, bold=True))
+            self.Font = create_font(**dict(self.project.theme.toc_font, bold=True))
         else:
-            self.Font = create_font(**self.project.toc_font)
+            self.Font = create_font(**self.project.theme.toc_font)
         text = self.AppendChild(self._label(), flag=wx.ALL, border=self.BORDER)
         self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)
         self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
@@ -2453,7 +2453,7 @@ class Workspace(HorizontalScrolledWindow):
     def _render(self):
         with flicker_free_drawing(self):
             self.SetBackgroundColour((200, 200, 200))
-            self.AppendSpace(self.project.PAGE_PADDING)
+            self.AppendSpace(self.project.theme.page_padding)
             self.columns = []
             wx.CallAfter(self._re_render)
 
@@ -2539,10 +2539,10 @@ class Column(VerticalScrolledWindow):
 
     def _get_size(self, project):
         return (
-            project.PAGE_BODY_WIDTH+
-            2*project.CONTAINER_BORDER+
-            project.PAGE_PADDING+
-            project.SHADOW_SIZE,
+            project.theme.page_body_width+
+            2*project.theme.container_border+
+            project.theme.page_padding+
+            project.theme.shadow_size,
             -1
         )
 
@@ -2550,14 +2550,14 @@ class Column(VerticalScrolledWindow):
         self.containers = []
         self.MinSize = self._get_size(self.project)
         self.RemoveChildren()
-        self.AppendSpace(self.project.PAGE_PADDING)
+        self.AppendSpace(self.project.theme.page_padding)
         for page_id in page_ids:
             if self.project.get_page(page_id) is not None:
                 self.containers.append(
                     self.AppendChild(
                         PageContainer(self, self.project, page_id),
                         flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-                        border=self.project.PAGE_PADDING
+                        border=self.project.theme.page_padding
                     )
                 )
         if page_ids == self._page_ids:
@@ -2585,14 +2585,14 @@ class PageContainer(VerticalPanel):
         self.inner_container = self.AppendChild(
             VerticalPanel(self),
             flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
-            border=self.project.SHADOW_SIZE
+            border=self.project.theme.shadow_size
         )
         self.inner_container.SetBackgroundColour((255, 255, 255))
-        self.inner_container.AppendSpace(self.project.CONTAINER_BORDER)
+        self.inner_container.AppendSpace(self.project.theme.container_border)
         self.page = self.inner_container.AppendChild(
             PagePanel(self.inner_container, self.project, self.page_id),
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-            border=self.project.CONTAINER_BORDER
+            border=self.project.theme.container_border
         )
 
     def FindClosestDropPoint(self, screen_pos):
@@ -2601,7 +2601,7 @@ class PagePanel(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
         VerticalPanel.__init__(self, parent, size=(
-            project.PAGE_BODY_WIDTH,
+            project.theme.page_body_width,
             -1
         ))
         self.project = project
@@ -2638,7 +2638,7 @@ class PagePanel(VerticalPanel):
         return self.AppendChild(
             Divider(
                 self,
-                padding=(self.project.PARAGRAPH_SPACE-3)/2,
+                padding=(self.project.theme.paragraph_space-3)/2,
                 height=3
             ),
             flag=wx.EXPAND
@@ -2656,7 +2656,7 @@ class PagePanel(VerticalPanel):
                 style=wx.NO_BORDER
             ),
             flag=wx.TOP|wx.ALIGN_RIGHT,
-            border=self.project.PARAGRAPH_SPACE
+            border=self.project.theme.paragraph_space
         )
         add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
 
@@ -2691,12 +2691,12 @@ class Title(Editable):
         Editable.__init__(self, parent, project)
 
     def CreateView(self):
-        self.Font = create_font(**self.project.title_font)
+        self.Font = create_font(**self.project.theme.title_font)
         view = TokenView(
             self,
             self.project,
             [Token(self.page.title)],
-            max_width=self.project.PAGE_BODY_WIDTH
+            max_width=self.project.theme.page_body_width
         )
         view.SetToolTipString(self.page.full_title)
         MouseEventHelper.bind(
@@ -2764,7 +2764,7 @@ class TextView(TokenView):
             project,
             tokens,
             line_height=1.2,
-            max_width=project.PAGE_BODY_WIDTH-indented,
+            max_width=project.theme.page_body_width-indented,
             skip_extra_space=True
         )
         MouseEventHelper.bind(
@@ -2775,7 +2775,7 @@ class TextView(TokenView):
             move=self._on_mouse_move,
             click=self._on_click
         )
-        self.Font = create_font(**project.text_font)
+        self.Font = create_font(**project.theme.text_font)
         self.token = None
 
     def _on_mouse_move(self, event):
@@ -2803,7 +2803,7 @@ class TextEdit(MultilineTextCtrl):
             start = index + extra["token"].index
             end = start + len(extra["token"].text)
             self.SetSelection(start, end)
-        self.Font = create_font(**project.editor_font)
+        self.Font = create_font(**project.theme.editor_font)
         self.project = project
         self.paragraph = paragraph
 
@@ -2843,7 +2843,7 @@ class List(ParagraphBase):
 
     def CreateView(self):
         view = VerticalPanel(self)
-        view.Font = create_font(**self.project.text_font)
+        view.Font = create_font(**self.project.theme.text_font)
         self.add_items(view, self.paragraph.children, self.paragraph.child_type)
         return view
 
@@ -2913,7 +2913,7 @@ class CodeView(VerticalPanel):
         self._create_gui()
 
     def _create_gui(self):
-        self.Font = create_font(**self.project.code_font)
+        self.Font = create_font(**self.project.theme.code_font)
         if not self.paragraph.path.is_empty:
             self.AppendChild(
                 self._create_path(),
@@ -2932,7 +2932,7 @@ class CodeView(VerticalPanel):
                 panel,
                 self.project,
                 self._create_path_tokens(self.paragraph.path),
-                max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
+                max_width=self.project.theme.page_body_width-2*self.PADDING
             ),
             flag=wx.ALL|wx.EXPAND,
             border=self.PADDING
@@ -2998,7 +2998,7 @@ class CodeView(VerticalPanel):
                 panel,
                 self.project,
                 self._highlight_variables(self.paragraph.tokens),
-                max_width=self.project.PAGE_BODY_WIDTH-2*self.PADDING
+                max_width=self.project.theme.page_body_width-2*self.PADDING
             ),
             flag=wx.ALL|wx.EXPAND,
             border=self.PADDING,
@@ -3158,7 +3158,7 @@ class CodeEditor(VerticalPanel):
         self._focus()
 
     def _create_gui(self):
-        self.Font = create_font(**self.project.editor_font)
+        self.Font = create_font(**self.project.theme.editor_font)
         self.path = self.AppendChild(
             SelectionableTextCtrl(
                 self,
@@ -3211,7 +3211,7 @@ class Image(ParagraphBase):
                 view,
                 bitmap=base64_to_bitmap(
                     self.paragraph.image_base64,
-                    self.project.PAGE_BODY_WIDTH
+                    self.project.theme.page_body_width
                 )
             ),
             flag=wx.ALIGN_CENTER
@@ -3240,7 +3240,7 @@ class ImageEdit(VerticalPanel):
 
     def __init__(self, parent, project, paragraph, view):
         VerticalPanel.__init__(self, parent)
-        self.Font = create_font(**project.editor_font)
+        self.Font = create_font(**project.theme.editor_font)
         self.project = project
         self.paragraph = paragraph
         self.image = self.AppendChild(
@@ -3248,7 +3248,7 @@ class ImageEdit(VerticalPanel):
                 self,
                 bitmap=base64_to_bitmap(
                     paragraph.image_base64,
-                    self.project.PAGE_BODY_WIDTH
+                    self.project.theme.page_body_width
                 )
             ),
             flag=wx.ALIGN_CENTER
@@ -3272,7 +3272,7 @@ class ImageEdit(VerticalPanel):
             bitmap = image_data.GetBitmap()
             self.image.SetBitmap(fit_image(
                 wx.ImageFromBitmap(bitmap),
-                self.project.PAGE_BODY_WIDTH
+                self.project.theme.page_body_width
             ).ConvertToBitmap())
             self.image_base64 = bitmap_to_base64(bitmap)
             self.GetTopLevelParent().ChildReRendered()
@@ -3295,12 +3295,12 @@ class Factory(ParagraphBase):
         view.AppendChild(
             wx.StaticText(view, label="Factory"),
             flag=wx.TOP|wx.ALIGN_CENTER,
-            border=self.project.PARAGRAPH_SPACE
+            border=self.project.theme.paragraph_space
         )
         self.button_panel = view.AppendChild(
             HorizontalPanel(view),
             flag=wx.TOP|wx.ALIGN_CENTER,
-            border=self.project.PARAGRAPH_SPACE
+            border=self.project.theme.paragraph_space
         )
         self._add_button("Text", {
             "type": "text",
@@ -3329,7 +3329,7 @@ class Factory(ParagraphBase):
             "type": "image",
             "fragments": [{"type": "text", "text": "Enter image text here..."}],
         })
-        view.AppendSpace(self.project.PARAGRAPH_SPACE)
+        view.AppendSpace(self.project.theme.paragraph_space)
         return view
 
     def _add_button(self, text, value):
@@ -3362,15 +3362,15 @@ class SettingsDialog(wx.Dialog):
     def _init_gui(self):
         spin = wx.SpinCtrl(
             self,
-            value="{}".format(self.project.PAGE_BODY_WIDTH),
+            value="{}".format(self.project.theme.page_body_width),
             min=100,
             max=10000
         )
         self.Bind(
             wx.EVT_SPINCTRL,
             lambda event: setattr(
-                self.project,
-                "PAGE_BODY_WIDTH",
+                self.project.theme,
+                "page_body_width",
                 event.Value
             )
         )

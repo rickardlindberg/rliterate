@@ -3842,7 +3842,7 @@
 "type":"chunk"
 },
 {
-"text":"        self.title=\"{} ({})\".format(\n            os.path.basename(filepath),\n            os.path.dirname(os.path.abspath(filepath))\n        )\n        self.theme = SolarizedTheme()\n        self.document = Document.",
+"text":"        self.title=\"{} ({})\".format(\n            os.path.basename(filepath),\n            os.path.dirname(os.path.abspath(filepath))\n        )\n        self.document = Document.",
 "type":"code"
 },
 {
@@ -3886,128 +3886,15 @@
 "type":"code"
 },
 {
-"id":"52a4cb0c44124d518647a92eb25a876d",
+"id":"ae8e603135854b1787ca652bf6304e9e",
 "type":"variable"
 },
 {
-"text":"(self):\n    return self.global_settings.page_body_width\n\n@",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":".setter\ndef ",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":"(self, value):\n    self.global_settings.page_body_width = value\n\n",
-"type":"code"
-},
-{
-"id":"76b9d362e0714c1da27953dd46e8ef0b",
-"type":"variable"
-},
-{
-"text":" = 13\n",
-"type":"code"
-},
-{
-"id":"df94156ca33b47a1beb10346870806ec",
-"type":"variable"
-},
-{
-"text":" = 2\n",
-"type":"code"
-},
-{
-"id":"30eeb77f05c34590a6498edb391d0916",
-"type":"variable"
-},
-{
-"text":" = 15\n",
-"type":"code"
-},
-{
-"id":"6a754b8a39e24518b76e88d57a89eff6",
-"type":"variable"
-},
-{
-"text":" = ",
-"type":"code"
-},
-{
-"id":"30eeb77f05c34590a6498edb391d0916",
-"type":"variable"
-},
-{
-"text":"\n",
+"text":"(self):\n    return self.global_settings\n",
 "type":"code"
 }
 ],
 "id":"e3e222b97d124ce0af6eba3cead75f90",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Project"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef ",
-"type":"code"
-},
-{
-"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
-"type":"variable"
-},
-{
-"text":"(self):\n    return {\"monospace\": True, \"size\": 9}\n\n@property\ndef ",
-"type":"code"
-},
-{
-"id":"8970b68862714f158948f8ec1c68acb1",
-"type":"variable"
-},
-{
-"text":"(self):\n    return {\"size\": 10}\n\n@property\ndef ",
-"type":"code"
-},
-{
-"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
-"type":"variable"
-},
-{
-"text":"(self):\n    return {\"size\": 16}\n\n@property\ndef ",
-"type":"code"
-},
-{
-"id":"aa80683234dc421f81d21fbda0b91758",
-"type":"variable"
-},
-{
-"text":"(self):\n    return {\"monospace\": True}\n\n@property\ndef ",
-"type":"code"
-},
-{
-"id":"39e45626d4804403be92d31444a1281c",
-"type":"variable"
-},
-{
-"text":"(self):\n    return {\"size\": 10}\n",
-"type":"code"
-}
-],
-"id":"c15088f8de804007aaa45888db5bcd6f",
 "type":"code"
 },
 {
@@ -4092,7 +3979,7 @@
 "type":"variable"
 },
 {
-"text":"(self, *args, **kwargs):\n    return self.theme.",
+"text":"(self, *args, **kwargs):\n    return SolarizedTheme().",
 "type":"code"
 },
 {
@@ -4315,7 +4202,87 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    page_body_width = JsonSettings.property(\"theme.page_body_width\", 600)\n",
+"text":"):\n\n    ",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.page_body_width\", 600\n    )\n    ",
+"type":"code"
+},
+{
+"id":"76b9d362e0714c1da27953dd46e8ef0b",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.page_padding\", 13\n    )\n    ",
+"type":"code"
+},
+{
+"id":"df94156ca33b47a1beb10346870806ec",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.shadow_size\", 2\n    )\n    ",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.paragraph_space\", 15\n    )\n    ",
+"type":"code"
+},
+{
+"id":"6a754b8a39e24518b76e88d57a89eff6",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.container_border\", 15\n    )\n    ",
+"type":"code"
+},
+{
+"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.fonts.editor\", {\"monospace\": True, \"size\": 9}\n    )\n    ",
+"type":"code"
+},
+{
+"id":"8970b68862714f158948f8ec1c68acb1",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.fonts.toc\", {\"size\": 10}\n    )\n    ",
+"type":"code"
+},
+{
+"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.fonts.title\", {\"size\": 16}\n    )\n    ",
+"type":"code"
+},
+{
+"id":"aa80683234dc421f81d21fbda0b91758",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.fonts.code\", {\"monospace\": True}\n    )\n    ",
+"type":"code"
+},
+{
+"id":"39e45626d4804403be92d31444a1281c",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.fonts.text\", {\"size\": 10}\n    )\n",
 "type":"code"
 }
 ],
@@ -5934,6 +5901,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"8970b68862714f158948f8ec1c68acb1",
 "type":"variable"
 },
@@ -5947,6 +5922,14 @@
 },
 {
 "text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -6155,6 +6138,14 @@
 },
 {
 "text":"(self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -6531,11 +6522,27 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"52a4cb0c44124d518647a92eb25a876d",
 "type":"variable"
 },
 {
 "text":"+\n            2*project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -6547,11 +6554,27 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"76b9d362e0714c1da27953dd46e8ef0b",
 "type":"variable"
 },
 {
 "text":"+\n            project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -6579,6 +6602,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"76b9d362e0714c1da27953dd46e8ef0b",
 "type":"variable"
 },
@@ -6592,6 +6623,14 @@
 },
 {
 "text":"(\n                        PageContainer(self, self.project, page_id),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -6692,6 +6731,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"df94156ca33b47a1beb10346870806ec",
 "type":"variable"
 },
@@ -6708,6 +6755,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"6a754b8a39e24518b76e88d57a89eff6",
 "type":"variable"
 },
@@ -6721,6 +6776,14 @@
 },
 {
 "text":"(\n            PagePanel(self.inner_container, self.project, self.page_id),\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n            border=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -6790,6 +6853,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"30eeb77f05c34590a6498edb391d0916",
 "type":"variable"
 },
@@ -6803,6 +6874,14 @@
 },
 {
 "text":"(\n        wx.BitmapButton(\n            self,\n            bitmap=wx.ArtProvider.GetBitmap(\n                wx.ART_ADD_BOOKMARK,\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        ),\n        flag=wx.TOP|wx.ALIGN_RIGHT,\n        border=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -6932,6 +7011,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"52a4cb0c44124d518647a92eb25a876d",
 "type":"variable"
 },
@@ -7031,6 +7118,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
 "type":"variable"
 },
@@ -7044,6 +7139,14 @@
 },
 {
 "text":"(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -7181,6 +7284,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"52a4cb0c44124d518647a92eb25a876d",
 "type":"variable"
 },
@@ -7194,6 +7305,14 @@
 },
 {
 "text":"(**project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -7300,6 +7419,14 @@
 },
 {
 "text":"(**project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -7433,6 +7560,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"39e45626d4804403be92d31444a1281c",
 "type":"variable"
 },
@@ -7538,6 +7673,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"aa80683234dc421f81d21fbda0b91758",
 "type":"variable"
 },
@@ -7605,6 +7748,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"52a4cb0c44124d518647a92eb25a876d",
 "type":"variable"
 },
@@ -7653,6 +7804,14 @@
 },
 {
 "text":"(\n            panel,\n            self.project,\n            self._highlight_variables(self.paragraph.tokens),\n            max_width=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -7894,6 +8053,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"c56b4a82a7d4441ab6ceb5610217a3c5",
 "type":"variable"
 },
@@ -8100,6 +8267,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"52a4cb0c44124d518647a92eb25a876d",
 "type":"variable"
 },
@@ -8164,6 +8339,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"c56b4a82a7d4441ab6ceb5610217a3c5",
 "type":"variable"
 },
@@ -8185,6 +8368,14 @@
 },
 {
 "text":"(\n                    paragraph.image_base64,\n                    self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -8217,6 +8408,14 @@
 },
 {
 "text":"(\n            wx.Button(self, label=\"Paste\")\n        )\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(\n                wx.ImageFromBitmap(bitmap),\n                self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -8365,6 +8564,14 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"30eeb77f05c34590a6498edb391d0916",
 "type":"variable"
 },
@@ -8378,6 +8585,14 @@
 },
 {
 "text":"(\n            HorizontalPanel(view),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -8434,6 +8649,14 @@
 },
 {
 "text":"(self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -8904,11 +9127,27 @@
 "type":"code"
 },
 {
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
 "id":"52a4cb0c44124d518647a92eb25a876d",
 "type":"variable"
 },
 {
-"text":"),\n            min=100,\n            max=10000\n        )\n        self.Bind(\n            wx.EVT_SPINCTRL,\n            lambda event: setattr(\n                self.project,\n                \"",
+"text":"),\n            min=100,\n            max=10000\n        )\n        self.Bind(\n            wx.EVT_SPINCTRL,\n            lambda event: setattr(\n                self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":",\n                \"",
 "type":"code"
 },
 {
@@ -12202,6 +12441,16 @@
 "type":"reference"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Multiple instances of rliterate overwrites each other's settings",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
@@ -12268,7 +12517,7 @@
 "3060a3fbc04a4a708019d11f6efa737b":"TokenView",
 "307841bedc3c4f2cba2dbbf68a410075":"TextParser",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
-"30eeb77f05c34590a6498edb391d0916":"PARAGRAPH_SPACE",
+"30eeb77f05c34590a6498edb391d0916":"paragraph_space",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
 "3457c112c47c41a293d77cc79f99badf":"VerticalScrolledWindow",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
@@ -12280,18 +12529,18 @@
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
 "507782d786b84d209eef461ecd0b4544":"fragments",
-"52a4cb0c44124d518647a92eb25a876d":"PAGE_BODY_WIDTH",
+"52a4cb0c44124d518647a92eb25a876d":"page_body_width",
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
-"6a754b8a39e24518b76e88d57a89eff6":"CONTAINER_BORDER",
+"6a754b8a39e24518b76e88d57a89eff6":"container_border",
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
 "740055857bb244038c203cea23c1af69":"CreateView",
 "74949da897df45e6862e45ffe667fc6e":"text_to_fragments",
-"76b9d362e0714c1da27953dd46e8ef0b":"PAGE_PADDING",
+"76b9d362e0714c1da27953dd46e8ef0b":"page_padding",
 "82902f4f6d91479f88d33e04619a3915":"chain",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8970b68862714f158948f8ec1c68acb1":"toc_font",
@@ -12309,6 +12558,7 @@
 "a886e97ceb3d427c8190487d23d12bc1":"Column",
 "aa80683234dc421f81d21fbda0b91758":"code_font",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
+"ae8e603135854b1787ca652bf6304e9e":"theme",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
@@ -12327,7 +12577,7 @@
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
 "de16dfdd628d459ba5af528db2604934":"fragments",
-"df94156ca33b47a1beb10346870806ec":"SHADOW_SIZE",
+"df94156ca33b47a1beb10346870806ec":"shadow_size",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
 "e1443402d3ec4bb4805c51cba497246d":"chunk_delimiters",
 "e327d4d3650047bc9eedb2a21d4c2613":"Editable",
