@@ -3858,7 +3858,7 @@
 "type":"variable"
 },
 {
-"text":".from_file(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator(self.document)\n        self._foo = 600\n\n",
+"text":".from_file(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        self.global_settings = GlobalSettings.from_file(\n            os.path.join(\n                wx.StandardPaths.Get().GetUserConfigDir(),\n                \".rliterate.settings\"\n            )\n        )\n        self.global_settings.listen(self.notify_forwarder(\"document\"))\n        FileGenerator(self.document)\n\n",
 "type":"code"
 },
 {
@@ -3890,7 +3890,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    return self._foo\n\n@",
+"text":"(self):\n    return self.global_settings.page_body_width\n\n@",
 "type":"code"
 },
 {
@@ -3906,7 +3906,7 @@
 "type":"variable"
 },
 {
-"text":"(self, value):\n    with self.notify(\"document\"):\n        self._foo = value\n\n",
+"text":"(self, value):\n    self.global_settings.page_body_width = value\n\n",
 "type":"code"
 },
 {
@@ -4285,6 +4285,45 @@
 }
 ],
 "title":"Project"
+},
+{
+"children":[],
+"id":"ebcd65c31b6b4f829c96f279ac717a7e",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"e7f258e2b4ca4680b295e1daf618e0b4",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"49f91cc97f054fcca58f40b97d79b15b",
+"type":"variable"
+},
+{
+"text":"):\n\n    page_body_width = JsonSettings.property(\"theme.page_body_width\", 600)\n",
+"type":"code"
+}
+],
+"id":"1ae85660aabb4340b53fad8b3c6f5a6a",
+"type":"code"
+}
+],
+"title":"Global settings"
 },
 {
 "children":[
@@ -10196,7 +10235,7 @@
 ],
 "fragments":[
 {
-"text":"def get(self, path, default=None):\n    keys = path.split(\".\")\n    return copy.deepcopy(\n        self._dict_at(keys[:-1]).get(keys[-1], default)\n    )\n\ndef set(self, path, value):\n    keys = path.split(\".\")\n    with self.notify(path):\n        self._dict_at(keys[:-1])[keys[-1]] = copy.deepcopy(value)\n\ndef _dict_at(self, keys):\n    sub_dict = self._settings_dict\n    while keys:\n        sub_dict = sub_dict.get(keys.pop(0), {})\n    return sub_dict\n",
+"text":"def get(self, path, default=None):\n    keys = path.split(\".\")\n    return copy.deepcopy(\n        self._dict_at(keys[:-1]).get(keys[-1], default)\n    )\n\ndef set(self, path, value):\n    keys = path.split(\".\")\n    with self.notify(path):\n        self._dict_at(keys[:-1], create=True)[keys[-1]] = copy.deepcopy(value)\n\ndef _dict_at(self, keys, create=False):\n    sub_dict = self._settings_dict\n    while keys:\n        key = keys.pop(0)\n        if key not in sub_dict and create:\n            sub_dict[key] = {}\n        sub_dict = sub_dict.get(key, {})\n    return sub_dict\n",
 "type":"code"
 }
 ],
@@ -12293,6 +12332,7 @@
 "e1443402d3ec4bb4805c51cba497246d":"chunk_delimiters",
 "e327d4d3650047bc9eedb2a21d4c2613":"Editable",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
+"e7f258e2b4ca4680b295e1daf618e0b4":"GlobalSettings",
 "ebae45a29f8649beb10a7e3cab576552":"\", \"",
 "f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",

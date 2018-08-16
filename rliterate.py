@@ -463,12 +463,15 @@ class JsonSettings(Observable):
     def set(self, path, value):
         keys = path.split(".")
         with self.notify(path):
-            self._dict_at(keys[:-1])[keys[-1]] = copy.deepcopy(value)
+            self._dict_at(keys[:-1], create=True)[keys[-1]] = copy.deepcopy(value)
 
-    def _dict_at(self, keys):
+    def _dict_at(self, keys, create=False):
         sub_dict = self._settings_dict
         while keys:
-            sub_dict = sub_dict.get(keys.pop(0), {})
+            key = keys.pop(0)
+            if key not in sub_dict and create:
+                sub_dict[key] = {}
+            sub_dict = sub_dict.get(key, {})
         return sub_dict
     @staticmethod
     def property(path, default=None):
@@ -1706,17 +1709,22 @@ class Project(Observable):
             ".{}.layout".format(os.path.basename(filepath))
         ))
         self.layout.listen(self.notify_forwarder("layout"))
+        self.global_settings = GlobalSettings.from_file(
+            os.path.join(
+                wx.StandardPaths.Get().GetUserConfigDir(),
+                ".rliterate.settings"
+            )
+        )
+        self.global_settings.listen(self.notify_forwarder("document"))
         FileGenerator(self.document)
-        self._foo = 600
 
     @property
     def PAGE_BODY_WIDTH(self):
-        return self._foo
+        return self.global_settings.page_body_width
 
     @PAGE_BODY_WIDTH.setter
     def PAGE_BODY_WIDTH(self, value):
-        with self.notify("document"):
-            self._foo = value
+        self.global_settings.page_body_width = value
 
     PAGE_PADDING = 13
     SHADOW_SIZE = 2
@@ -1828,6 +1836,9 @@ class Project(Observable):
             self._highlighted_variable = variable_id
 class EditInProgress(Exception):
     pass
+class GlobalSettings(JsonSettings):
+
+    page_body_width = JsonSettings.property("theme.page_body_width", 600)
 class Layout(JsonSettings):
 
     def __init__(self, *args, **kwargs):
