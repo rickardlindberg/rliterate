@@ -2470,6 +2470,7 @@ class Workspace(HorizontalScrolledWindow):
         with flicker_free_drawing(self):
             self._update_space()
             self._update_columns()
+            self.GetTopLevelParent().ChildReRendered()
     def _update_space(self):
         self.space.SetSize(self.project.theme.page_padding)
     def _update_columns(self):
@@ -2477,9 +2478,8 @@ class Workspace(HorizontalScrolledWindow):
         last_column_changed_pages = False
         for index, page_ids in enumerate(self.project.columns):
             last_column_changed_pages = self.columns[index].SetPages(page_ids)
-        self.GetTopLevelParent().ChildReRendered()
         if column_count_changed or last_column_changed_pages:
-            self.ScrollToEnd()
+            wx.CallAfter(self.ScrollToEnd)
 
     def _ensure_num_columns(self, num):
         count_changed = False
