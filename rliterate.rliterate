@@ -3850,7 +3850,15 @@
 "type":"variable"
 },
 {
-"text":"(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = Layout(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator(self.document)\n        self._foo = 600\n\n",
+"text":"(filepath)\n        self.document.listen(self.notify_forwarder(\"document\"))\n        self.layout = ",
+"type":"code"
+},
+{
+"id":"13edfec5045f41d99010d539bc4ac956",
+"type":"variable"
+},
+{
+"text":".from_file(os.path.join(\n            os.path.dirname(filepath),\n            \".{}.layout\".format(os.path.basename(filepath))\n        ))\n        self.layout.listen(self.notify_forwarder(\"layout\"))\n        FileGenerator(self.document)\n        self._foo = 600\n\n",
 "type":"code"
 },
 {
@@ -4049,7 +4057,7 @@
 ],
 "fragments":[
 {
-"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    if self.active_editor is None:\n        return self.layout.open_pages(*args, **kwargs)\n    else:\n        raise EditInProgress()\n\ndef can_back(self, *args, **kwargs):\n    return self.layout.can_back(*args, **kwargs)\n\ndef back(self, *args, **kwargs):\n    return self.layout.back(*args, **kwargs)\n\ndef can_forward(self, *args, **kwargs):\n    return self.layout.can_forward(*args, **kwargs)\n\ndef forward(self, *args, **kwargs):\n    return self.layout.forward(*args, **kwargs)\n\ndef get_hoisted_page(self, *args, **kwargs):\n    return self.layout.get_hoisted_page(*args, **kwargs)\n\ndef set_hoisted_page(self, *args, **kwargs):\n    return self.layout.set_hoisted_page(*args, **kwargs)\n",
+"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    if self.active_editor is None:\n        return self.layout.open_pages(*args, **kwargs)\n    else:\n        raise EditInProgress()\n\ndef can_back(self, *args, **kwargs):\n    return self.layout.can_back(*args, **kwargs)\n\ndef back(self, *args, **kwargs):\n    return self.layout.back(*args, **kwargs)\n\ndef can_forward(self, *args, **kwargs):\n    return self.layout.can_forward(*args, **kwargs)\n\ndef forward(self, *args, **kwargs):\n    return self.layout.forward(*args, **kwargs)\n\n@property\ndef hoisted_page(self):\n    return self.layout.hoisted_page\n\n@hoisted_page.setter\ndef hoisted_page(self, value):\n    self.layout.hoisted_page = value\n",
 "type":"code"
 }
 ],
@@ -4319,7 +4327,15 @@
 "type":"variable"
 },
 {
-"text":", {\n        \"workspace\": {\n            \"scratch\": [\"abc\"],\n        }\n    })\n    layout = Layout(",
+"text":", {\n        \"workspace\": {\n            \"scratch\": [\"abc\"],\n        }\n    })\n    layout = ",
+"type":"code"
+},
+{
+"id":"13edfec5045f41d99010d539bc4ac956",
+"type":"variable"
+},
+{
+"text":".from_file(",
 "type":"code"
 },
 {
@@ -4327,7 +4343,7 @@
 "type":"variable"
 },
 {
-"text":")\n    layout.set_hoisted_page(None)\n    assert load_json_from_file(tmpfile)[\"workspace\"] == {\n        \"columns\": [\n            [\"abc\"],\n        ]\n    }\n",
+"text":")\n    with layout.notify():\n        pass\n    assert load_json_from_file(tmpfile)[\"workspace\"] == {\n        \"columns\": [\n            [\"abc\"],\n        ]\n    }\n",
 "type":"code"
 }
 ],
@@ -4338,14 +4354,14 @@
 "chunkpath":[
 "classes",
 "Layout",
-"__init__"
+"handle legacy settings dict"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"if \"scratch\" in self._workspace:\n    if not self._workspace[\"columns\"]:\n        self._workspace[\"columns\"] = [self._workspace[\"scratch\"]]\n    del self._workspace[\"scratch\"]\n",
+"text":"if \"workspace\" in self._settings_dict:\n    workspace = self._settings_dict[\"workspace\"]\n    if \"scratch\" in workspace:\n        if \"columns\" not in workspace:\n            workspace[\"columns\"] = [workspace[\"scratch\"]]\n        del workspace[\"scratch\"]\n",
 "type":"code"
 }
 ],
@@ -4369,16 +4385,6 @@
 "type":"text"
 },
 {
-"fragments":[
-{
-"text":"The layout is recorded in a JSON object that is serialized to disk as soon as something changes.",
-"type":"text"
-}
-],
-"id":"48d620f5656a4a3c9acc813a4ce656d9",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes"
 ],
@@ -4387,7 +4393,51 @@
 ],
 "fragments":[
 {
-"text":"class Layout(Observable):\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"13edfec5045f41d99010d539bc4ac956",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"49f91cc97f054fcca58f40b97d79b15b",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, *args, **kwargs):\n        ",
+"type":"code"
+},
+{
+"id":"49f91cc97f054fcca58f40b97d79b15b",
+"type":"variable"
+},
+{
+"text":".__init__(self, *args, **kwargs)\n",
+"type":"code"
+},
+{
+"path":[
+"Layout",
+"handle legacy settings dict"
+],
+"prefix":"        ",
+"type":"chunk"
+},
+{
+"path":[
+"Layout",
+"__init__"
+],
+"prefix":"        ",
+"type":"chunk"
+},
+{
+"text":"\n",
 "type":"code"
 },
 {
@@ -4400,48 +4450,6 @@
 ],
 "id":"e50b267f475a48d78b5ea92de3351960",
 "type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Layout"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def __init__(self, path):\n    Observable.__init__(self)\n    self.listen(lambda event: write_json_to_file(path, self.data))\n    if os.path.exists(path):\n        self.data = load_json_from_file(path)\n    else:\n        self.data = {}\n",
-"type":"code"
-},
-{
-"path":[
-"__init__"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"5fa45b8aa7364565895d510ff7885da7",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"The rest of this class provides methods for reading and writing the ",
-"type":"text"
-},
-{
-"text":"data",
-"type":"code"
-},
-{
-"text":" dict.",
-"type":"text"
-}
-],
-"id":"e76db32a5b6c45d8a05e036d12cf0c6c",
-"type":"text"
 },
 {
 "fragments":[
@@ -4464,24 +4472,6 @@
 {
 "chunkpath":[
 "classes",
-"Layout",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self._toc = ensure_key(self.data, \"toc\", {})\n",
-"type":"code"
-}
-],
-"id":"476b5bcbc1b540bb9ea853c3cbe6f590",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
 "Layout"
 ],
 "filepath":[
@@ -4489,11 +4479,19 @@
 ],
 "fragments":[
 {
-"text":"def get_hoisted_page(self):\n    return self._toc.get(\"hoisted_page_id\", None)\n\ndef set_hoisted_page(self, page_id):\n    with self.notify(\"toc\"):\n        self._toc[\"hoisted_page_id\"] = page_id\n",
+"text":"hoisted_page = ",
+"type":"code"
+},
+{
+"id":"49f91cc97f054fcca58f40b97d79b15b",
+"type":"variable"
+},
+{
+"text":".property(\n    \"toc.hoisted_page_id\",\n    []\n)\n",
 "type":"code"
 }
 ],
-"id":"e4c448026a024e2baaaeb19719227998",
+"id":"b619691296e1418292bcca914a325f33",
 "type":"code"
 },
 {
@@ -4517,24 +4515,6 @@
 {
 "chunkpath":[
 "classes",
-"Layout",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self._toc_collapsed = ensure_key(self._toc, \"collapsed\", [])\n",
-"type":"code"
-}
-],
-"id":"ae0c47bdc6a642fbb95bcc589b0cc9c7",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
 "Layout"
 ],
 "filepath":[
@@ -4542,7 +4522,7 @@
 ],
 "fragments":[
 {
-"text":"def is_collapsed(self, page_id):\n    return page_id in self._toc_collapsed\n\ndef toggle_collapsed(self, page_id):\n    with self.notify(\"toc\"):\n        if page_id in self._toc_collapsed:\n            self._toc_collapsed.remove(page_id)\n        else:\n            self._toc_collapsed.append(page_id)\n",
+"text":"def is_collapsed(self, page_id):\n    return page_id in self.get(\"toc.collapsed\", [])\n\ndef toggle_collapsed(self, page_id):\n    collapsed = self.get(\"toc.collapsed\", [])\n    if page_id in collapsed:\n        collapsed.remove(page_id)\n    else:\n        collapsed.append(page_id)\n    self.set(\"toc.collapsed\", collapsed)\n",
 "type":"code"
 }
 ],
@@ -4578,25 +4558,7 @@
 ],
 "fragments":[
 {
-"text":"self._workspace = ensure_key(self.data, \"workspace\", {})\n",
-"type":"code"
-}
-],
-"id":"1d659258e6534f148dfbada0dce21578",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Layout",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self._workspace_columns = ensure_key(self._workspace, \"columns\", [])\nself._workspace_columns_history = History(copy.deepcopy(self._workspace_columns), size=20)\n",
+"text":"self._workspace_columns_history = History(\n    self.columns,\n    size=20\n)\n",
 "type":"code"
 }
 ],
@@ -4613,37 +4575,19 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef columns(self):\n    return [column[:] for column in self._workspace_columns]\n\ndef open_pages(self, page_ids, column_index=None):\n    with self.notify(\"workspace\"):\n        with self._workspace_columns_history.new_value() as value:\n            if column_index is None:\n                column_index = len(self._workspace_columns)\n            value[column_index:] = [page_ids[:]]\n            self._workspace_columns[:] = value\n\ndef can_back(self):\n    return self._workspace_columns_history.can_back()\n\ndef back(self):\n    with self.notify(\"workspace\"):\n        self._workspace_columns_history.back()\n        self._workspace_columns[:] = self._workspace_columns_history.value\n\ndef can_forward(self):\n    return self._workspace_columns_history.can_forward()\n\ndef forward(self):\n    with self.notify(\"workspace\"):\n        self._workspace_columns_history.forward()\n        self._workspace_columns[:] = self._workspace_columns_history.value\n\ndef is_open(self, page_id):\n    for column in self.columns:\n        if page_id in column:\n            return True\n    return False\n",
+"text":"columns = ",
+"type":"code"
+},
+{
+"id":"49f91cc97f054fcca58f40b97d79b15b",
+"type":"variable"
+},
+{
+"text":".property(\n    \"workspace.columns\",\n    []\n)\n\ndef open_pages(self, page_ids, column_index=None):\n    with self._workspace_columns_history.new_value() as value:\n        if column_index is None:\n            column_index = len(self.columns)\n        value[column_index:] = [page_ids[:]]\n        self.columns = value\n\ndef can_back(self):\n    return self._workspace_columns_history.can_back()\n\ndef back(self):\n    self._workspace_columns_history.back()\n    self.columns = self._workspace_columns_history.value\n\ndef can_forward(self):\n    return self._workspace_columns_history.can_forward()\n\ndef forward(self):\n    self._workspace_columns_history.forward()\n    self.columns = self._workspace_columns_history.value\n\ndef is_open(self, page_id):\n    for column in self.columns:\n        if page_id in column:\n            return True\n    return False\n",
 "type":"code"
 }
 ],
 "id":"d21e2540eb5547db8926f8b9e55ca2a7",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Finally we have a utility function for ensuring that a specific key exists in a dictionary.",
-"type":"text"
-}
-],
-"id":"dc91f34cfa6747119042fc7878702d88",
-"type":"text"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ensure_key(a_dict, key, default):\n    if key not in a_dict:\n        a_dict[key] = default\n    return a_dict[key]\n",
-"type":"code"
-}
-],
-"id":"0c4994ee9c5f4fdc84aa96dfad6df784",
 "type":"code"
 }
 ],
@@ -5571,7 +5515,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            0,\n            wx.Button(self, label=\"unhoist\"),\n            flag=wx.EXPAND\n        )\n        self.unhoist_button.Bind(\n            wx.EVT_BUTTON,\n            lambda event: self.project.set_hoisted_page(None)\n        )\n",
+"text":"(\n            0,\n            wx.Button(self, label=\"unhoist\"),\n            flag=wx.EXPAND\n        )\n        self.unhoist_button.Bind(\n            wx.EVT_BUTTON,\n            lambda event: setattr(self.project, \"hoisted_page\", None)\n        )\n",
 "type":"code"
 }
 ],
@@ -5598,7 +5542,7 @@
 ],
 "fragments":[
 {
-"text":"def _render_page_container(self):\n    if self._get_hoisted_page() is None:\n        self._render_page(self.project.get_page())\n    else:\n        self._render_page(self._get_hoisted_page())\n\ndef _get_hoisted_page(self):\n    if self.project.get_hoisted_page() is None:\n        return None\n    else:\n        return self.project.get_page(self.project.get_hoisted_page())\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.project.is_collapsed(page.id)\n    self.page_container.",
+"text":"def _render_page_container(self):\n    if self._get_hoisted_page() is None:\n        self._render_page(self.project.get_page())\n    else:\n        self._render_page(self._get_hoisted_page())\n\ndef _get_hoisted_page(self):\n    if self.project.hoisted_page is None:\n        return None\n    else:\n        return self.project.get_page(self.project.hoisted_page)\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.project.is_collapsed(page.id)\n    self.page_container.",
 "type":"code"
 },
 {
@@ -6084,7 +6028,7 @@
 ],
 "fragments":[
 {
-"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page = page\n        self.child_ids = [page.id]+[child.id for child in page.children]\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id], column_index=0),\n            self.Append(wx.NewId(), \"Open\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id]),\n            self.Append(wx.NewId(), \"Open append\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids, column_index=0),\n            self.Append(wx.NewId(), \"Open with children\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids),\n            self.Append(wx.NewId(), \"Open with children append\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.add_page(parent_id=self.page.id),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.set_hoisted_page(self.page.id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: set_clipboard_text(self.page.id),\n            self.Append(wx.NewId(), \"Copy id\")\n        )\n        self.AppendSeparator()\n        delete_item = self.Append(wx.NewId(), \"Delete\")\n        delete_item.Enable(self.page.id != self.project.get_page().id)\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.page.delete(),\n            delete_item\n        )\n",
+"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page = page\n        self.child_ids = [page.id]+[child.id for child in page.children]\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id], column_index=0),\n            self.Append(wx.NewId(), \"Open\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id]),\n            self.Append(wx.NewId(), \"Open append\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids, column_index=0),\n            self.Append(wx.NewId(), \"Open with children\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids),\n            self.Append(wx.NewId(), \"Open with children append\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.add_page(parent_id=self.page.id),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: setattr(self.project, \"hoisted_page\", self.page.id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: set_clipboard_text(self.page.id),\n            self.Append(wx.NewId(), \"Copy id\")\n        )\n        self.AppendSeparator()\n        delete_item = self.Append(wx.NewId(), \"Delete\")\n        delete_item.Enable(self.page.id != self.project.get_page().id)\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.page.delete(),\n            delete_item\n        )\n",
 "type":"code"
 }
 ],
@@ -10084,7 +10028,7 @@
 "paragraphs":[
 {
 "chunkpath":[
-"base classes"
+"base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -10116,6 +10060,168 @@
 }
 ],
 "title":"Publish subscribe mechanisms"
+},
+{
+"children":[],
+"id":"478a95a36a7a4228872643d0367cdd3e",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"id":"49f91cc97f054fcca58f40b97d79b15b",
+"type":"variable"
+},
+{
+"text":" class provides functionality to read and write settings in JSON format.",
+"type":"text"
+}
+],
+"id":"543a0b6a9d2047a9a27a96b54555b2c5",
+"type":"text"
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"It is meant to be inherited.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"The top level object is assumed to be a dictionary.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Changes are immediately written to disk if it was opened from a file.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Values are always copied so that internal data structue can only be edited via ",
+"type":"text"
+},
+{
+"text":"set",
+"type":"code"
+},
+{
+"text":".",
+"type":"text"
+}
+]
+}
+],
+"id":"3a2af0e45c80472b92c9183afd771287",
+"type":"list"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"49f91cc97f054fcca58f40b97d79b15b",
+"type":"variable"
+},
+{
+"text":"(Observable):\n\n    def __init__(self, settings_dict):\n        Observable.__init__(self)\n        self._settings_dict = settings_dict\n\n",
+"type":"code"
+},
+{
+"path":[
+"JsonSettings"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"cadcc6a4029f40789821f8066cd6d8bd",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"JsonSettings"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@classmethod\ndef from_file(cls, path):\n    if os.path.exists(path):\n        settings_dict = load_json_from_file(path)\n    else:\n        settings_dict = {}\n    settings = cls(settings_dict)\n    settings.listen(lambda event:\n        write_json_to_file(\n            path,\n            settings_dict\n        )\n    )\n    return settings\n",
+"type":"code"
+}
+],
+"id":"3ec6233213ad441193f421ba2dcb0295",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"JsonSettings"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def get(self, path, default=None):\n    keys = path.split(\".\")\n    return copy.deepcopy(\n        self._dict_at(keys[:-1]).get(keys[-1], default)\n    )\n\ndef set(self, path, value):\n    keys = path.split(\".\")\n    with self.notify(path):\n        self._dict_at(keys[:-1])[keys[-1]] = copy.deepcopy(value)\n\ndef _dict_at(self, keys):\n    sub_dict = self._settings_dict\n    while keys:\n        sub_dict = sub_dict.get(keys.pop(0), {})\n    return sub_dict\n",
+"type":"code"
+}
+],
+"id":"d6004524b96f4633956ee165e1eb77da",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"JsonSettings"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@staticmethod\ndef property(path, default=None):\n    return property(\n        fget=lambda self: self.get(path, default),\n        fset=lambda self, value: self.set(path, value)\n    )\n",
+"type":"code"
+}
+],
+"id":"969235f425394301baa170ce780647a8",
+"type":"code"
+}
+],
+"title":"JSON settings"
 },
 {
 "children":[],
@@ -11094,24 +11200,6 @@
 "fragments":[
 {
 "text":"List code is messy (especially parsing)",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Make hoisted page a property? (Setter did not work well inside lambda. Can use ",
-"type":"text"
-},
-{
-"text":"setattr",
-"type":"code"
-},
-{
-"text":")",
 "type":"text"
 }
 ]
@@ -12129,6 +12217,7 @@
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
+"13edfec5045f41d99010d539bc4ac956":"Layout",
 "1566854b9f4240408d4a8b17ae305740":"VerticalPanel",
 "1644b9094da3457895ba66eb283b4a9f":"fragments",
 "1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
@@ -12150,6 +12239,7 @@
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
+"49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "52a4cb0c44124d518647a92eb25a876d":"PAGE_BODY_WIDTH",
 "536483b5a3d64ef5981b4c77a3df6f71":"body",

@@ -187,8 +187,9 @@ def test_reads_legacy_scratch_pages(tmpfile):
             "scratch": ["abc"],
         }
     })
-    layout = Layout(tmpfile)
-    layout.set_hoisted_page(None)
+    layout = Layout.from_file(tmpfile)
+    with layout.notify():
+        pass
     assert load_json_from_file(tmpfile)["workspace"] == {
         "columns": [
             ["abc"],

@@ -96,6 +96,45 @@ class HorizontalPanel(wx.Panel, BoxSizerMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
+class Observable(object):
+
+    def __init__(self):
+        self._notify_count = 0
+        self._listeners = []
+
+    def listen(self, fn, *events):
+        self._listeners.append((fn, events))
+
+    def unlisten(self, fn, *events):
+        self._listeners.remove((fn, events))
+
+    @contextlib.contextmanager
+    def notify(self, event=""):
+        self._notify_count += 1
+        try:
+            yield
+        finally:
+            self._notify_count -= 1
+            self._notify(event)
+
+    def notify_forwarder(self, prefix):
+        def forwarder(event):
+            self._notify("{}.{}".format(prefix, event))
+        return forwarder
+
+    def _notify(self, event):
+        if self._notify_count == 0:
+            for fn, fn_events in self._listeners:
+                if self._is_match(fn_events, event):
+                    fn(event)
+
+    def _is_match(self, fn_events, event):
+        if len(fn_events) == 0:
+            return True
+        for fn_event in fn_events:
+            if is_prefix(fn_event.split("."), event.split(".")):
+                return True
+        return False
 class Style(object):
 
     def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
@@ -395,45 +434,48 @@ class MultilineTextCtrl(wx.richtext.RichTextCtrl):
             value=value,
             size=size
         )
-class Observable(object):
+class JsonSettings(Observable):
 
-    def __init__(self):
-        self._notify_count = 0
-        self._listeners = []
+    def __init__(self, settings_dict):
+        Observable.__init__(self)
+        self._settings_dict = settings_dict
 
-    def listen(self, fn, *events):
-        self._listeners.append((fn, events))
+    @classmethod
+    def from_file(cls, path):
+        if os.path.exists(path):
+            settings_dict = load_json_from_file(path)
+        else:
+            settings_dict = {}
+        settings = cls(settings_dict)
+        settings.listen(lambda event:
+            write_json_to_file(
+                path,
+                settings_dict
+            )
+        )
+        return settings
+    def get(self, path, default=None):
+        keys = path.split(".")
+        return copy.deepcopy(
+            self._dict_at(keys[:-1]).get(keys[-1], default)
+        )
 
-    def unlisten(self, fn, *events):
-        self._listeners.remove((fn, events))
+    def set(self, path, value):
+        keys = path.split(".")
+        with self.notify(path):
+            self._dict_at(keys[:-1])[keys[-1]] = copy.deepcopy(value)
 
-    @contextlib.contextmanager
-    def notify(self, event=""):
-        self._notify_count += 1
-        try:
-            yield
-        finally:
-            self._notify_count -= 1
-            self._notify(event)
-
-    def notify_forwarder(self, prefix):
-        def forwarder(event):
-            self._notify("{}.{}".format(prefix, event))
-        return forwarder
-
-    def _notify(self, event):
-        if self._notify_count == 0:
-            for fn, fn_events in self._listeners:
-                if self._is_match(fn_events, event):
-                    fn(event)
-
-    def _is_match(self, fn_events, event):
-        if len(fn_events) == 0:
-            return True
-        for fn_event in fn_events:
-            if is_prefix(fn_event.split("."), event.split(".")):
-                return True
-        return False
+    def _dict_at(self, keys):
+        sub_dict = self._settings_dict
+        while keys:
+            sub_dict = sub_dict.get(keys.pop(0), {})
+        return sub_dict
+    @staticmethod
+    def property(path, default=None):
+        return property(
+            fget=lambda self: self.get(path, default),
+            fset=lambda self, value: self.set(path, value)
+        )
 class Document(Observable):
 
     def __init__(self, document_dict=None):
@@ -1659,7 +1701,7 @@ class Project(Observable):
         self.theme = SolarizedTheme()
         self.document = Document.from_file(filepath)
         self.document.listen(self.notify_forwarder("document"))
-        self.layout = Layout(os.path.join(
+        self.layout = Layout.from_file(os.path.join(
             os.path.dirname(filepath),
             ".{}.layout".format(os.path.basename(filepath))
         ))
@@ -1759,11 +1801,13 @@ class Project(Observable):
     def forward(self, *args, **kwargs):
         return self.layout.forward(*args, **kwargs)
 
-    def get_hoisted_page(self, *args, **kwargs):
-        return self.layout.get_hoisted_page(*args, **kwargs)
+    @property
+    def hoisted_page(self):
+        return self.layout.hoisted_page
 
-    def set_hoisted_page(self, *args, **kwargs):
-        return self.layout.set_hoisted_page(*args, **kwargs)
+    @hoisted_page.setter
+    def hoisted_page(self, value):
+        self.layout.hoisted_page = value
     def get_style(self, *args, **kwargs):
         return self.theme.get_style(*args, **kwargs)
     @property
@@ -1784,65 +1828,60 @@ class Project(Observable):
             self._highlighted_variable = variable_id
 class EditInProgress(Exception):
     pass
-class Layout(Observable):
-    def __init__(self, path):
-        Observable.__init__(self)
-        self.listen(lambda event: write_json_to_file(path, self.data))
-        if os.path.exists(path):
-            self.data = load_json_from_file(path)
-        else:
-            self.data = {}
-        self._toc = ensure_key(self.data, "toc", {})
-        self._toc_collapsed = ensure_key(self._toc, "collapsed", [])
-        self._workspace = ensure_key(self.data, "workspace", {})
-        self._workspace_columns = ensure_key(self._workspace, "columns", [])
-        self._workspace_columns_history = History(copy.deepcopy(self._workspace_columns), size=20)
-        if "scratch" in self._workspace:
-            if not self._workspace["columns"]:
-                self._workspace["columns"] = [self._workspace["scratch"]]
-            del self._workspace["scratch"]
-    def get_hoisted_page(self):
-        return self._toc.get("hoisted_page_id", None)
+class Layout(JsonSettings):
 
-    def set_hoisted_page(self, page_id):
-        with self.notify("toc"):
-            self._toc["hoisted_page_id"] = page_id
+    def __init__(self, *args, **kwargs):
+        JsonSettings.__init__(self, *args, **kwargs)
+        if "workspace" in self._settings_dict:
+            workspace = self._settings_dict["workspace"]
+            if "scratch" in workspace:
+                if "columns" not in workspace:
+                    workspace["columns"] = [workspace["scratch"]]
+                del workspace["scratch"]
+        self._workspace_columns_history = History(
+            self.columns,
+            size=20
+        )
+
+    hoisted_page = JsonSettings.property(
+        "toc.hoisted_page_id",
+        []
+    )
     def is_collapsed(self, page_id):
-        return page_id in self._toc_collapsed
+        return page_id in self.get("toc.collapsed", [])
 
     def toggle_collapsed(self, page_id):
-        with self.notify("toc"):
-            if page_id in self._toc_collapsed:
-                self._toc_collapsed.remove(page_id)
-            else:
-                self._toc_collapsed.append(page_id)
-    @property
-    def columns(self):
-        return [column[:] for column in self._workspace_columns]
+        collapsed = self.get("toc.collapsed", [])
+        if page_id in collapsed:
+            collapsed.remove(page_id)
+        else:
+            collapsed.append(page_id)
+        self.set("toc.collapsed", collapsed)
+    columns = JsonSettings.property(
+        "workspace.columns",
+        []
+    )
 
     def open_pages(self, page_ids, column_index=None):
-        with self.notify("workspace"):
-            with self._workspace_columns_history.new_value() as value:
-                if column_index is None:
-                    column_index = len(self._workspace_columns)
-                value[column_index:] = [page_ids[:]]
-                self._workspace_columns[:] = value
+        with self._workspace_columns_history.new_value() as value:
+            if column_index is None:
+                column_index = len(self.columns)
+            value[column_index:] = [page_ids[:]]
+            self.columns = value
 
     def can_back(self):
         return self._workspace_columns_history.can_back()
 
     def back(self):
-        with self.notify("workspace"):
-            self._workspace_columns_history.back()
-            self._workspace_columns[:] = self._workspace_columns_history.value
+        self._workspace_columns_history.back()
+        self.columns = self._workspace_columns_history.value
 
     def can_forward(self):
         return self._workspace_columns_history.can_forward()
 
     def forward(self):
-        with self.notify("workspace"):
-            self._workspace_columns_history.forward()
-            self._workspace_columns[:] = self._workspace_columns_history.value
+        self._workspace_columns_history.forward()
+        self.columns = self._workspace_columns_history.value
 
     def is_open(self, page_id):
         for column in self.columns:
@@ -2154,7 +2193,7 @@ class TableOfContents(VerticalPanel):
             )
             self.unhoist_button.Bind(
                 wx.EVT_BUTTON,
-                lambda event: self.project.set_hoisted_page(None)
+                lambda event: setattr(self.project, "hoisted_page", None)
             )
     def _render_page_container(self):
         if self._get_hoisted_page() is None:
@@ -2163,10 +2202,10 @@ class TableOfContents(VerticalPanel):
             self._render_page(self._get_hoisted_page())
 
     def _get_hoisted_page(self):
-        if self.project.get_hoisted_page() is None:
+        if self.project.hoisted_page is None:
             return None
         else:
-            return self.project.get_page(self.project.get_hoisted_page())
+            return self.project.get_page(self.project.hoisted_page)
 
     def _render_page(self, page, indentation=0):
         is_collapsed = self.project.is_collapsed(page.id)
@@ -2366,7 +2405,7 @@ class PageContextMenu(wx.Menu):
         self.AppendSeparator()
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.set_hoisted_page(self.page.id),
+            lambda event: setattr(self.project, "hoisted_page", self.page.id),
             self.Append(wx.NewId(), "Hoist")
         )
         self.AppendSeparator()
@@ -3841,10 +3880,6 @@ def legacy_code_text_to_fragments(text):
     return fragments
 def genid():
     return uuid.uuid4().hex
-def ensure_key(a_dict, key, default):
-    if key not in a_dict:
-        a_dict[key] = default
-    return a_dict[key]
 def pairs(items):
     return zip(items, items[1:]+[None])
 def set_clipboard_text(text):
