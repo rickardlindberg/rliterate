@@ -5425,6 +5425,49 @@
 "title":"Toolbar"
 },
 {
+"children":[],
+"id":"53cd8500e2714415b67bb86a14956a23",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"As soon as something changed in the document, many components are re-rendered. Instead of passing information of what changed, we are just notified that something changed. It is up to the GUI component to \"figure out\" what has changed and find an optimal way to redraw itself.",
+"type":"text"
+}
+],
+"id":"2a0caf7b69bb4e73806a44d43dba2c27",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"_render",
+"type":"code"
+},
+{
+"text":" method sets up things one time. The ",
+"type":"text"
+},
+{
+"text":"_re_render",
+"type":"code"
+},
+{
+"text":" method then figures out the optimal way to change itself.",
+"type":"text"
+}
+],
+"id":"519e9c8a5dc44bce9188ce2c507ae3f3",
+"type":"text"
+}
+],
+"title":"Rendering strategy"
+},
+{
 "children":[
 {
 "children":[
@@ -6112,7 +6155,16 @@
 "type":"reference"
 },
 {
-"text":" widgets horizontally. Columns are filled with page containers.",
+"text":" widgets horizontally. Columns are filled with page containers. It uses ",
+"type":"text"
+},
+{
+"page_id":"53cd8500e2714415b67bb86a14956a23",
+"text":null,
+"type":"reference"
+},
+{
+"text":".",
 "type":"text"
 }
 ],
@@ -6129,7 +6181,7 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.space = self.",
 "type":"code"
 },
 {
@@ -6137,7 +6189,63 @@
 "type":"variable"
 },
 {
-"text":"(self.project.",
+"text":"()\n        self.columns = []\n        wx.CallAfter(self._re_render)\n",
+"type":"code"
+}
+],
+"id":"d5dd19fb0dac4111b42932071e6a0c2f",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"CallAfter",
+"type":"code"
+},
+{
+"text":" is needed becasue the layout is not \"ready\" at this point, and sizer reports size (0, 0), so ",
+"type":"text"
+},
+{
+"text":"ScrollToEnd",
+"type":"code"
+},
+{
+"text":" does not work.",
+"type":"text"
+}
+],
+"id":"3072a65bad8c4b9eb59ea3f1d05bb6fc",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"Workspace"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _re_render(self):\n    with flicker_free_drawing(self):\n        self._update_space()\n        self._update_columns()\n",
+"type":"code"
+}
+],
+"id":"d1c861187a39436bb25beb4007595b68",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Workspace"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _update_space(self):\n    self.space.SetSize(self.project.",
 "type":"code"
 },
 {
@@ -6153,7 +6261,24 @@
 "type":"variable"
 },
 {
-"text":")\n        self.columns = []\n        wx.CallAfter(self._re_render)\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        column_count_changed = self._ensure_num_columns(len(self.project.columns))\n        last_column_changed_pages = False\n        for index, page_ids in enumerate(self.project.columns):\n            last_column_changed_pages = self.columns[index].SetPages(page_ids)\n        self.GetTopLevelParent().ChildReRendered()\n        if column_count_changed or last_column_changed_pages:\n            self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    return self.",
+"text":")\n",
+"type":"code"
+}
+],
+"id":"c5feeb2e593e4b199fd62a793989c0b7",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Workspace"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _update_columns(self):\n    column_count_changed = self._ensure_num_columns(len(self.project.columns))\n    last_column_changed_pages = False\n    for index, page_ids in enumerate(self.project.columns):\n        last_column_changed_pages = self.columns[index].SetPages(page_ids)\n    self.GetTopLevelParent().ChildReRendered()\n    if column_count_changed or last_column_changed_pages:\n        self.ScrollToEnd()\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    return self.",
 "type":"code"
 },
 {
@@ -6173,7 +6298,7 @@
 "type":"code"
 }
 ],
-"id":"d5dd19fb0dac4111b42932071e6a0c2f",
+"id":"df673e4bd65749648e19ffdebec90f41",
 "type":"code"
 },
 {
@@ -6220,40 +6345,6 @@
 ],
 "id":"c881d2542f834261b1060e001e991f85",
 "type":"quote"
-},
-{
-"fragments":[
-{
-"text":"On ",
-"type":"text"
-},
-{
-"text":"CallAfter",
-"type":"code"
-},
-{
-"text":" in ",
-"type":"text"
-},
-{
-"text":"_render",
-"type":"code"
-},
-{
-"text":": The layout is not \"ready\" at this point, and sizer reports size (0, 0), so ",
-"type":"text"
-},
-{
-"text":"ScrollToEnd",
-"type":"code"
-},
-{
-"text":" does not work.",
-"type":"text"
-}
-],
-"id":"3072a65bad8c4b9eb59ea3f1d05bb6fc",
-"type":"text"
 }
 ],
 "title":"Rendering"
@@ -6437,15 +6528,7 @@
 "type":"chunk"
 },
 {
-"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._re_render(),\n            \"document\",\n            \"layout.workspace\",\n            \"",
-"type":"code"
-},
-{
-"id":"f4daeaff58a34b459a28c0bc7c51a8cd",
-"type":"variable"
-},
-{
-"text":"\"\n        )\n\n",
+"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(lambda event: self._re_render())\n\n",
 "type":"code"
 },
 {
@@ -10090,7 +10173,7 @@
 "type":"variable"
 },
 {
-"text":"(self, size):\n        if self.Sizer.Orientation == wx.HORIZONTAL:\n            self.Sizer.Add((size, 1))\n        else:\n            self.Sizer.Add((1, size))\n\n    def ",
+"text":"(self, size=0):\n        return SizeWrapper(\n            self.Sizer.Orientation,\n            self.Sizer.Add((0, 0))\n        ).WithSize(size)\n\n    def ",
 "type":"code"
 },
 {
@@ -10151,6 +10234,22 @@
 }
 ],
 "id":"72985f3cbb2a4fbda2f876beec564231",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class SizeWrapper(object):\n\n    def __init__(self, orientation, sizer_item):\n        self._orientation = orientation\n        self._sizer_item = sizer_item\n\n    def SetSize(self, size):\n        if self._orientation == wx.HORIZONTAL:\n            self._sizer_item.SetMinSize((size, 1))\n        else:\n            self._sizer_item.SetMinSize((1, size))\n\n    def WithSize(self, size):\n        self.SetSize(size)\n        return self\n",
+"type":"code"
+}
+],
+"id":"525d67e5706f4c74b484ea4f1355d9ec",
 "type":"code"
 }
 ],

@@ -75,11 +75,11 @@ class BoxSizerMixin(object):
         self.Sizer.Insert(position, window, **kwargs)
         return window
 
-    def AppendSpace(self, size):
-        if self.Sizer.Orientation == wx.HORIZONTAL:
-            self.Sizer.Add((size, 1))
-        else:
-            self.Sizer.Add((1, size))
+    def AppendSpace(self, size=0):
+        return SizeWrapper(
+            self.Sizer.Orientation,
+            self.Sizer.Add((0, 0))
+        ).WithSize(size)
 
     def AppendStretch(self, proportion):
         self.Sizer.AddStretchSpacer(proportion)
@@ -96,6 +96,21 @@ class HorizontalPanel(wx.Panel, BoxSizerMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
+class SizeWrapper(object):
+
+    def __init__(self, orientation, sizer_item):
+        self._orientation = orientation
+        self._sizer_item = sizer_item
+
+    def SetSize(self, size):
+        if self._orientation == wx.HORIZONTAL:
+            self._sizer_item.SetMinSize((size, 1))
+        else:
+            self._sizer_item.SetMinSize((1, size))
+
+    def WithSize(self, size):
+        self.SetSize(size)
+        return self
 class Observable(object):
 
     def __init__(self):
@@ -2443,29 +2458,28 @@ class Workspace(HorizontalScrolledWindow):
 
     def _init_project(self, project):
         self.project = project
-        self.project.listen(
-            lambda event: self._re_render(),
-            "document",
-            "layout.workspace",
-            "highlights"
-        )
+        self.project.listen(lambda event: self._re_render())
 
     def _render(self):
         with flicker_free_drawing(self):
             self.SetBackgroundColour((200, 200, 200))
-            self.AppendSpace(self.project.theme.page_padding)
+            self.space = self.AppendSpace()
             self.columns = []
             wx.CallAfter(self._re_render)
-
     def _re_render(self):
         with flicker_free_drawing(self):
-            column_count_changed = self._ensure_num_columns(len(self.project.columns))
-            last_column_changed_pages = False
-            for index, page_ids in enumerate(self.project.columns):
-                last_column_changed_pages = self.columns[index].SetPages(page_ids)
-            self.GetTopLevelParent().ChildReRendered()
-            if column_count_changed or last_column_changed_pages:
-                self.ScrollToEnd()
+            self._update_space()
+            self._update_columns()
+    def _update_space(self):
+        self.space.SetSize(self.project.theme.page_padding)
+    def _update_columns(self):
+        column_count_changed = self._ensure_num_columns(len(self.project.columns))
+        last_column_changed_pages = False
+        for index, page_ids in enumerate(self.project.columns):
+            last_column_changed_pages = self.columns[index].SetPages(page_ids)
+        self.GetTopLevelParent().ChildReRendered()
+        if column_count_changed or last_column_changed_pages:
+            self.ScrollToEnd()
 
     def _ensure_num_columns(self, num):
         count_changed = False
