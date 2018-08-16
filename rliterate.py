@@ -2669,7 +2669,7 @@ class PagePanel(VerticalPanel):
                 ),
                 style=wx.NO_BORDER
             ),
-            flag=wx.TOP|wx.ALIGN_RIGHT,
+            flag=wx.ALIGN_RIGHT,
             border=self.project.theme.paragraph_space
         )
         add_button.Bind(wx.EVT_BUTTON, self._on_add_button)

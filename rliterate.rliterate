@@ -6956,7 +6956,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        wx.BitmapButton(\n            self,\n            bitmap=wx.ArtProvider.GetBitmap(\n                wx.ART_ADD_BOOKMARK,\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        ),\n        flag=wx.TOP|wx.ALIGN_RIGHT,\n        border=self.project.",
+"text":"(\n        wx.BitmapButton(\n            self,\n            bitmap=wx.ArtProvider.GetBitmap(\n                wx.ART_ADD_BOOKMARK,\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        ),\n        flag=wx.ALIGN_RIGHT,\n        border=self.project.",
 "type":"code"
 },
 {
