@@ -2458,7 +2458,12 @@ class Workspace(HorizontalScrolledWindow):
 
     def _init_project(self, project):
         self.project = project
-        self.project.listen(lambda event: self._re_render())
+        self.project.listen(
+            lambda event: self._re_render(),
+            "document",
+            "layout.workspace",
+            "highlights"
+        )
 
     def _render(self):
         with flicker_free_drawing(self):
