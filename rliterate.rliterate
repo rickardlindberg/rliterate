@@ -5468,7 +5468,7 @@
 {
 "fragments":[
 {
-"text":"As soon as something changed in the document, many components are re-rendered. Instead of passing information of what changed, we are just notified that something changed. It is up to the GUI component to \"figure out\" what has changed and find an optimal way to redraw itself.",
+"text":"As soon as something changes in the project, many widgets are re-rendered. Instead of passing information of what changed, the widgets are just notified that something changed. It is up to the widgets to \"figure out\" what has changed and find an optimal way to redraw itself.",
 "type":"text"
 }
 ],
