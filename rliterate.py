@@ -52,16 +52,11 @@ class Editable(wx.Panel):
             self.project.active_editor = self
 
     def Cancel(self):
-        with flicker_free_drawing(self):
-            self.edit.Destroy()
-            self.sizer.Show(self.view)
-            self.GetTopLevelParent().ChildReRendered()
-            self.project.active_editor = None
+        self.project.active_editor = None
 
     def Save(self):
-        project = self.project
         self.edit.Save()
-        project.active_editor = None
+        self.project.active_editor = None
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -117,39 +112,28 @@ class Observable(object):
         self._notify_count = 0
         self._listeners = []
 
-    def listen(self, fn, *events):
-        self._listeners.append((fn, events))
+    def listen(self, fn):
+        self._listeners.append(fn)
 
-    def unlisten(self, fn, *events):
-        self._listeners.remove((fn, events))
+    def unlisten(self, fn):
+        self._listeners.remove(fn)
 
     @contextlib.contextmanager
-    def notify(self, event=""):
+    def notify(self):
         self._notify_count += 1
         try:
             yield
         finally:
             self._notify_count -= 1
-            self._notify(event)
+            self._notify()
 
-    def notify_forwarder(self, prefix):
-        def forwarder(event):
-            self._notify("{}.{}".format(prefix, event))
-        return forwarder
+    def notify_forwarder(self):
+        return self._notify
 
-    def _notify(self, event):
+    def _notify(self):
         if self._notify_count == 0:
-            for fn, fn_events in self._listeners:
-                if self._is_match(fn_events, event):
-                    fn(event)
-
-    def _is_match(self, fn_events, event):
-        if len(fn_events) == 0:
-            return True
-        for fn_event in fn_events:
-            if is_prefix(fn_event.split("."), event.split(".")):
-                return True
-        return False
+            for fn in self._listeners:
+                fn()
 class Style(object):
 
     def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
@@ -461,7 +445,7 @@ class JsonSettings(Observable):
         else:
             settings_dict = {}
         settings = cls(settings_dict)
-        settings.listen(lambda event:
+        settings.listen(lambda:
             write_json_to_file(
                 path,
                 settings_dict
@@ -476,7 +460,7 @@ class JsonSettings(Observable):
 
     def set(self, path, value):
         keys = path.split(".")
-        with self.notify(path):
+        with self.notify():
             self._dict_at(keys[:-1], create=True)[keys[-1]] = copy.deepcopy(value)
 
     def _dict_at(self, keys, create=False):
@@ -505,7 +489,7 @@ class Document(Observable):
             document = cls(load_json_from_file(path))
         else:
             document = cls()
-        document.listen(lambda event:
+        document.listen(lambda:
             write_json_to_file(
                 path,
                 document.read_only_document_dict
@@ -1716,19 +1700,19 @@ class Project(Observable):
             os.path.dirname(os.path.abspath(filepath))
         )
         self.document = Document.from_file(filepath)
-        self.document.listen(self.notify_forwarder("document"))
+        self.document.listen(self.notify_forwarder())
         self.layout = Layout.from_file(os.path.join(
             os.path.dirname(filepath),
             ".{}.layout".format(os.path.basename(filepath))
         ))
-        self.layout.listen(self.notify_forwarder("layout"))
+        self.layout.listen(self.notify_forwarder())
         self.global_settings = GlobalSettings.from_file(
             os.path.join(
                 wx.StandardPaths.Get().GetUserConfigDir(),
                 ".rliterate.settings"
             )
         )
-        self.global_settings.listen(self.notify_forwarder("document"))
+        self.global_settings.listen(self.notify_forwarder())
         FileGenerator(self.document)
 
     @property
@@ -1809,7 +1793,7 @@ class Project(Observable):
 
     @active_editor.setter
     def active_editor(self, editor):
-        with self.notify("editor"):
+        with self.notify():
             self._active_editor = editor
     @property
     def highlighted_variable(self):
@@ -1817,7 +1801,7 @@ class Project(Observable):
 
     @highlighted_variable.setter
     def highlighted_variable(self, variable_id):
-        with self.notify("highlights"):
+        with self.notify():
             self._highlighted_variable = variable_id
 class EditInProgress(Exception):
     pass
@@ -2000,8 +1984,8 @@ class ToolBar(wx.ToolBar):
 
     def _init_project(self, project):
         self.project = project
-        self.project.listen(
-            lambda event: self._tool_groups.populate(self),
+        self.project.listen(lambda:
+            self._tool_groups.populate(self)
         )
 
     def _init_tools(self):
@@ -2182,9 +2166,7 @@ class TableOfContents(VerticalPanel):
 
     def _init_project(self, project):
         self.project = project
-        self.project.listen(
-            lambda event: self._re_render()
-        )
+        self.project.listen(self._re_render)
 
     def _render(self):
         with flicker_free_drawing(self):
@@ -2455,9 +2437,7 @@ class Workspace(HorizontalScrolledWindow):
 
     def _init_project(self, project):
         self.project = project
-        self.project.listen(
-            lambda event: self._re_render() if event != "editor" else None,
-        )
+        self.project.listen(self._re_render)
 
     def _render(self):
         with flicker_free_drawing(self):
@@ -2466,6 +2446,8 @@ class Workspace(HorizontalScrolledWindow):
             self.columns = []
             self._re_render()
     def _re_render(self):
+        if self.project.active_editor is not None:
+            return
         with flicker_free_drawing(self):
             self._update_space()
             self._update_columns()
@@ -3582,7 +3564,7 @@ class FileGenerator(object):
 
     def __init__(self, document):
         self.document = document
-        self.document.listen(lambda event: self._generate())
+        self.document.listen(self._generate)
 
     def _generate(self):
         self._parts = defaultdict(list)
@@ -4036,8 +4018,6 @@ def show_text_entry(parent, **kwargs):
     if dialog.ShowModal() == wx.ID_OK:
         kwargs.get("ok_fn", lambda value: None)(dialog.Value)
     dialog.Destroy()
-def is_prefix(left, right):
-    return left == right[:len(left)]
 def load_json_from_file(path):
     with open(path, "r") as f:
         return json.load(f)
