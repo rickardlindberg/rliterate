@@ -1879,6 +1879,9 @@ class GlobalSettings(JsonSettings):
     text_font = JsonSettings.property(
         "theme.fonts.text", {"size": 10}
     )
+    workspace_background = JsonSettings.property(
+        "theme.workspace.background", "#cccccc"
+    )
 class Layout(JsonSettings):
 
     def __init__(self, *args, **kwargs):
@@ -2475,7 +2478,6 @@ class Workspace(HorizontalScrolledWindow):
 
     def _render(self):
         with flicker_free_drawing(self):
-            self.SetBackgroundColour((200, 200, 200))
             self.space = self.AppendSpace()
             self.columns = []
             self._re_render()
@@ -2483,6 +2485,7 @@ class Workspace(HorizontalScrolledWindow):
         if self.project.active_editor is not None:
             return
         with flicker_free_drawing(self):
+            self.SetBackgroundColour(self.project.theme.workspace_background)
             self._update_space()
             self._update_columns()
             self.GetTopLevelParent().ChildReRendered()

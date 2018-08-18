@@ -4354,7 +4354,15 @@
 "type":"variable"
 },
 {
-"text":" = JsonSettings.property(\n        \"theme.fonts.text\", {\"size\": 10}\n    )\n",
+"text":" = JsonSettings.property(\n        \"theme.fonts.text\", {\"size\": 10}\n    )\n    ",
+"type":"code"
+},
+{
+"id":"aa88810b795e4483b57bbdf05e8127d6",
+"type":"variable"
+},
+{
+"text":" = JsonSettings.property(\n        \"theme.workspace.background\", \"#cccccc\"\n    )\n",
 "type":"code"
 }
 ],
@@ -6226,7 +6234,7 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour((200, 200, 200))\n        self.space = self.",
+"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.space = self.",
 "type":"code"
 },
 {
@@ -6251,7 +6259,7 @@
 ],
 "fragments":[
 {
-"text":"def _re_render(self):\n    if self.project.active_editor is not None:\n        return\n    with flicker_free_drawing(self):\n        self._update_space()\n        self._update_columns()\n        self.GetTopLevelParent().ChildReRendered()\n",
+"text":"def _re_render(self):\n    if self.project.active_editor is not None:\n        return\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour(self.project.theme.workspace_background)\n        self._update_space()\n        self._update_columns()\n        self.GetTopLevelParent().ChildReRendered()\n",
 "type":"code"
 }
 ],
@@ -13093,6 +13101,7 @@
 "a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
 "a886e97ceb3d427c8190487d23d12bc1":"Column",
 "aa80683234dc421f81d21fbda0b91758":"code_font",
+"aa88810b795e4483b57bbdf05e8127d6":"workspace_background",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "ae8e603135854b1787ca652bf6304e9e":"theme",
 "b0201e824c464356aa706a0440192e5c":"ShowRecursive",
