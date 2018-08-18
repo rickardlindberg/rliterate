@@ -2567,7 +2567,7 @@ class Column(VerticalScrolledWindow):
 
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            self.containers,
+            self._containers,
             lambda container: container.FindClosestDropPoint(screen_pos)
         )
     def _render(self):

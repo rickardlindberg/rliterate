@@ -6856,7 +6856,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self.containers,\n        lambda container: container.",
+"text":"(\n        self._containers,\n        lambda container: container.",
 "type":"code"
 },
 {
