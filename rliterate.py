@@ -2672,16 +2672,17 @@ class PageContainer(VerticalPanel):
 class PagePanel(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
-        VerticalPanel.__init__(self, parent, size=(
-            project.theme.page_body_width,
-            -1
-        ))
+        VerticalPanel.__init__(self, parent)
         self.project = project
         self._render(page_id)
 
     def _render(self, initial_page_id):
         self.page_id = initial_page_id
         self.drop_points = []
+        self.MinSize = (
+            self.project.theme.page_body_width,
+            -1
+        )
         page = self.project.get_page(self.page_id)
         divider = self._render_paragraph(Title(self, self.project, page))
         for paragraph in page.paragraphs:

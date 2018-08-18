@@ -7220,7 +7220,23 @@
 ],
 "fragments":[
 {
-"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
+"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.drop_points = []\n    self.MinSize = (\n        self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":",\n        -1\n    )\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
 "type":"code"
 },
 {
@@ -7410,23 +7426,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, parent, size=(\n            project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":",\n            -1\n        ))\n        self.project = project\n        self._render(page_id)\n\n",
+"text":".__init__(self, parent)\n        self.project = project\n        self._render(page_id)\n\n",
 "type":"code"
 },
 {
