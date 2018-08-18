@@ -429,7 +429,6 @@ class VerticalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):
     def __init__(self, *args, **kwargs):
         CompactScrolledWindow.__init__(self, *args, **kwargs)
         BoxSizerMixin.__init__(self, wx.VERTICAL)
-
 class HorizontalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):
 
     def __init__(self, *args, **kwargs):
@@ -2526,12 +2525,11 @@ class Column(VerticalScrolledWindow):
         VerticalScrolledWindow.__init__(
             self,
             parent,
-            style=wx.VSCROLL,
-            size=self._get_size(project)
+            style=wx.VSCROLL
         )
         self.project = project
         self.index = index
-        self._page_ids = []
+        self._render()
         self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
         self.Bind(EVT_TOKEN_CLICK, self._on_token_click)
 
@@ -2556,21 +2554,38 @@ class Column(VerticalScrolledWindow):
             column_index=self.index+1
         )
 
-    def _get_size(self, project):
-        return (
-            project.theme.page_body_width+
-            2*project.theme.container_border+
-            project.theme.page_padding+
-            project.theme.shadow_size,
+    def SetPages(self, page_ids):
+        return self._re_render(page_ids)
+
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.containers,
+            lambda container: container.FindClosestDropPoint(screen_pos)
+        )
+    def _render(self):
+        self._page_ids = []
+        self._re_render([])
+    def _re_render(self, page_ids):
+        ids_changed = page_ids != self._page_ids
+        self._page_ids = page_ids
+        self._adjust_size()
+        self._adjust_containers()
+        return ids_changed
+
+    def _adjust_size(self):
+        self.MinSize = (
+            self.project.theme.page_body_width+
+            2*self.project.theme.container_border+
+            self.project.theme.page_padding+
+            self.project.theme.shadow_size,
             -1
         )
 
-    def SetPages(self, page_ids):
+    def _adjust_containers(self):
         self.containers = []
-        self.MinSize = self._get_size(self.project)
         self.RemoveChildren()
         self.AppendSpace(self.project.theme.page_padding)
-        for page_id in page_ids:
+        for page_id in self._page_ids:
             if self.project.get_page(page_id) is not None:
                 self.containers.append(
                     self.AppendChild(
@@ -2579,18 +2594,8 @@ class Column(VerticalScrolledWindow):
                         border=self.project.theme.page_padding
                     )
                 )
-        if page_ids == self._page_ids:
-            return False
-        else:
-            self.ScrollToBeginning()
-            self._page_ids = page_ids
-            return True
-
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            self.containers,
-            lambda container: container.FindClosestDropPoint(screen_pos)
-        )
+        # When?
+        #self.ScrollToBeginning()
 class PageContainer(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
