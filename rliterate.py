@@ -2184,8 +2184,7 @@ class TableOfContents(VerticalPanel):
     def _init_project(self, project):
         self.project = project
         self.project.listen(
-            lambda event: self._re_render(),
-            "document", "layout.toc", "layout.workspace"
+            lambda event: self._re_render()
         )
 
     def _render(self):

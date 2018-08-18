@@ -5834,7 +5834,7 @@
 "type":"chunk"
 },
 {
-"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._re_render(),\n            \"document\", \"layout.toc\", \"layout.workspace\"\n        )\n\n",
+"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._re_render()\n        )\n\n",
 "type":"code"
 },
 {
