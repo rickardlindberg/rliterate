@@ -6898,7 +6898,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Page\")\n    menu.AppendItem(\"Width\", lambda:\n        SettingsDialog(\n            wx.GetTopLevelParent(self),\n            self.project\n        ).Show()\n    )\n    return menu\n",
+"text":"(\"Page\")\n    menu.AppendItem(\"Change width\", lambda:\n        SettingsDialog(\n            wx.GetTopLevelParent(self),\n            self.project\n        ).Show()\n    )\n    return menu\n",
 "type":"code"
 }
 ],
@@ -13095,7 +13095,7 @@
 "aa80683234dc421f81d21fbda0b91758":"code_font",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "ae8e603135854b1787ca652bf6304e9e":"theme",
-"b0201e824c464356aa706a0440192e5c":"ShowIfPresent",
+"b0201e824c464356aa706a0440192e5c":"ShowRecursive",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",

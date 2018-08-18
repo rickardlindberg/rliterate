@@ -209,7 +209,7 @@ class ParagraphBase(Editable):
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
     def ShowContextMenu(self):
-        SimpleContextMenu.ShowIfPresent(self)
+        SimpleContextMenu.ShowRecursive(self)
 
     def CreateContextMenu(self):
         menu = SimpleContextMenu("Paragraph")
@@ -468,7 +468,7 @@ class SimpleContextMenu(wx.Menu):
                 x.AddToMenu(self)
 
     @staticmethod
-    def ShowIfPresent(widget):
+    def ShowRecursive(widget):
         while widget is not None:
             if hasattr(widget, "CreateContextMenu"):
                 widget.CreateContextMenu().Popup(widget)
@@ -2647,7 +2647,7 @@ class PageContainer(VerticalPanel):
             border=self.project.theme.container_border
         )
         MouseEventHelper.bind([self, self.inner_container], right_click=lambda event:
-            SimpleContextMenu.ShowIfPresent(self)
+            SimpleContextMenu.ShowRecursive(self)
         )
         self._re_render()
     def _re_render(self):
@@ -2662,7 +2662,7 @@ class PageContainer(VerticalPanel):
         return changed_id
     def CreateContextMenu(self):
         menu = SimpleContextMenu("Page")
-        menu.AppendItem("Width", lambda:
+        menu.AppendItem("Change width", lambda:
             SettingsDialog(
                 wx.GetTopLevelParent(self),
                 self.project
@@ -2705,7 +2705,7 @@ class PagePanel(VerticalPanel):
         ))
         self._render_add_button()
         MouseEventHelper.bind([self], right_click=lambda event:
-            SimpleContextMenu.ShowIfPresent(self)
+            SimpleContextMenu.ShowRecursive(self)
         )
 
     def _render_paragraph(self, paragraph):
@@ -2784,7 +2784,7 @@ class Title(Editable):
                 self._post_edit_start_from_token_view(event.Position)
             ,
             right_click=lambda event:
-                SimpleContextMenu.ShowIfPresent(self)
+                SimpleContextMenu.ShowRecursive(self)
         )
         return view
 
@@ -3475,7 +3475,7 @@ class Divider(VerticalPanel):
         MouseEventHelper.bind(
             [self, self.line],
             right_click=lambda event:
-                SimpleContextMenu.ShowIfPresent(self)
+                SimpleContextMenu.ShowRecursive(self)
         )
 
     def Show(self, left_space=0):
