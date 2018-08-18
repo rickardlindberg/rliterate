@@ -6552,7 +6552,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    self._page_ids = []\n    self._re_render([])\n",
+"text":"def _render(self):\n    self._page_ids = []\n    self._containers = []\n    self._space = self.",
+"type":"code"
+},
+{
+"id":"31a17b208536469099ae5c084d35590d",
+"type":"variable"
+},
+{
+"text":"()\n    self._re_render()\n",
 "type":"code"
 }
 ],
@@ -6569,7 +6577,23 @@
 ],
 "fragments":[
 {
-"text":"def _re_render(self, page_ids):\n    ids_changed = page_ids != self._page_ids\n    self._page_ids = page_ids\n    self._adjust_size()\n    self._adjust_containers()\n    return ids_changed\n\ndef _adjust_size(self):\n    self.MinSize = (\n        self.project.",
+"text":"def _re_render(self):\n    self._adjust_space()\n    self._adjust_size()\n    self._adjust_containers()\n\ndef _adjust_space(self):\n    self._space.SetSize(self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"76b9d362e0714c1da27953dd46e8ef0b",
+"type":"variable"
+},
+{
+"text":")\n\ndef _adjust_size(self):\n    self.MinSize = (\n        self.project.",
 "type":"code"
 },
 {
@@ -6633,39 +6657,7 @@
 "type":"variable"
 },
 {
-"text":",\n        -1\n    )\n\ndef _adjust_containers(self):\n    self.containers = []\n    self.",
-"type":"code"
-},
-{
-"id":"898556fcc0094d959568f97b261a5f5c",
-"type":"variable"
-},
-{
-"text":"()\n    self.",
-"type":"code"
-},
-{
-"id":"31a17b208536469099ae5c084d35590d",
-"type":"variable"
-},
-{
-"text":"(self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"76b9d362e0714c1da27953dd46e8ef0b",
-"type":"variable"
-},
-{
-"text":")\n    for page_id in self._page_ids:\n        if self.project.get_page(page_id) is not None:\n            self.containers.append(\n                self.",
+"text":",\n        -1\n    )\n\ndef _adjust_containers(self):\n    num_added = 0\n    for index, page_id in enumerate(self._page_ids):\n        if self.project.get_page(page_id) is not None:\n            if index >= len(self._containers):\n                self._containers.append(\n                    self.",
 "type":"code"
 },
 {
@@ -6673,7 +6665,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                    PageContainer(self, self.project, page_id),\n                    flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                    border=self.project.",
+"text":"(\n                        PageContainer(self, self.project, page_id),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
 "type":"code"
 },
 {
@@ -6689,11 +6681,28 @@
 "type":"variable"
 },
 {
-"text":"\n                )\n            )\n    # When?\n    #self.ScrollToBeginning()\n",
+"text":"\n                    )\n                )\n            else:\n                self._containers[index].SetPageId(page_id)\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n",
 "type":"code"
 }
 ],
 "id":"43932453f289428abb21fbd2032fa567",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Column"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def SetPages(self, page_ids):\n    ids_changed = page_ids != self._page_ids\n    self._page_ids = page_ids\n    self._re_render()\n    return ids_changed\n    # TODO: return if actual number of rows/containers changed\n",
+"type":"code"
+}
+],
+"id":"4af6492651714fc4a0c5864ba8189bc2",
 "type":"code"
 }
 ],
@@ -6778,7 +6787,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n\ndef SetPages(self, page_ids):\n    return self._re_render(page_ids)\n\ndef ",
+"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n\ndef ",
 "type":"code"
 },
 {
@@ -6851,87 +6860,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, parent)\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n    def _render(self):\n        self.SetBackgroundColour((150, 150, 150))\n        self.inner_container = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(self),\n            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n            border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"df94156ca33b47a1beb10346870806ec",
-"type":"variable"
-},
-{
-"text":"\n        )\n        self.inner_container.SetBackgroundColour((255, 255, 255))\n        self.inner_container.",
-"type":"code"
-},
-{
-"id":"31a17b208536469099ae5c084d35590d",
-"type":"variable"
-},
-{
-"text":"(self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"6a754b8a39e24518b76e88d57a89eff6",
-"type":"variable"
-},
-{
-"text":")\n        self.page = self.inner_container.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            PagePanel(self.inner_container, self.project, self.page_id),\n            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n            border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"6a754b8a39e24518b76e88d57a89eff6",
-"type":"variable"
-},
-{
-"text":"\n        )\n\n    def ",
+"text":".__init__(self, parent)\n        self.project = project\n        self._render(page_id)\n\n    def ",
 "type":"code"
 },
 {
@@ -6947,11 +6876,149 @@
 "type":"variable"
 },
 {
-"text":"(screen_pos)\n",
+"text":"(screen_pos)\n\n",
 "type":"code"
+},
+{
+"path":[
+"PageContainer"
+],
+"prefix":"    ",
+"type":"chunk"
 }
 ],
 "id":"29a948082ed3467395fb08fcbc0ad7c9",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.inner_container = self.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        ",
+"type":"code"
+},
+{
+"id":"1566854b9f4240408d4a8b17ae305740",
+"type":"variable"
+},
+{
+"text":"(self),\n        flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n        border=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"df94156ca33b47a1beb10346870806ec",
+"type":"variable"
+},
+{
+"text":"\n    )\n    self.inner_container.",
+"type":"code"
+},
+{
+"id":"31a17b208536469099ae5c084d35590d",
+"type":"variable"
+},
+{
+"text":"(\n        self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"6a754b8a39e24518b76e88d57a89eff6",
+"type":"variable"
+},
+{
+"text":"\n    )\n    self.page = self.inner_container.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        PagePanel(\n            self.inner_container,\n            self.project,\n            self.page_id\n        ),\n        flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n        border=self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"6a754b8a39e24518b76e88d57a89eff6",
+"type":"variable"
+},
+{
+"text":"\n    )\n    self._re_render()\n",
+"type":"code"
+}
+],
+"id":"ca54d3c269204fdd8b473a10655ba7a0",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _re_render(self):\n    self.SetBackgroundColour((150, 150, 150))\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.page.SetPageId(self.page_id)\n    # TODO: update borders\n",
+"type":"code"
+}
+],
+"id":"ac1ce25196de43588c40fc648d7288f9",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def SetPageId(self, page_id):\n    changed_id = self.page_id != page_id\n    self.page_id = page_id\n    self._re_render()\n    return changed_id\n",
+"type":"code"
+}
+],
+"id":"65a346fd367648bf884b7250c3fdd57c",
 "type":"code"
 }
 ],
@@ -6964,6 +7031,74 @@
 "id":"553a9a3715bc4c18b143572352fc922e",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"A page has the following widgets laid out vertically:",
+"type":"text"
+}
+],
+"id":"66726c54ba184b4eb2faebd5f109e33f",
+"type":"text"
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Title",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Divider",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Paragraph",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Divider",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"For each paragraph",
+"type":"text"
+}
+]
+}
+],
+"id":"8f36df872ea544ee9324ef98991739be",
+"type":"list"
+},
+{
 "chunkpath":[
 "classes",
 "PagePanel"
@@ -6973,7 +7108,7 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.",
+"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.",
 "type":"code"
 },
 {
@@ -7029,7 +7164,7 @@
 "type":"variable"
 },
 {
-"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
+"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n\ndef SetPageId(self, page_id):\n    self.RemoveChildren()\n    self._render(page_id)\n",
 "type":"code"
 }
 ],
@@ -7163,7 +7298,7 @@
 "type":"variable"
 },
 {
-"text":",\n            -1\n        ))\n        self.project = project\n        self.page_id = page_id\n        self._render()\n\n",
+"text":",\n            -1\n        ))\n        self.project = project\n        self._render(page_id)\n\n",
 "type":"code"
 },
 {

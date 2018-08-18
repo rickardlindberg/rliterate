@@ -2554,9 +2554,6 @@ class Column(VerticalScrolledWindow):
             column_index=self.index+1
         )
 
-    def SetPages(self, page_ids):
-        return self._re_render(page_ids)
-
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
             self.containers,
@@ -2564,13 +2561,16 @@ class Column(VerticalScrolledWindow):
         )
     def _render(self):
         self._page_ids = []
-        self._re_render([])
-    def _re_render(self, page_ids):
-        ids_changed = page_ids != self._page_ids
-        self._page_ids = page_ids
+        self._containers = []
+        self._space = self.AppendSpace()
+        self._re_render()
+    def _re_render(self):
+        self._adjust_space()
         self._adjust_size()
         self._adjust_containers()
-        return ids_changed
+
+    def _adjust_space(self):
+        self._space.SetSize(self.project.theme.page_padding)
 
     def _adjust_size(self):
         self.MinSize = (
@@ -2582,45 +2582,70 @@ class Column(VerticalScrolledWindow):
         )
 
     def _adjust_containers(self):
-        self.containers = []
-        self.RemoveChildren()
-        self.AppendSpace(self.project.theme.page_padding)
-        for page_id in self._page_ids:
+        num_added = 0
+        for index, page_id in enumerate(self._page_ids):
             if self.project.get_page(page_id) is not None:
-                self.containers.append(
-                    self.AppendChild(
-                        PageContainer(self, self.project, page_id),
-                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-                        border=self.project.theme.page_padding
+                if index >= len(self._containers):
+                    self._containers.append(
+                        self.AppendChild(
+                            PageContainer(self, self.project, page_id),
+                            flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
+                            border=self.project.theme.page_padding
+                        )
                     )
-                )
+                else:
+                    self._containers[index].SetPageId(page_id)
+                num_added += 1
+        while len(self._containers) > num_added:
+            self._containers.pop(-1).Destroy()
         # When?
         #self.ScrollToBeginning()
+    def SetPages(self, page_ids):
+        ids_changed = page_ids != self._page_ids
+        self._page_ids = page_ids
+        self._re_render()
+        return ids_changed
+        # TODO: return if actual number of rows/containers changed
 class PageContainer(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
         VerticalPanel.__init__(self, parent)
         self.project = project
-        self.page_id = page_id
-        self._render()
+        self._render(page_id)
 
-    def _render(self):
-        self.SetBackgroundColour((150, 150, 150))
+    def FindClosestDropPoint(self, screen_pos):
+        return self.page.FindClosestDropPoint(screen_pos)
+
+    def _render(self, initial_page_id):
+        self.page_id = initial_page_id
         self.inner_container = self.AppendChild(
             VerticalPanel(self),
             flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
             border=self.project.theme.shadow_size
         )
-        self.inner_container.SetBackgroundColour((255, 255, 255))
-        self.inner_container.AppendSpace(self.project.theme.container_border)
+        self.inner_container.AppendSpace(
+            self.project.theme.container_border
+        )
         self.page = self.inner_container.AppendChild(
-            PagePanel(self.inner_container, self.project, self.page_id),
+            PagePanel(
+                self.inner_container,
+                self.project,
+                self.page_id
+            ),
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
             border=self.project.theme.container_border
         )
-
-    def FindClosestDropPoint(self, screen_pos):
-        return self.page.FindClosestDropPoint(screen_pos)
+        self._re_render()
+    def _re_render(self):
+        self.SetBackgroundColour((150, 150, 150))
+        self.inner_container.SetBackgroundColour((255, 255, 255))
+        self.page.SetPageId(self.page_id)
+        # TODO: update borders
+    def SetPageId(self, page_id):
+        changed_id = self.page_id != page_id
+        self.page_id = page_id
+        self._re_render()
+        return changed_id
 class PagePanel(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
@@ -2629,10 +2654,10 @@ class PagePanel(VerticalPanel):
             -1
         ))
         self.project = project
-        self.page_id = page_id
-        self._render()
+        self._render(page_id)
 
-    def _render(self):
+    def _render(self, initial_page_id):
+        self.page_id = initial_page_id
         self.drop_points = []
         page = self.project.get_page(self.page_id)
         divider = self._render_paragraph(Title(self, self.project, page))
@@ -2686,6 +2711,10 @@ class PagePanel(VerticalPanel):
 
     def _on_add_button(self, event):
         self.project.add_paragraph(self.page_id)
+
+    def SetPageId(self, page_id):
+        self.RemoveChildren()
+        self._render(page_id)
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
