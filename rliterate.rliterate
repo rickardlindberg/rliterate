@@ -7066,7 +7066,23 @@
 "type":"variable"
 },
 {
-"text":"\n    )\n    MouseEventHelper.bind([self, self.inner_container], right_click=lambda event:\n        SimpleContextMenu.ShowIfPresent(self)\n    )\n    self._re_render()\n",
+"text":"\n    )\n    MouseEventHelper.bind([self, self.inner_container], right_click=lambda event:\n        ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(self)\n    )\n    self._re_render()\n",
 "type":"code"
 }
 ],
@@ -7204,7 +7220,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        SimpleContextMenu.",
+"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -7541,7 +7565,23 @@
 "type":"variable"
 },
 {
-"text":")\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event:\n                self._post_edit_start_from_token_view(event.Position)\n            ,\n            right_click=lambda event:\n                SimpleContextMenu.ShowIfPresent(self)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
+"text":")\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event:\n                self._post_edit_start_from_token_view(event.Position)\n            ,\n            right_click=lambda event:\n                ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(self)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
 "type":"code"
 },
 {
@@ -9146,7 +9186,23 @@
 ],
 "fragments":[
 {
-"text":"def ShowContextMenu(self):\n    SimpleContextMenu.ShowIfPresent(self)\n\ndef CreateContextMenu(self):\n    menu = ",
+"text":"def ShowContextMenu(self):\n    ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(self)\n\ndef CreateContextMenu(self):\n    menu = ",
 "type":"code"
 },
 {
@@ -9695,7 +9751,23 @@
 "type":"variable"
 },
 {
-"text":"(1)\n        MouseEventHelper.bind(\n            [self, self.line],\n            right_click=lambda event:\n                SimpleContextMenu.ShowIfPresent(self)\n        )\n\n    def Show(self, left_space=0):\n        with flicker_free_drawing(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with flicker_free_drawing(self):\n            self.line.Hide()\n            self.Layout()\n",
+"text":"(1)\n        MouseEventHelper.bind(\n            [self, self.line],\n            right_click=lambda event:\n                ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(self)\n        )\n\n    def Show(self, left_space=0):\n        with flicker_free_drawing(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with flicker_free_drawing(self):\n            self.line.Hide()\n            self.Layout()\n",
 "type":"code"
 }
 ],
