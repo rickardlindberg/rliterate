@@ -7323,14 +7323,15 @@
 "paragraphs":[
 {
 "chunkpath":[
-"functions"
+"classes",
+"PagePanel"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"class PageContextMenu(",
+"text":"def CreateContextMenu(self):\n    menu = ",
 "type":"code"
 },
 {
@@ -7338,19 +7339,11 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project, page_id):\n        ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":".__init__(self)\n        self.AppendItem(\"Width\", lambda:\n            SettingsDialog(parent, project).Show()\n        )\n\n    def AddToMenu(self, menu):\n        menu.AppendSubMenu(self, \"Page\")\n",
+"text":"(\"Page\")\n    menu.AppendItem(\"Width\", lambda:\n        SettingsDialog(\n            wx.GetTopLevelParent(self),\n            self.project\n        ).Show()\n    )\n    return menu\n",
 "type":"code"
 }
 ],
-"id":"e29a33c946f347d8aaf51b5ad8c18808",
+"id":"e7a9c903c2d34ee58130f68f1cf6a8c8",
 "type":"code"
 }
 ],
@@ -8249,7 +8242,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"subpath\"].last),\n            lambda: ",
+"text":"(\"Path\")\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"subpath\"].last),\n            lambda: ",
 "type":"code"
 },
 {
@@ -8289,7 +8282,7 @@
 "type":"variable"
 },
 {
-"text":"=lambda value: self.project.rename_path(\n                    token.extra[\"subpath\"],\n                    value\n                )\n            )\n        )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ",
+"text":"=lambda value: self.project.rename_path(\n                    token.extra[\"subpath\"],\n                    value\n                )\n            )\n        )\n        menu.Popup(self)\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ",
 "type":"code"
 },
 {
@@ -8297,7 +8290,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        menu.AppendItem(\n            rename_message,\n            lambda: ",
+"text":"(\"Variable\")\n        menu.AppendItem(\n            rename_message,\n            lambda: ",
 "type":"code"
 },
 {
@@ -8361,7 +8354,7 @@
 "type":"variable"
 },
 {
-"text":"),\n                create_open_page_handler(page)\n            )\n        self.PopupMenu(menu)\n        menu.Destroy()\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, name):\n    for page in self.project.iter_pages():\n        if self._page_has_variable(page, name):\n            yield page\n\ndef _find_variable_usages(self, variable_id):\n    for page in self.project.iter_pages():\n        if self._page_uses_variable(page, variable_id):\n            yield page\n\ndef _page_has_variable(self, page, name):\n    pattern = re.compile(r\"\\b{}\\b\".format(re.escape(name)))\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"code\":\n            if pattern.search(text_fragment.text):\n                return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"code\":\n            if pattern.search(code_fragment.text):\n                return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"variable\" and text_fragment.id == variable_id:\n            return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"variable\" and code_fragment.id == variable_id:\n            return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
+"text":"),\n                create_open_page_handler(page)\n            )\n        menu.Popup(self)\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, name):\n    for page in self.project.iter_pages():\n        if self._page_has_variable(page, name):\n            yield page\n\ndef _find_variable_usages(self, variable_id):\n    for page in self.project.iter_pages():\n        if self._page_uses_variable(page, variable_id):\n            yield page\n\ndef _page_has_variable(self, page, name):\n    pattern = re.compile(r\"\\b{}\\b\".format(re.escape(name)))\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"code\":\n            if pattern.search(text_fragment.text):\n                return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"code\":\n            if pattern.search(code_fragment.text):\n                return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"variable\" and text_fragment.id == variable_id:\n            return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"variable\" and code_fragment.id == variable_id:\n            return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
 "type":"code"
 }
 ],
@@ -9120,7 +9113,31 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, parent, project)\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n    def ShowContextMenu(self):\n        menu = ",
+"text":".__init__(self, parent, project)\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n",
+"type":"code"
+},
+{
+"path":[
+"ParagraphBase"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"39ada32fde3245e7baac32cb839fb4e2",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"ParagraphBase"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ShowContextMenu(self):\n    self.CreateContextMenu().Popup(self)\n\ndef CreateContextMenu(self):\n    menu = ",
 "type":"code"
 },
 {
@@ -9128,7 +9145,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        menu.AppendItem(\n            \"New paragraph before\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.id\n            )\n        )\n        menu.AppendItem(\n            \"New paragraph after\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id\n            )\n        )\n        menu.AppendItem(\n            \"Duplicate\",\n            lambda: self.paragraph.duplicate()\n        )\n        if hasattr(self.paragraph, \"text_version\"):\n            menu.AppendItem(\n                \"Edit in gvim\",\n                lambda: setattr(\n                    self.paragraph,\n                    \"text_version\",\n                    ",
+"text":"(\"Paragraph\")\n    menu.AppendItem(\n        \"New paragraph before\",\n        lambda: self.project.add_paragraph(\n            self.page_id,\n            before_id=self.paragraph.id\n        )\n    )\n    menu.AppendItem(\n        \"New paragraph after\",\n        lambda: self.project.add_paragraph(\n            self.page_id,\n            before_id=self.paragraph.next_id\n        )\n    )\n    menu.AppendItem(\n        \"Duplicate\",\n        lambda: self.paragraph.duplicate()\n    )\n    if hasattr(self.paragraph, \"text_version\"):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: setattr(\n                self.paragraph,\n                \"text_version\",\n                ",
 "type":"code"
 },
 {
@@ -9136,11 +9153,11 @@
 "type":"variable"
 },
 {
-"text":"(\n                        self.paragraph.text_version,\n                        self.paragraph.filename\n                    )\n                )\n            )\n        menu.AppendSeparator()\n        self.AddContextMenuItems(menu)\n        menu.AppendSeparator()\n        menu.AppendItem(\n            \"Delete\",\n            lambda: self.paragraph.delete()\n        )\n        PageContextMenu(wx.GetTopLevelParent(self), self.project, self.page_id).AddToMenu(menu)\n        self.PopupMenu(menu)\n        menu.Destroy()\n\n    def AddContextMenuItems(self, menu):\n        pass\n",
+"text":"(\n                    self.paragraph.text_version,\n                    self.paragraph.filename\n                )\n            )\n        )\n    menu.AppendSeparator()\n    self.AddContextMenuItems(menu)\n    menu.AppendSeparator()\n    menu.AppendItem(\n        \"Delete\",\n        lambda: self.paragraph.delete()\n    )\n    return menu\n\ndef AddContextMenuItems(self, menu):\n    pass\n",
 "type":"code"
 }
 ],
-"id":"39ada32fde3245e7baac32cb839fb4e2",
+"id":"3e32276889674d5cbc3d7b63e3f9ea11",
 "type":"code"
 },
 {
@@ -10552,7 +10569,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Menu):\n\n    def AppendItem(self, text, fn):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: fn(),\n            self.Append(wx.NewId(), text)\n        )\n",
+"text":"(wx.Menu):\n\n    def __init__(self, name):\n        wx.Menu.__init__(self)\n        self._name = name\n\n    def AppendItem(self, text, fn):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: fn(),\n            self.Append(wx.NewId(), text)\n        )\n\n    def AddToMenu(self, menu):\n        menu.AppendSubMenu(self, self._name)\n\n    def Popup(self, widget):\n        self._append_parents(widget)\n        widget.PopupMenu(self)\n        self.Destroy()\n\n    def _append_parents(self, widget):\n        parent = widget.Parent\n        sub_menus = []\n        while parent is not None:\n            if hasattr(parent, \"CreateContextMenu\"):\n                sub_menus.append(parent.CreateContextMenu())\n            parent = parent.Parent\n        if sub_menus:\n            self.AppendSeparator()\n            for x in sub_menus:\n                x.AddToMenu(self)\n",
 "type":"code"
 }
 ],

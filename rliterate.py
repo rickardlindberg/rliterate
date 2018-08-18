@@ -209,7 +209,10 @@ class ParagraphBase(Editable):
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
     def ShowContextMenu(self):
-        menu = SimpleContextMenu()
+        self.CreateContextMenu().Popup(self)
+
+    def CreateContextMenu(self):
+        menu = SimpleContextMenu("Paragraph")
         menu.AppendItem(
             "New paragraph before",
             lambda: self.project.add_paragraph(
@@ -247,9 +250,7 @@ class ParagraphBase(Editable):
             "Delete",
             lambda: self.paragraph.delete()
         )
-        PageContextMenu(wx.GetTopLevelParent(self), self.project, self.page_id).AddToMenu(menu)
-        self.PopupMenu(menu)
-        menu.Destroy()
+        return menu
 
     def AddContextMenuItems(self, menu):
         pass
@@ -435,12 +436,36 @@ class MultilineTextCtrl(wx.richtext.RichTextCtrl):
         )
 class SimpleContextMenu(wx.Menu):
 
+    def __init__(self, name):
+        wx.Menu.__init__(self)
+        self._name = name
+
     def AppendItem(self, text, fn):
         self.Bind(
             wx.EVT_MENU,
             lambda event: fn(),
             self.Append(wx.NewId(), text)
         )
+
+    def AddToMenu(self, menu):
+        menu.AppendSubMenu(self, self._name)
+
+    def Popup(self, widget):
+        self._append_parents(widget)
+        widget.PopupMenu(self)
+        self.Destroy()
+
+    def _append_parents(self, widget):
+        parent = widget.Parent
+        sub_menus = []
+        while parent is not None:
+            if hasattr(parent, "CreateContextMenu"):
+                sub_menus.append(parent.CreateContextMenu())
+            parent = parent.Parent
+        if sub_menus:
+            self.AppendSeparator()
+            for x in sub_menus:
+                x.AddToMenu(self)
 class JsonSettings(Observable):
 
     def __init__(self, settings_dict):
@@ -2700,6 +2725,15 @@ class PagePanel(VerticalPanel):
                 self.drop_points,
                 key=lambda drop_point: drop_point.y_distance_to(client_y)
             )
+    def CreateContextMenu(self):
+        menu = SimpleContextMenu("Page")
+        menu.AppendItem("Width", lambda:
+            SettingsDialog(
+                wx.GetTopLevelParent(self),
+                self.project
+            ).Show()
+        )
+        return menu
 class PageDropPoint(object):
 
     def __init__(self, divider, page_id, next_paragraph_id):
@@ -3068,7 +3102,7 @@ class CodeView(VerticalPanel):
     def _token_right_click(self, event):
         token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("subpath") is not None:
-            menu = SimpleContextMenu()
+            menu = SimpleContextMenu("Path")
             menu.AppendItem(
                 "Rename '{}'".format(token.extra["subpath"].last),
                 lambda: show_text_entry(
@@ -3082,12 +3116,11 @@ class CodeView(VerticalPanel):
                     )
                 )
             )
-            self.PopupMenu(menu)
-            menu.Destroy()
+            menu.Popup(self)
         elif token is not None and token.extra.get("variable") is not None:
             rename_value = self.project.lookup_variable(token.extra["variable"]) or token.extra["variable"]
             rename_message = "Rename '{}'".format(rename_value)
-            menu = SimpleContextMenu()
+            menu = SimpleContextMenu("Variable")
             menu.AppendItem(
                 rename_message,
                 lambda: show_text_entry(
@@ -3125,8 +3158,7 @@ class CodeView(VerticalPanel):
                     "{}".format(page.full_title),
                     create_open_page_handler(page)
                 )
-            self.PopupMenu(menu)
-            menu.Destroy()
+            menu.Popup(self)
         else:
             return CONTINUE_PROCESSING
 
@@ -3926,16 +3958,6 @@ def min_or_none(items, key):
     if not items:
         return None
     return min(items, key=key)
-class PageContextMenu(SimpleContextMenu):
-
-    def __init__(self, parent, project, page_id):
-        SimpleContextMenu.__init__(self)
-        self.AppendItem("Width", lambda:
-            SettingsDialog(parent, project).Show()
-        )
-
-    def AddToMenu(self, menu):
-        menu.AppendSubMenu(self, "Page")
 def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):
