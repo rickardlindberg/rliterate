@@ -6519,7 +6519,7 @@
 "type":"chunk"
 },
 {
-"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._re_render(),\n            \"document\",\n            \"layout.workspace\",\n            \"highlights\"\n        )\n\n",
+"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._re_render() if event != \"editor\" else None,\n        )\n\n",
 "type":"code"
 },
 {

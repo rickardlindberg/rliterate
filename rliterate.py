@@ -2456,10 +2456,7 @@ class Workspace(HorizontalScrolledWindow):
     def _init_project(self, project):
         self.project = project
         self.project.listen(
-            lambda event: self._re_render(),
-            "document",
-            "layout.workspace",
-            "highlights"
+            lambda event: self._re_render() if event != "editor" else None,
         )
 
     def _render(self):
