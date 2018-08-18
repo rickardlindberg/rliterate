@@ -5304,7 +5304,7 @@
 ],
 "fragments":[
 {
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._tool_groups.populate(self),\n            \"document\", \"layout\", \"editor\"\n        )\n\n    def _init_tools(self):\n        main_frame = self.GetTopLevelParent()\n        self._tool_groups = ToolGroups(main_frame)\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.listen(\n            lambda event: self._tool_groups.populate(self),\n        )\n\n    def _init_tools(self):\n        main_frame = self.GetTopLevelParent()\n        self._tool_groups = ToolGroups(main_frame)\n",
 "type":"code"
 },
 {

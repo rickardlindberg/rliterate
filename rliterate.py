@@ -2002,7 +2002,6 @@ class ToolBar(wx.ToolBar):
         self.project = project
         self.project.listen(
             lambda event: self._tool_groups.populate(self),
-            "document", "layout", "editor"
         )
 
     def _init_tools(self):
