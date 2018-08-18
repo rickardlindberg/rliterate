@@ -209,7 +209,7 @@ class ParagraphBase(Editable):
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
     def ShowContextMenu(self):
-        menu = ParagraphContextMenu()
+        menu = SimpleContextMenu()
         menu.AppendItem(
             "New paragraph before",
             lambda: self.project.add_paragraph(
@@ -247,6 +247,7 @@ class ParagraphBase(Editable):
             "Delete",
             lambda: self.paragraph.delete()
         )
+        PageContextMenu(wx.GetTopLevelParent(self), self.project, self.page_id).AddToMenu(menu)
         self.PopupMenu(menu)
         menu.Destroy()
 
@@ -431,6 +432,14 @@ class MultilineTextCtrl(wx.richtext.RichTextCtrl):
             style=wx.richtext.RE_MULTILINE|wx.BORDER_SIMPLE,
             value=value,
             size=size
+        )
+class SimpleContextMenu(wx.Menu):
+
+    def AppendItem(self, text, fn):
+        self.Bind(
+            wx.EVT_MENU,
+            lambda event: fn(),
+            self.Append(wx.NewId(), text)
         )
 class JsonSettings(Observable):
 
@@ -2045,14 +2054,6 @@ class ToolBar(wx.ToolBar):
             short_help=lambda: "Redo" if self.project.get_redo_operation() is None else "Redo '{}'".format(self.project.get_redo_operation()[0]),
             enabled_fn=lambda: self.project.get_redo_operation() is not None
         )
-        settings_group = self._tool_groups.add_group(
-            lambda: self.project.active_editor is None
-        )
-        settings_group.add_tool(
-            wx.ART_HELP_SETTINGS,
-            lambda: SettingsDialog(main_frame, self.project).Show(),
-            short_help="Settings"
-        )
         quit_group = self._tool_groups.add_group()
         quit_group.add_tool(
             wx.ART_QUIT,
@@ -3067,7 +3068,7 @@ class CodeView(VerticalPanel):
     def _token_right_click(self, event):
         token = event.EventObject.GetToken(event.Position)
         if token is not None and token.extra.get("subpath") is not None:
-            menu = ParagraphContextMenu()
+            menu = SimpleContextMenu()
             menu.AppendItem(
                 "Rename '{}'".format(token.extra["subpath"].last),
                 lambda: show_text_entry(
@@ -3086,7 +3087,7 @@ class CodeView(VerticalPanel):
         elif token is not None and token.extra.get("variable") is not None:
             rename_value = self.project.lookup_variable(token.extra["variable"]) or token.extra["variable"]
             rename_message = "Rename '{}'".format(rename_value)
-            menu = ParagraphContextMenu()
+            menu = SimpleContextMenu()
             menu.AppendItem(
                 rename_message,
                 lambda: show_text_entry(
@@ -3374,14 +3375,6 @@ class Factory(ParagraphBase):
             border=2
         )
         button.Bind(wx.EVT_BUTTON, click_handler)
-class ParagraphContextMenu(wx.Menu):
-
-    def AppendItem(self, text, fn):
-        self.Bind(
-            wx.EVT_MENU,
-            lambda event: fn(),
-            self.Append(wx.NewId(), text)
-        )
 class SettingsDialog(wx.Dialog):
 
     def __init__(self, parent, project):
@@ -3933,6 +3926,16 @@ def min_or_none(items, key):
     if not items:
         return None
     return min(items, key=key)
+class PageContextMenu(SimpleContextMenu):
+
+    def __init__(self, parent, project, page_id):
+        SimpleContextMenu.__init__(self)
+        self.AppendItem("Width", lambda:
+            SettingsDialog(parent, project).Show()
+        )
+
+    def AddToMenu(self, menu):
+        menu.AppendSubMenu(self, "Page")
 def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):
