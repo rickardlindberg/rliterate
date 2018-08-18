@@ -6189,34 +6189,12 @@
 "type":"variable"
 },
 {
-"text":"()\n        self.columns = []\n        wx.CallAfter(self._re_render)\n",
+"text":"()\n        self.columns = []\n        self._re_render()\n",
 "type":"code"
 }
 ],
 "id":"d5dd19fb0dac4111b42932071e6a0c2f",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"CallAfter",
-"type":"code"
-},
-{
-"text":" is needed becasue the layout is not \"ready\" at this point, and sizer reports size (0, 0), so ",
-"type":"text"
-},
-{
-"text":"ScrollToEnd",
-"type":"code"
-},
-{
-"text":" does not work.",
-"type":"text"
-}
-],
-"id":"3072a65bad8c4b9eb59ea3f1d05bb6fc",
-"type":"text"
 },
 {
 "chunkpath":[
@@ -6300,6 +6278,28 @@
 ],
 "id":"df673e4bd65749648e19ffdebec90f41",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"CallAfter",
+"type":"code"
+},
+{
+"text":" is needed becasue the layout is not \"ready\" at this point, and sizer reports size (0, 0), so ",
+"type":"text"
+},
+{
+"text":"ScrollToEnd",
+"type":"code"
+},
+{
+"text":" does not work.",
+"type":"text"
+}
+],
+"id":"3072a65bad8c4b9eb59ea3f1d05bb6fc",
+"type":"text"
 },
 {
 "fragments":[

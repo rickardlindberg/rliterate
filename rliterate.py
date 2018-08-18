@@ -2469,7 +2469,7 @@ class Workspace(HorizontalScrolledWindow):
             self.SetBackgroundColour((200, 200, 200))
             self.space = self.AppendSpace()
             self.columns = []
-            wx.CallAfter(self._re_render)
+            self._re_render()
     def _re_render(self):
         with flicker_free_drawing(self):
             self._update_space()
