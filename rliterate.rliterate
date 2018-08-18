@@ -6875,7 +6875,40 @@
 "title":"Column widget"
 },
 {
+"children":[
+{
 "children":[],
+"id":"9de831e3ccc94b46b5ec4ffb681fd43f",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def CreateContextMenu(self):\n    menu = ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":"(\"Page\")\n    menu.AppendItem(\"Width\", lambda:\n        SettingsDialog(\n            wx.GetTopLevelParent(self),\n            self.project\n        ).Show()\n    )\n    return menu\n",
+"type":"code"
+}
+],
+"id":"e7a9c903c2d34ee58130f68f1cf6a8c8",
+"type":"code"
+}
+],
+"title":"Menu"
+}
+],
 "id":"1164b94ba82c476897ce18fc1b70a5b8",
 "paragraphs":[
 {
@@ -7033,7 +7066,7 @@
 "type":"variable"
 },
 {
-"text":"\n    )\n    self._re_render()\n",
+"text":"\n    )\n    MouseEventHelper.bind([self, self.inner_container], right_click=lambda event:\n        SimpleContextMenu.ShowIfPresent(self)\n    )\n    self._re_render()\n",
 "type":"code"
 }
 ],
@@ -7171,7 +7204,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n\ndef _render_paragraph(self, paragraph):\n    self.",
+"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(self, self.project, page))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](self, self.project, self.page_id, paragraph))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        SimpleContextMenu.",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(self)\n    )\n\ndef _render_paragraph(self, paragraph):\n    self.",
 "type":"code"
 },
 {
@@ -7316,38 +7357,6 @@
 }
 ],
 "title":"Dropping paragraphs"
-},
-{
-"children":[],
-"id":"9de831e3ccc94b46b5ec4ffb681fd43f",
-"paragraphs":[
-{
-"chunkpath":[
-"classes",
-"PagePanel"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def CreateContextMenu(self):\n    menu = ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":"(\"Page\")\n    menu.AppendItem(\"Width\", lambda:\n        SettingsDialog(\n            wx.GetTopLevelParent(self),\n            self.project\n        ).Show()\n    )\n    return menu\n",
-"type":"code"
-}
-],
-"id":"e7a9c903c2d34ee58130f68f1cf6a8c8",
-"type":"code"
-}
-],
-"title":"Menu"
 }
 ],
 "id":"eb6360eff66245daa2fe09b04bbbc120",
@@ -7532,7 +7541,7 @@
 "type":"variable"
 },
 {
-"text":")\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
+"text":")\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event:\n                self._post_edit_start_from_token_view(event.Position)\n            ,\n            right_click=lambda event:\n                SimpleContextMenu.ShowIfPresent(self)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
 "type":"code"
 },
 {
@@ -9137,7 +9146,7 @@
 ],
 "fragments":[
 {
-"text":"def ShowContextMenu(self):\n    self.CreateContextMenu().Popup(self)\n\ndef CreateContextMenu(self):\n    menu = ",
+"text":"def ShowContextMenu(self):\n    SimpleContextMenu.ShowIfPresent(self)\n\ndef CreateContextMenu(self):\n    menu = ",
 "type":"code"
 },
 {
@@ -9686,7 +9695,7 @@
 "type":"variable"
 },
 {
-"text":"(1)\n\n    def Show(self, left_space=0):\n        with flicker_free_drawing(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with flicker_free_drawing(self):\n            self.line.Hide()\n            self.Layout()\n",
+"text":"(1)\n        MouseEventHelper.bind(\n            [self, self.line],\n            right_click=lambda event:\n                SimpleContextMenu.ShowIfPresent(self)\n        )\n\n    def Show(self, left_space=0):\n        with flicker_free_drawing(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with flicker_free_drawing(self):\n            self.line.Hide()\n            self.Layout()\n",
 "type":"code"
 }
 ],
@@ -10569,7 +10578,15 @@
 "type":"variable"
 },
 {
-"text":"(wx.Menu):\n\n    def __init__(self, name):\n        wx.Menu.__init__(self)\n        self._name = name\n\n    def AppendItem(self, text, fn):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: fn(),\n            self.Append(wx.NewId(), text)\n        )\n\n    def AddToMenu(self, menu):\n        menu.AppendSubMenu(self, self._name)\n\n    def Popup(self, widget):\n        self._append_parents(widget)\n        widget.PopupMenu(self)\n        self.Destroy()\n\n    def _append_parents(self, widget):\n        parent = widget.Parent\n        sub_menus = []\n        while parent is not None:\n            if hasattr(parent, \"CreateContextMenu\"):\n                sub_menus.append(parent.CreateContextMenu())\n            parent = parent.Parent\n        if sub_menus:\n            self.AppendSeparator()\n            for x in sub_menus:\n                x.AddToMenu(self)\n",
+"text":"(wx.Menu):\n\n    def __init__(self, name):\n        wx.Menu.__init__(self)\n        self._name = name\n\n    def AppendItem(self, text, fn):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: fn(),\n            self.Append(wx.NewId(), text)\n        )\n\n    def AddToMenu(self, menu):\n        menu.AppendSubMenu(self, self._name)\n\n    def Popup(self, widget):\n        self._append_parents(widget)\n        widget.PopupMenu(self)\n        self.Destroy()\n\n    def _append_parents(self, widget):\n        parent = widget.Parent\n        sub_menus = []\n        while parent is not None:\n            if hasattr(parent, \"CreateContextMenu\"):\n                sub_menus.append(parent.CreateContextMenu())\n            parent = parent.Parent\n        if sub_menus:\n            self.AppendSeparator()\n            for x in sub_menus:\n                x.AddToMenu(self)\n\n    @staticmethod\n    def ",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(widget):\n        while widget is not None:\n            if hasattr(widget, \"CreateContextMenu\"):\n                widget.CreateContextMenu().Popup(widget)\n                return\n            widget = widget.Parent\n",
 "type":"code"
 }
 ],
@@ -13006,6 +13023,7 @@
 "aa80683234dc421f81d21fbda0b91758":"code_font",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "ae8e603135854b1787ca652bf6304e9e":"theme",
+"b0201e824c464356aa706a0440192e5c":"ShowIfPresent",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",

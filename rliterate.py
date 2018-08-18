@@ -209,7 +209,7 @@ class ParagraphBase(Editable):
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
 
     def ShowContextMenu(self):
-        self.CreateContextMenu().Popup(self)
+        SimpleContextMenu.ShowIfPresent(self)
 
     def CreateContextMenu(self):
         menu = SimpleContextMenu("Paragraph")
@@ -466,6 +466,14 @@ class SimpleContextMenu(wx.Menu):
             self.AppendSeparator()
             for x in sub_menus:
                 x.AddToMenu(self)
+
+    @staticmethod
+    def ShowIfPresent(widget):
+        while widget is not None:
+            if hasattr(widget, "CreateContextMenu"):
+                widget.CreateContextMenu().Popup(widget)
+                return
+            widget = widget.Parent
 class JsonSettings(Observable):
 
     def __init__(self, settings_dict):
@@ -2638,6 +2646,9 @@ class PageContainer(VerticalPanel):
             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
             border=self.project.theme.container_border
         )
+        MouseEventHelper.bind([self, self.inner_container], right_click=lambda event:
+            SimpleContextMenu.ShowIfPresent(self)
+        )
         self._re_render()
     def _re_render(self):
         self.SetBackgroundColour((150, 150, 150))
@@ -2649,6 +2660,15 @@ class PageContainer(VerticalPanel):
         self.page_id = page_id
         self._re_render()
         return changed_id
+    def CreateContextMenu(self):
+        menu = SimpleContextMenu("Page")
+        menu.AppendItem("Width", lambda:
+            SettingsDialog(
+                wx.GetTopLevelParent(self),
+                self.project
+            ).Show()
+        )
+        return menu
 class PagePanel(VerticalPanel):
 
     def __init__(self, parent, project, page_id):
@@ -2684,6 +2704,9 @@ class PagePanel(VerticalPanel):
             next_paragraph_id=None
         ))
         self._render_add_button()
+        MouseEventHelper.bind([self], right_click=lambda event:
+            SimpleContextMenu.ShowIfPresent(self)
+        )
 
     def _render_paragraph(self, paragraph):
         self.AppendChild(paragraph, flag=wx.EXPAND)
@@ -2725,15 +2748,6 @@ class PagePanel(VerticalPanel):
                 self.drop_points,
                 key=lambda drop_point: drop_point.y_distance_to(client_y)
             )
-    def CreateContextMenu(self):
-        menu = SimpleContextMenu("Page")
-        menu.AppendItem("Width", lambda:
-            SettingsDialog(
-                wx.GetTopLevelParent(self),
-                self.project
-            ).Show()
-        )
-        return menu
 class PageDropPoint(object):
 
     def __init__(self, divider, page_id, next_paragraph_id):
@@ -2766,7 +2780,11 @@ class Title(Editable):
         view.SetToolTipString(self.page.full_title)
         MouseEventHelper.bind(
             [view],
-            double_click=lambda event: self._post_edit_start_from_token_view(event.Position)
+            double_click=lambda event:
+                self._post_edit_start_from_token_view(event.Position)
+            ,
+            right_click=lambda event:
+                SimpleContextMenu.ShowIfPresent(self)
         )
         return view
 
@@ -3454,6 +3472,11 @@ class Divider(VerticalPanel):
             flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN
         )
         self.AppendStretch(1)
+        MouseEventHelper.bind(
+            [self, self.line],
+            right_click=lambda event:
+                SimpleContextMenu.ShowIfPresent(self)
+        )
 
     def Show(self, left_space=0):
         with flicker_free_drawing(self):
