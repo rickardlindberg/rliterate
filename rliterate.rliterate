@@ -4872,7 +4872,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Frame, BoxSizerMixin):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n        self.",
+"text":"(wx.Frame, BoxSizerMixin):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n        self.project = project\n        self.",
 "type":"code"
 },
 {
@@ -4880,7 +4880,7 @@
 "type":"variable"
 },
 {
-"text":"(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)\n\n    def _create_main_panel(self, project):\n        panel = HorizontalPanel(self)\n        self.SetToolBar(ToolBar(panel, project))\n        self._focus_panel = panel.",
+"text":"(self._create_main_panel(), flag=wx.EXPAND, proportion=1)\n\n    def _create_main_panel(self):\n        panel = HorizontalPanel(self)\n        self.SetToolBar(ToolBar(panel, self.project))\n        self._focus_panel = panel.",
 "type":"code"
 },
 {
@@ -4888,7 +4888,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel(self))\n        panel.",
+"text":"(\n            wx.Panel(self)\n        )\n        panel.",
 "type":"code"
 },
 {
@@ -4896,7 +4896,7 @@
 "type":"variable"
 },
 {
-"text":"(TableOfContents(panel, project), flag=wx.EXPAND, proportion=0)\n        panel.",
+"text":"(\n            TableOfContents(panel, self.project),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        panel.",
 "type":"code"
 },
 {
@@ -4904,7 +4904,7 @@
 "type":"variable"
 },
 {
-"text":"(Workspace(panel, project), flag=wx.EXPAND, proportion=1)\n        return panel\n\n",
+"text":"(\n            Workspace(panel, self.project),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        return panel\n\n",
 "type":"code"
 },
 {
@@ -4921,7 +4921,7 @@
 {
 "fragments":[
 {
-"text":"When a child control re-renders itself, the current focus can be lost. If we don't re-focus something, no window will have focus and keyboard shortcuts will not work. (This one took me a few hours to figure out.) Setting focus to items in a scrolling container will cause automatic scroll when focused. We therefore use a dummy focus panel of zero size that gains focus.",
+"text":"When a child control re-renders itself, the current focus can be lost. If we don't re-focus something, no window will have focus and keyboard shortcuts will not work. (This one took me a few hours to figure out.) Setting focus to items in a scrolling container will cause automatic scroll when focused. We therefore use a dummy focus panel of zero size that gains focus. But if an editor is shown, it has already been given focus, and we don't need to do anything.",
 "type":"text"
 }
 ],
@@ -4938,7 +4938,7 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    self.Layout()\n    self._focus_panel.SetFocus()\n",
+"text":"def ChildReRendered(self):\n    self.Layout()\n    if self.project.active_editor is None:\n        self._focus_panel.SetFocus()\n",
 "type":"code"
 }
 ],
@@ -9398,7 +9398,7 @@
 "type":"variable"
 },
 {
-"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().ChildReRendered()\n            self.project.",
+"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().Layout()\n            self.project.",
 "type":"code"
 },
 {
@@ -12990,7 +12990,15 @@
 "children":[],
 "fragments":[
 {
-"text":"Editor looses focus after it is opened",
+"text":"Can ",
+"type":"text"
+},
+{
+"text":"ChildReRendered",
+"type":"code"
+},
+{
+"text":" be moved up the stack?",
 "type":"text"
 }
 ]

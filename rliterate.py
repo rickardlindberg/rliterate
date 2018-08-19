@@ -48,7 +48,7 @@ class Editable(wx.Panel):
             self.edit.SetFocus()
             self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
             self.sizer.Hide(self.view)
-            self.GetTopLevelParent().ChildReRendered()
+            self.GetTopLevelParent().Layout()
             self.project.active_editor = self
 
     def Cancel(self):
@@ -2007,19 +2007,31 @@ class MainFrame(wx.Frame, BoxSizerMixin):
             title="{} - RLiterate".format(project.title)
         )
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
-        self.AppendChild(self._create_main_panel(project), flag=wx.EXPAND, proportion=1)
+        self.project = project
+        self.AppendChild(self._create_main_panel(), flag=wx.EXPAND, proportion=1)
 
-    def _create_main_panel(self, project):
+    def _create_main_panel(self):
         panel = HorizontalPanel(self)
-        self.SetToolBar(ToolBar(panel, project))
-        self._focus_panel = panel.AppendChild(wx.Panel(self))
-        panel.AppendChild(TableOfContents(panel, project), flag=wx.EXPAND, proportion=0)
-        panel.AppendChild(Workspace(panel, project), flag=wx.EXPAND, proportion=1)
+        self.SetToolBar(ToolBar(panel, self.project))
+        self._focus_panel = panel.AppendChild(
+            wx.Panel(self)
+        )
+        panel.AppendChild(
+            TableOfContents(panel, self.project),
+            flag=wx.EXPAND,
+            proportion=0
+        )
+        panel.AppendChild(
+            Workspace(panel, self.project),
+            flag=wx.EXPAND,
+            proportion=1
+        )
         return panel
 
     def ChildReRendered(self):
         self.Layout()
-        self._focus_panel.SetFocus()
+        if self.project.active_editor is None:
+            self._focus_panel.SetFocus()
 class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
