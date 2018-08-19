@@ -8473,7 +8473,7 @@
 "type":"variable"
 },
 {
-"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Usages:\", lambda: None)\n        def create_open_page_handler(page):\n            return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n        for page in self._find_variable_usages(token.extra[\"variable\"]):\n            menu.AppendItem(\n                \"{}\".format(page.",
+"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Usages:\", lambda: None)\n        def create_open_page_handler(page):\n            return lambda: self.Parent.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n        for page in self._find_variable_usages(token.extra[\"variable\"]):\n            menu.AppendItem(\n                \"{}\".format(page.",
 "type":"code"
 },
 {

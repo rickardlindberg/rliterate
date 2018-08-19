@@ -3231,7 +3231,7 @@ class CodeView(VerticalPanel):
             menu.AppendSeparator()
             menu.AppendItem("Usages:", lambda: None)
             def create_open_page_handler(page):
-                return lambda: self.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
+                return lambda: self.Parent.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
             for page in self._find_variable_usages(token.extra["variable"]):
                 menu.AppendItem(
                     "{}".format(page.full_title),
