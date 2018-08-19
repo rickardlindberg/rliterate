@@ -2593,12 +2593,6 @@ class Column(VerticalScrolledWindow):
             [page_id],
             column_index=self.index+1
         )
-
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            self._containers,
-            lambda container: container.FindClosestDropPoint(screen_pos)
-        )
     def _render(self):
         self._page_ids = []
         self._containers = []
@@ -2646,6 +2640,11 @@ class Column(VerticalScrolledWindow):
         self._re_render()
         return ids_changed
         # TODO: return if actual number of rows/containers changed
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self._containers,
+            lambda container: container.FindClosestDropPoint(screen_pos)
+        )
 class PageContainer(VerticalPanel):
 
     def __init__(self, parent, project, page_id):

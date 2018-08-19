@@ -6528,7 +6528,7 @@
 {
 "fragments":[
 {
-"text":"The workspace is re-rendered whenever relevant parts of the project changes.",
+"text":"The workspace is re-rendered when the project changes.",
 "type":"text"
 }
 ],
@@ -6768,6 +6768,54 @@
 }
 ],
 "title":"Rendering"
+},
+{
+"children":[],
+"id":"dac1f837e584402cbd5e1bfe12e29f23",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"Column"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(self, screen_pos):\n    return ",
+"type":"code"
+},
+{
+"id":"db171bdccb8c4a6bab83044b8d52fe83",
+"type":"variable"
+},
+{
+"text":"(\n        self._containers,\n        lambda container: container.",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(screen_pos)\n    )\n",
+"type":"code"
+}
+],
+"id":"625fe6ac645e438cb2f1795e54bcc63c",
+"type":"code"
+}
+],
+"title":"Dropping paragraphs"
 }
 ],
 "id":"b5ccbbfc0b6445a3a19a5c3dc39daa81",
@@ -6848,31 +6896,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n\ndef ",
-"type":"code"
-},
-{
-"id":"c25dba288acc4daba02327df732b1a7a",
-"type":"variable"
-},
-{
-"text":"(self, screen_pos):\n    return ",
-"type":"code"
-},
-{
-"id":"db171bdccb8c4a6bab83044b8d52fe83",
-"type":"variable"
-},
-{
-"text":"(\n        self._containers,\n        lambda container: container.",
-"type":"code"
-},
-{
-"id":"c25dba288acc4daba02327df732b1a7a",
-"type":"variable"
-},
-{
-"text":"(screen_pos)\n    )\n",
+"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n",
 "type":"code"
 }
 ],
