@@ -902,7 +902,7 @@ class Paragraph(object):
     def duplicate(self):
         with self._document.modify("Duplicate paragraph") as document_dict:
             document_dict.add_paragraph_dict(
-                dict(self._paragraph_dict, id=genid()),
+                dict(copy.deepcopy(self._paragraph_dict), id=genid()),
                 page_id=self._page.id,
                 before_id=self.next_id
             )

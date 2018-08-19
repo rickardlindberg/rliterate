@@ -2276,7 +2276,7 @@
 ],
 "fragments":[
 {
-"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self._document.modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(self._paragraph_dict, id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
+"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self._document.modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(copy.deepcopy(self._paragraph_dict), id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
 "type":"code"
 }
 ],
@@ -12935,33 +12935,6 @@
 {
 "text":"Text control should ensure selected text is visible in view (scroll if needed)",
 "type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"copy.deepcopy",
-"type":"code"
-},
-{
-"text":" is probably needed in ",
-"type":"text"
-},
-{
-"text":"Pragraph.duplicate",
-"type":"code"
-},
-{
-"text":" ",
-"type":"text"
-},
-{
-"page_id":"00d70d4faee841deba24ba21564eb11b",
-"text":null,
-"type":"reference"
 }
 ]
 },
