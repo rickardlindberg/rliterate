@@ -4290,7 +4290,7 @@
 "type":"variable"
 },
 {
-"text":" = JsonSettings.property(\n        \"theme.page_padding\", 13\n    )\n    ",
+"text":" = JsonSettings.property(\n        \"theme.page_padding\", 15\n    )\n    ",
 "type":"code"
 },
 {

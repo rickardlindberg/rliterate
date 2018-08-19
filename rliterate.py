@@ -1867,7 +1867,7 @@ class GlobalSettings(JsonSettings):
         "theme.page_body_width", 600
     )
     page_padding = JsonSettings.property(
-        "theme.page_padding", 13
+        "theme.page_padding", 15
     )
     shadow_size = JsonSettings.property(
         "theme.shadow_size", 2
