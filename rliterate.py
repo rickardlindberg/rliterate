@@ -2573,26 +2573,12 @@ class Column(VerticalScrolledWindow):
         self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
         self.Bind(EVT_TOKEN_CLICK, self._on_token_click)
 
-    def _on_hovered_token_changed(self, event):
-        if event.token is not None and event.token.token_type in [
-            TokenType.RLiterate.Link,
-            TokenType.RLiterate.Reference,
-        ]:
-            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-        else:
-            event.widget.SetDefaultCursor()
-
-    def _on_token_click(self, event):
-        if event.token.token_type == TokenType.RLiterate.Reference:
-            self.OpenPage(event.token.extra["page_id"])
-        elif event.token.token_type == TokenType.RLiterate.Link:
-            webbrowser.open(event.token.extra["url"])
-
-    def OpenPage(self, page_id):
-        open_pages_gui(self, self.project,
-            [page_id],
-            column_index=self.index+1
-        )
+    def SetPages(self, page_ids):
+        ids_changed = page_ids != self._page_ids
+        self._page_ids = page_ids
+        self._re_render()
+        return ids_changed
+        # TODO: return if actual number of rows/containers changed
     def _render(self):
         self._page_ids = []
         self._containers = []
@@ -2634,12 +2620,26 @@ class Column(VerticalScrolledWindow):
             self._containers.pop(-1).Destroy()
         # When?
         #self.ScrollToBeginning()
-    def SetPages(self, page_ids):
-        ids_changed = page_ids != self._page_ids
-        self._page_ids = page_ids
-        self._re_render()
-        return ids_changed
-        # TODO: return if actual number of rows/containers changed
+    def _on_hovered_token_changed(self, event):
+        if event.token is not None and event.token.token_type in [
+            TokenType.RLiterate.Link,
+            TokenType.RLiterate.Reference,
+        ]:
+            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+        else:
+            event.widget.SetDefaultCursor()
+
+    def _on_token_click(self, event):
+        if event.token.token_type == TokenType.RLiterate.Reference:
+            self.OpenPage(event.token.extra["page_id"])
+        elif event.token.token_type == TokenType.RLiterate.Link:
+            webbrowser.open(event.token.extra["url"])
+
+    def OpenPage(self, page_id):
+        open_pages_gui(self, self.project,
+            [page_id],
+            column_index=self.index+1
+        )
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
             self._containers,
@@ -2652,6 +2652,11 @@ class PageContainer(VerticalPanel):
         self.project = project
         self._render(page_id)
 
+    def SetPageId(self, page_id):
+        changed_id = self.page_id != page_id
+        self.page_id = page_id
+        self._re_render()
+        return changed_id
     def _render(self, initial_page_id):
         self.page_id = initial_page_id
         self._render_first_row()
@@ -2711,7 +2716,6 @@ class PageContainer(VerticalPanel):
             flag=wx.EXPAND,
             proportion=1
         )
-
     def _re_render(self):
         self.page.SetPageId(self.page_id)
         self.inner_container.SetBackgroundColour((255, 255, 255))
@@ -2722,11 +2726,6 @@ class PageContainer(VerticalPanel):
         self.bottom.MinSize = (-1, self.project.theme.shadow_size)
         self.bottom_space.SetSize(self.project.theme.shadow_size)
         self.page_sizer.Border = self.project.theme.container_border
-    def SetPageId(self, page_id):
-        changed_id = self.page_id != page_id
-        self.page_id = page_id
-        self._re_render()
-        return changed_id
     def CreateContextMenu(self):
         menu = SimpleContextMenu("Page")
         menu.AppendItem("Change width", lambda:
@@ -2745,6 +2744,9 @@ class PagePanel(VerticalPanel):
         self.project = project
         self._render(page_id)
 
+    def SetPageId(self, page_id):
+        self.RemoveChildren()
+        self._render(page_id)
     def _render(self, initial_page_id):
         self.page_id = initial_page_id
         self.drop_points = []
@@ -2807,10 +2809,6 @@ class PagePanel(VerticalPanel):
 
     def _on_add_button(self, event):
         self.project.add_paragraph(self.page_id)
-
-    def SetPageId(self, page_id):
-        self.RemoveChildren()
-        self._render(page_id)
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:

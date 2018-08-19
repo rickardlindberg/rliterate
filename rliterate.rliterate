@@ -6518,21 +6518,11 @@
 {
 "fragments":[
 {
-"text":"The main workspace widget lays out column widgets horizontally.",
+"text":"The main workspace widget renders column widgets horizontally. It can be scrolled left and right if more columns are shown than can fit on the screen. It re-renderes when the project changes.",
 "type":"text"
 }
 ],
 "id":"6a9ac9606ee5499694f3236ccabf1127",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"The workspace is re-rendered when the project changes.",
-"type":"text"
-}
-],
-"id":"b5c9d88523ed45f1bf811a1d849f729b",
 "type":"text"
 },
 {
@@ -6748,7 +6738,14 @@
 ],
 "id":"43932453f289428abb21fbd2032fa567",
 "type":"code"
+}
+],
+"title":"Rendering"
 },
+{
+"children":[],
+"id":"0101ffbf9ff44194a140b3cc8a4125de",
+"paragraphs":[
 {
 "chunkpath":[
 "classes",
@@ -6759,15 +6756,15 @@
 ],
 "fragments":[
 {
-"text":"def SetPages(self, page_ids):\n    ids_changed = page_ids != self._page_ids\n    self._page_ids = page_ids\n    self._re_render()\n    return ids_changed\n    # TODO: return if actual number of rows/containers changed\n",
+"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n",
 "type":"code"
 }
 ],
-"id":"4af6492651714fc4a0c5864ba8189bc2",
+"id":"34504aba164047408652c6a114b9372d",
 "type":"code"
 }
 ],
-"title":"Rendering"
+"title":"Token event handlers"
 },
 {
 "children":[],
@@ -6823,16 +6820,15 @@
 {
 "fragments":[
 {
-"text":"The column widget is a vertical ",
+"text":"The column widget renders page container widgets vertically. It can be scrolled up and down if more pages are shown than can fit on the screen. It re-renders when ",
 "type":"text"
 },
 {
-"page_id":"94b57547a194415cb00feb2aaf486e27",
-"text":"scrolling container",
-"type":"reference"
+"id":"bba79578dc084c859c4f3eef0cd79771",
+"type":"variable"
 },
 {
-"text":" containing page containers.",
+"text":" is called.",
 "type":"text"
 }
 ],
@@ -6896,11 +6892,19 @@
 ],
 "fragments":[
 {
-"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"bba79578dc084c859c4f3eef0cd79771",
+"type":"variable"
+},
+{
+"text":"(self, page_ids):\n    ids_changed = page_ids != self._page_ids\n    self._page_ids = page_ids\n    self._re_render()\n    return ids_changed\n    # TODO: return if actual number of rows/containers changed\n",
 "type":"code"
 }
 ],
-"id":"34504aba164047408652c6a114b9372d",
+"id":"4af6492651714fc4a0c5864ba8189bc2",
 "type":"code"
 }
 ],
@@ -6994,7 +6998,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        HorizontalPanel(self),\n        flag=wx.EXPAND\n    )\n    self.bottom_space = self.bottom.AppendSpace()\n    self.bottom_border = self.bottom.AppendChild(\n        wx.Panel(self.bottom),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n\ndef _re_render(self):\n    self.page.SetPageId(self.page_id)\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
+"text":"(\n        HorizontalPanel(self),\n        flag=wx.EXPAND\n    )\n    self.bottom_space = self.bottom.AppendSpace()\n    self.bottom_border = self.bottom.AppendChild(\n        wx.Panel(self.bottom),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n",
 "type":"code"
 }
 ],
@@ -7011,11 +7015,11 @@
 ],
 "fragments":[
 {
-"text":"def SetPageId(self, page_id):\n    changed_id = self.page_id != page_id\n    self.page_id = page_id\n    self._re_render()\n    return changed_id\n",
+"text":"def _re_render(self):\n    self.page.SetPageId(self.page_id)\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
 "type":"code"
 }
 ],
-"id":"65a346fd367648bf884b7250c3fdd57c",
+"id":"14a9f369ce9748ee838a45a9afdecec3",
 "type":"code"
 }
 ],
@@ -7099,7 +7103,15 @@
 {
 "fragments":[
 {
-"text":"The page container widget renders a frame with border around a page.",
+"text":"The page container widget renders a page frame with a border, and inside the frame it renders a page widget vertically. It re-renders when ",
+"type":"text"
+},
+{
+"text":"SetPageId",
+"type":"code"
+},
+{
+"text":" is called.",
 "type":"text"
 }
 ],
@@ -7143,6 +7155,23 @@
 }
 ],
 "id":"29a948082ed3467395fb08fcbc0ad7c9",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def SetPageId(self, page_id):\n    changed_id = self.page_id != page_id\n    self.page_id = page_id\n    self._re_render()\n    return changed_id\n",
+"type":"code"
+}
+],
+"id":"65a346fd367648bf884b7250c3fdd57c",
 "type":"code"
 }
 ],
@@ -7330,12 +7359,22 @@
 "type":"variable"
 },
 {
-"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n\ndef SetPageId(self, page_id):\n    self.RemoveChildren()\n    self._render(page_id)\n",
+"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
 "type":"code"
 }
 ],
 "id":"0d23868db06847a1800d8ef8659887f3",
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"Setting a minimus size on the page panel is necessary becuase size calculations does not seem to always be correct in a scrolling container.",
+"type":"text"
+}
+],
+"id":"3858507ab0da45eda81c72ff5444f9d8",
+"type":"text"
 },
 {
 "chunkpath":[
@@ -7424,6 +7463,24 @@
 "id":"eb6360eff66245daa2fe09b04bbbc120",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The page widget renders a title widget, paragraph widgets, and an add button widget vertically. It re-renders when ",
+"type":"text"
+},
+{
+"text":"SetPageId",
+"type":"code"
+},
+{
+"text":" is called.",
+"type":"text"
+}
+],
+"id":"dd73d26e23144db58ea875993479c119",
+"type":"text"
+},
+{
 "chunkpath":[
 "classes"
 ],
@@ -7463,17 +7520,24 @@
 "type":"code"
 },
 {
+"chunkpath":[
+"classes",
+"PagePanel"
+],
+"filepath":[
+"rliterate.py"
+],
 "fragments":[
 {
-"text":"Setting a minimus size on the page panel is necessary becuase size calculations does not seem to always be correct in a scrolling container.",
-"type":"text"
+"text":"def SetPageId(self, page_id):\n    self.RemoveChildren()\n    self._render(page_id)\n",
+"type":"code"
 }
 ],
-"id":"3858507ab0da45eda81c72ff5444f9d8",
-"type":"text"
+"id":"f5afcf2f7033422495653e091b2e6592",
+"type":"code"
 }
 ],
-"title":"Page"
+"title":"Page widget"
 },
 {
 "children":[],
@@ -7619,7 +7683,7 @@
 "type":"code"
 }
 ],
-"title":"Title"
+"title":"Title widget"
 },
 {
 "children":[
@@ -9313,7 +9377,7 @@
 "type":"text"
 }
 ],
-"title":"Paragraphs"
+"title":"Paragraph widgets"
 },
 {
 "children":[],
@@ -9547,7 +9611,7 @@
 {
 "fragments":[
 {
-"text":"The workspace shows pages in the document. It is organized in columns, and each column can show multiple pages. The pages can also be edited from the workspace.",
+"text":"The workspace shows pages in the document. It is organized in columns, where each column can show multiple pages. The pages can also be edited from the workspace.",
 "type":"text"
 }
 ],
@@ -13122,6 +13186,7 @@
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
+"bba79578dc084c859c4f3eef0cd79771":"SetPages",
 "c0363497d8b6457ea2e652a9f8ec0afe":"ok_fn",
 "c25dba288acc4daba02327df732b1a7a":"FindClosestDropPoint",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
