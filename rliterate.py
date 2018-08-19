@@ -1133,10 +1133,20 @@ class CodeParagraph(Paragraph):
         return iter(self.fragments)
     @property
     def text_version(self):
+        self._variable_map = {}
         text_version = TextVersion()
         for fragment in self.fragments:
             fragment.fill_text_version(text_version)
         return text_version.text
+
+    def add_variable_map(self, name, id_):
+        entry = name
+        index = 1
+        while entry in self._variable_map and self._variable_map[entry] != id_:
+            entry = "{}{}".format(name, index)
+            index += 1
+        self._variable_map[entry] = id_
+        return entry
     @text_version.setter
     def text_version(self, value):
         with self.multi_update():
@@ -1174,7 +1184,9 @@ class CodeParagraph(Paragraph):
         return self._parsed_fragments
 
     def _get_variable_id(self, identifier):
-        if self._document.lookup_variable(identifier) is None:
+        if identifier in self._variable_map:
+            return self._variable_map[identifier]
+        elif self._document.lookup_variable(identifier) is None:
             return self._document.new_variable(identifier)
         else:
             return identifier
@@ -1386,7 +1398,7 @@ class VariableCodeFragment(CodeFragment):
     def fill_text_version(self, text_version):
         start, end = self._code_paragraph.variable_delimiters
         text_version.add(start)
-        text_version.add(self.id)
+        text_version.add(self._code_paragraph.add_variable_map(self.name, self.id))
         text_version.add(end)
 class ChunkCodeFragment(CodeFragment):
 

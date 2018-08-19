@@ -1812,7 +1812,7 @@
 "type":"variable"
 },
 {
-"text":"\n        text_version.add(start)\n        text_version.add(self.id)\n        text_version.add(end)\n",
+"text":"\n        text_version.add(start)\n        text_version.add(self._code_paragraph.add_variable_map(self.name, self.id))\n        text_version.add(end)\n",
 "type":"code"
 }
 ],
@@ -1948,7 +1948,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef text_version(self):\n    text_version = TextVersion()\n    for fragment in self.",
+"text":"@property\ndef text_version(self):\n    self._variable_map = {}\n    text_version = TextVersion()\n    for fragment in self.",
 "type":"code"
 },
 {
@@ -1956,7 +1956,7 @@
 "type":"variable"
 },
 {
-"text":":\n        fragment.fill_text_version(text_version)\n    return text_version.text\n",
+"text":":\n        fragment.fill_text_version(text_version)\n    return text_version.text\n\ndef add_variable_map(self, name, id_):\n    entry = name\n    index = 1\n    while entry in self._variable_map and self._variable_map[entry] != id_:\n        entry = \"{}{}\".format(name, index)\n        index += 1\n    self._variable_map[entry] = id_\n    return entry\n",
 "type":"code"
 }
 ],
@@ -1991,7 +1991,7 @@
 "type":"variable"
 },
 {
-"text":"\": self._parse(value)\n        })\n\ndef _parse(self, value):\n    self._parsed_fragments = []\n    self._parse_buffer = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            self._parse_clear()\n            self._parsed_fragments.append({\n                \"type\": \"chunk\",\n                \"path\": match.group(2).split(\"/\"),\n                \"prefix\": match.group(1)\n            })\n        else:\n            while line:\n                match = re.match(self._variable_fragment_re(), line)\n                if match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"variable\",\n                        \"id\": self._get_variable_id(match.group(1))\n                    })\n                    line = line[len(match.group(0)):]\n                else:\n                    self._parse_buffer += line[0]\n                    line = line[1:]\n            self._parse_buffer += \"\\n\"\n    self._parse_clear()\n    return self._parsed_fragments\n\ndef _get_variable_id(self, identifier):\n    if self._document.lookup_variable(identifier) is None:\n        return self._document.new_variable(identifier)\n    else:\n        return identifier\n\ndef _parse_clear(self):\n    if self._parse_buffer:\n        self._parsed_fragments.append({\"type\": \"code\", \"text\": self._parse_buffer})\n    self._parse_buffer = \"\"\n\ndef _chunk_fragment_re(self):\n    start, end = self.",
+"text":"\": self._parse(value)\n        })\n\ndef _parse(self, value):\n    self._parsed_fragments = []\n    self._parse_buffer = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            self._parse_clear()\n            self._parsed_fragments.append({\n                \"type\": \"chunk\",\n                \"path\": match.group(2).split(\"/\"),\n                \"prefix\": match.group(1)\n            })\n        else:\n            while line:\n                match = re.match(self._variable_fragment_re(), line)\n                if match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"variable\",\n                        \"id\": self._get_variable_id(match.group(1))\n                    })\n                    line = line[len(match.group(0)):]\n                else:\n                    self._parse_buffer += line[0]\n                    line = line[1:]\n            self._parse_buffer += \"\\n\"\n    self._parse_clear()\n    return self._parsed_fragments\n\ndef _get_variable_id(self, identifier):\n    if identifier in self._variable_map:\n        return self._variable_map[identifier]\n    elif self._document.lookup_variable(identifier) is None:\n        return self._document.new_variable(identifier)\n    else:\n        return identifier\n\ndef _parse_clear(self):\n    if self._parse_buffer:\n        self._parsed_fragments.append({\"type\": \"code\", \"text\": self._parse_buffer})\n    self._parse_buffer = \"\"\n\ndef _chunk_fragment_re(self):\n    start, end = self.",
 "type":"code"
 },
 {
@@ -12635,7 +12635,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Render ids (page reference, variable reference) with short version in editor",
+"text":"Render page reference with short version in editor",
 "type":"text"
 }
 ]
