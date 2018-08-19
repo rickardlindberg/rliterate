@@ -63,8 +63,10 @@ class BoxSizerMixin(object):
         self.Sizer = wx.BoxSizer(orientation)
 
     def AppendChild(self, window, **kwargs):
-        self.Sizer.Add(window, **kwargs)
-        return window
+        return self.AppendChildWithSizer(window, **kwargs)[0]
+
+    def AppendChildWithSizer(self, window, **kwargs):
+        return window, self.Sizer.Add(window, **kwargs)
 
     def InsertChild(self, position, window, **kwargs):
         self.Sizer.Insert(position, window, **kwargs)
@@ -2651,37 +2653,76 @@ class PageContainer(VerticalPanel):
         self.project = project
         self._render(page_id)
 
-    def FindClosestDropPoint(self, screen_pos):
-        return self.page.FindClosestDropPoint(screen_pos)
-
     def _render(self, initial_page_id):
         self.page_id = initial_page_id
-        self.inner_container = self.AppendChild(
-            VerticalPanel(self),
-            flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,
-            border=self.project.theme.shadow_size
+        self._render_first_row()
+        self._render_second_row()
+        MouseEventHelper.bind(
+            [
+                self.inner_container,
+                self.right,
+                self.right_border,
+                self.bottom,
+                self.bottom_border,
+            ],
+            right_click=lambda event:
+                SimpleContextMenu.ShowRecursive(self)
         )
-        self.inner_container.AppendSpace(
-            self.project.theme.container_border
+        self._re_render()
+
+    def _render_first_row(self):
+        first_row = self.AppendChild(
+            HorizontalPanel(self),
+            flag=wx.EXPAND,
+            proportion=1
         )
-        self.page = self.inner_container.AppendChild(
+        self.inner_container = first_row.AppendChild(
+            VerticalPanel(first_row),
+            flag=wx.EXPAND,
+            proportion=1
+        )
+        self.page, self.page_sizer = self.inner_container.AppendChildWithSizer(
             PagePanel(
                 self.inner_container,
                 self.project,
                 self.page_id
             ),
-            flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-            border=self.project.theme.container_border
+            flag=wx.ALL|wx.EXPAND,
+            proportion=1
         )
-        MouseEventHelper.bind([self, self.inner_container], right_click=lambda event:
-            SimpleContextMenu.ShowRecursive(self)
+        self.right = first_row.AppendChild(
+            VerticalPanel(first_row),
+            flag=wx.EXPAND
         )
-        self._re_render()
+        self.right_space = self.right.AppendSpace()
+        self.right_border = self.right.AppendChild(
+            wx.Panel(self.right),
+            flag=wx.EXPAND,
+            proportion=1
+        )
+
+    def _render_second_row(self):
+        self.bottom = self.AppendChild(
+            HorizontalPanel(self),
+            flag=wx.EXPAND
+        )
+        self.bottom_space = self.bottom.AppendSpace()
+        self.bottom_border = self.bottom.AppendChild(
+            wx.Panel(self.bottom),
+            flag=wx.EXPAND,
+            proportion=1
+        )
+
     def _re_render(self):
-        self.SetBackgroundColour((150, 150, 150))
-        self.inner_container.SetBackgroundColour((255, 255, 255))
         self.page.SetPageId(self.page_id)
-        # TODO: update borders
+        self.inner_container.SetBackgroundColour((255, 255, 255))
+        self.right_border.SetBackgroundColour((150, 150, 150))
+        self.bottom_border.SetBackgroundColour((150, 150, 150))
+        self.right.MinSize = (self.project.theme.shadow_size, -1)
+        self.right_space.SetSize(self.project.theme.shadow_size)
+        self.bottom.MinSize = (-1, self.project.theme.shadow_size)
+        self.bottom_space.SetSize(self.project.theme.shadow_size)
+        self.page_sizer.Border = self.project.theme.container_border
     def SetPageId(self, page_id):
         changed_id = self.page_id != page_id
         self.page_id = page_id
@@ -2696,6 +2737,8 @@ class PageContainer(VerticalPanel):
             ).Show()
         )
         return menu
+    def FindClosestDropPoint(self, screen_pos):
+        return self.page.FindClosestDropPoint(screen_pos)
 class PagePanel(VerticalPanel):
 
     def __init__(self, parent, project, page_id):

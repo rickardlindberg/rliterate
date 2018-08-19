@@ -6886,6 +6886,119 @@
 "children":[
 {
 "children":[],
+"id":"3950322ebcac468897cb6bb68eec5b49",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self._render_first_row()\n    self._render_second_row()\n    MouseEventHelper.bind(\n        [\n            self.inner_container,\n            self.right,\n            self.right_border,\n            self.bottom,\n            self.bottom_border,\n        ],\n        right_click=lambda event:\n            ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(self)\n    )\n    self._re_render()\n\ndef _render_first_row(self):\n    first_row = self.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        HorizontalPanel(self),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n    self.inner_container = first_row.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        ",
+"type":"code"
+},
+{
+"id":"1566854b9f4240408d4a8b17ae305740",
+"type":"variable"
+},
+{
+"text":"(first_row),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n    self.page, self.page_sizer = self.inner_container.",
+"type":"code"
+},
+{
+"id":"30ba4e602df545be8fa892a31e88c6ce",
+"type":"variable"
+},
+{
+"text":"(\n        PagePanel(\n            self.inner_container,\n            self.project,\n            self.page_id\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.right = first_row.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        ",
+"type":"code"
+},
+{
+"id":"1566854b9f4240408d4a8b17ae305740",
+"type":"variable"
+},
+{
+"text":"(first_row),\n        flag=wx.EXPAND\n    )\n    self.right_space = self.right.AppendSpace()\n    self.right_border = self.right.AppendChild(\n        wx.Panel(self.right),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n\ndef _render_second_row(self):\n    self.bottom = self.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        HorizontalPanel(self),\n        flag=wx.EXPAND\n    )\n    self.bottom_space = self.bottom.AppendSpace()\n    self.bottom_border = self.bottom.AppendChild(\n        wx.Panel(self.bottom),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n\ndef _re_render(self):\n    self.page.SetPageId(self.page_id)\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
+"type":"code"
+}
+],
+"id":"ca54d3c269204fdd8b473a10655ba7a0",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def SetPageId(self, page_id):\n    changed_id = self.page_id != page_id\n    self.page_id = page_id\n    self._re_render()\n    return changed_id\n",
+"type":"code"
+}
+],
+"id":"65a346fd367648bf884b7250c3fdd57c",
+"type":"code"
+}
+],
+"title":"Rendering"
+},
+{
+"children":[],
 "id":"9de831e3ccc94b46b5ec4ffb681fd43f",
 "paragraphs":[
 {
@@ -6915,6 +7028,46 @@
 }
 ],
 "title":"Menu"
+},
+{
+"children":[],
+"id":"e92b1b5a939742deb77dff7b2fd37e09",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"PageContainer"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(self, screen_pos):\n    return self.page.",
+"type":"code"
+},
+{
+"id":"c25dba288acc4daba02327df732b1a7a",
+"type":"variable"
+},
+{
+"text":"(screen_pos)\n",
+"type":"code"
+}
+],
+"id":"1f9b7900690743bbbcb9f50a5587e3aa",
+"type":"code"
+}
+],
+"title":"Dropping paragrpahs"
 }
 ],
 "id":"1164b94ba82c476897ce18fc1b70a5b8",
@@ -6922,7 +7075,7 @@
 {
 "fragments":[
 {
-"text":"The page container widget draws a box with border. Inside the box a page widget is rendered.",
+"text":"The page container widget renders a frame with border around a page.",
 "type":"text"
 }
 ],
@@ -6954,23 +7107,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, parent)\n        self.project = project\n        self._render(page_id)\n\n    def ",
-"type":"code"
-},
-{
-"id":"c25dba288acc4daba02327df732b1a7a",
-"type":"variable"
-},
-{
-"text":"(self, screen_pos):\n        return self.page.",
-"type":"code"
-},
-{
-"id":"c25dba288acc4daba02327df732b1a7a",
-"type":"variable"
-},
-{
-"text":"(screen_pos)\n\n",
+"text":".__init__(self, parent)\n        self.project = project\n        self._render(page_id)\n\n",
 "type":"code"
 },
 {
@@ -6982,153 +7119,6 @@
 }
 ],
 "id":"29a948082ed3467395fb08fcbc0ad7c9",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"PageContainer"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _render(self, initial_page_id):\n    self.page_id = initial_page_id\n    self.inner_container = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(self),\n        flag=wx.EXPAND|wx.RIGHT|wx.BOTTOM,\n        border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"df94156ca33b47a1beb10346870806ec",
-"type":"variable"
-},
-{
-"text":"\n    )\n    self.inner_container.",
-"type":"code"
-},
-{
-"id":"31a17b208536469099ae5c084d35590d",
-"type":"variable"
-},
-{
-"text":"(\n        self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"6a754b8a39e24518b76e88d57a89eff6",
-"type":"variable"
-},
-{
-"text":"\n    )\n    self.page = self.inner_container.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        PagePanel(\n            self.inner_container,\n            self.project,\n            self.page_id\n        ),\n        flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n        border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"6a754b8a39e24518b76e88d57a89eff6",
-"type":"variable"
-},
-{
-"text":"\n    )\n    MouseEventHelper.bind([self, self.inner_container], right_click=lambda event:\n        ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"b0201e824c464356aa706a0440192e5c",
-"type":"variable"
-},
-{
-"text":"(self)\n    )\n    self._re_render()\n",
-"type":"code"
-}
-],
-"id":"ca54d3c269204fdd8b473a10655ba7a0",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"PageContainer"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _re_render(self):\n    self.SetBackgroundColour((150, 150, 150))\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.page.SetPageId(self.page_id)\n    # TODO: update borders\n",
-"type":"code"
-}
-],
-"id":"ac1ce25196de43588c40fc648d7288f9",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"PageContainer"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def SetPageId(self, page_id):\n    changed_id = self.page_id != page_id\n    self.page_id = page_id\n    self._re_render()\n    return changed_id\n",
-"type":"code"
-}
-],
-"id":"65a346fd367648bf884b7250c3fdd57c",
 "type":"code"
 }
 ],
@@ -10539,7 +10529,23 @@
 "type":"variable"
 },
 {
-"text":"(self, window, **kwargs):\n        self.Sizer.Add(window, **kwargs)\n        return window\n\n    def ",
+"text":"(self, window, **kwargs):\n        return self.",
+"type":"code"
+},
+{
+"id":"30ba4e602df545be8fa892a31e88c6ce",
+"type":"variable"
+},
+{
+"text":"(window, **kwargs)[0]\n\n    def ",
+"type":"code"
+},
+{
+"id":"30ba4e602df545be8fa892a31e88c6ce",
+"type":"variable"
+},
+{
+"text":"(self, window, **kwargs):\n        return window, self.Sizer.Add(window, **kwargs)\n\n    def ",
 "type":"code"
 },
 {
@@ -13042,6 +13048,7 @@
 "3060a3fbc04a4a708019d11f6efa737b":"TokenView",
 "307841bedc3c4f2cba2dbbf68a410075":"TextParser",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
+"30ba4e602df545be8fa892a31e88c6ce":"AppendChildWithSizer",
 "30eeb77f05c34590a6498edb391d0916":"paragraph_space",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
 "3457c112c47c41a293d77cc79f99badf":"VerticalScrolledWindow",
