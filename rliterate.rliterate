@@ -11893,6 +11893,31 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Scroll column when dragging paragraphs so a drop can be made anywhere in a column?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"More ideas: ",
+"type":"text"
+},
+{
+"text":"",
+"type":"link",
+"url":"https://uxdesign.cc/drag-and-drop-for-design-systems-8d40502eb26d"
+}
+]
 }
 ],
 "fragments":[
@@ -12331,16 +12356,6 @@
 "fragments":[
 {
 "text":"Settings",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Scroll column when dragging paragraphs so a drop can be made anywhere in a column?",
 "type":"text"
 }
 ]
