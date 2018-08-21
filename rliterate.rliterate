@@ -13124,6 +13124,16 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"New variable is not added to variable map so can only be used once.",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
