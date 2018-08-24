@@ -11800,11 +11800,84 @@
 "child_type":"unordered",
 "children":[
 {
+"child_type":"unordered",
+"children":[
+{
 "child_type":null,
 "children":[],
 "fragments":[
 {
 "text":"Factory should drop right into edit mode when button is clicked?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Save when clicking outside editor text field? How to do this?",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Can do edits through context menu even though edit is in progress",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Can check if editor opened be more isolated?",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"How to handle undo?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Periodic automatic save?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Editors should have no modes? (Improve mode by removing it.)",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Edit mode improvements",
 "type":"text"
 }
 ]
@@ -11992,16 +12065,6 @@
 {
 "child_type":"unordered",
 "children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Save when clicking outside editor text field? How to do this?",
-"type":"text"
-}
-]
-},
 {
 "child_type":"unordered",
 "children":[
@@ -12214,6 +12277,16 @@
 "fragments":[
 {
 "text":"Split paragraph where clicked?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"WYSIWYG way: put cursor somewhere then hit enter",
 "type":"text"
 }
 ]
@@ -12749,27 +12822,6 @@
 ]
 },
 {
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Can do edits through context menu even though edit is in progress",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Can check if editor opened be more isolated?",
-"type":"text"
-}
-]
-},
-{
 "child_type":null,
 "children":[],
 "fragments":[
@@ -12994,16 +13046,6 @@
 "fragments":[
 {
 "text":"Add navigation functions at the bottom of a page",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Editors should have no modes? Just WYSIWYG graphical editors?",
 "type":"text"
 }
 ]
