@@ -176,9 +176,10 @@ class Style(object):
         dc.SetFont(font)
 class ParagraphBase(Editable):
 
-    def __init__(self, parent, project, page_id, paragraph):
+    def __init__(self, parent, project, page_id, paragraph, selection):
         self.page_id = page_id
         self.paragraph = paragraph
+        self.selection = selection
         Editable.__init__(self, parent, project)
 
     def BindMouse(self, widget, controls, **overrides):
@@ -1774,6 +1775,9 @@ class Project(Observable):
     @property
     def theme(self):
         return self.global_settings
+    @property
+    def selection(self):
+        return Selection()
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
@@ -1861,6 +1865,26 @@ class Project(Observable):
             self._highlighted_variable = variable_id
 class EditInProgress(Exception):
     pass
+class Selection(object):
+
+    def __init__(self, value=None, trail=None):
+        self.value = value
+        self.trail = [] if trail is None else trail
+
+    @property
+    def present(self):
+        return self.value is not None
+
+    def get(self, key):
+        return Selection(
+            self.value.get(key) if self.value is not None else None,
+            trail=[key]+self.trail
+        )
+
+    def create(self, value):
+        for key in self.trail:
+            value = {key: value}
+        return Selection(value)
 class GlobalSettings(JsonSettings):
 
     page_body_width = JsonSettings.property(
@@ -2521,7 +2545,10 @@ class Workspace(HorizontalScrolledWindow):
         column_count_changed = self._ensure_num_columns(len(self.project.columns))
         last_column_changed_pages = False
         for index, page_ids in enumerate(self.project.columns):
-            last_column_changed_pages = self.columns[index].SetPages(page_ids)
+            last_column_changed_pages = self.columns[index].SetPages(
+                page_ids,
+                self.project.selection.get(index)
+            )
         if column_count_changed or last_column_changed_pages:
             wx.CallAfter(self.ScrollToEnd)
 
@@ -2573,9 +2600,10 @@ class Column(VerticalScrolledWindow):
         self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
         self.Bind(EVT_TOKEN_CLICK, self._on_token_click)
 
-    def SetPages(self, page_ids):
+    def SetPages(self, page_ids, selection):
         ids_changed = page_ids != self._page_ids
         self._page_ids = page_ids
+        self._selection = selection
         self._re_render()
         return ids_changed
         # TODO: return if actual number of rows/containers changed
@@ -2608,13 +2636,13 @@ class Column(VerticalScrolledWindow):
                 if index >= len(self._containers):
                     self._containers.append(
                         self.AppendChild(
-                            PageContainer(self, self.project, page_id),
+                            PageContainer(self, self.project, page_id, self._selection.get(index)),
                             flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
                             border=self.project.theme.page_padding
                         )
                     )
                 else:
-                    self._containers[index].SetPageId(page_id)
+                    self._containers[index].SetPageId(page_id, self._selection.get(index))
                 num_added += 1
         while len(self._containers) > num_added:
             self._containers.pop(-1).Destroy()
@@ -2647,18 +2675,20 @@ class Column(VerticalScrolledWindow):
         )
 class PageContainer(VerticalPanel):
 
-    def __init__(self, parent, project, page_id):
+    def __init__(self, parent, project, page_id, selection):
         VerticalPanel.__init__(self, parent)
         self.project = project
-        self._render(page_id)
+        self._render(page_id, selection)
 
-    def SetPageId(self, page_id):
+    def SetPageId(self, page_id, selection):
         changed_id = self.page_id != page_id
         self.page_id = page_id
+        self.selection = selection
         self._re_render()
         return changed_id
-    def _render(self, initial_page_id):
+    def _render(self, initial_page_id, selection):
         self.page_id = initial_page_id
+        self.selection = selection
         self._render_first_row()
         self._render_second_row()
         MouseEventHelper.bind(
@@ -2689,7 +2719,8 @@ class PageContainer(VerticalPanel):
             PagePanel(
                 self.inner_container,
                 self.project,
-                self.page_id
+                self.page_id,
+                self.selection.get(self.page_id)
             ),
             flag=wx.ALL|wx.EXPAND,
             proportion=1
@@ -2717,7 +2748,7 @@ class PageContainer(VerticalPanel):
             proportion=1
         )
     def _re_render(self):
-        self.page.SetPageId(self.page_id)
+        self.page.SetPageId(self.page_id, self.selection.get(self.page_id))
         self.inner_container.SetBackgroundColour((255, 255, 255))
         self.right_border.SetBackgroundColour((150, 150, 150))
         self.bottom_border.SetBackgroundColour((150, 150, 150))
@@ -2739,23 +2770,29 @@ class PageContainer(VerticalPanel):
         return self.page.FindClosestDropPoint(screen_pos)
 class PagePanel(VerticalPanel):
 
-    def __init__(self, parent, project, page_id):
+    def __init__(self, parent, project, page_id, selection):
         VerticalPanel.__init__(self, parent)
         self.project = project
-        self._render(page_id)
+        self._render(page_id, selection)
 
-    def SetPageId(self, page_id):
+    def SetPageId(self, page_id, selection):
         self.RemoveChildren()
-        self._render(page_id)
-    def _render(self, initial_page_id):
+        self._render(page_id, selection)
+    def _render(self, initial_page_id, selection):
         self.page_id = initial_page_id
+        self.selection = selection
         self.drop_points = []
         self.MinSize = (
             self.project.theme.page_body_width,
             -1
         )
         page = self.project.get_page(self.page_id)
-        divider = self._render_paragraph(Title(self, self.project, page))
+        divider = self._render_paragraph(Title(
+            self,
+            self.project,
+            page,
+            self.selection.get("title")
+        ))
         for paragraph in page.paragraphs:
             self.drop_points.append(PageDropPoint(
                 divider=divider,
@@ -2769,7 +2806,13 @@ class PagePanel(VerticalPanel):
                 "code": Code,
                 "image": Image,
                 "factory": Factory,
-            }[paragraph.type](self, self.project, self.page_id, paragraph))
+            }[paragraph.type](
+                self,
+                self.project,
+                self.page_id,
+                paragraph,
+                self.selection.get("paragraph").get(paragraph.id)
+            ))
         self.drop_points.append(PageDropPoint(
             divider=divider,
             page_id=self.page_id,
@@ -2833,8 +2876,9 @@ class PageDropPoint(object):
         self.divider.Hide()
 class Title(Editable):
 
-    def __init__(self, parent, project, page):
+    def __init__(self, parent, project, page, selection):
         self.page = page
+        self.selection = selection
         Editable.__init__(self, parent, project)
 
     def CreateView(self):
