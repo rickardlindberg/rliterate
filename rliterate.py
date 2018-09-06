@@ -1937,7 +1937,7 @@ class Layout(JsonSettings):
 
     hoisted_page = JsonSettings.property(
         "toc.hoisted_page_id",
-        []
+        None
     )
     def is_collapsed(self, page_id):
         return page_id in self.get("toc.collapsed", [])

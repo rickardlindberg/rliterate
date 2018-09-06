@@ -4693,7 +4693,7 @@
 "type":"variable"
 },
 {
-"text":".property(\n    \"toc.hoisted_page_id\",\n    []\n)\n",
+"text":".property(\n    \"toc.hoisted_page_id\",\n    None\n)\n",
 "type":"code"
 }
 ],
@@ -13436,6 +13436,7 @@
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
 "f6b2d4f94b72424a88a47d636753a2b9":"min_or_none",
+"f7276b0256114e3999f63bdc6d7ec078":"StyledText",
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
 "fb8af53f33454166a0737b02b9413a0e":"fragments"
 }
