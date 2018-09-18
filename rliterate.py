@@ -1171,14 +1171,22 @@ class CodeParagraph(Paragraph):
                 })
             else:
                 while line:
-                    match = re.match(self._variable_fragment_re(), line)
-                    if match:
+                    variable_match = re.match(self._variable_fragment_re(), line)
+                    tabstop_match = re.match(self._tabstop_fragment_re(), line)
+                    if variable_match:
                         self._parse_clear()
                         self._parsed_fragments.append({
                             "type": "variable",
-                            "id": self._get_variable_id(match.group(1))
+                            "id": self._get_variable_id(variable_match.group(1))
                         })
-                        line = line[len(match.group(0)):]
+                        line = line[len(variable_match.group(0)):]
+                    elif tabstop_match:
+                        self._parse_clear()
+                        self._parsed_fragments.append({
+                            "type": "tabstop",
+                            "index": int(tabstop_match.group(1))
+                        })
+                        line = line[len(tabstop_match.group(0)):]
                     else:
                         self._parse_buffer += line[0]
                         line = line[1:]
@@ -1206,6 +1214,10 @@ class CodeParagraph(Paragraph):
     def _variable_fragment_re(self):
         start, end = self.variable_delimiters
         return r"{}(.*?){}".format(re.escape(start), re.escape(end))
+
+    def _tabstop_fragment_re(self):
+        start, end = self.chunk_delimiters
+        return r"{}{{(\d+)}}{}".format(re.escape(start), re.escape(end))
     @property
     def tokens(self):
         chain = self._fragments_to_chain()
@@ -1225,7 +1237,7 @@ class CodeParagraph(Paragraph):
                 )
             elif fragment.type == "variable":
                 chain.append(fragment.name, variable=fragment.id)
-            else:
+            elif fragment.type == "code":
                 chain.append(fragment.text)
         return chain
 
@@ -1386,6 +1398,7 @@ class CodeFragment(object):
             "variable": VariableCodeFragment,
             "chunk": ChunkCodeFragment,
             "code": CodeCodeFragment,
+            "tabstop": TabstopCodeFragment,
         }.get(code_fragment_dict["type"], CodeFragment)(document, code_paragraph, code_fragment_dict)
 
     def __init__(self, document, code_paragraph, code_fragment_dict):
@@ -1446,6 +1459,19 @@ class CodeCodeFragment(CodeFragment):
 
     def fill_text_version(self, text_version):
         text_version.add(self.text)
+class TabstopCodeFragment(CodeFragment):
+
+    @property
+    def index(self):
+        return self._code_fragment_dict["index"]
+
+    def fill_text_version(self, text_version):
+        start, end = self._code_paragraph.chunk_delimiters
+        text_version.add(start)
+        text_version.add("{")
+        text_version.add(str(self.index))
+        text_version.add("}")
+        text_version.add(end)
 class CharChain(object):
 
     def __init__(self):
@@ -3799,7 +3825,7 @@ class FileGenerator(object):
                     self._render(f, (key[0], key[1]+tuple(fragment.path)), prefix=prefix+fragment.prefix)
                 elif fragment.type == "variable":
                     text_buffer += fragment.name
-                else:
+                elif fragment.type == "code":
                     text_buffer += fragment.text
         for line in text_buffer.splitlines():
             if len(line) > 0:
