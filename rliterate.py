@@ -1208,57 +1208,57 @@ class CodeParagraph(Paragraph):
         return r"{}(.*?){}".format(re.escape(start), re.escape(end))
     @property
     def tokens(self):
-        chars = self._fragments_to_chars()
-        pygments_text = self._chars_to_pygments_text(chars)
-        self._pygments_tokens_to_tokens(
-            self.pygments_lexer.get_tokens(pygments_text),
-            chars
-        )
-        return self._chars_to_tokens(chars)
+        chain = self._fragments_to_chain()
+        self._colorize_chain(chain)
+        return self._chain_to_tokens(chain)
 
-    def _fragments_to_chars(self):
-        chars = LinkedList()
+    def _fragments_to_chain(self):
+        chain = CharChain()
         for fragment in self.fragments:
             if fragment.type == "chunk":
                 text_version = TextVersion()
                 fragment.fill_text_version(text_version)
-                for char in text_version.text:
-                    chars.append(Char(
-                        char,
-                        token_type=TokenType.RLiterate.Chunk,
-                        subpath=self.path.extend_chunk(fragment.path)
-                    ))
+                chain.append(
+                    text_version.text,
+                    token_type=TokenType.RLiterate.Chunk,
+                    subpath=self.path.extend_chunk(fragment.path)
+                )
             elif fragment.type == "variable":
-                for char in fragment.name:
-                    chars.append(Char(char, variable=fragment.id))
+                chain.append(fragment.name, variable=fragment.id)
             else:
-                for char in fragment.text:
-                    chars.append(Char(char))
-        return chars
+                chain.append(fragment.text)
+        return chain
 
-    def _chars_to_pygments_text(self, chars):
-        char = chars.head
+    def _colorize_chain(self, chain):
+        pygments_text = self._extract_non_styled_text(chain)
+        self._apply_pygments_tokens_to_chain(
+            self.pygments_lexer.get_tokens(pygments_text),
+            chain
+        )
+
+    def _extract_non_styled_text(self, chain):
+        char = chain.head
         pygments_text = ""
         while char is not None:
-            if char.value.token_type is None:
-                pygments_text += char.value.char
+            if char.meta.get("token_type") is None:
+                pygments_text += char.value
             char = char.next
         return pygments_text
 
-    def _pygments_tokens_to_tokens(self, pygments_tokens, chars):
-        char = chars.head
+    def _apply_pygments_tokens_to_chain(self, pygments_tokens, chain):
+        char = chain.head
         for pygments_token, text in pygments_tokens:
-            for ch in text:
-                while char.value.token_type is not None:
+            for _ in text:
+                while char.meta.get("token_type") is not None:
                     char = char.next
-                char.value.token_type = pygments_token
+                char.meta["token_type"] = pygments_token
                 char = char.next
 
-    def _chars_to_tokens(self, chars):
+    def _chain_to_tokens(self, chain):
         tokens = []
-        char = chars.head
+        char = chain.head
         while char is not None:
-            tokens.append(char.value.token)
+            tokens.append(Token(char.value, **char.meta))
             char = char.next
         return tokens
     @property
@@ -1448,46 +1448,31 @@ class CodeCodeFragment(CodeFragment):
 
     def fill_text_version(self, text_version):
         text_version.add(self.text)
-class Char(object):
-
-    def __init__(self, char, **kwargs):
-        self.char = char
-        self.kwargs = kwargs
-
-    @property
-    def token_type(self):
-        return self.kwargs.get("token_type")
-
-    @token_type.setter
-    def token_type(self, value):
-        self.kwargs["token_type"] = value
-
-    @property
-    def token(self):
-        return Token(self.char, **self.kwargs)
-class LinkedList(object):
+class CharChain(object):
 
     def __init__(self):
         self.head = None
         self.tail = None
 
-    def append(self, value):
-        item = LinkedListItem(value)
-        if self.tail is None:
-            self.tail = item
-            self.head = item
-        else:
-            self.tail.next = item
-            item.previuos = self.tail
-            self.tail = item
+    def append(self, string, **meta):
+        for char in string:
+            item = Char(char, dict(meta))
+            if self.tail is None:
+                self.tail = item
+                self.head = item
+            else:
+                self.tail.next = item
+                item.previuos = self.tail
+                self.tail = item
 
 
-class LinkedListItem(object):
+class Char(object):
 
-    def __init__(self, value):
+    def __init__(self, value, meta):
         self.previuos = None
         self.next = None
         self.value = value
+        self.meta = meta
 class ImageParagraph(Paragraph):
 
     @property
