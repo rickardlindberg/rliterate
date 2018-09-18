@@ -2031,7 +2031,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef tokens(self):\n    pygments_text, inserts, extras = self._pygments_text()\n    return self._pygments_tokens_to_tokens(\n        self.",
+"text":"@property\ndef tokens(self):\n    chars = self._fragments_to_chars()\n    pygments_text = self._chars_to_pygments_text(chars)\n    self._pygments_tokens_to_tokens(\n        self.",
 "type":"code"
 },
 {
@@ -2039,7 +2039,7 @@
 "type":"variable"
 },
 {
-"text":".get_tokens(pygments_text),\n        inserts,\n        extras\n    )\n\ndef _pygments_text(self):\n    pygments_text = \"\"\n    inserts = defaultdict(list)\n    extras = defaultdict(dict)\n    for fragment in self.",
+"text":".get_tokens(pygments_text),\n        chars\n    )\n    return self._chars_to_tokens(chars)\n\ndef _fragments_to_chars(self):\n    chars = LinkedList()\n    for fragment in self.",
 "type":"code"
 },
 {
@@ -2047,11 +2047,43 @@
 "type":"variable"
 },
 {
-"text":":\n        if fragment.type == \"chunk\":\n            text_version = TextVersion()\n            fragment.fill_text_version(text_version)\n            inserts[len(pygments_text)].append(Token(\n                text_version.text,\n                token_type=TokenType.RLiterate.Chunk,\n                subpath=self.path.extend_chunk(fragment.path)\n            ))\n        elif fragment.type == \"variable\":\n            text = fragment.name\n            for i in range(len(text)):\n                extras[len(pygments_text)+i] = {\"variable\": fragment.id}\n            pygments_text += text\n        else:\n            pygments_text += fragment.text\n    return pygments_text, inserts, extras\n\ndef _pygments_tokens_to_tokens(self, pygments_tokens, inserts, extras):\n    pos = 0\n    tokens = []\n    for pygments_token, text in pygments_tokens:\n        for ch in text:\n            tokens.extend(inserts.get(pos, []))\n            tokens.append(Token(ch, token_type=pygments_token, **extras.get(pos, {})))\n            pos += 1\n    tokens.extend(inserts.get(pos, []))\n    return tokens\n",
+"text":":\n        if fragment.type == \"chunk\":\n            text_version = TextVersion()\n            fragment.fill_text_version(text_version)\n            for char in text_version.text:\n                chars.append(Char(\n                    char,\n                    token_type=TokenType.RLiterate.Chunk,\n                    subpath=self.path.extend_chunk(fragment.path)\n                ))\n        elif fragment.type == \"variable\":\n            for char in fragment.name:\n                chars.append(Char(char, variable=fragment.id))\n        else:\n            for char in fragment.text:\n                chars.append(Char(char))\n    return chars\n\ndef _chars_to_pygments_text(self, chars):\n    char = chars.head\n    pygments_text = \"\"\n    while char is not None:\n        if char.value.token_type is None:\n            pygments_text += char.value.char\n        char = char.next\n    return pygments_text\n\ndef _pygments_tokens_to_tokens(self, pygments_tokens, chars):\n    char = chars.head\n    for pygments_token, text in pygments_tokens:\n        for ch in text:\n            while char.value.token_type is not None:\n                char = char.next\n            char.value.token_type = pygments_token\n            char = char.next\n\ndef _chars_to_tokens(self, chars):\n    tokens = []\n    char = chars.head\n    while char is not None:\n        tokens.append(char.value.token)\n        char = char.next\n    return tokens\n",
 "type":"code"
 }
 ],
 "id":"8abec079960f4d9a86b59c4744183d59",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class Char(object):\n\n    def __init__(self, char, **kwargs):\n        self.char = char\n        self.kwargs = kwargs\n\n    @property\n    def token_type(self):\n        return self.kwargs.get(\"token_type\")\n\n    @token_type.setter\n    def token_type(self, value):\n        self.kwargs[\"token_type\"] = value\n\n    @property\n    def token(self):\n        return Token(self.char, **self.kwargs)\n",
+"type":"code"
+}
+],
+"id":"8ad76d29dfaa4b528ec15da1c824a79c",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class LinkedList(object):\n\n    def __init__(self):\n        self.head = None\n        self.tail = None\n\n    def append(self, value):\n        item = LinkedListItem(value)\n        if self.tail is None:\n            self.tail = item\n            self.head = item\n        else:\n            self.tail.next = item\n            item.previuos = self.tail\n            self.tail = item\n\n\nclass LinkedListItem(object):\n\n    def __init__(self, value):\n        self.previuos = None\n        self.next = None\n        self.value = value\n",
+"type":"code"
+}
+],
+"id":"ffd9f759e61343e0ab259a7383971732",
 "type":"code"
 }
 ],
