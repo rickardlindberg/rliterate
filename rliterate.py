@@ -1231,10 +1231,8 @@ class CodeParagraph(Paragraph):
 
     def _colorize_chain(self, chain):
         pygments_text = self._extract_non_styled_text(chain)
-        self._apply_pygments_tokens_to_chain(
-            self.pygments_lexer.get_tokens(pygments_text),
-            chain
-        )
+        pygments_tokens = self.pygments_lexer.get_tokens(pygments_text)
+        self._apply_pygments_tokens_to_chain(pygments_tokens, chain)
 
     def _extract_non_styled_text(self, chain):
         char = chain.head
