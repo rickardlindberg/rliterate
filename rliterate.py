@@ -1221,6 +1221,7 @@ class CodeParagraph(Paragraph):
     @property
     def tokens(self):
         chain = self._fragments_to_chain()
+        chain.align_tabstops()
         self._colorize_chain(chain)
         return self._chain_to_tokens(chain)
 
@@ -1239,6 +1240,8 @@ class CodeParagraph(Paragraph):
                 chain.append(fragment.name, variable=fragment.id)
             elif fragment.type == "code":
                 chain.append(fragment.text)
+            elif fragment.type == "tabstop":
+                chain.mark_tabstop(fragment.index)
         return chain
 
     def _colorize_chain(self, chain):
@@ -1477,6 +1480,28 @@ class CharChain(object):
     def __init__(self):
         self.head = None
         self.tail = None
+        self.tabstops = defaultdict(list)
+
+    def mark_tabstop(self, index):
+        self.tabstops[index].append(self.tail)
+
+    def align_tabstops(self):
+        align_length = 0
+        for index in sorted(self.tabstops.keys()):
+            align_length = max([align_length+1]+[
+                char.count_chars_to_start_of_line()
+                for char in self.tabstops[index]
+            ])
+            for char in self.tabstops[index]:
+                x = range(align_length - char.count_chars_to_start_of_line())
+                for _ in x:
+                    item = Char("-", {})
+                    item.next = char.next
+                    item.previuos = char
+                    char.next.previuos = item
+                    char.next = item
+                    if char == self.tail:
+                        raise Exception("Not supported yet")
 
     def append(self, string, **meta):
         for char in string:
@@ -1497,6 +1522,17 @@ class Char(object):
         self.next = None
         self.value = value
         self.meta = meta
+
+    def count_chars_to_start_of_line(self):
+        count = 0
+        char = self
+        while not char.is_first_in_line():
+            char = char.previuos
+            count += 1
+        return count
+
+    def is_first_in_line(self):
+        return self.value == "\n" or self.previuos is None
 class ImageParagraph(Paragraph):
 
     @property
