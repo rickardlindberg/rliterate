@@ -3990,6 +3990,7 @@ class HTMLBuilder(object):
                 "list": self.paragraph_list,
                 "code": self.paragraph_code,
                 "image": self.paragraph_image,
+                "expanded_code": self.paragraph_expanded_code,
             }.get(paragraph.type, self.paragraph_unknown)(paragraph)
         if level == 1 and self.generate_toc:
             self.toc(page, self.toc_max_depth)
@@ -4063,6 +4064,17 @@ class HTMLBuilder(object):
         with self.tag("div", args={"class": "rliterate-code-body"}):
             with self.tag("pre", newlines=False):
                 for token in code.tokens:
+                    with self.tag(
+                        "span",
+                        newlines=False,
+                        args={"class": pygments.token.STANDARD_TYPES.get(token.token_type, "")}
+                    ):
+                        self.escaped(token.text)
+
+    def paragraph_expanded_code(self, expanded_code):
+        with self.tag("div", args={"class": "rliterate-code-body"}):
+            with self.tag("pre", newlines=False):
+                for token in expanded_code.tokens:
                     with self.tag(
                         "span",
                         newlines=False,
