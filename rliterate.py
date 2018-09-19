@@ -1527,13 +1527,13 @@ class Char(object):
     def count_chars_to_start_of_line(self):
         count = 0
         char = self
-        while not char.is_first_in_line():
+        while char is not None and not char.is_newline():
             char = char.previuos
             count += 1
         return count
 
-    def is_first_in_line(self):
-        return self.value == "\n" or self.previuos is None
+    def is_newline(self):
+        return self.value == "\n"
 class ImageParagraph(Paragraph):
 
     @property
