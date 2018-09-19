@@ -1262,10 +1262,11 @@ class CodeParagraph(Paragraph):
         char = chain.head
         for pygments_token, text in pygments_tokens:
             for _ in text:
-                while char.meta.get("token_type") is not None:
+                while char is not None and char.meta.get("token_type") is not None:
                     char = char.next
-                char.meta["token_type"] = pygments_token
-                char = char.next
+                if char is not None:
+                    char.meta["token_type"] = pygments_token
+                    char = char.next
 
     def _chain_to_tokens(self, chain):
         tokens = []
