@@ -2301,6 +2301,29 @@
 }
 ],
 "title":"Image"
+},
+{
+"children":[],
+"id":"2953450c008c49c2aa8bc87c037ea5ba",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ExpandedCodeParagraph(Paragraph):\n\n    @property\n    def tokens(self):\n        return [Token(\"tihi\")]\n\n    @property\n    def code_id(self):\n        return self._paragraph_dict.get(\"code_id\")\n",
+"type":"code"
+}
+],
+"id":"12e11d41944443feb75a65d86fe27a70",
+"type":"code"
+}
+],
+"title":"ExpandedCode"
 }
 ],
 "id":"00d70d4faee841deba24ba21564eb11b",
@@ -2315,7 +2338,7 @@
 ],
 "fragments":[
 {
-"text":"def add_paragraph(self, page_id, before_id=None):\n    with self.modify(\"Add paragraph\") as document_dict:\n        paragraph = {\n            \"id\": genid(),\n            \"type\": \"factory\",\n        }\n        document_dict.add_paragraph_dict(paragraph, page_id, before_id=before_id)\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
+"text":"def add_paragraph(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    with self.modify(\"Add paragraph\") as document_dict:\n        document_dict.add_paragraph_dict(\n            dict(paragraph_dict, id=genid()),\n            page_id,\n            before_id=before_id\n        )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
 "type":"code"
 }
 ],
@@ -2331,7 +2354,7 @@
 ],
 "fragments":[
 {
-"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self._document.modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(copy.deepcopy(self._paragraph_dict), id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
+"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n            \"expanded_code\": ExpandedCodeParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self._document.modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(copy.deepcopy(self._paragraph_dict), id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
 "type":"code"
 }
 ],
@@ -7486,7 +7509,7 @@
 "type":"variable"
 },
 {
-"text":",\n        -1\n    )\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(\n        self,\n        self.project,\n        page,\n        self.selection.get(\"title\")\n    ))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"factory\": Factory,\n        }[paragraph.type](\n            self,\n            self.project,\n            self.page_id,\n            paragraph,\n            self.selection.get(\"paragraph\").get(paragraph.id)\n        ))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
+"text":",\n        -1\n    )\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(\n        self,\n        self.project,\n        page,\n        self.selection.get(\"title\")\n    ))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"expanded_code\": ExpandedCode,\n            \"factory\": Factory,\n        }[paragraph.type](\n            self,\n            self.project,\n            self.page_id,\n            paragraph,\n            self.selection.get(\"paragraph\").get(paragraph.id)\n        ))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
 "type":"code"
 },
 {
@@ -8909,7 +8932,7 @@
 "type":"variable"
 },
 {
-"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n",
+"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"id\": self.paragraph.id,\n                }\n            )\n        )\n",
 "type":"code"
 }
 ],
@@ -9232,6 +9255,109 @@
 }
 ],
 "title":"Image"
+},
+{
+"children":[],
+"id":"58b3bcb422704fa2b2c4f9bfede0f885",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ExpandedCode(",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"):\n\n    def ",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.Font = ",
+"type":"code"
+},
+{
+"id":"3acdc29e28484de3b989d6eb1b75a97e",
+"type":"variable"
+},
+{
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"8db58d842ac34e0aa51ea908cd841520",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"1f8f14208d274d0cbab10d21ec300882",
+"type":"variable"
+},
+{
+"text":")\n        view = ",
+"type":"code"
+},
+{
+"id":"1566854b9f4240408d4a8b17ae305740",
+"type":"variable"
+},
+{
+"text":"(self)\n        token_view = view.",
+"type":"code"
+},
+{
+"id":"9afba42827fd435dab58673210d03785",
+"type":"variable"
+},
+{
+"text":"(\n            ",
+"type":"code"
+},
+{
+"id":"12498e6198354c2dad6246bc385b954d",
+"type":"variable"
+},
+{
+"text":"(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                max_width=self.project.",
+"type":"code"
+},
+{
+"id":"8db58d842ac34e0aa51ea908cd841520",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"c40079514300441c8c7aa16123045f9a",
+"type":"variable"
+},
+{
+"text":"\n            ),\n            flag=wx.ALL|wx.EXPAND\n        )\n        MouseEventHelper.bind(\n            [view, token_view],\n            drag=self.DoDragDrop,\n            right_click=lambda event: self.ShowContextMenu()\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        return view\n",
+"type":"code"
+}
+],
+"id":"43f859652aa54f44b5e579f74be69a96",
+"type":"code"
+}
+],
+"title":"Expanded code"
 },
 {
 "children":[],
@@ -13397,12 +13523,14 @@
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
+"12498e6198354c2dad6246bc385b954d":"TokenView",
 "13edfec5045f41d99010d539bc4ac956":"Layout",
 "1566854b9f4240408d4a8b17ae305740":"VerticalPanel",
 "1644b9094da3457895ba66eb283b4a9f":"fragments",
 "1c7f69114ac14c80b2fb421ea7eda3a2":"notify",
 "1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
 "1e117025a0e14327ba6598fb696799a3":"fragments",
+"1f8f14208d274d0cbab10d21ec300882":"code_font",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
@@ -13419,6 +13547,7 @@
 "37f8b479b7eb4013bea0222eacc5ea6f":"SetPageId",
 "39785d8cdcb4445bad27a741363efa23":"SetPageId",
 "39e45626d4804403be92d31444a1281c":"text_font",
+"3acdc29e28484de3b989d6eb1b75a97e":"create_font",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
@@ -13445,8 +13574,10 @@
 "8ba62478399c42fc960555b7ed9c8fce":"title",
 "8d2b6dc31cdb4b2dba29488fa3263c53":"HorizontalScrolledWindow",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
+"8db58d842ac34e0aa51ea908cd841520":"theme",
 "90d6de1e6f714f1497872ca757b501b6":"value",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
+"9afba42827fd435dab58673210d03785":"AppendChild",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
 "9e987210a686490c823a44d09e783833":"_load",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
@@ -13468,6 +13599,7 @@
 "c0363497d8b6457ea2e652a9f8ec0afe":"ok_fn",
 "c25dba288acc4daba02327df732b1a7a":"FindClosestDropPoint",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
+"c40079514300441c8c7aa16123045f9a":"page_body_width",
 "c4f3b8bfcb0c4e449fdad901d978b7b0":"listen",
 "c56b4a82a7d4441ab6ceb5610217a3c5":"editor_font",
 "d102ad411943476d9d432a286f9cbe55":"highlight",

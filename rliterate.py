@@ -604,13 +604,13 @@ class Document(Observable):
         if page_dict is None:
             return None
         return Page(self, page_dict)
-    def add_paragraph(self, page_id, before_id=None):
+    def add_paragraph(self, page_id, before_id=None, paragraph_dict={"type": "factory"}):
         with self.modify("Add paragraph") as document_dict:
-            paragraph = {
-                "id": genid(),
-                "type": "factory",
-            }
-            document_dict.add_paragraph_dict(paragraph, page_id, before_id=before_id)
+            document_dict.add_paragraph_dict(
+                dict(paragraph_dict, id=genid()),
+                page_id,
+                before_id=before_id
+            )
 
     def get_paragraph(self, page_id, paragraph_id):
         for paragraph in self.get_page(page_id).paragraphs:
@@ -865,6 +865,7 @@ class Paragraph(object):
             "list": ListParagraph,
             "code": CodeParagraph,
             "image": ImageParagraph,
+            "expanded_code": ExpandedCodeParagraph,
         }.get(paragraph_dict["type"], Paragraph)(document, page, paragraph_dict, next_id)
 
     def __init__(self, document, page, paragraph_dict, next_id):
@@ -1557,6 +1558,15 @@ class ImageParagraph(Paragraph):
 
     def iter_text_fragments(self):
         return iter(self.fragments)
+class ExpandedCodeParagraph(Paragraph):
+
+    @property
+    def tokens(self):
+        return [Token("tihi")]
+
+    @property
+    def code_id(self):
+        return self._paragraph_dict.get("code_id")
 class TextFragment(object):
 
     @staticmethod
@@ -2904,6 +2914,7 @@ class PagePanel(VerticalPanel):
                 "list": List,
                 "code": Code,
                 "image": Image,
+                "expanded_code": ExpandedCode,
                 "factory": Factory,
             }[paragraph.type](
                 self,
@@ -3194,6 +3205,19 @@ class Code(ParagraphBase):
 
     def CreateEdit(self, extra):
         return CodeEditor(self, self.project, self.paragraph, self.view, extra)
+
+    def AddContextMenuItems(self, menu):
+        menu.AppendItem(
+            "Create expanded view",
+            lambda: self.project.add_paragraph(
+                self.page_id,
+                before_id=self.paragraph.next_id,
+                paragraph_dict={
+                    "type": "expanded_code",
+                    "id": self.paragraph.id,
+                }
+            )
+        )
 class CodeView(VerticalPanel):
 
     BORDER = 0
@@ -3574,6 +3598,27 @@ class ImageEdit(VerticalPanel):
         if self.image_base64:
             value["image_base64"] = self.image_base64
         self.paragraph.update(value)
+class ExpandedCode(ParagraphBase):
+
+    def CreateView(self):
+        self.Font = create_font(**self.project.theme.code_font)
+        view = VerticalPanel(self)
+        token_view = view.AppendChild(
+            TokenView(
+                view,
+                self.project,
+                self.paragraph.tokens,
+                max_width=self.project.theme.page_body_width
+            ),
+            flag=wx.ALL|wx.EXPAND
+        )
+        MouseEventHelper.bind(
+            [view, token_view],
+            drag=self.DoDragDrop,
+            right_click=lambda event: self.ShowContextMenu()
+        )
+        view.SetBackgroundColour((240, 240, 240))
+        return view
 class Factory(ParagraphBase):
 
     def CreateView(self):
