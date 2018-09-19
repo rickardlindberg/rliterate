@@ -1250,13 +1250,11 @@ class CodeParagraph(Paragraph):
         self._apply_pygments_tokens_to_chain(pygments_tokens, chain)
 
     def _extract_non_styled_text(self, chain):
-        char = chain.head
-        pygments_text = ""
-        while char is not None:
-            if char.meta.get("token_type") is None:
-                pygments_text += char.value
-            char = char.next
-        return pygments_text
+        return "".join(
+            char.value
+            for char in chain
+            if char.meta.get("token_type") is None
+        )
 
     def _apply_pygments_tokens_to_chain(self, pygments_tokens, chain):
         char = chain.head
@@ -1269,12 +1267,7 @@ class CodeParagraph(Paragraph):
                     char = char.next
 
     def _chain_to_tokens(self, chain):
-        tokens = []
-        char = chain.head
-        while char is not None:
-            tokens.append(Token(char.value, **char.meta))
-            char = char.next
-        return tokens
+        return [Token(char.value, **char.meta) for char in chain]
     @property
     def language(self):
         return "".join(self.pygments_lexer.aliases[:1])
@@ -1483,6 +1476,12 @@ class CharChain(object):
         self.tail = None
         self.tabstops = defaultdict(list)
 
+    def __iter__(self):
+        char = self.head
+        while char is not None:
+            yield char
+            char = char.next
+
     def mark_tabstop(self, index):
         self.tabstops[index].append(self.tail)
 
@@ -1496,24 +1495,24 @@ class CharChain(object):
             for char in self.tabstops[index]:
                 x = range(align_length - char.count_chars_to_start_of_line())
                 for _ in x:
-                    item = Char(" ", {})
-                    item.next = char.next
-                    item.previuos = char
-                    char.next.previuos = item
-                    char.next = item
-                    if char == self.tail:
-                        raise Exception("Not supported yet")
+                    self._insert_after(char, Char(" ", {}))
 
     def append(self, string, **meta):
         for char in string:
-            item = Char(char, dict(meta))
-            if self.tail is None:
-                self.tail = item
-                self.head = item
-            else:
-                self.tail.next = item
-                item.previuos = self.tail
-                self.tail = item
+            self._insert_after(self.tail, Char(char, dict(meta)))
+
+    def _insert_after(self, before, char):
+        if self.tail is None:
+            self.head = char
+            self.tail = char
+        else:
+            char.next = before.next
+            char.previuos = before
+            if before.next is not None:
+                before.next.previuos = char
+            before.next = char
+            if before is self.tail:
+                self.tail = char
 
 
 class Char(object):
@@ -3845,14 +3844,11 @@ class FileGenerator(object):
         for key in self._parts.keys():
             filepath = self._get_filepath(key)
             if filepath:
+                chain = CharChain()
+                self._render(chain, key)
+                chain.align_tabstops()
                 with open(filepath, "w") as f:
-                    chain = CharChain()
-                    self._render(chain, key)
-                    chain.align_tabstops()
-                    char = chain.head
-                    while char is not None:
-                        f.write(char.value)
-                        char = char.next
+                    f.write("".join(char.value for char in chain))
 
     def _render(self, chain, key, prefix=""):
         self._tabstops = []
