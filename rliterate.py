@@ -1496,7 +1496,7 @@ class CharChain(object):
             for char in self.tabstops[index]:
                 x = range(align_length - char.count_chars_to_start_of_line())
                 for _ in x:
-                    item = Char("-", {})
+                    item = Char(" ", {})
                     item.next = char.next
                     item.previuos = char
                     char.next.previuos = item
