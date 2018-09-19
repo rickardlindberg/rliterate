@@ -13469,6 +13469,47 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Add line numbers",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Add syntax highlighting",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Add links to where it was created from",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Improve expanded code view",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
