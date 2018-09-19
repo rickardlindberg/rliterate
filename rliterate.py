@@ -1562,7 +1562,10 @@ class ExpandedCodeParagraph(Paragraph):
 
     @property
     def tokens(self):
-        return [Token("tihi")]
+        return [
+            Token(char.value, **char.meta)
+            for char in CodeExpander(self._document).expand_id(self.code_id)
+        ]
 
     @property
     def code_id(self):
@@ -3214,7 +3217,7 @@ class Code(ParagraphBase):
                 before_id=self.paragraph.next_id,
                 paragraph_dict={
                     "type": "expanded_code",
-                    "id": self.paragraph.id,
+                    "code_id": self.paragraph.id,
                 }
             )
         )
@@ -3871,9 +3874,16 @@ class FileGenerator(object):
         self.document.listen(self._generate)
 
     def _generate(self):
+        CodeExpander(self.document).generate_files()
+
+
+class CodeExpander(object):
+
+    def __init__(self, document):
+        self.document = document
         self._parts = defaultdict(list)
+        self._ids = {}
         self._collect_parts(self.document.get_page())
-        self._generate_files()
 
     def _collect_parts(self, page):
         for paragraph in page.paragraphs:
@@ -3882,25 +3892,45 @@ class FileGenerator(object):
                     tuple(paragraph.path.filepath),
                     tuple(paragraph.path.chunkpath),
                 )].append(paragraph)
+                self._ids[paragraph.id] = paragraph
         for child in page.children:
             self._collect_parts(child)
 
-    def _generate_files(self):
+    def generate_files(self):
         for key in self._parts.keys():
             filepath = self._get_filepath(key)
             if filepath:
-                chain = CharChain()
-                self._render(chain, key)
-                chain.align_tabstops()
+                chain = self._expand(self._parts[key])
                 with open(filepath, "w") as f:
                     f.write("".join(char.value for char in chain))
 
-    def _render(self, chain, key, prefix=""):
+    def expand_id(self, paragraph_id):
+        if paragraph_id in self._ids:
+            return self._expand([self._ids[paragraph_id]])
+        else:
+            chain = CharChain()
+            chain.append("Could not find {}".format(paragraph_id))
+            return chain
+
+    def _expand(self, paragraphs):
         self._tabstops = []
-        for paragraph in self._parts[key]:
+        chain = CharChain()
+        self._render(chain, paragraphs)
+        chain.align_tabstops()
+        return chain
+
+    def _render(self, chain, paragraphs, prefix=""):
+        for paragraph in paragraphs:
             for fragment in paragraph.fragments:
                 if fragment.type == "chunk":
-                    self._render(chain, (key[0], key[1]+tuple(fragment.path)), prefix=prefix+fragment.prefix)
+                    self._render(
+                        chain,
+                        self._parts[(
+                            tuple(paragraph.path.filepath),
+                            tuple(paragraph.path.chunkpath)+tuple(fragment.path)
+                        )],
+                        prefix=prefix+fragment.prefix
+                    )
                 elif fragment.type == "variable":
                     self._add_text_to_chain(fragment.name, chain, prefix)
                 elif fragment.type == "code":
