@@ -3845,30 +3845,33 @@ class FileGenerator(object):
             filepath = self._get_filepath(key)
             if filepath:
                 with open(filepath, "w") as f:
-                    self._render(f, key)
+                    chain = CharChain()
+                    self._render(chain, key)
+                    chain.align_tabstops()
+                    char = chain.head
+                    while char is not None:
+                        f.write(char.value)
+                        char = char.next
 
-    def _render(self, f, key, prefix=""):
-        text_buffer = ""
+    def _render(self, chain, key, prefix=""):
         for paragraph in self._parts[key]:
             for fragment in paragraph.fragments:
                 if fragment.type == "chunk":
-                    for line in text_buffer.splitlines():
-                        if len(line) > 0:
-                            f.write(prefix)
-                            f.write(line)
-                        f.write("\n")
-                    text_buffer = ""
-                    self._render(f, (key[0], key[1]+tuple(fragment.path)), prefix=prefix+fragment.prefix)
+                    self._render(chain, (key[0], key[1]+tuple(fragment.path)), prefix=prefix+fragment.prefix)
                 elif fragment.type == "variable":
-                    text_buffer += fragment.name
+                    self._add_text_to_chain(fragment.name, chain, prefix)
                 elif fragment.type == "code":
-                    text_buffer += fragment.text
-        for line in text_buffer.splitlines():
-            if len(line) > 0:
-                f.write(prefix)
-                f.write(line)
-            f.write("\n")
-        text_buffer = ""
+                    self._add_text_to_chain(fragment.text, chain, prefix)
+                elif fragment.type == "tabstop":
+                    chain.mark_tabstop(fragment.index)
+        if chain.tail is not None and chain.tail.value != "\n":
+            chain.append("\n")
+
+    def _add_text_to_chain(self, text, chain, prefix):
+        for char in text:
+            if chain.tail is None or (chain.tail.value == "\n" and char != "\n"):
+                chain.append(prefix)
+            chain.append(char)
 
     def _get_filepath(self, key):
         if len(key[0]) > 0 and len(key[1]) == 0:
