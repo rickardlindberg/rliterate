@@ -3855,6 +3855,7 @@ class FileGenerator(object):
                         char = char.next
 
     def _render(self, chain, key, prefix=""):
+        self._tabstops = []
         for paragraph in self._parts[key]:
             for fragment in paragraph.fragments:
                 if fragment.type == "chunk":
@@ -3864,7 +3865,8 @@ class FileGenerator(object):
                 elif fragment.type == "code":
                     self._add_text_to_chain(fragment.text, chain, prefix)
                 elif fragment.type == "tabstop":
-                    chain.mark_tabstop(fragment.index)
+                    self._tabstops.append(fragment.index)
+        self._mark_tabstops(chain)
         if chain.tail is not None and chain.tail.value != "\n":
             chain.append("\n")
 
@@ -3872,7 +3874,12 @@ class FileGenerator(object):
         for char in text:
             if chain.tail is None or (chain.tail.value == "\n" and char != "\n"):
                 chain.append(prefix)
+            self._mark_tabstops(chain)
             chain.append(char)
+
+    def _mark_tabstops(self, chain):
+        while self._tabstops:
+            chain.mark_tabstop(self._tabstops.pop())
 
     def _get_filepath(self, key):
         if len(key[0]) > 0 and len(key[1]) == 0:
