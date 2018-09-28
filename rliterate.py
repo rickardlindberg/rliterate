@@ -1221,12 +1221,6 @@ class CodeParagraph(Paragraph):
         return r"{}{{(\d+)}}{}".format(re.escape(start), re.escape(end))
     @property
     def tokens(self):
-        chain = self._fragments_to_chain()
-        chain.align_tabstops()
-        chain.colorize(self.pygments_lexer)
-        return chain.to_tokens()
-
-    def _fragments_to_chain(self):
         chain = CharChain()
         for fragment in self.fragments:
             if fragment.type == "chunk":
@@ -1243,7 +1237,9 @@ class CodeParagraph(Paragraph):
                 chain.append(fragment.text)
             elif fragment.type == "tabstop":
                 chain.mark_tabstop(fragment.index)
-        return chain
+        chain.align_tabstops()
+        chain.colorize(self.pygments_lexer)
+        return chain.to_tokens()
     @property
     def language(self):
         return "".join(self.pygments_lexer.aliases[:1])
