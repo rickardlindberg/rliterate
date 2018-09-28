@@ -1558,10 +1558,10 @@ class ExpandedCodeParagraph(Paragraph):
 
     @property
     def tokens(self):
-        return [
-            Token(char.value, **char.meta)
-            for char in CodeExpander(self._document).expand_id(self.code_id)
-        ]
+        paragraph, chain = CodeExpander(self._document).expand_id(self.code_id)
+        if paragraph is not None:
+            chain.colorize(paragraph.pygments_lexer)
+        return chain.to_tokens()
 
     @property
     def code_id(self):
@@ -3902,11 +3902,11 @@ class CodeExpander(object):
 
     def expand_id(self, paragraph_id):
         if paragraph_id in self._ids:
-            return self._expand([self._ids[paragraph_id]])
+            return (self._ids[paragraph_id], self._expand([self._ids[paragraph_id]]))
         else:
             chain = CharChain()
             chain.append("Could not find {}".format(paragraph_id))
-            return chain
+            return (None, chain)
 
     def _expand(self, paragraphs):
         self._tabstops = []
