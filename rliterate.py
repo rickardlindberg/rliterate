@@ -1224,7 +1224,7 @@ class CodeParagraph(Paragraph):
         chain = self._fragments_to_chain()
         chain.align_tabstops()
         self._colorize_chain(chain)
-        return self._chain_to_tokens(chain)
+        return chain.to_tokens()
 
     def _fragments_to_chain(self):
         chain = CharChain()
@@ -1266,9 +1266,6 @@ class CodeParagraph(Paragraph):
                 if char is not None:
                     char.meta["token_type"] = pygments_token
                     char = char.next
-
-    def _chain_to_tokens(self, chain):
-        return [Token(char.value, **char.meta) for char in chain]
     @property
     def language(self):
         return "".join(self.pygments_lexer.aliases[:1])
@@ -1501,6 +1498,9 @@ class CharChain(object):
     def append(self, string, **meta):
         for char in string:
             self._insert_after(self.tail, Char(char, dict(meta)))
+
+    def to_tokens(self):
+        return [Token(char.value, **char.meta) for char in self]
 
     def _insert_after(self, before, char):
         if self.tail is None:
