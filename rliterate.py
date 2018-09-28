@@ -1165,10 +1165,16 @@ class CodeParagraph(Paragraph):
             match = re.match(self._chunk_fragment_re(), line)
             if match:
                 self._parse_clear()
+                body_match = re.match(r"^(.*?)(, blank_lines_before=(\d+))?$", match.group(2))
+                if body_match.group(2):
+                    blank_lines_before = int(body_match.group(3))
+                else:
+                    blank_lines_before = 0
                 self._parsed_fragments.append({
                     "type": "chunk",
-                    "path": match.group(2).split("/"),
-                    "prefix": match.group(1)
+                    "path": body_match.group(1).split("/"),
+                    "prefix": match.group(1),
+                    "blank_lines_before": blank_lines_before,
                 })
             else:
                 while line:
@@ -1404,6 +1410,10 @@ class ChunkCodeFragment(CodeFragment):
         return self._code_fragment_dict["prefix"]
 
     @property
+    def blank_lines_before(self):
+        return self._code_fragment_dict.get("blank_lines_before", 0)
+
+    @property
     def path(self):
         return copy.deepcopy(self._code_fragment_dict["path"])
 
@@ -1412,6 +1422,9 @@ class ChunkCodeFragment(CodeFragment):
         text_version.add(self.prefix)
         text_version.add(start)
         text_version.add("/".join(self.path))
+        if self.blank_lines_before > 0:
+            text_version.add(", blank_lines_before=")
+            text_version.add(str(self.blank_lines_before))
         text_version.add(end)
         text_version.add("\n")
 class CodeCodeFragment(CodeFragment):
@@ -3915,8 +3928,9 @@ class CodeExpander(object):
         chain.align_tabstops()
         return chain
 
-    def _render(self, chain, paragraphs, prefix=""):
+    def _render(self, chain, paragraphs, prefix="", blank_lines_before=0):
         for paragraph in paragraphs:
+            self._add_text_to_chain("\n"*blank_lines_before, chain, prefix)
             for fragment in paragraph.fragments:
                 if fragment.type == "chunk":
                     self._render(
@@ -3925,7 +3939,8 @@ class CodeExpander(object):
                             tuple(paragraph.path.filepath),
                             tuple(paragraph.path.chunkpath)+tuple(fragment.path)
                         )],
-                        prefix=prefix+fragment.prefix
+                        prefix=prefix+fragment.prefix,
+                        blank_lines_before=fragment.blank_lines_before
                     )
                 elif fragment.type == "variable":
                     self._add_text_to_chain(fragment.name, chain, prefix)
