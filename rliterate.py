@@ -3929,8 +3929,9 @@ class CodeExpander(object):
         return chain
 
     def _render(self, chain, paragraphs, prefix="", blank_lines_before=0):
-        for paragraph in paragraphs:
-            self._add_text_to_chain("\n"*blank_lines_before, chain, prefix)
+        for index, paragraph in enumerate(paragraphs):
+            if index > 0:
+                self._add_text_to_chain("\n"*blank_lines_before, chain, prefix)
             for fragment in paragraph.fragments:
                 if fragment.type == "chunk":
                     self._render(
