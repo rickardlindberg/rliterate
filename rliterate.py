@@ -1223,7 +1223,7 @@ class CodeParagraph(Paragraph):
     def tokens(self):
         chain = self._fragments_to_chain()
         chain.align_tabstops()
-        self._colorize_chain(chain)
+        chain.colorize(self.pygments_lexer)
         return chain.to_tokens()
 
     def _fragments_to_chain(self):
@@ -1244,28 +1244,6 @@ class CodeParagraph(Paragraph):
             elif fragment.type == "tabstop":
                 chain.mark_tabstop(fragment.index)
         return chain
-
-    def _colorize_chain(self, chain):
-        pygments_text = self._extract_non_styled_text(chain)
-        pygments_tokens = self.pygments_lexer.get_tokens(pygments_text)
-        self._apply_pygments_tokens_to_chain(pygments_tokens, chain)
-
-    def _extract_non_styled_text(self, chain):
-        return "".join(
-            char.value
-            for char in chain
-            if char.meta.get("token_type") is None
-        )
-
-    def _apply_pygments_tokens_to_chain(self, pygments_tokens, chain):
-        char = chain.head
-        for pygments_token, text in pygments_tokens:
-            for _ in text:
-                while char is not None and char.meta.get("token_type") is not None:
-                    char = char.next
-                if char is not None:
-                    char.meta["token_type"] = pygments_token
-                    char = char.next
     @property
     def language(self):
         return "".join(self.pygments_lexer.aliases[:1])
@@ -1501,6 +1479,28 @@ class CharChain(object):
 
     def to_tokens(self):
         return [Token(char.value, **char.meta) for char in self]
+
+    def colorize(self, pygments_lexer):
+        pygments_text = self._extract_non_colored_text()
+        pygments_tokens = pygments_lexer.get_tokens(pygments_text)
+        self._apply_pygments_tokens(pygments_tokens)
+
+    def _extract_non_colored_text(self):
+        return "".join(
+            char.value
+            for char in self
+            if char.meta.get("token_type") is None
+        )
+
+    def _apply_pygments_tokens(self, pygments_tokens):
+        char = self.head
+        for pygments_token, text in pygments_tokens:
+            for _ in text:
+                while char is not None and char.meta.get("token_type") is not None:
+                    char = char.next
+                if char is not None:
+                    char.meta["token_type"] = pygments_token
+                    char = char.next
 
     def _insert_after(self, before, char):
         if self.tail is None:

@@ -2070,15 +2070,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef tokens(self):\n    chain = self._fragments_to_chain()\n    chain.align_tabstops()\n    self._colorize_chain(chain)\n    return chain.to_tokens()\n\ndef _fragments_to_chain(self):\n    chain = CharChain()\n    for fragment in self.",
-"type":"code"
-},
-{
-"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
-"type":"variable"
-},
-{
-"text":":\n        if fragment.type == \"chunk\":\n            text_version = TextVersion()\n            fragment.fill_text_version(text_version)\n            chain.append(\n                text_version.text,\n                token_type=TokenType.RLiterate.Chunk,\n                subpath=self.path.extend_chunk(fragment.path)\n            )\n        elif fragment.type == \"variable\":\n            chain.append(fragment.name, variable=fragment.id)\n        elif fragment.type == \"code\":\n            chain.append(fragment.text)\n        elif fragment.type == \"tabstop\":\n            chain.mark_tabstop(fragment.index)\n    return chain\n\ndef _colorize_chain(self, chain):\n    pygments_text = self._extract_non_styled_text(chain)\n    pygments_tokens = self.",
+"text":"@property\ndef tokens(self):\n    chain = self._fragments_to_chain()\n    chain.align_tabstops()\n    chain.colorize(self.",
 "type":"code"
 },
 {
@@ -2086,7 +2078,15 @@
 "type":"variable"
 },
 {
-"text":".get_tokens(pygments_text)\n    self._apply_pygments_tokens_to_chain(pygments_tokens, chain)\n\ndef _extract_non_styled_text(self, chain):\n    return \"\".join(\n        char.value\n        for char in chain\n        if char.meta.get(\"token_type\") is None\n    )\n\ndef _apply_pygments_tokens_to_chain(self, pygments_tokens, chain):\n    char = chain.head\n    for pygments_token, text in pygments_tokens:\n        for _ in text:\n            while char is not None and char.meta.get(\"token_type\") is not None:\n                char = char.next\n            if char is not None:\n                char.meta[\"token_type\"] = pygments_token\n                char = char.next\n",
+"text":")\n    return chain.to_tokens()\n\ndef _fragments_to_chain(self):\n    chain = CharChain()\n    for fragment in self.",
+"type":"code"
+},
+{
+"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
+"type":"variable"
+},
+{
+"text":":\n        if fragment.type == \"chunk\":\n            text_version = TextVersion()\n            fragment.fill_text_version(text_version)\n            chain.append(\n                text_version.text,\n                token_type=TokenType.RLiterate.Chunk,\n                subpath=self.path.extend_chunk(fragment.path)\n            )\n        elif fragment.type == \"variable\":\n            chain.append(fragment.name, variable=fragment.id)\n        elif fragment.type == \"code\":\n            chain.append(fragment.text)\n        elif fragment.type == \"tabstop\":\n            chain.mark_tabstop(fragment.index)\n    return chain\n",
 "type":"code"
 }
 ],
@@ -2102,7 +2102,7 @@
 ],
 "fragments":[
 {
-"text":"class CharChain(object):\n\n    def __init__(self):\n        self.head = None\n        self.tail = None\n        self.tabstops = defaultdict(list)\n\n    def __iter__(self):\n        char = self.head\n        while char is not None:\n            yield char\n            char = char.next\n\n    def mark_tabstop(self, index):\n        self.tabstops[index].append(self.tail)\n\n    def align_tabstops(self):\n        align_length = 0\n        for index in sorted(self.tabstops.keys()):\n            align_length = max([align_length+1]+[\n                char.count_chars_to_start_of_line()\n                for char in self.tabstops[index]\n            ])\n            for char in self.tabstops[index]:\n                x = range(align_length - char.count_chars_to_start_of_line())\n                for _ in x:\n                    self._insert_after(char, Char(\" \", {}))\n\n    def append(self, string, **meta):\n        for char in string:\n            self._insert_after(self.tail, Char(char, dict(meta)))\n\n    def to_tokens(self):\n        return [Token(char.value, **char.meta) for char in self]\n\n    def _insert_after(self, before, char):\n        if self.tail is None:\n            self.head = char\n            self.tail = char\n        else:\n            char.next = before.next\n            char.previuos = before\n            if before.next is not None:\n                before.next.previuos = char\n            before.next = char\n            if before is self.tail:\n                self.tail = char\n\n\nclass Char(object):\n\n    def __init__(self, value, meta):\n        self.previuos = None\n        self.next = None\n        self.value = value\n        self.meta = meta\n\n    def count_chars_to_start_of_line(self):\n        count = 0\n        char = self\n        while char is not None and not char.is_newline():\n            char = char.previuos\n            count += 1\n        return count\n\n    def is_newline(self):\n        return self.value == \"\\n\"\n",
+"text":"class CharChain(object):\n\n    def __init__(self):\n        self.head = None\n        self.tail = None\n        self.tabstops = defaultdict(list)\n\n    def __iter__(self):\n        char = self.head\n        while char is not None:\n            yield char\n            char = char.next\n\n    def mark_tabstop(self, index):\n        self.tabstops[index].append(self.tail)\n\n    def align_tabstops(self):\n        align_length = 0\n        for index in sorted(self.tabstops.keys()):\n            align_length = max([align_length+1]+[\n                char.count_chars_to_start_of_line()\n                for char in self.tabstops[index]\n            ])\n            for char in self.tabstops[index]:\n                x = range(align_length - char.count_chars_to_start_of_line())\n                for _ in x:\n                    self._insert_after(char, Char(\" \", {}))\n\n    def append(self, string, **meta):\n        for char in string:\n            self._insert_after(self.tail, Char(char, dict(meta)))\n\n    def to_tokens(self):\n        return [Token(char.value, **char.meta) for char in self]\n\n    def colorize(self, pygments_lexer):\n        pygments_text = self._extract_non_colored_text()\n        pygments_tokens = pygments_lexer.get_tokens(pygments_text)\n        self._apply_pygments_tokens(pygments_tokens)\n\n    def _extract_non_colored_text(self):\n        return \"\".join(\n            char.value\n            for char in self\n            if char.meta.get(\"token_type\") is None\n        )\n\n    def _apply_pygments_tokens(self, pygments_tokens):\n        char = self.head\n        for pygments_token, text in pygments_tokens:\n            for _ in text:\n                while char is not None and char.meta.get(\"token_type\") is not None:\n                    char = char.next\n                if char is not None:\n                    char.meta[\"token_type\"] = pygments_token\n                    char = char.next\n\n    def _insert_after(self, before, char):\n        if self.tail is None:\n            self.head = char\n            self.tail = char\n        else:\n            char.next = before.next\n            char.previuos = before\n            if before.next is not None:\n                before.next.previuos = char\n            before.next = char\n            if before is self.tail:\n                self.tail = char\n\n\nclass Char(object):\n\n    def __init__(self, value, meta):\n        self.previuos = None\n        self.next = None\n        self.value = value\n        self.meta = meta\n\n    def count_chars_to_start_of_line(self):\n        count = 0\n        char = self\n        while char is not None and not char.is_newline():\n            char = char.previuos\n            count += 1\n        return count\n\n    def is_newline(self):\n        return self.value == \"\\n\"\n",
 "type":"code"
 }
 ],
