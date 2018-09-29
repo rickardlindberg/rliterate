@@ -4092,15 +4092,16 @@ class HTMLBuilder(object):
                             self.escaped(token.text)
 
     def paragraph_expanded_code(self, expanded_code):
-        with self.tag("div", args={"class": "rliterate-code-body"}):
-            with self.tag("pre", newlines=False):
-                for token in expanded_code.tokens:
-                    with self.tag(
-                        "span",
-                        newlines=False,
-                        args={"class": pygments.token.STANDARD_TYPES.get(token.token_type, "")}
-                    ):
-                        self.escaped(token.text)
+        with self.tag("div", args={"class": "rliterate-code"}):
+            with self.tag("div", args={"class": "rliterate-code-body"}):
+                with self.tag("pre", newlines=False):
+                    for token in expanded_code.tokens:
+                        with self.tag(
+                            "span",
+                            newlines=False,
+                            args={"class": pygments.token.STANDARD_TYPES.get(token.token_type, "")}
+                        ):
+                            self.escaped(token.text)
 
     def paragraph_image(self, paragraph):
         with self.tag("div", args={"class": "rliterate-image"}):
