@@ -1234,7 +1234,7 @@ class CodeParagraph(Paragraph):
                 fragment.fill_text_version(text_version)
                 chain.append(
                     text_version.text,
-                    token_type=TokenType.RLiterate.Chunk,
+                    token_type=TokenType.Comment.Preproc,
                     subpath=self.path.extend_chunk(fragment.path)
                 )
             elif fragment.type == "variable":
@@ -2145,6 +2145,7 @@ class SolarizedTheme(BaseTheme):
         TokenType.Number:              Style(color=cyan),
         TokenType.Operator.Word:       Style(color=green),
         TokenType.Comment:             Style(color=base1),
+        TokenType.Comment.Preproc:     Style(color=magenta, bold=True),
         TokenType.RLiterate:           Style(color=text),
         TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),
         TokenType.RLiterate.Strong:    Style(color=text, bold=True),
