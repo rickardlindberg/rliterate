@@ -4070,19 +4070,26 @@ class HTMLBuilder(object):
         self.escaped(token.text)
 
     def paragraph_code(self, code):
-        if not code.path.is_empty:
-            with self.tag("div", args={"class": "rliterate-code-header"}):
-                with self.tag("p", newlines=False):
-                    self.escaped(code.path.text_version)
-        with self.tag("div", args={"class": "rliterate-code-body"}):
-            with self.tag("pre", newlines=False):
-                for token in code.tokens:
-                    with self.tag(
-                        "span",
-                        newlines=False,
-                        args={"class": pygments.token.STANDARD_TYPES.get(token.token_type, "")}
-                    ):
-                        self.escaped(token.text)
+        with self.tag("div", args={"class": "rliterate-code"}):
+            if not code.path.is_empty:
+                with self.tag("div", args={"class": "rliterate-code-header"}):
+                    with self.tag("ol", args={"class": "rliterate-code-path"}):
+                        for path in code.path.filepath:
+                            with self.tag("li", newlines=False):
+                                self.escaped(path)
+                        for path in code.path.chunkpath:
+                            with self.tag("li", newlines=False):
+                                with self.tag("span", args={"class": pygments.token.STANDARD_TYPES.get(TokenType.Comment.Preproc, "")}):
+                                    self.escaped(path)
+            with self.tag("div", args={"class": "rliterate-code-body"}):
+                with self.tag("pre", newlines=False):
+                    for token in code.tokens:
+                        with self.tag(
+                            "span",
+                            newlines=False,
+                            args={"class": pygments.token.STANDARD_TYPES.get(token.token_type, "")}
+                        ):
+                            self.escaped(token.text)
 
     def paragraph_expanded_code(self, expanded_code):
         with self.tag("div", args={"class": "rliterate-code-body"}):
