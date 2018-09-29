@@ -1231,7 +1231,7 @@ class CodeParagraph(Paragraph):
         for fragment in self.fragments:
             if fragment.type == "chunk":
                 text_version = TextVersion()
-                fragment.fill_text_version(text_version)
+                fragment.fill_text_version(text_version, for_view=True)
                 chain.append(
                     text_version.text,
                     token_type=TokenType.Comment.Preproc,
@@ -1417,12 +1417,12 @@ class ChunkCodeFragment(CodeFragment):
     def path(self):
         return copy.deepcopy(self._code_fragment_dict["path"])
 
-    def fill_text_version(self, text_version):
+    def fill_text_version(self, text_version, for_view=False):
         start, end = self._code_paragraph.chunk_delimiters
         text_version.add(self.prefix)
         text_version.add(start)
         text_version.add("/".join(self.path))
-        if self.blank_lines_before > 0:
+        if self.blank_lines_before > 0 and not for_view:
             text_version.add(", blank_lines_before=")
             text_version.add(str(self.blank_lines_before))
         text_version.add(end)
