@@ -1248,15 +1248,34 @@ class CodeParagraph(Paragraph):
         return chain.to_tokens()
     @property
     def language(self):
-        return "".join(self.pygments_lexer.aliases[:1])
+        if self.raw_language:
+            return self.raw_language
+        else:
+            return "".join(self.pygments_lexer.aliases[:1])
+
+    @property
+    def raw_language(self):
+        return self._paragraph_dict.get("language", "")
+
+    @raw_language.setter
+    def raw_language(self, value):
+        self.update({
+            "language": value,
+        })
 
     @property
     def pygments_lexer(self):
         try:
-            return pygments.lexers.get_lexer_for_filename(
-                self.filename,
-                stripnl=False
-            )
+            if self.raw_language:
+                return pygments.lexers.get_lexer_by_name(
+                    self.raw_language,
+                    stripnl=False
+                )
+            else:
+                return pygments.lexers.get_lexer_for_filename(
+                    self.filename,
+                    stripnl=False
+                )
         except:
             return pygments.lexers.TextLexer(stripnl=False)
     @property
@@ -3488,12 +3507,25 @@ class CodeEditor(VerticalPanel):
 
     def _create_gui(self):
         self.Font = create_font(**self.project.theme.editor_font)
-        self.path = self.AppendChild(
+        self.header = self.AppendChild(
+            HorizontalPanel(self),
+            flag=wx.ALL|wx.EXPAND
+        )
+        self.path = self.header.AppendChild(
             SelectionableTextCtrl(
-                self,
+                self.header,
                 value=self.paragraph.path.text_version
             ),
-            flag=wx.ALL|wx.EXPAND
+            flag=wx.ALL|wx.EXPAND,
+            proportion=1
+        )
+        self.language = self.header.AppendChild(
+            SelectionableTextCtrl(
+                self.header,
+                value=self.paragraph.raw_language
+            ),
+            flag=wx.ALL,
+            proportion=0
         )
         self.text = self.AppendChild(
             MultilineTextCtrl(
@@ -3529,6 +3561,7 @@ class CodeEditor(VerticalPanel):
         with self.paragraph.multi_update():
             self.paragraph.path = Path.from_text_version(self.path.Value)
             self.paragraph.text_version = self.text.Value
+            self.paragraph.raw_language = self.language.Value
 class Image(ParagraphBase):
 
     PADDING = 30

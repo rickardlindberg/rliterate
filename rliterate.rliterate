@@ -2126,7 +2126,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef language(self):\n    return \"\".join(self.",
+"text":"@property\ndef language(self):\n    if self.raw_language:\n        return self.raw_language\n    else:\n        return \"\".join(self.",
 "type":"code"
 },
 {
@@ -2134,7 +2134,23 @@
 "type":"variable"
 },
 {
-"text":".aliases[:1])\n\n@property\ndef ",
+"text":".aliases[:1])\n\n@property\ndef raw_language(self):\n    return self._paragraph_dict.get(\"",
+"type":"code"
+},
+{
+"id":"67ebf8be121a46768936eec41e336f11",
+"type":"variable"
+},
+{
+"text":"\", \"\")\n\n@raw_language.setter\ndef raw_language(self, value):\n    self.update({\n        \"",
+"type":"code"
+},
+{
+"id":"67ebf8be121a46768936eec41e336f11",
+"type":"variable"
+},
+{
+"text":"\": value,\n    })\n\n@property\ndef ",
 "type":"code"
 },
 {
@@ -2142,7 +2158,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    try:\n        return pygments.lexers.get_lexer_for_filename(\n            self.filename,\n            stripnl=False\n        )\n    except:\n        return pygments.lexers.TextLexer(stripnl=False)\n",
+"text":"(self):\n    try:\n        if self.raw_language:\n            return pygments.lexers.get_lexer_by_name(\n                self.raw_language,\n                stripnl=False\n            )\n        else:\n            return pygments.lexers.get_lexer_for_filename(\n                self.filename,\n                stripnl=False\n            )\n    except:\n        return pygments.lexers.TextLexer(stripnl=False)\n",
 "type":"code"
 }
 ],
@@ -8824,7 +8840,7 @@
 "type":"variable"
 },
 {
-"text":")\n    self.path = self.",
+"text":")\n    self.header = self.",
 "type":"code"
 },
 {
@@ -8832,7 +8848,23 @@
 "type":"variable"
 },
 {
-"text":"(\n        SelectionableTextCtrl(\n            self,\n            value=self.paragraph.path.text_version\n        ),\n        flag=wx.ALL|wx.EXPAND\n    )\n    self.text = self.",
+"text":"(\n        HorizontalPanel(self),\n        flag=wx.ALL|wx.EXPAND\n    )\n    self.path = self.header.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        SelectionableTextCtrl(\n            self.header,\n            value=self.paragraph.path.text_version\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.language = self.header.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        SelectionableTextCtrl(\n            self.header,\n            value=self.paragraph.raw_language\n        ),\n        flag=wx.ALL,\n        proportion=0\n    )\n    self.text = self.",
 "type":"code"
 },
 {
@@ -8894,7 +8926,7 @@
 ],
 "fragments":[
 {
-"text":"def Save(self):\n    with self.paragraph.multi_update():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n",
+"text":"def Save(self):\n    with self.paragraph.multi_update():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n",
 "type":"code"
 }
 ],
@@ -13599,6 +13631,7 @@
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
+"67ebf8be121a46768936eec41e336f11":"language",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
 "6a754b8a39e24518b76e88d57a89eff6":"container_border",
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
