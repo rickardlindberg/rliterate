@@ -13037,16 +13037,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Highlight code without specifying filename?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Link templates ",
 "type":"text"
 },
@@ -13509,16 +13499,6 @@
 "fragments":[
 {
 "text":"Add line numbers",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Add syntax highlighting",
 "type":"text"
 }
 ]
