@@ -4043,6 +4043,7 @@ class HTMLBuilder(object):
                 TokenType.RLiterate.Code: self.token_code,
                 TokenType.RLiterate.Link: self.token_link,
                 TokenType.RLiterate.Reference: self.token_reference,
+                TokenType.RLiterate.Variable: self.token_variable,
             }.get(token.token_type, self.token_default)(token)
 
     def token_emphasis(self, token):
@@ -4065,6 +4066,10 @@ class HTMLBuilder(object):
         with self.tag("a", args={"href": "#{}".format(token.extra["page_id"])}, newlines=False):
             with self.tag("em", newlines=False):
                 self.escaped(token.text)
+
+    def token_variable(self, token):
+        with self.tag("code", newlines=False):
+            self.escaped(token.text)
 
     def token_default(self, token):
         self.escaped(token.text)
