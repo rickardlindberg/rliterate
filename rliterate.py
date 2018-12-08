@@ -426,36 +426,33 @@ class TokenView(TextProjection):
         )
         self._default_cursor = self.GetCursor()
 
-    def GetToken(self, position):
-        for character in self.characters:
+    def GetCharacterAt(self, position):
+        for character in self._characters:
             if character.rect.Contains(position):
-                return character.extra
-    def GetClosestToken(self, position):
-        if len(self.characters) == 0:
+                return character
+    def GetClosestCharacter(self, position):
+        if len(self._characters) == 0:
             return None
-        tokens_by_y_distance = defaultdict(list)
-        for character in self.characters:
-            box = character.box
-            if box.Contains(position):
-                tokens_by_y_distance[0] = [(character.extra, box)]
+        characters_by_y_distance = defaultdict(list)
+        for character in self._characters:
+            if character.rect.Contains(position):
+                characters_by_y_distance[0] = [character]
                 break
-            tokens_by_y_distance[
-                abs(box.Y + int(box.Height / 2) - position.y)
-            ].append((character.extra, box))
-        closest_token, closest_box = min(
-            tokens_by_y_distance[min(tokens_by_y_distance.keys())],
-            key=lambda (_, box): abs(box.X + int(box.Width / 2) - position.x)
+            characters_by_y_distance[
+                abs(character.rect.Y + int(character.rect.Height / 2) - position.y)
+            ].append(character)
+        return min(
+            characters_by_y_distance[min(characters_by_y_distance.keys())],
+            key=lambda character: abs(character.rect.X + int(character.rect.Width / 2) - position.x)
         )
-        center = closest_box.X + box.Width / 2.0
-        left_margin = center - box.Width / 4.0
-        right_margin = center + box.Width / 4.0
-        if position.x < left_margin:
-            edge = -1
-        elif position.x > right_margin:
-            edge = 1
-        else:
-            edge = 0
-        return (edge, closest_token)
+    def GetToken(self, position):
+        character = self.GetCharacterAt(position)
+        if character is not None:
+            return character.extra
+    def GetClosestToken(self, position):
+        character = self.GetClosestCharacter(position)
+        if character is not None:
+            return (0, character.extra)
     def SetDefaultCursor(self):
         self.SetCursor(self._default_cursor)
 class CompactScrolledWindow(wx.ScrolledWindow):

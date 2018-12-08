@@ -11063,6 +11063,82 @@
 "id":"4d62abdb105b4f21ba885009aa3c9238",
 "language":"",
 "type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TokenView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"061d6d65c74242e38e3203aa0a3cf22d",
+"type":"variable"
+},
+{
+"text":"(self, position):\n    for character in self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":":\n        if character.rect.Contains(position):\n            return character\n",
+"type":"code"
+}
+],
+"id":"1d9d2bbbbe08483bbc9eeb791bdbcdf3",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TokenView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"26a20a9b510d411fa6dd5834c9f1634b",
+"type":"variable"
+},
+{
+"text":"(self, position):\n    if len(self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":") == 0:\n        return None\n    characters_by_y_distance = defaultdict(list)\n    for character in self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":":\n        if character.rect.Contains(position):\n            characters_by_y_distance[0] = [character]\n            break\n        characters_by_y_distance[\n            abs(character.rect.Y + int(character.rect.Height / 2) - position.y)\n        ].append(character)\n    return min(\n        characters_by_y_distance[min(characters_by_y_distance.keys())],\n        key=lambda character: abs(character.rect.X + int(character.rect.Width / 2) - position.x)\n    )\n",
+"type":"code"
+}
+],
+"id":"48f77f6fe78b480593bdd29a5fcb89d7",
+"language":"",
+"type":"code"
 }
 ],
 "title":"Text projection"
@@ -11245,7 +11321,15 @@
 ],
 "fragments":[
 {
-"text":"def GetToken(self, position):\n    for character in self.characters:\n        if character.rect.Contains(position):\n            return character.extra\n",
+"text":"def GetToken(self, position):\n    character = self.",
+"type":"code"
+},
+{
+"id":"061d6d65c74242e38e3203aa0a3cf22d",
+"type":"variable"
+},
+{
+"text":"(position)\n    if character is not None:\n        return character.extra\n",
 "type":"code"
 }
 ],
@@ -11262,7 +11346,15 @@
 ],
 "fragments":[
 {
-"text":"def GetClosestToken(self, position):\n    if len(self.characters) == 0:\n        return None\n    tokens_by_y_distance = defaultdict(list)\n    for character in self.characters:\n        box = character.box\n        if box.Contains(position):\n            tokens_by_y_distance[0] = [(character.extra, box)]\n            break\n        tokens_by_y_distance[\n            abs(box.Y + int(box.Height / 2) - position.y)\n        ].append((character.extra, box))\n    closest_token, closest_box = min(\n        tokens_by_y_distance[min(tokens_by_y_distance.keys())],\n        key=lambda (_, box): abs(box.X + int(box.Width / 2) - position.x)\n    )\n    center = closest_box.X + box.Width / 2.0\n    left_margin = center - box.Width / 4.0\n    right_margin = center + box.Width / 4.0\n    if position.x < left_margin:\n        edge = -1\n    elif position.x > right_margin:\n        edge = 1\n    else:\n        edge = 0\n    return (edge, closest_token)\n",
+"text":"def GetClosestToken(self, position):\n    character = self.",
+"type":"code"
+},
+{
+"id":"26a20a9b510d411fa6dd5834c9f1634b",
+"type":"variable"
+},
+{
+"text":"(position)\n    if character is not None:\n        return (0, character.extra)\n",
 "type":"code"
 }
 ],
@@ -14281,6 +14373,7 @@
 },
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
+"061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
 "13edfec5045f41d99010d539bc4ac956":"Layout",
@@ -14294,6 +14387,7 @@
 "20656ab448a944f7b3659aeb42405b15":"_line_height",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
 "2653b138268045ab8bf58b30b10cd954":"_strings_by_style",
+"26a20a9b510d411fa6dd5834c9f1634b":"GetClosestCharacter",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "2f0a877612fe4295ac6ad4ef7309d965":"OnDataDropped",
