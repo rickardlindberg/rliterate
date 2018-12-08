@@ -4956,7 +4956,23 @@
 ],
 "fragments":[
 {
-"text":"class Style(object):\n\n    def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):\n        self.color = color\n        self.color_rgb = tuple([\n            int(x, 16)\n            for x\n            in (color[1:3], color[3:5], color[5:7])\n        ])\n        self.bold = bold\n        self.underlined = underlined\n        self.italic = italic\n        self.monospace = monospace\n\n    def ",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":"(namedtuple(\"",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":"\", \"foreground background bold underlined italic monospace\")):\n\n    @classmethod\n    def create(cls, **kwargs):\n        values = {\n            \"foreground\": \"#000000\",\n            \"background\": None,\n            \"bold\": False,\n            \"underlined\": False,\n            \"italic\": False,\n            \"monospace\": False,\n        }\n        values.update(kwargs)\n        return cls(**values)\n\n    def ",
 "type":"code"
 },
 {
@@ -4964,11 +4980,12 @@
 "type":"variable"
 },
 {
-"text":"(self, dc, base_font, highlight=False):\n        font = base_font\n        if self.bold:\n            font = font.Bold()\n        if self.underlined:\n            font = font.Underlined()\n        if self.italic:\n            font = font.Italic()\n        if self.monospace:\n            font = wx.Font(\n                pointSize=font.GetPointSize(),\n                family=wx.FONTFAMILY_TELETYPE,\n                style=font.GetStyle(),\n                weight=font.GetWeight(),\n                underline=font.GetUnderlined(),\n            )\n        if highlight:\n            dc.SetTextForeground(\"#fcf4df\")\n            dc.SetTextBackground(\"#b58900\")\n            dc.SetBackgroundMode(wx.SOLID)\n        else:\n            dc.SetTextForeground(self.color_rgb)\n            dc.SetBackgroundMode(wx.TRANSPARENT)\n        dc.SetFont(font)\n",
+"text":"(self, dc, base_font, highlight=False):\n        font = base_font\n        if self.bold:\n            font = font.Bold()\n        if self.underlined:\n            font = font.Underlined()\n        if self.italic:\n            font = font.Italic()\n        if self.monospace:\n            font = wx.Font(\n                pointSize=font.GetPointSize(),\n                family=wx.FONTFAMILY_TELETYPE,\n                style=font.GetStyle(),\n                weight=font.GetWeight(),\n                underline=font.GetUnderlined(),\n            )\n        dc.SetTextForeground(self.foreground)\n        if self.background is None:\n            dc.SetBackgroundMode(wx.TRANSPARENT)\n        else:\n            dc.SetTextBackground(self.background)\n            dc.SetBackgroundMode(wx.SOLID)\n        dc.SetFont(font)\n\n    def highlight(self):\n        return self._replace(foreground=\"#fcf4df\", background=\"#b58900\")\n",
 "type":"code"
 }
 ],
 "id":"dbf00327a8ed40348d78004e82ef7d60",
+"language":"",
 "type":"code"
 },
 {
@@ -4999,7 +5016,223 @@
 ],
 "fragments":[
 {
-"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n\n    styles = {\n        TokenType:                     Style(color=base00),\n        TokenType.Keyword:             Style(color=green),\n        TokenType.Keyword.Constant:    Style(color=cyan),\n        TokenType.Keyword.Declaration: Style(color=blue),\n        TokenType.Keyword.Namespace:   Style(color=orange),\n        TokenType.Name.Builtin:        Style(color=red),\n        TokenType.Name.Builtin.Pseudo: Style(color=blue),\n        TokenType.Name.Class:          Style(color=blue),\n        TokenType.Name.Decorator:      Style(color=blue),\n        TokenType.Name.Entity:         Style(color=violet),\n        TokenType.Name.Exception:      Style(color=yellow),\n        TokenType.Name.Function:       Style(color=blue),\n        TokenType.String:              Style(color=cyan),\n        TokenType.Number:              Style(color=cyan),\n        TokenType.Operator.Word:       Style(color=green),\n        TokenType.Comment:             Style(color=base1),\n        TokenType.Comment.Preproc:     Style(color=magenta, bold=True),\n        TokenType.RLiterate:           Style(color=text),\n        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),\n        TokenType.RLiterate.Strong:    Style(color=text, bold=True),\n        TokenType.RLiterate.Code:      Style(color=text, monospace=True),\n        TokenType.RLiterate.Variable:  Style(color=text, monospace=True, italic=True),\n        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),\n        TokenType.RLiterate.Reference: Style(color=blue, italic=True),\n        TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),\n        TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),\n        TokenType.RLiterate.Sep:       Style(color=base1),\n    }\n",
+"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n\n    styles = {\n        TokenType:                     ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=base00),\n        TokenType.Keyword:             ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=green),\n        TokenType.Keyword.Constant:    ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=cyan),\n        TokenType.Keyword.Declaration: ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=blue),\n        TokenType.Keyword.Namespace:   ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=orange),\n        TokenType.Name.Builtin:        ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=red),\n        TokenType.Name.Builtin.Pseudo: ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=blue),\n        TokenType.Name.Class:          ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=blue),\n        TokenType.Name.Decorator:      ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=blue),\n        TokenType.Name.Entity:         ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=violet),\n        TokenType.Name.Exception:      ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=yellow),\n        TokenType.Name.Function:       ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=blue),\n        TokenType.String:              ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=cyan),\n        TokenType.Number:              ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=cyan),\n        TokenType.Operator.Word:       ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=green),\n        TokenType.Comment:             ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=base1),\n        TokenType.Comment.Preproc:     ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=magenta, bold=True),\n        TokenType.RLiterate:           ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=text),\n        TokenType.RLiterate.Emphasis:  ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=text, italic=True),\n        TokenType.RLiterate.Strong:    ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=text, bold=True),\n        TokenType.RLiterate.Code:      ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=text, monospace=True),\n        TokenType.RLiterate.Variable:  ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=text, monospace=True, italic=True),\n        TokenType.RLiterate.Link:      ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=blue, underlined=True),\n        TokenType.RLiterate.Reference: ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=blue, italic=True),\n        TokenType.RLiterate.Path:      ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=text, italic=True, bold=True),\n        TokenType.RLiterate.Chunk:     ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=magenta, bold=True),\n        TokenType.RLiterate.Sep:       ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=base1),\n    }\n",
 "type":"code"
 }
 ],
@@ -10307,12 +10540,541 @@
 },
 {
 "children":[],
+"id":"3df948b8b1054006983a5e518344ee7c",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"The text projection editor is an editor for something that can be projected as text. It is optimized for making as few calls to a DC as possible since those are expensive.",
+"type":"text"
+}
+],
+"id":"0306bfd22e2d4745b34a2c47e1b8f953",
+"type":"text"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":"(wx.Panel):\n\n    def __init__(self, text, style, extra=None):\n        self.text = text\n        self.style = style\n        self.extra = extra\n        self.rect = wx.Rect(0, 0, 0, 0)\n",
+"type":"code"
+}
+],
+"id":"9314bdc42aca426f8ba6fdb330c01349",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":"(wx.Panel):\n\n    def __init__(self, parent, characters, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":" = characters\n        self.",
+"type":"code"
+},
+{
+"id":"20656ab448a944f7b3659aeb42405b15",
+"type":"variable"
+},
+{
+"text":" = kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"1680a175cf4348e4ba5131efba2cb1c9",
+"type":"variable"
+},
+{
+"text":"\", 1)\n        self.",
+"type":"code"
+},
+{
+"id":"7a9fc5b110114e64b871a0f672c764c2",
+"type":"variable"
+},
+{
+"text":" = kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"\", 100)\n        self.",
+"type":"code"
+},
+{
+"id":"457a1dbf134c431881e590e7b7db9907",
+"type":"variable"
+},
+{
+"text":" = kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"fdd751029b984545a69a3570683a2b4a",
+"type":"variable"
+},
+{
+"text":"\", True)\n        self.",
+"type":"code"
+},
+{
+"id":"ba63198235bb4716a96649f32f1f4ac4",
+"type":"variable"
+},
+{
+"text":"()\n        self.Bind(wx.EVT_PAINT, self._on_paint)\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":1,
+"path":[
+"TextProjection"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"ba61534ec9624a57ad8dd9e4dc4a066b",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"ba63198235bb4716a96649f32f1f4ac4",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"5e725316bce6426b88d46fe528e812ff",
+"type":"variable"
+},
+{
+"text":"()\n    self.",
+"type":"code"
+},
+{
+"id":"ad7a061336df4d5da6e9e18d957c9726",
+"type":"variable"
+},
+{
+"text":"()\n    self.",
+"type":"code"
+},
+{
+"id":"e4f044d70bf7427a8ddc1884b24fdf1f",
+"type":"variable"
+},
+{
+"text":"()\n    self.",
+"type":"code"
+},
+{
+"id":"e2c3589873b445459e152e0472402dc2",
+"type":"variable"
+},
+{
+"text":"()\n    self.",
+"type":"code"
+},
+{
+"id":"879f1ca439804909ab2e0ff943a7f46e",
+"type":"variable"
+},
+{
+"text":"()\n",
+"type":"code"
+}
+],
+"id":"99e221ad33a74eeb8676898eb1915d9d",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"5e725316bce6426b88d46fe528e812ff",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"3208a1df72ac489b8ec6d2200e211220",
+"type":"variable"
+},
+{
+"text":" = defaultdict(list)\n    for character in self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":":\n        self.",
+"type":"code"
+},
+{
+"id":"3208a1df72ac489b8ec6d2200e211220",
+"type":"variable"
+},
+{
+"text":"[character.style].append(character)\n",
+"type":"code"
+}
+],
+"id":"dd8cfc5a17ba46958da554386b0d6e97",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"ad7a061336df4d5da6e9e18d957c9726",
+"type":"variable"
+},
+{
+"text":"(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.",
+"type":"code"
+},
+{
+"id":"5a66414227d04b228db871fc070f0b19",
+"type":"variable"
+},
+{
+"text":" = int(round(dc.GetTextExtent(\"M\")[1]*self.",
+"type":"code"
+},
+{
+"id":"20656ab448a944f7b3659aeb42405b15",
+"type":"variable"
+},
+{
+"text":"))\n    for style, characters in self.",
+"type":"code"
+},
+{
+"id":"3208a1df72ac489b8ec6d2200e211220",
+"type":"variable"
+},
+{
+"text":".iteritems():\n        style.",
+"type":"code"
+},
+{
+"id":"553573ef13bd4f7a8713699b743e494a",
+"type":"variable"
+},
+{
+"text":"(dc, self.GetFont())\n        for character in characters:\n            character.rect.Size = dc.GetTextExtent(character.text)\n",
+"type":"code"
+}
+],
+"id":"3eeca75a81a64df387d888767e14bbef",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"e4f044d70bf7427a8ddc1884b24fdf1f",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"c55ce4bb53214f3d88571b8b8fd87f9e",
+"type":"variable"
+},
+{
+"text":" = []\n    current_line = []\n    x, y = 0, 0\n    index = 0\n    previous_character, break_index, break_len = None, None, None\n    while index < len(self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":"):\n        character = self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":"[index]\n        if previous_character and previous_character.text == \" \" and character.text != \" \":\n            break_index, break_len = index, len(current_line)\n        if (character.text == \"\\n\" or\n            (x > 0 and x+character.rect.Width > self.",
+"type":"code"
+},
+{
+"id":"7a9fc5b110114e64b871a0f672c764c2",
+"type":"variable"
+},
+{
+"text":")):\n            x = 0\n            y += self.",
+"type":"code"
+},
+{
+"id":"5a66414227d04b228db871fc070f0b19",
+"type":"variable"
+},
+{
+"text":"\n            if character.text != \"\\n\" and break_index is not None and self.",
+"type":"code"
+},
+{
+"id":"457a1dbf134c431881e590e7b7db9907",
+"type":"variable"
+},
+{
+"text":":\n                index = break_index\n                character = self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":"[index]\n                current_line = current_line[:break_len]\n            self.",
+"type":"code"
+},
+{
+"id":"c55ce4bb53214f3d88571b8b8fd87f9e",
+"type":"variable"
+},
+{
+"text":".append(current_line)\n            current_line = []\n            previous_character, break_index, break_len = None, None, None\n        character.rect.Position = (x, y)\n        x += character.rect.Width\n        if character.text != \"\\n\":\n            current_line.append(character)\n        previous_character = character\n        index += 1\n    if current_line:\n        self.",
+"type":"code"
+},
+{
+"id":"c55ce4bb53214f3d88571b8b8fd87f9e",
+"type":"variable"
+},
+{
+"text":".append(current_line)\n",
+"type":"code"
+}
+],
+"id":"745aad419dca4e33aaebdf3ec972ef3e",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"e2c3589873b445459e152e0472402dc2",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"2653b138268045ab8bf58b30b10cd954",
+"type":"variable"
+},
+{
+"text":" = defaultdict(lambda: ([], []))\n    def push():\n        if text:\n            strings, poss = self.",
+"type":"code"
+},
+{
+"id":"2653b138268045ab8bf58b30b10cd954",
+"type":"variable"
+},
+{
+"text":"[style]\n            strings.append(\"\".join(text))\n            poss.append(position)\n    for line in self.",
+"type":"code"
+},
+{
+"id":"c55ce4bb53214f3d88571b8b8fd87f9e",
+"type":"variable"
+},
+{
+"text":":\n        style = None\n        position = None\n        text = []\n        for character in line:\n            if style is None or style != character.style:\n                push()\n                style = character.style\n                position = character.rect.Position\n                text = []\n            text.append(character.text)\n        push()\n",
+"type":"code"
+}
+],
+"id":"40997f22b3224796aab54d7969ac6894",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"879f1ca439804909ab2e0ff943a7f46e",
+"type":"variable"
+},
+{
+"text":"(self):\n    max_x = 10\n    max_y = 10\n    for line in self.",
+"type":"code"
+},
+{
+"id":"c55ce4bb53214f3d88571b8b8fd87f9e",
+"type":"variable"
+},
+{
+"text":":\n        for character in line:\n            max_x = max(max_x, character.rect.X+character.rect.Width)\n            max_y = max(max_y, character.rect.Y+character.rect.Height)\n    self.SetMinSize((max_x, max_y))\n",
+"type":"code"
+}
+],
+"id":"0a6cac7e8942465980c82e4ee1a2accf",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for style, strings_positions in self.",
+"type":"code"
+},
+{
+"id":"2653b138268045ab8bf58b30b10cd954",
+"type":"variable"
+},
+{
+"text":".iteritems():\n        style.",
+"type":"code"
+},
+{
+"id":"553573ef13bd4f7a8713699b743e494a",
+"type":"variable"
+},
+{
+"text":"(dc, self.GetFont())\n        dc.DrawTextList(*strings_positions)\n",
+"type":"code"
+}
+],
+"id":"4d62abdb105b4f21ba885009aa3c9238",
+"language":"",
+"type":"code"
+}
+],
+"title":"Text projection"
+},
+{
+"children":[],
 "id":"f2fd8440f526447fbcd4442951435021",
 "paragraphs":[
 {
 "fragments":[
 {
-"text":"The token view widget displays tokens with different styles. It does so by drawing text on a DC.",
+"text":"The token view widget is a temporary wrapper around the text projection widget.",
 "type":"text"
 }
 ],
@@ -10336,10 +11098,75 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel):\n\n    def __init__(self, parent, project, tokens, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.tokens = tokens\n        self.line_height = kwargs.get(\"line_height\", 1)\n        self.max_width = kwargs.get(\"max_width\", 100)\n        self.skip_extra_space = kwargs.get(\"skip_extra_space\", False)\n",
+"text":"(",
 "type":"code"
 },
 {
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, project, tokens, **kwargs):\n        self.characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    self.characters.append(",
+"type":"code"
+},
+{
+"id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":"(\n                        char,\n                        style,\n                        subtoken\n                    ))\n        ",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":".__init__(\n            self,\n            parent,\n            self.characters,\n            ",
+"type":"code"
+},
+{
+"id":"1680a175cf4348e4ba5131efba2cb1c9",
+"type":"variable"
+},
+{
+"text":"=kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"1680a175cf4348e4ba5131efba2cb1c9",
+"type":"variable"
+},
+{
+"text":"\", 1),\n            ",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"=kwargs.get(\"",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"\", 100),\n            ",
+"type":"code"
+},
+{
+"id":"fdd751029b984545a69a3570683a2b4a",
+"type":"variable"
+},
+{
+"text":"=kwargs.get(\"skip_extra_space\", False)\n        )\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
 "path":[
 "TokenView",
 "__init__"
@@ -10352,6 +11179,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "TokenView"
 ],
@@ -10360,128 +11188,7 @@
 }
 ],
 "id":"5569510f0ba84a3c8c970fd81304964a",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"First, the token positions are calculated. For that a DC is needed. But the positions need to be calculated before we can draw on the panel, so a temporary memory DC is created.",
-"type":"text"
-}
-],
-"id":"44cdc54053dc4136ab337a605d8d0de8",
-"type":"text"
-},
-{
-"chunkpath":[
-"base classes",
-"TokenView",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self._calculate_token_positions()\n",
-"type":"code"
-}
-],
-"id":"2c5fccea05ca4f0caa6484a1667e7980",
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes",
-"TokenView"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _calculate_token_positions(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.token_positions = []\n    x = 0\n    y = 0\n    max_x, max_y = dc.GetTextExtent(\"M\")\n    line_height_pixels = int(round(dc.GetTextExtent(\"M\")[1]*self.line_height))\n    for token in self.tokens:\n        for subtoken in token.split():\n            if subtoken.is_newline():\n                x = 0\n                y += line_height_pixels\n                max_y = max(max_y, y)\n                continue\n            style = self.project.",
-"type":"code"
-},
-{
-"id":"693482dc04b14cac9b3fe810dcae59a5",
-"type":"variable"
-},
-{
-"text":"(subtoken.token_type)\n            style.",
-"type":"code"
-},
-{
-"id":"553573ef13bd4f7a8713699b743e494a",
-"type":"variable"
-},
-{
-"text":"(dc, self.GetFont())\n            w, h = dc.GetTextExtent(subtoken.text)\n            if x > 0 and x+w > self.max_width:\n                x = 0\n                y += line_height_pixels\n            if x == 0 and self.skip_extra_space:\n                if self.token_positions and self.token_positions[-1][0].is_space():\n                    self.token_positions.pop(-1)\n                if subtoken.is_space():\n                    continue\n            self.token_positions.append((subtoken, style, wx.Rect(x, y, w, h)))\n            max_x = max(max_x, x+w)\n            max_y = max(max_y, y+line_height_pixels)\n            x += w\n    self.SetMinSize((max_x, max_y))\n",
-"type":"code"
-}
-],
-"id":"2d866dd174ea4e659741a72c91b59b49",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Drawing the tokens is just a matter of drawing all tokens at the pre-calculated positions:",
-"type":"text"
-}
-],
-"id":"e077531deeeb4cddbf5d03713a5232fe",
-"type":"text"
-},
-{
-"chunkpath":[
-"base classes",
-"TokenView",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self.Bind(wx.EVT_PAINT, self._on_paint)\n",
-"type":"code"
-}
-],
-"id":"548cace182ad42d6b8b08a5065bf79e6",
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes",
-"TokenView"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for token, style, box in self.token_positions:\n        style.",
-"type":"code"
-},
-{
-"id":"553573ef13bd4f7a8713699b743e494a",
-"type":"variable"
-},
-{
-"text":"(dc, self.GetFont(), highlight=token.extra.get(\"",
-"type":"code"
-},
-{
-"id":"d102ad411943476d9d432a286f9cbe55",
-"type":"variable"
-},
-{
-"text":"\", False))\n        dc.DrawText(token.text, box.X, box.Y)\n",
-"type":"code"
-}
-],
-"id":"bfc4f55298ea43dba7d1a94526901cdb",
+"language":"",
 "type":"code"
 },
 {
@@ -10538,7 +11245,7 @@
 ],
 "fragments":[
 {
-"text":"def GetToken(self, position):\n    for token, style, box in self.token_positions:\n        if box.Contains(position):\n            return token\n",
+"text":"def GetToken(self, position):\n    for character in self.characters:\n        if character.rect.Contains(position):\n            return character.extra\n",
 "type":"code"
 }
 ],
@@ -10555,7 +11262,7 @@
 ],
 "fragments":[
 {
-"text":"def GetClosestToken(self, position):\n    if len(self.token_positions) == 0:\n        return None\n    tokens_by_y_distance = defaultdict(list)\n    for token, style, box in self.token_positions:\n        if box.Contains(position):\n            tokens_by_y_distance[0] = [(token, box)]\n            break\n        tokens_by_y_distance[\n            abs(box.Y + int(box.Height / 2) - position.y)\n        ].append((token, box))\n    closest_token, closest_box = min(\n        tokens_by_y_distance[min(tokens_by_y_distance.keys())],\n        key=lambda (token, box): abs(box.X + int(box.Width / 2) - position.x)\n    )\n    center = closest_box.X + box.Width / 2.0\n    left_margin = center - box.Width / 4.0\n    right_margin = center + box.Width / 4.0\n    if position.x < left_margin:\n        edge = -1\n    elif position.x > right_margin:\n        edge = 1\n    else:\n        edge = 0\n    return (edge, closest_token)\n",
+"text":"def GetClosestToken(self, position):\n    if len(self.characters) == 0:\n        return None\n    tokens_by_y_distance = defaultdict(list)\n    for character in self.characters:\n        box = character.box\n        if box.Contains(position):\n            tokens_by_y_distance[0] = [(character.extra, box)]\n            break\n        tokens_by_y_distance[\n            abs(box.Y + int(box.Height / 2) - position.y)\n        ].append((character.extra, box))\n    closest_token, closest_box = min(\n        tokens_by_y_distance[min(tokens_by_y_distance.keys())],\n        key=lambda (_, box): abs(box.X + int(box.Width / 2) - position.x)\n    )\n    center = closest_box.X + box.Width / 2.0\n    left_margin = center - box.Width / 4.0\n    right_margin = center + box.Width / 4.0\n    if position.x < left_margin:\n        edge = -1\n    elif position.x > right_margin:\n        edge = 1\n    else:\n        edge = 0\n    return (edge, closest_token)\n",
 "type":"code"
 }
 ],
@@ -11772,11 +12479,12 @@
 ],
 "fragments":[
 {
-"text":"from collections import defaultdict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
+"text":"from collections import defaultdict, namedtuple\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
 "type":"code"
 }
 ],
 "id":"0fe8dfc503a54cde9df4de6a2cf65b7a",
+"language":"",
 "type":"code"
 },
 {
@@ -13578,30 +14286,38 @@
 "13edfec5045f41d99010d539bc4ac956":"Layout",
 "1566854b9f4240408d4a8b17ae305740":"VerticalPanel",
 "1644b9094da3457895ba66eb283b4a9f":"fragments",
+"1680a175cf4348e4ba5131efba2cb1c9":"line_height",
 "1c7f69114ac14c80b2fb421ea7eda3a2":"notify",
 "1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
 "1e117025a0e14327ba6598fb696799a3":"fragments",
 "1f8f14208d274d0cbab10d21ec300882":"code_font",
+"20656ab448a944f7b3659aeb42405b15":"_line_height",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
+"2653b138268045ab8bf58b30b10cd954":"_strings_by_style",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "2f0a877612fe4295ac6ad4ef7309d965":"OnDataDropped",
 "3060a3fbc04a4a708019d11f6efa737b":"TokenView",
 "307841bedc3c4f2cba2dbbf68a410075":"TextParser",
+"3085a51404614938a99d1c599cdc5e30":"get_style",
 "308c28435ded49a9a1503a4e91bcd0f0":"fragments",
 "30ba4e602df545be8fa892a31e88c6ce":"AppendChildWithSizer",
 "30eeb77f05c34590a6498edb391d0916":"paragraph_space",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
+"3208a1df72ac489b8ec6d2200e211220":"_characters_by_style",
 "3457c112c47c41a293d77cc79f99badf":"VerticalScrolledWindow",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "359755e756af4e708b237cd9753ae046":"AppendChild",
+"35fc9d123bbc4572b1d559ec7f013016":"Style",
 "37f8b479b7eb4013bea0222eacc5ea6f":"SetPageId",
 "39785d8cdcb4445bad27a741363efa23":"SetPageId",
 "39e45626d4804403be92d31444a1281c":"text_font",
 "3acdc29e28484de3b989d6eb1b75a97e":"create_font",
+"3d6ead2c4a274ae78afa33875235e150":"_apply_style",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
+"457a1dbf134c431881e590e7b7db9907":"_break_at_word",
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
 "507782d786b84d209eef461ecd0b4544":"fragments",
@@ -13609,7 +14325,9 @@
 "52a4cb0c44124d518647a92eb25a876d":"page_body_width",
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
+"5a66414227d04b228db871fc070f0b19":"_line_height_pixels",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
+"5e725316bce6426b88d46fe528e812ff":"_partition_characters",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
 "67ebf8be121a46768936eec41e336f11":"language",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
@@ -13619,7 +14337,10 @@
 "740055857bb244038c203cea23c1af69":"CreateView",
 "74949da897df45e6862e45ffe667fc6e":"text_to_fragments",
 "76b9d362e0714c1da27953dd46e8ef0b":"page_padding",
+"7a9fc5b110114e64b871a0f672c764c2":"_max_width",
+"7de0449a51914343bdefb494a4287c6b":"_5e725316bce6426b88d46fe528e812ff",
 "82902f4f6d91479f88d33e04619a3915":"chain",
+"879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "8970b68862714f158948f8ec1c68acb1":"toc_font",
 "898556fcc0094d959568f97b261a5f5c":"RemoveChildren",
@@ -13629,6 +14350,7 @@
 "8db58d842ac34e0aa51ea908cd841520":"theme",
 "90d6de1e6f714f1497872ca757b501b6":"value",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
+"99872a7e246e4fc38f9e0029f076e120":"Box",
 "9afba42827fd435dab58673210d03785":"AppendChild",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
 "9e987210a686490c823a44d09e783833":"_load",
@@ -13637,15 +14359,21 @@
 "a5bace68289b40e78df93409e362a63b":"from_file",
 "a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
 "a886e97ceb3d427c8190487d23d12bc1":"Column",
+"a8b94133f9bf4cf9bf9e3cb6c4e2095d":"_project",
+"a8caeb6d2819489f994f081b84182472":"_partition_characters",
 "aa80683234dc421f81d21fbda0b91758":"code_font",
 "aa88810b795e4483b57bbdf05e8127d6":"workspace_background",
+"ab468260e8344173a06b482194c9a6a4":"_characters",
+"ad7a061336df4d5da6e9e18d957c9726":"_measure_character_size",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "ae8e603135854b1787ca652bf6304e9e":"theme",
 "b0201e824c464356aa706a0440192e5c":"ShowRecursive",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
+"b3ef449947274fc597372ebb7fa1eaf7":"max_width",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
+"ba63198235bb4716a96649f32f1f4ac4":"_layout",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
 "bba79578dc084c859c4f3eef0cd79771":"SetPages",
 "c0363497d8b6457ea2e652a9f8ec0afe":"ok_fn",
@@ -13653,8 +14381,10 @@
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
 "c40079514300441c8c7aa16123045f9a":"page_body_width",
 "c4f3b8bfcb0c4e449fdad901d978b7b0":"listen",
+"c55ce4bb53214f3d88571b8b8fd87f9e":"_lines",
 "c56b4a82a7d4441ab6ceb5610217a3c5":"editor_font",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
+"d3e26230c2c34d0986f2bbae0bab25b4":"Container",
 "d3f9252875944a4e94cbb00851a7384f":"variable_delimiters",
 "d4d8284a9d5f4e0abbbbc328581ef877":"value",
 "d4f8ea56ca9c4eb0a49487a85d4be2a9":"title_font",
@@ -13663,21 +14393,26 @@
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
 "de16dfdd628d459ba5af528db2604934":"fragments",
+"deed113aeefa46e7a4ffdf2d0ceff136":"_iter_characters_with_style",
 "df94156ca33b47a1beb10346870806ec":"shadow_size",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
 "e1443402d3ec4bb4805c51cba497246d":"chunk_delimiters",
+"e2c3589873b445459e152e0472402dc2":"_partition_strings",
 "e327d4d3650047bc9eedb2a21d4c2613":"Editable",
 "e3f662313fd1489c9fc8347b0d24ca9d":"SimpleContextMenu",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
+"e4f044d70bf7427a8ddc1884b24fdf1f":"_calculate_lines",
 "e7f258e2b4ca4680b295e1daf618e0b4":"GlobalSettings",
 "eabcfbe8e6c349d497353e55ad0b3685":"Selection",
 "ebae45a29f8649beb10a7e3cab576552":"\", \"",
+"ec33a5e51ade4f3283c735e5afaf45d8":"TextProjection",
 "f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
 "f6b2d4f94b72424a88a47d636753a2b9":"min_or_none",
 "f7276b0256114e3999f63bdc6d7ec078":"StyledText",
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
-"fb8af53f33454166a0737b02b9413a0e":"fragments"
+"fb8af53f33454166a0737b02b9413a0e":"fragments",
+"fdd751029b984545a69a3570683a2b4a":"break_at_word"
 }
 }

@@ -1,7 +1,7 @@
 # This file is extracted from rliterate.rliterate.
 # DO NOT EDIT MANUALLY!
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import contextlib
 import json
 import os
@@ -136,19 +136,20 @@ class Observable(object):
         if self._notify_count == 0:
             for fn in self._listeners:
                 fn()
-class Style(object):
+class Style(namedtuple("Style", "foreground background bold underlined italic monospace")):
 
-    def __init__(self, color, bold=None, underlined=None, italic=False, monospace=False):
-        self.color = color
-        self.color_rgb = tuple([
-            int(x, 16)
-            for x
-            in (color[1:3], color[3:5], color[5:7])
-        ])
-        self.bold = bold
-        self.underlined = underlined
-        self.italic = italic
-        self.monospace = monospace
+    @classmethod
+    def create(cls, **kwargs):
+        values = {
+            "foreground": "#000000",
+            "background": None,
+            "bold": False,
+            "underlined": False,
+            "italic": False,
+            "monospace": False,
+        }
+        values.update(kwargs)
+        return cls(**values)
 
     def apply_to_wx_dc(self, dc, base_font, highlight=False):
         font = base_font
@@ -166,14 +167,16 @@ class Style(object):
                 weight=font.GetWeight(),
                 underline=font.GetUnderlined(),
             )
-        if highlight:
-            dc.SetTextForeground("#fcf4df")
-            dc.SetTextBackground("#b58900")
-            dc.SetBackgroundMode(wx.SOLID)
-        else:
-            dc.SetTextForeground(self.color_rgb)
+        dc.SetTextForeground(self.foreground)
+        if self.background is None:
             dc.SetBackgroundMode(wx.TRANSPARENT)
+        else:
+            dc.SetTextBackground(self.background)
+            dc.SetBackgroundMode(wx.SOLID)
         dc.SetFont(font)
+
+    def highlight(self):
+        return self._replace(foreground="#fcf4df", background="#b58900")
 class ParagraphBase(Editable):
 
     def __init__(self, parent, project, page_id, paragraph, selection):
@@ -294,74 +297,154 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class TokenView(wx.Panel):
+class Box(wx.Panel):
 
-    def __init__(self, parent, project, tokens, **kwargs):
+    def __init__(self, text, style, extra=None):
+        self.text = text
+        self.style = style
+        self.extra = extra
+        self.rect = wx.Rect(0, 0, 0, 0)
+class TextProjection(wx.Panel):
+
+    def __init__(self, parent, characters, **kwargs):
         wx.Panel.__init__(self, parent)
-        self.project = project
-        self.tokens = tokens
-        self.line_height = kwargs.get("line_height", 1)
-        self.max_width = kwargs.get("max_width", 100)
-        self.skip_extra_space = kwargs.get("skip_extra_space", False)
-        self._calculate_token_positions()
+        self._characters = characters
+        self._line_height = kwargs.get("line_height", 1)
+        self._max_width = kwargs.get("max_width", 100)
+        self._break_at_word = kwargs.get("break_at_word", True)
+        self._layout()
         self.Bind(wx.EVT_PAINT, self._on_paint)
-        self._default_cursor = self.GetCursor()
 
-    def _calculate_token_positions(self):
+    def _layout(self):
+        self._partition_characters()
+        self._measure_character_size()
+        self._calculate_lines()
+        self._partition_strings()
+        self._set_min_size()
+
+    def _partition_characters(self):
+        self._characters_by_style = defaultdict(list)
+        for character in self._characters:
+            self._characters_by_style[character.style].append(character)
+
+    def _measure_character_size(self):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
         dc.SelectObject(wx.EmptyBitmap(1, 1))
-        self.token_positions = []
-        x = 0
-        y = 0
-        max_x, max_y = dc.GetTextExtent("M")
-        line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self.line_height))
-        for token in self.tokens:
-            for subtoken in token.split():
-                if subtoken.is_newline():
-                    x = 0
-                    y += line_height_pixels
-                    max_y = max(max_y, y)
-                    continue
-                style = self.project.get_style(subtoken.token_type)
-                style.apply_to_wx_dc(dc, self.GetFont())
-                w, h = dc.GetTextExtent(subtoken.text)
-                if x > 0 and x+w > self.max_width:
-                    x = 0
-                    y += line_height_pixels
-                if x == 0 and self.skip_extra_space:
-                    if self.token_positions and self.token_positions[-1][0].is_space():
-                        self.token_positions.pop(-1)
-                    if subtoken.is_space():
-                        continue
-                self.token_positions.append((subtoken, style, wx.Rect(x, y, w, h)))
-                max_x = max(max_x, x+w)
-                max_y = max(max_y, y+line_height_pixels)
-                x += w
+        self._line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self._line_height))
+        for style, characters in self._characters_by_style.iteritems():
+            style.apply_to_wx_dc(dc, self.GetFont())
+            for character in characters:
+                character.rect.Size = dc.GetTextExtent(character.text)
+
+    def _calculate_lines(self):
+        self._lines = []
+        current_line = []
+        x, y = 0, 0
+        index = 0
+        previous_character, break_index, break_len = None, None, None
+        while index < len(self._characters):
+            character = self._characters[index]
+            if previous_character and previous_character.text == " " and character.text != " ":
+                break_index, break_len = index, len(current_line)
+            if (character.text == "\n" or
+                (x > 0 and x+character.rect.Width > self._max_width)):
+                x = 0
+                y += self._line_height_pixels
+                if character.text != "\n" and break_index is not None and self._break_at_word:
+                    index = break_index
+                    character = self._characters[index]
+                    current_line = current_line[:break_len]
+                self._lines.append(current_line)
+                current_line = []
+                previous_character, break_index, break_len = None, None, None
+            character.rect.Position = (x, y)
+            x += character.rect.Width
+            if character.text != "\n":
+                current_line.append(character)
+            previous_character = character
+            index += 1
+        if current_line:
+            self._lines.append(current_line)
+
+    def _partition_strings(self):
+        self._strings_by_style = defaultdict(lambda: ([], []))
+        def push():
+            if text:
+                strings, poss = self._strings_by_style[style]
+                strings.append("".join(text))
+                poss.append(position)
+        for line in self._lines:
+            style = None
+            position = None
+            text = []
+            for character in line:
+                if style is None or style != character.style:
+                    push()
+                    style = character.style
+                    position = character.rect.Position
+                    text = []
+                text.append(character.text)
+            push()
+
+    def _set_min_size(self):
+        max_x = 10
+        max_y = 10
+        for line in self._lines:
+            for character in line:
+                max_x = max(max_x, character.rect.X+character.rect.Width)
+                max_y = max(max_y, character.rect.Y+character.rect.Height)
         self.SetMinSize((max_x, max_y))
+
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
-        for token, style, box in self.token_positions:
-            style.apply_to_wx_dc(dc, self.GetFont(), highlight=token.extra.get("highlight", False))
-            dc.DrawText(token.text, box.X, box.Y)
+        for style, strings_positions in self._strings_by_style.iteritems():
+            style.apply_to_wx_dc(dc, self.GetFont())
+            dc.DrawTextList(*strings_positions)
+class TokenView(TextProjection):
+
+    def __init__(self, parent, project, tokens, **kwargs):
+        self.characters = []
+        for token in tokens:
+            style = project.get_style(token.token_type)
+            if token.extra.get("highlight"):
+                style = style.highlight()
+            for subtoken in token.split():
+                for char in subtoken.text:
+                    self.characters.append(Box(
+                        char,
+                        style,
+                        subtoken
+                    ))
+        TextProjection.__init__(
+            self,
+            parent,
+            self.characters,
+            line_height=kwargs.get("line_height", 1),
+            max_width=kwargs.get("max_width", 100),
+            break_at_word=kwargs.get("skip_extra_space", False)
+        )
+        self._default_cursor = self.GetCursor()
+
     def GetToken(self, position):
-        for token, style, box in self.token_positions:
-            if box.Contains(position):
-                return token
+        for character in self.characters:
+            if character.rect.Contains(position):
+                return character.extra
     def GetClosestToken(self, position):
-        if len(self.token_positions) == 0:
+        if len(self.characters) == 0:
             return None
         tokens_by_y_distance = defaultdict(list)
-        for token, style, box in self.token_positions:
+        for character in self.characters:
+            box = character.box
             if box.Contains(position):
-                tokens_by_y_distance[0] = [(token, box)]
+                tokens_by_y_distance[0] = [(character.extra, box)]
                 break
             tokens_by_y_distance[
                 abs(box.Y + int(box.Height / 2) - position.y)
-            ].append((token, box))
+            ].append((character.extra, box))
         closest_token, closest_box = min(
             tokens_by_y_distance[min(tokens_by_y_distance.keys())],
-            key=lambda (token, box): abs(box.X + int(box.Width / 2) - position.x)
+            key=lambda (_, box): abs(box.X + int(box.Width / 2) - position.x)
         )
         center = closest_box.X + box.Width / 2.0
         left_margin = center - box.Width / 4.0
@@ -2148,33 +2231,33 @@ class SolarizedTheme(BaseTheme):
     text    = "#2e3436"
 
     styles = {
-        TokenType:                     Style(color=base00),
-        TokenType.Keyword:             Style(color=green),
-        TokenType.Keyword.Constant:    Style(color=cyan),
-        TokenType.Keyword.Declaration: Style(color=blue),
-        TokenType.Keyword.Namespace:   Style(color=orange),
-        TokenType.Name.Builtin:        Style(color=red),
-        TokenType.Name.Builtin.Pseudo: Style(color=blue),
-        TokenType.Name.Class:          Style(color=blue),
-        TokenType.Name.Decorator:      Style(color=blue),
-        TokenType.Name.Entity:         Style(color=violet),
-        TokenType.Name.Exception:      Style(color=yellow),
-        TokenType.Name.Function:       Style(color=blue),
-        TokenType.String:              Style(color=cyan),
-        TokenType.Number:              Style(color=cyan),
-        TokenType.Operator.Word:       Style(color=green),
-        TokenType.Comment:             Style(color=base1),
-        TokenType.Comment.Preproc:     Style(color=magenta, bold=True),
-        TokenType.RLiterate:           Style(color=text),
-        TokenType.RLiterate.Emphasis:  Style(color=text, italic=True),
-        TokenType.RLiterate.Strong:    Style(color=text, bold=True),
-        TokenType.RLiterate.Code:      Style(color=text, monospace=True),
-        TokenType.RLiterate.Variable:  Style(color=text, monospace=True, italic=True),
-        TokenType.RLiterate.Link:      Style(color=blue, underlined=True),
-        TokenType.RLiterate.Reference: Style(color=blue, italic=True),
-        TokenType.RLiterate.Path:      Style(color=text, italic=True, bold=True),
-        TokenType.RLiterate.Chunk:     Style(color=magenta, bold=True),
-        TokenType.RLiterate.Sep:       Style(color=base1),
+        TokenType:                     Style.create(foreground=base00),
+        TokenType.Keyword:             Style.create(foreground=green),
+        TokenType.Keyword.Constant:    Style.create(foreground=cyan),
+        TokenType.Keyword.Declaration: Style.create(foreground=blue),
+        TokenType.Keyword.Namespace:   Style.create(foreground=orange),
+        TokenType.Name.Builtin:        Style.create(foreground=red),
+        TokenType.Name.Builtin.Pseudo: Style.create(foreground=blue),
+        TokenType.Name.Class:          Style.create(foreground=blue),
+        TokenType.Name.Decorator:      Style.create(foreground=blue),
+        TokenType.Name.Entity:         Style.create(foreground=violet),
+        TokenType.Name.Exception:      Style.create(foreground=yellow),
+        TokenType.Name.Function:       Style.create(foreground=blue),
+        TokenType.String:              Style.create(foreground=cyan),
+        TokenType.Number:              Style.create(foreground=cyan),
+        TokenType.Operator.Word:       Style.create(foreground=green),
+        TokenType.Comment:             Style.create(foreground=base1),
+        TokenType.Comment.Preproc:     Style.create(foreground=magenta, bold=True),
+        TokenType.RLiterate:           Style.create(foreground=text),
+        TokenType.RLiterate.Emphasis:  Style.create(foreground=text, italic=True),
+        TokenType.RLiterate.Strong:    Style.create(foreground=text, bold=True),
+        TokenType.RLiterate.Code:      Style.create(foreground=text, monospace=True),
+        TokenType.RLiterate.Variable:  Style.create(foreground=text, monospace=True, italic=True),
+        TokenType.RLiterate.Link:      Style.create(foreground=blue, underlined=True),
+        TokenType.RLiterate.Reference: Style.create(foreground=blue, italic=True),
+        TokenType.RLiterate.Path:      Style.create(foreground=text, italic=True, bold=True),
+        TokenType.RLiterate.Chunk:     Style.create(foreground=magenta, bold=True),
+        TokenType.RLiterate.Sep:       Style.create(foreground=base1),
     }
 class MainFrame(wx.Frame, BoxSizerMixin):
 
