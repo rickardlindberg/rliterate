@@ -11319,7 +11319,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                        char,\n                        style,\n                        subtoken\n                    ))\n        ",
+"text":"(\n                        char,\n                        style,\n                        extra=subtoken\n                    ))\n        ",
 "type":"code"
 },
 {
@@ -11463,6 +11463,7 @@
 }
 ],
 "id":"4e27995451fd479f8a9528093ff49b0b",
+"language":"",
 "type":"code"
 },
 {

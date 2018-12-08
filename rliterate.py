@@ -455,7 +455,7 @@ class TokenView(TextProjection):
                     self.characters.append(Box(
                         char,
                         style,
-                        subtoken
+                        extra=subtoken
                     ))
         TextProjection.__init__(
             self,
