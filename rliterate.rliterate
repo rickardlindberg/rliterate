@@ -2070,7 +2070,15 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef tokens(self):\n    chain = CharChain()\n    for fragment in self.",
+"text":"@property\ndef tokens(self):\n    chain = ",
+"type":"code"
+},
+{
+"id":"80c88031ba2244b4b116f5b597e585d8",
+"type":"variable"
+},
+{
+"text":"()\n    for fragment in self.",
 "type":"code"
 },
 {
@@ -2091,6 +2099,7 @@
 }
 ],
 "id":"8abec079960f4d9a86b59c4744183d59",
+"language":"",
 "type":"code"
 },
 {
@@ -2102,11 +2111,20 @@
 ],
 "fragments":[
 {
-"text":"class CharChain(object):\n\n    def __init__(self):\n        self.head = None\n        self.tail = None\n        self.tabstops = defaultdict(list)\n\n    def __iter__(self):\n        char = self.head\n        while char is not None:\n            yield char\n            char = char.next\n\n    def mark_tabstop(self, index):\n        self.tabstops[index].append(self.tail)\n\n    def align_tabstops(self):\n        align_length = 0\n        for index in sorted(self.tabstops.keys()):\n            align_length = max([align_length+1]+[\n                char.count_chars_to_start_of_line()\n                for char in self.tabstops[index]\n            ])\n            for char in self.tabstops[index]:\n                x = range(align_length - char.count_chars_to_start_of_line())\n                for _ in x:\n                    self._insert_after(char, Char(\" \", {}))\n\n    def append(self, string, **meta):\n        for char in string:\n            self._insert_after(self.tail, Char(char, dict(meta)))\n\n    def to_tokens(self):\n        return [Token(char.value, **char.meta) for char in self]\n\n    def colorize(self, pygments_lexer):\n        pygments_text = self._extract_non_colored_text()\n        pygments_tokens = pygments_lexer.get_tokens(pygments_text)\n        self._apply_pygments_tokens(pygments_tokens)\n\n    def _extract_non_colored_text(self):\n        return \"\".join(\n            char.value\n            for char in self\n            if char.meta.get(\"token_type\") is None\n        )\n\n    def _apply_pygments_tokens(self, pygments_tokens):\n        char = self.head\n        for pygments_token, text in pygments_tokens:\n            for _ in text:\n                while char is not None and char.meta.get(\"token_type\") is not None:\n                    char = char.next\n                if char is not None:\n                    char.meta[\"token_type\"] = pygments_token\n                    char = char.next\n\n    def _insert_after(self, before, char):\n        if self.tail is None:\n            self.head = char\n            self.tail = char\n        else:\n            char.next = before.next\n            char.previuos = before\n            if before.next is not None:\n                before.next.previuos = char\n            before.next = char\n            if before is self.tail:\n                self.tail = char\n\n\nclass Char(object):\n\n    def __init__(self, value, meta):\n        self.previuos = None\n        self.next = None\n        self.value = value\n        self.meta = meta\n\n    def count_chars_to_start_of_line(self):\n        count = 0\n        char = self\n        while char is not None and not char.is_newline():\n            char = char.previuos\n            count += 1\n        return count\n\n    def is_newline(self):\n        return self.value == \"\\n\"\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"80c88031ba2244b4b116f5b597e585d8",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self):\n        self.head = None\n        self.tail = None\n        self.tabstops = defaultdict(list)\n\n    def __iter__(self):\n        char = self.head\n        while char is not None:\n            yield char\n            char = char.next\n\n    def mark_tabstop(self, index):\n        self.tabstops[index].append(self.tail)\n\n    def align_tabstops(self):\n        align_length = 0\n        for index in sorted(self.tabstops.keys()):\n            align_length = max([align_length+1]+[\n                char.count_chars_to_start_of_line()\n                for char in self.tabstops[index]\n            ])\n            for char in self.tabstops[index]:\n                x = range(align_length - char.count_chars_to_start_of_line())\n                for _ in x:\n                    self._insert_after(char, Char(\" \", {}))\n\n    def append(self, string, **meta):\n        for char in string:\n            self._insert_after(self.tail, Char(char, dict(meta)))\n\n    def to_tokens(self):\n        return [Token(char.value, **char.meta) for char in self]\n\n    def colorize(self, pygments_lexer):\n        pygments_text = self._extract_non_colored_text()\n        pygments_tokens = pygments_lexer.get_tokens(pygments_text)\n        self._apply_pygments_tokens(pygments_tokens)\n\n    def _extract_non_colored_text(self):\n        return \"\".join(\n            char.value\n            for char in self\n            if char.meta.get(\"token_type\") is None\n        )\n\n    def _apply_pygments_tokens(self, pygments_tokens):\n        char = self.head\n        for pygments_token, text in pygments_tokens:\n            for _ in text:\n                while char is not None and char.meta.get(\"token_type\") is not None:\n                    char = char.next\n                if char is not None:\n                    char.meta[\"token_type\"] = pygments_token\n                    char = char.next\n\n    def _insert_after(self, before, char):\n        if self.tail is None:\n            self.head = char\n            self.tail = char\n        else:\n            char.next = before.next\n            char.previuos = before\n            if before.next is not None:\n                before.next.previuos = char\n            before.next = char\n            if before is self.tail:\n                self.tail = char\n\n\nclass Char(object):\n\n    def __init__(self, value, meta):\n        self.previuos = None\n        self.next = None\n        self.value = value\n        self.meta = meta\n\n    def count_chars_to_start_of_line(self):\n        count = 0\n        char = self\n        while char is not None and not char.is_newline():\n            char = char.previuos\n            count += 1\n        return count\n\n    def is_newline(self):\n        return self.value == \"\\n\"\n",
 "type":"code"
 }
 ],
 "id":"ffd9f759e61343e0ab259a7383971732",
+"language":"",
 "type":"code"
 }
 ],
@@ -2331,7 +2349,15 @@
 ],
 "fragments":[
 {
-"text":"class ExpandedCodeParagraph(Paragraph):\n\n    @property\n    def tokens(self):\n        paragraph, chain = CodeExpander(self._document).expand_id(self.code_id)\n        if paragraph is not None:\n            chain.colorize(paragraph.",
+"text":"class ExpandedCodeParagraph(Paragraph):\n\n    @property\n    def tokens(self):\n        paragraph, chain = ",
+"type":"code"
+},
+{
+"id":"2c55e85463a84b59bd905c4737f29867",
+"type":"variable"
+},
+{
+"text":"(self._document).expand_id(self.code_id)\n        if paragraph is not None:\n            chain.colorize(paragraph.",
 "type":"code"
 },
 {
@@ -2344,6 +2370,7 @@
 }
 ],
 "id":"12e11d41944443feb75a65d86fe27a70",
+"language":"",
 "type":"code"
 }
 ],
@@ -4075,7 +4102,15 @@
 "type":"variable"
 },
 {
-"text":":\n        with self.notify():\n            CodeExpander(self.document).generate_files()\n            self.",
+"text":":\n        with self.notify():\n            ",
+"type":"code"
+},
+{
+"id":"2c55e85463a84b59bd905c4737f29867",
+"type":"variable"
+},
+{
+"text":"(self.document).generate_files()\n            self.",
 "type":"code"
 },
 {
@@ -12372,15 +12407,31 @@
 ],
 "fragments":[
 {
-"text":"class FileGenerator(object):\n\n    def __init__(self, document):\n        self.document = document\n        self.document.",
+"text":"class ",
 "type":"code"
 },
 {
-"id":"c4f3b8bfcb0c4e449fdad901d978b7b0",
+"id":"2c55e85463a84b59bd905c4737f29867",
 "type":"variable"
 },
 {
-"text":"(self._generate)\n\n    def _generate(self):\n        CodeExpander(self.document).generate_files()\n\n\nclass CodeExpander(object):\n\n    def __init__(self, document):\n        self.document = document\n        self._parts = defaultdict(list)\n        self._ids = {}\n        self._collect_parts(self.document.get_page())\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n                self._ids[paragraph.id] = paragraph\n        for child in page.children:\n            self._collect_parts(child)\n\n    def generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                chain = self._expand(self._parts[key])\n                with open(filepath, \"w\") as f:\n                    f.write(\"\".join(char.value for char in chain))\n\n    def expand_id(self, paragraph_id):\n        if paragraph_id in self._ids:\n            return (self._ids[paragraph_id], self._expand([self._ids[paragraph_id]]))\n        else:\n            chain = CharChain()\n            chain.append(\"Could not find {}\".format(paragraph_id))\n            return (None, chain)\n\n    def _expand(self, paragraphs):\n        self._tabstops = []\n        chain = CharChain()\n        self._render(chain, paragraphs)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix)\n            for fragment in paragraph.",
+"text":"(object):\n\n    def __init__(self, document):\n        self.document = document\n        self._parts = defaultdict(list)\n        self._ids = {}\n        self._collect_parts(self.document.get_page())\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n                self._ids[paragraph.id] = paragraph\n        for child in page.children:\n            self._collect_parts(child)\n\n    def generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                chain = self._expand(self._parts[key])\n                with open(filepath, \"w\") as f:\n                    f.write(\"\".join(char.value for char in chain))\n\n    def expand_id(self, paragraph_id):\n        if paragraph_id in self._ids:\n            return (self._ids[paragraph_id], self._expand([self._ids[paragraph_id]]))\n        else:\n            chain = ",
+"type":"code"
+},
+{
+"id":"80c88031ba2244b4b116f5b597e585d8",
+"type":"variable"
+},
+{
+"text":"()\n            chain.append(\"Could not find {}\".format(paragraph_id))\n            return (None, chain)\n\n    def _expand(self, paragraphs):\n        self._tabstops = []\n        chain = ",
+"type":"code"
+},
+{
+"id":"80c88031ba2244b4b116f5b597e585d8",
+"type":"variable"
+},
+{
+"text":"()\n        self._render(chain, paragraphs)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix)\n            for fragment in paragraph.",
 "type":"code"
 },
 {
@@ -12393,6 +12444,7 @@
 }
 ],
 "id":"4c422e0326ee44c8ad863ee71d8d07b5",
+"language":"",
 "type":"code"
 }
 ],
@@ -14719,6 +14771,21 @@
 "type":"reference"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"page_id":"56b835fee5b24f8a8e59156506ac6464",
+"text":null,
+"type":"reference"
+},
+{
+"text":" was slow",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
@@ -14798,6 +14865,7 @@
 "25dfed2d02124924b27ccee34278dc26":"_setup_beams",
 "2653b138268045ab8bf58b30b10cd954":"_strings_by_style",
 "26a20a9b510d411fa6dd5834c9f1634b":"GetClosestCharacter",
+"2c55e85463a84b59bd905c4737f29867":"CodeExpander",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "2f0a877612fe4295ac6ad4ef7309d965":"OnDataDropped",
@@ -14843,6 +14911,7 @@
 "76b9d362e0714c1da27953dd46e8ef0b":"page_padding",
 "7a9fc5b110114e64b871a0f672c764c2":"_max_width",
 "7de0449a51914343bdefb494a4287c6b":"_5e725316bce6426b88d46fe528e812ff",
+"80c88031ba2244b4b116f5b597e585d8":"CharChain",
 "82902f4f6d91479f88d33e04619a3915":"chain",
 "879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",
 "885085190cef47709dd3922b7c386fab":"fragments",

@@ -4057,16 +4057,6 @@ class SelectionableTextCtrl(wx.TextCtrl):
 
     def SetSelection(self, start, end):
         wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)
-class FileGenerator(object):
-
-    def __init__(self, document):
-        self.document = document
-        self.document.listen(self._generate)
-
-    def _generate(self):
-        CodeExpander(self.document).generate_files()
-
-
 class CodeExpander(object):
 
     def __init__(self, document):
