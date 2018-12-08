@@ -1995,11 +1995,13 @@ class Project(Observable):
         self._selection = Selection()
         self._active_editor = None
         self._highlighted_variable = None
+        self._needs_saving = False
         self.title="{} ({})".format(
             os.path.basename(filepath),
             os.path.dirname(os.path.abspath(filepath))
         )
         self.document = Document.from_file(filepath)
+        self.document.listen(self._mark_for_saving)
         self.document.listen(self.notify_forwarder())
         self.layout = Layout.from_file(os.path.join(
             os.path.dirname(filepath),
@@ -2013,7 +2015,6 @@ class Project(Observable):
             )
         )
         self.global_settings.listen(self.notify_forwarder())
-        FileGenerator(self.document)
 
     @property
     def theme(self):
@@ -2111,6 +2112,16 @@ class Project(Observable):
     def highlighted_variable(self, variable_id):
         with self.notify():
             self._highlighted_variable = variable_id
+    def _mark_for_saving(self):
+        self._needs_saving = True
+    @property
+    def needs_saving(self):
+        return self._needs_saving
+    def save(self):
+        if self._needs_saving:
+            with self.notify():
+                CodeExpander(self.document).generate_files()
+                self._needs_saving = False
 class EditInProgress(Exception):
     pass
 class Selection(object):
@@ -2338,6 +2349,18 @@ class ToolBar(wx.ToolBar):
     def _init_tools(self):
         main_frame = self.GetTopLevelParent()
         self._tool_groups = ToolGroups(main_frame)
+        save_group = self._tool_groups.add_group(
+            lambda: self.project.active_editor is None
+        )
+        save_group.add_tool(
+            wx.ART_FILE_SAVE,
+            lambda: self.project.save(),
+            short_help="Save",
+            shortcuts=[
+                (wx.ACCEL_CTRL, ord('S')),
+            ],
+            enabled_fn=lambda: self.project.needs_saving
+        )
         editor_group = self._tool_groups.add_group(
             lambda: self.project.active_editor is not None
         )
@@ -2392,10 +2415,15 @@ class ToolBar(wx.ToolBar):
             short_help=lambda: "Redo" if self.project.get_redo_operation() is None else "Redo '{}'".format(self.project.get_redo_operation()[0]),
             enabled_fn=lambda: self.project.get_redo_operation() is not None
         )
-        quit_group = self._tool_groups.add_group()
+        quit_group = self._tool_groups.add_group(
+            lambda: self.project.active_editor is None
+        )
+        def quit():
+            self.project.save()
+            main_frame.Close()
         quit_group.add_tool(
             wx.ART_QUIT,
-            lambda: main_frame.Close(),
+            quit,
             short_help="Quit",
             shortcuts=[
                 (wx.ACCEL_CTRL, ord('Q')),

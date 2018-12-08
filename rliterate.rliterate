@@ -3950,7 +3950,151 @@
 {
 "children":[
 {
+"children":[
+{
 "children":[],
+"id":"b4d806fd455c44ae9a6a6e4e91d3e3ea",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"Project",
+"__init__"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"self.",
+"type":"code"
+},
+{
+"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
+"type":"variable"
+},
+{
+"text":" = False\n",
+"type":"code"
+}
+],
+"id":"5b2f2b5721dc4d62ac65ad321d02ed4f",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Project"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"dc235530a21f4f61bc79a447761fb07b",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
+"type":"variable"
+},
+{
+"text":" = True\n",
+"type":"code"
+}
+],
+"id":"14a32f743fef461f9d804d49123a0c5b",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Project"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef ",
+"type":"code"
+},
+{
+"id":"ccd9655841fb4311bad581f979730e47",
+"type":"variable"
+},
+{
+"text":"(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
+"type":"variable"
+},
+{
+"text":"\n",
+"type":"code"
+}
+],
+"id":"e6c4bcca200c408fa3563dd9f947239a",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Project"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"aed0c1af151440d889b3890fa971fb59",
+"type":"variable"
+},
+{
+"text":"(self):\n    if self.",
+"type":"code"
+},
+{
+"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
+"type":"variable"
+},
+{
+"text":":\n        with self.notify():\n            CodeExpander(self.document).generate_files()\n            self.",
+"type":"code"
+},
+{
+"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
+"type":"variable"
+},
+{
+"text":" = False\n",
+"type":"code"
+}
+],
+"id":"272fc0d8bcdb4d38bca3659862f56dbd",
+"language":"",
+"type":"code"
+}
+],
+"title":"Saving"
+}
+],
 "id":"b376363cbd664a838d3bafb7bfae2281",
 "paragraphs":[
 {
@@ -3976,6 +4120,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "Project",
 "__init__"
@@ -3992,7 +4137,15 @@
 "type":"variable"
 },
 {
-"text":"(filepath)\n        self.document.",
+"text":"(filepath)\n        self.document.listen(self.",
+"type":"code"
+},
+{
+"id":"dc235530a21f4f61bc79a447761fb07b",
+"type":"variable"
+},
+{
+"text":")\n        self.document.",
 "type":"code"
 },
 {
@@ -4024,10 +4177,11 @@
 "type":"variable"
 },
 {
-"text":"(self.notify_forwarder())\n        FileGenerator(self.document)\n\n",
+"text":"(self.notify_forwarder())\n\n",
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "Project"
 ],
@@ -4036,6 +4190,7 @@
 }
 ],
 "id":"0ad6e197d56042de98b62fcfbba2f18b",
+"language":"",
 "type":"code"
 },
 {
@@ -5436,6 +5591,67 @@
 "children":[
 {
 "children":[],
+"id":"91368c7e71a248a6bf7f949e53dc67c9",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"ToolBar",
+"init tools"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"save_group = self._tool_groups.add_group(\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"03cf450743e9447da0a9becadacd7dda",
+"type":"variable"
+},
+{
+"text":" is None\n)\n",
+"type":"code"
+}
+],
+"id":"58fdf0c401b44feb9a4752ee76c2562f",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"ToolBar",
+"init tools"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"save_group.add_tool(\n    wx.ART_FILE_SAVE,\n    lambda: self.project.save(),\n    short_help=\"Save\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('S')),\n    ],\n    enabled_fn=lambda: self.project.",
+"type":"code"
+},
+{
+"id":"ccd9655841fb4311bad581f979730e47",
+"type":"variable"
+},
+{
+"text":"\n)\n",
+"type":"code"
+}
+],
+"id":"582e9b811e75482da648ba7cb52c8152",
+"language":"",
+"type":"code"
+}
+],
+"title":"Saving"
+},
+{
+"children":[],
 "id":"6cefdf62f0ca4cd38d051513d753a614",
 "paragraphs":[
 {
@@ -5740,11 +5956,20 @@
 ],
 "fragments":[
 {
-"text":"quit_group = self._tool_groups.add_group()\n",
+"text":"quit_group = self._tool_groups.add_group(\n    lambda: self.project.",
+"type":"code"
+},
+{
+"id":"c65bff398b4a49af945b1c154a660687",
+"type":"variable"
+},
+{
+"text":" is None\n)\n",
 "type":"code"
 }
 ],
 "id":"45f0244cdca14b6da6953745fc67b311",
+"language":"",
 "type":"code"
 },
 {
@@ -5758,7 +5983,7 @@
 ],
 "fragments":[
 {
-"text":"quit_group.add_tool(\n    wx.ART_QUIT,\n    lambda: main_frame.Close(),\n    short_help=\"Quit\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('Q')),\n    ]\n)\n",
+"text":"def quit():\n    self.project.save()\n    main_frame.Close()\nquit_group.add_tool(\n    wx.ART_QUIT,\n    quit,\n    short_help=\"Quit\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('Q')),\n    ]\n)\n",
 "type":"code"
 }
 ],
@@ -5837,6 +6062,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "ToolBar",
 "init tools"
@@ -5850,6 +6076,7 @@
 }
 ],
 "id":"c5e0fb1941dc421592abf8ccc5588916",
+"language":"",
 "type":"code"
 },
 {
@@ -5880,6 +6107,7 @@
 }
 ],
 "id":"89f873d06e9042dd89e3e559503aa733",
+"language":"",
 "type":"code"
 },
 {
@@ -9946,6 +10174,7 @@
 }
 ],
 "id":"3e32276889674d5cbc3d7b63e3f9ea11",
+"language":"",
 "type":"code"
 },
 {
@@ -13105,37 +13334,6 @@
 "type":"text"
 }
 ]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"How to handle undo?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Periodic automatic save?",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Editors should have no modes? (Improve mode by removing it.)",
-"type":"text"
-}
-]
 }
 ],
 "fragments":[
@@ -14455,6 +14653,37 @@
 "child_type":"unordered",
 "children":[
 {
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"How to handle undo?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Periodic automatic save?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Editors should have no modes? (Improve mode by removing it.)",
+"type":"text"
+}
+]
+},
+{
 "child_type":null,
 "children":[],
 "fragments":[
@@ -14543,6 +14772,7 @@
 },
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
+"03cf450743e9447da0a9becadacd7dda":"active_editor",
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
@@ -14633,10 +14863,12 @@
 "ad7a061336df4d5da6e9e18d957c9726":"_measure_character_size",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "ae8e603135854b1787ca652bf6304e9e":"theme",
+"aed0c1af151440d889b3890fa971fb59":"save",
 "b0201e824c464356aa706a0440192e5c":"ShowRecursive",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b3ef449947274fc597372ebb7fa1eaf7":"max_width",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
+"b7d3ecae71fd4c3ead275b008cfc71e8":"_needs_saving",
 "b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "ba63198235bb4716a96649f32f1f4ac4":"_layout",
@@ -14649,6 +14881,8 @@
 "c4f3b8bfcb0c4e449fdad901d978b7b0":"listen",
 "c55ce4bb53214f3d88571b8b8fd87f9e":"_lines",
 "c56b4a82a7d4441ab6ceb5610217a3c5":"editor_font",
+"c65bff398b4a49af945b1c154a660687":"active_editor",
+"ccd9655841fb4311bad581f979730e47":"needs_saving",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d3e26230c2c34d0986f2bbae0bab25b4":"Container",
 "d3f9252875944a4e94cbb00851a7384f":"variable_delimiters",
@@ -14659,6 +14893,7 @@
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
 "dadd60f63fbf40638d412cd98a36846a":"_beams",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
+"dc235530a21f4f61bc79a447761fb07b":"_mark_for_saving",
 "de16dfdd628d459ba5af528db2604934":"fragments",
 "deed113aeefa46e7a4ffdf2d0ceff136":"_iter_characters_with_style",
 "df94156ca33b47a1beb10346870806ec":"shadow_size",
