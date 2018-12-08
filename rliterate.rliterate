@@ -4064,6 +4064,43 @@
 "type":"code"
 },
 {
+"fragments":[
+{
+"text":"Selection:",
+"type":"text"
+}
+],
+"id":"98e004be6d00427dbe9015b5653d7fcf",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes",
+"Project",
+"__init__"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"self._selection = ",
+"type":"code"
+},
+{
+"id":"eabcfbe8e6c349d497353e55ad0b3685",
+"type":"variable"
+},
+{
+"text":"()\n",
+"type":"code"
+}
+],
+"id":"a8697eb2058e418aa310a9dfbc11723c",
+"language":"",
+"type":"code"
+},
+{
 "chunkpath":[
 "classes",
 "Project"
@@ -4073,15 +4110,15 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef selection(self):\n    return ",
+"text":"@property\ndef selection(self):\n    return self._selection\n\n@selection.setter\ndef selection(self, value):\n    with self.",
 "type":"code"
 },
 {
-"id":"eabcfbe8e6c349d497353e55ad0b3685",
+"id":"1c7f69114ac14c80b2fb421ea7eda3a2",
 "type":"variable"
 },
 {
-"text":"()\n",
+"text":"():\n        self._selection = value\n",
 "type":"code"
 }
 ],
@@ -4210,7 +4247,7 @@
 "type":"code"
 }
 ],
-"id":"a8697eb2058e418aa310a9dfbc11723c",
+"id":"7a29a8ad844f4068982cdd210b654d26",
 "type":"code"
 },
 {
@@ -5385,7 +5422,7 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    self.Layout()\n    if self.project.active_editor is None:\n        self._focus_panel.SetFocus()\n",
+"text":"def ChildReRendered(self):\n    self.Layout()\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if focused_widget and hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            return\n        self._focus_panel.SetFocus()\n",
 "type":"code"
 }
 ],
@@ -7843,6 +7880,7 @@
 }
 ],
 "id":"0d23868db06847a1800d8ef8659887f3",
+"language":"",
 "type":"code"
 },
 {
@@ -8058,31 +8096,7 @@
 ],
 "fragments":[
 {
-"text":"class Title(",
-"type":"code"
-},
-{
-"id":"e327d4d3650047bc9eedb2a21d4c2613",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, project, page, selection):\n        self.page = page\n        self.selection = selection\n        ",
-"type":"code"
-},
-{
-"id":"e327d4d3650047bc9eedb2a21d4c2613",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, project)\n\n    def ",
-"type":"code"
-},
-{
-"id":"740055857bb244038c203cea23c1af69",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.Font = ",
+"text":"class Title(HorizontalPanel):\n\n    def __init__(self, parent, project, page, selection):\n        HorizontalPanel.__init__(self, parent)\n        self.project = project\n        self.page = page\n        self.selection = selection\n        self.Font = ",
 "type":"code"
 },
 {
@@ -8106,15 +8120,23 @@
 "type":"variable"
 },
 {
-"text":")\n        view = ",
+"text":")\n        self.text = self.",
 "type":"code"
 },
 {
-"id":"3060a3fbc04a4a708019d11f6efa737b",
+"id":"359755e756af4e708b237cd9753ae046",
 "type":"variable"
 },
 {
-"text":"(\n            self,\n            self.project,\n            [Token(self.page.title)],\n            max_width=self.project.",
+"text":"(",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":"(\n            self,\n            self._get_characters(),\n            max_width=self.project.",
 "type":"code"
 },
 {
@@ -8130,7 +8152,7 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n        view.SetToolTipString(self.page.",
+"text":"\n        ), flag=wx.EXPAND, proportion=1)\n        if self.selection.present:\n            self.text.SetFocus()\n            self.text.DONT_RESET_FOCUS = True\n        self.text.SetToolTipString(self.page.",
 "type":"code"
 },
 {
@@ -8138,7 +8160,7 @@
 "type":"variable"
 },
 {
-"text":")\n        MouseEventHelper.bind(\n            [view],\n            double_click=lambda event:\n                self._post_edit_start_from_token_view(event.Position)\n            ,\n            right_click=lambda event:\n                ",
+"text":")\n        MouseEventHelper.bind(\n            [self.text],\n            double_click=lambda event:\n                self._select(event.Position)\n            ,\n            right_click=lambda event:\n                ",
 "type":"code"
 },
 {
@@ -8154,19 +8176,28 @@
 "type":"variable"
 },
 {
-"text":"(self)\n        )\n        return view\n\n    def _post_edit_start_from_token_view(self, pos):\n        edge_token = self.view.GetClosestToken(pos)\n        selection = (0, 0)\n        if edge_token is not None:\n            edge, token = edge_token\n            start = token.index\n            if edge < 0:\n                selection = (start, start)\n            elif edge > 0:\n                selection = (start+len(token.text), start+len(token.text))\n            else:\n                selection = (start, start+len(token.text))\n        post_edit_start(self.view, selection=selection)\n\n    def ",
+"text":"(self)\n        )\n        self.text.Bind(wx.EVT_CHAR, self._on_char)\n\n    def _get_characters(self):\n        characters = []\n        for index, character in list(enumerate(self.page.title))+[(len(self.page.title), \" \")]:\n            characters.append(",
 "type":"code"
 },
 {
-"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
+"id":"99872a7e246e4fc38f9e0029f076e120",
 "type":"variable"
 },
 {
-"text":"(self, extra):\n        edit = SelectionableTextCtrl(\n            self,\n            style=wx.TE_PROCESS_ENTER,\n            value=self.page.title\n        )\n        edit.Save = lambda: self.page.set_title(self.edit.Value)\n        edit.SetSelection(*extra[\"selection\"])\n        return edit\n",
+"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker=\"beam\" if self.selection.present and self.selection.value == index else None,\n                extra=index\n            ))\n        return characters\n\n    def _on_char(self, event):\n        if self.selection.present:\n            character = event.GetUnicodeKey()\n            if character >= 32:\n                text = unichr(character)\n                with self.project.notify():\n                    self.page.set_title(self.page.title[:self.selection.value]+text+self.page.title[self.selection.value:])\n                    self.project.selection = self.selection.create(self.selection.value+1)\n            elif event.GetKeyCode() == wx.WXK_BACK:\n                with self.project.notify():\n                    self.page.set_title(self.page.title[:self.selection.value-1]+self.page.title[self.selection.value:])\n                    self.project.selection = self.selection.create(self.selection.value-1)\n\n    def _select(self, pos):\n        character = self.text.",
+"type":"code"
+},
+{
+"id":"26a20a9b510d411fa6dd5834c9f1634b",
+"type":"variable"
+},
+{
+"text":"(pos)\n        if character is None:\n            self.project.selection = self.selection.create(0)\n        else:\n            self.project.selection = self.selection.create(character.extra)\n",
 "type":"code"
 }
 ],
 "id":"24ce3a2a4785432ea263e18f55bfa106",
+"language":"",
 "type":"code"
 }
 ],
@@ -10569,7 +10600,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel):\n\n    def __init__(self, text, style, extra=None):\n        self.text = text\n        self.style = style\n        self.extra = extra\n        self.rect = wx.Rect(0, 0, 0, 0)\n",
+"text":"(wx.Panel):\n\n    def __init__(self, text, style, marker=None, extra=None):\n        self.text = text\n        self.style = style\n        self.marker = marker\n        self.extra = extra\n        self.rect = wx.Rect(0, 0, 0, 0)\n",
 "type":"code"
 }
 ],
@@ -10658,6 +10689,14 @@
 "type":"variable"
 },
 {
+"text":"()\n        self.",
+"type":"code"
+},
+{
+"id":"25dfed2d02124924b27ccee34278dc26",
+"type":"variable"
+},
+{
 "text":"()\n        self.Bind(wx.EVT_PAINT, self._on_paint)\n\n",
 "type":"code"
 },
@@ -10670,7 +10709,7 @@
 "type":"chunk"
 }
 ],
-"id":"ba61534ec9624a57ad8dd9e4dc4a066b",
+"id":"17bd2540f3e244d39c9a05feaa2b13f1",
 "language":"",
 "type":"code"
 },
@@ -10766,7 +10805,15 @@
 "type":"variable"
 },
 {
-"text":" = defaultdict(list)\n    for character in self.",
+"text":" = defaultdict(list)\n    self.",
+"type":"code"
+},
+{
+"id":"dadd60f63fbf40638d412cd98a36846a",
+"type":"variable"
+},
+{
+"text":" = []\n    for character in self.",
 "type":"code"
 },
 {
@@ -10782,7 +10829,15 @@
 "type":"variable"
 },
 {
-"text":"[character.style].append(character)\n",
+"text":"[character.style].append(character)\n        if character.marker == \"beam\":\n            self.",
+"type":"code"
+},
+{
+"id":"dadd60f63fbf40638d412cd98a36846a",
+"type":"variable"
+},
+{
+"text":".append(character)\n",
 "type":"code"
 }
 ],
@@ -11040,6 +11095,64 @@
 ],
 "fragments":[
 {
+"text":"def ",
+"type":"code"
+},
+{
+"id":"25dfed2d02124924b27ccee34278dc26",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":" = True\n    if self.",
+"type":"code"
+},
+{
+"id":"dadd60f63fbf40638d412cd98a36846a",
+"type":"variable"
+},
+{
+"text":":\n        self.Bind(wx.EVT_TIMER, self._on_timer)\n        self.timer = wx.Timer(self)\n        self.timer.Start(400)\n\ndef _on_timer(self, event):\n    self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":" = not self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":"\n    self.Refresh()\n",
+"type":"code"
+}
+],
+"id":"93501ea02639413298f4c115eaf93c71",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
 "text":"def _on_paint(self, event):\n    dc = wx.PaintDC(self)\n    for style, strings_positions in self.",
 "type":"code"
 },
@@ -11056,7 +11169,23 @@
 "type":"variable"
 },
 {
-"text":"(dc, self.GetFont())\n        dc.DrawTextList(*strings_positions)\n",
+"text":"(dc, self.GetFont())\n        dc.DrawTextList(*strings_positions)\n    if self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":":\n        dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))\n        for character in self.",
+"type":"code"
+},
+{
+"id":"dadd60f63fbf40638d412cd98a36846a",
+"type":"variable"
+},
+{
+"text":":\n            dc.DrawLinePoint(character.rect.TopLeft, character.rect.BottomLeft)\n",
 "type":"code"
 }
 ],
@@ -11067,7 +11196,7 @@
 {
 "chunkpath":[
 "base classes",
-"TokenView"
+"TextProjection"
 ],
 "filepath":[
 "rliterate.py"
@@ -11101,7 +11230,7 @@
 {
 "chunkpath":[
 "base classes",
-"TokenView"
+"TextProjection"
 ],
 "filepath":[
 "rliterate.py"
@@ -14320,6 +14449,46 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"GetClosestCharacter",
+"type":"code"
+},
+{
+"text":" does not report correct Y if height differs",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Find a solution to the focus hack ",
+"type":"text"
+},
+{
+"page_id":"8ab608f28a5046548963649371cab5fe",
+"text":null,
+"type":"reference"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"No modes experiment",
+"type":"text"
+}
+]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
@@ -14383,9 +14552,11 @@
 "1c7f69114ac14c80b2fb421ea7eda3a2":"notify",
 "1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
 "1e117025a0e14327ba6598fb696799a3":"fragments",
+"1f56374d1e0340aca956a39b7e874ff4":"_show_beams",
 "1f8f14208d274d0cbab10d21ec300882":"code_font",
 "20656ab448a944f7b3659aeb42405b15":"_line_height",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
+"25dfed2d02124924b27ccee34278dc26":"_setup_beams",
 "2653b138268045ab8bf58b30b10cd954":"_strings_by_style",
 "26a20a9b510d411fa6dd5834c9f1634b":"GetClosestCharacter",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
@@ -14485,6 +14656,7 @@
 "d6cbae294f8e4eec91f8a110b0d29761":"_convert_to_latest",
 "d805e4e8e283472b8748f331df6df7bc":"full_title",
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
+"dadd60f63fbf40638d412cd98a36846a":"_beams",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
 "de16dfdd628d459ba5af528db2604934":"fragments",
 "deed113aeefa46e7a4ffdf2d0ceff136":"_iter_characters_with_style",

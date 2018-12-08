@@ -299,9 +299,10 @@ class DropPointDropTarget(wx.DropTarget):
             self.last_drop_point = None
 class Box(wx.Panel):
 
-    def __init__(self, text, style, extra=None):
+    def __init__(self, text, style, marker=None, extra=None):
         self.text = text
         self.style = style
+        self.marker = marker
         self.extra = extra
         self.rect = wx.Rect(0, 0, 0, 0)
 class TextProjection(wx.Panel):
@@ -313,6 +314,7 @@ class TextProjection(wx.Panel):
         self._max_width = kwargs.get("max_width", 100)
         self._break_at_word = kwargs.get("break_at_word", True)
         self._layout()
+        self._setup_beams()
         self.Bind(wx.EVT_PAINT, self._on_paint)
 
     def _layout(self):
@@ -324,8 +326,11 @@ class TextProjection(wx.Panel):
 
     def _partition_characters(self):
         self._characters_by_style = defaultdict(list)
+        self._beams = []
         for character in self._characters:
             self._characters_by_style[character.style].append(character)
+            if character.marker == "beam":
+                self._beams.append(character)
 
     def _measure_character_size(self):
         dc = wx.MemoryDC()
@@ -396,11 +401,47 @@ class TextProjection(wx.Panel):
                 max_y = max(max_y, character.rect.Y+character.rect.Height)
         self.SetMinSize((max_x, max_y))
 
+    def _setup_beams(self):
+        self._show_beams = True
+        if self._beams:
+            self.Bind(wx.EVT_TIMER, self._on_timer)
+            self.timer = wx.Timer(self)
+            self.timer.Start(400)
+
+    def _on_timer(self, event):
+        self._show_beams = not self._show_beams
+        self.Refresh()
+
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
         for style, strings_positions in self._strings_by_style.iteritems():
             style.apply_to_wx_dc(dc, self.GetFont())
             dc.DrawTextList(*strings_positions)
+        if self._show_beams:
+            dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))
+            for character in self._beams:
+                dc.DrawLinePoint(character.rect.TopLeft, character.rect.BottomLeft)
+
+    def GetCharacterAt(self, position):
+        for character in self._characters:
+            if character.rect.Contains(position):
+                return character
+
+    def GetClosestCharacter(self, position):
+        if len(self._characters) == 0:
+            return None
+        characters_by_y_distance = defaultdict(list)
+        for character in self._characters:
+            if character.rect.Contains(position):
+                characters_by_y_distance[0] = [character]
+                break
+            characters_by_y_distance[
+                abs(character.rect.Y + int(character.rect.Height / 2) - position.y)
+            ].append(character)
+        return min(
+            characters_by_y_distance[min(characters_by_y_distance.keys())],
+            key=lambda character: abs(character.rect.X + int(character.rect.Width / 2) - position.x)
+        )
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -426,25 +467,6 @@ class TokenView(TextProjection):
         )
         self._default_cursor = self.GetCursor()
 
-    def GetCharacterAt(self, position):
-        for character in self._characters:
-            if character.rect.Contains(position):
-                return character
-    def GetClosestCharacter(self, position):
-        if len(self._characters) == 0:
-            return None
-        characters_by_y_distance = defaultdict(list)
-        for character in self._characters:
-            if character.rect.Contains(position):
-                characters_by_y_distance[0] = [character]
-                break
-            characters_by_y_distance[
-                abs(character.rect.Y + int(character.rect.Height / 2) - position.y)
-            ].append(character)
-        return min(
-            characters_by_y_distance[min(characters_by_y_distance.keys())],
-            key=lambda character: abs(character.rect.X + int(character.rect.Width / 2) - position.x)
-        )
     def GetToken(self, position):
         character = self.GetCharacterAt(position)
         if character is not None:
@@ -1970,6 +1992,7 @@ class Project(Observable):
 
     def __init__(self, filepath):
         Observable.__init__(self)
+        self._selection = Selection()
         self._active_editor = None
         self._highlighted_variable = None
         self.title="{} ({})".format(
@@ -1997,7 +2020,12 @@ class Project(Observable):
         return self.global_settings
     @property
     def selection(self):
-        return Selection()
+        return self._selection
+
+    @selection.setter
+    def selection(self, value):
+        with self.notify():
+            self._selection = value
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
@@ -2290,6 +2318,9 @@ class MainFrame(wx.Frame, BoxSizerMixin):
     def ChildReRendered(self):
         self.Layout()
         if self.project.active_editor is None:
+            focused_widget = wx.Window.FindFocus()
+            if focused_widget and hasattr(focused_widget, "DONT_RESET_FOCUS"):
+                return
             self._focus_panel.SetFocus()
 class ToolBar(wx.ToolBar):
 
@@ -3096,55 +3127,63 @@ class PageDropPoint(object):
 
     def Hide(self):
         self.divider.Hide()
-class Title(Editable):
+class Title(HorizontalPanel):
 
     def __init__(self, parent, project, page, selection):
+        HorizontalPanel.__init__(self, parent)
+        self.project = project
         self.page = page
         self.selection = selection
-        Editable.__init__(self, parent, project)
-
-    def CreateView(self):
         self.Font = create_font(**self.project.theme.title_font)
-        view = TokenView(
+        self.text = self.AppendChild(TextProjection(
             self,
-            self.project,
-            [Token(self.page.title)],
+            self._get_characters(),
             max_width=self.project.theme.page_body_width
-        )
-        view.SetToolTipString(self.page.full_title)
+        ), flag=wx.EXPAND, proportion=1)
+        if self.selection.present:
+            self.text.SetFocus()
+            self.text.DONT_RESET_FOCUS = True
+        self.text.SetToolTipString(self.page.full_title)
         MouseEventHelper.bind(
-            [view],
+            [self.text],
             double_click=lambda event:
-                self._post_edit_start_from_token_view(event.Position)
+                self._select(event.Position)
             ,
             right_click=lambda event:
                 SimpleContextMenu.ShowRecursive(self)
         )
-        return view
+        self.text.Bind(wx.EVT_CHAR, self._on_char)
 
-    def _post_edit_start_from_token_view(self, pos):
-        edge_token = self.view.GetClosestToken(pos)
-        selection = (0, 0)
-        if edge_token is not None:
-            edge, token = edge_token
-            start = token.index
-            if edge < 0:
-                selection = (start, start)
-            elif edge > 0:
-                selection = (start+len(token.text), start+len(token.text))
-            else:
-                selection = (start, start+len(token.text))
-        post_edit_start(self.view, selection=selection)
+    def _get_characters(self):
+        characters = []
+        for index, character in list(enumerate(self.page.title))+[(len(self.page.title), " ")]:
+            characters.append(Box(
+                character,
+                self.project.get_style(TokenType.RLiterate),
+                marker="beam" if self.selection.present and self.selection.value == index else None,
+                extra=index
+            ))
+        return characters
 
-    def CreateEdit(self, extra):
-        edit = SelectionableTextCtrl(
-            self,
-            style=wx.TE_PROCESS_ENTER,
-            value=self.page.title
-        )
-        edit.Save = lambda: self.page.set_title(self.edit.Value)
-        edit.SetSelection(*extra["selection"])
-        return edit
+    def _on_char(self, event):
+        if self.selection.present:
+            character = event.GetUnicodeKey()
+            if character >= 32:
+                text = unichr(character)
+                with self.project.notify():
+                    self.page.set_title(self.page.title[:self.selection.value]+text+self.page.title[self.selection.value:])
+                    self.project.selection = self.selection.create(self.selection.value+1)
+            elif event.GetKeyCode() == wx.WXK_BACK:
+                with self.project.notify():
+                    self.page.set_title(self.page.title[:self.selection.value-1]+self.page.title[self.selection.value:])
+                    self.project.selection = self.selection.create(self.selection.value-1)
+
+    def _select(self, pos):
+        character = self.text.GetClosestCharacter(pos)
+        if character is None:
+            self.project.selection = self.selection.create(0)
+        else:
+            self.project.selection = self.selection.create(character.extra)
 class Text(ParagraphBase):
 
     def CreateView(self):
