@@ -394,7 +394,7 @@ class TextProjection(wx.Panel):
 
     def _set_min_size(self):
         max_x = 10
-        max_y = 10
+        max_y = self._line_height_pixels
         for line in self._lines:
             for character in line:
                 max_x = max(max_x, character.rect.X+character.rect.Width)

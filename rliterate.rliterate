@@ -11298,7 +11298,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    max_x = 10\n    max_y = 10\n    for line in self.",
+"text":"(self):\n    max_x = 10\n    max_y = self.",
+"type":"code"
+},
+{
+"id":"5a66414227d04b228db871fc070f0b19",
+"type":"variable"
+},
+{
+"text":"\n    for line in self.",
 "type":"code"
 },
 {
