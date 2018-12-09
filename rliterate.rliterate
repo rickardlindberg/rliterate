@@ -6887,7 +6887,15 @@
 ],
 "fragments":[
 {
-"text":"class TableOfContentsButton(wx.Panel):\n\n    SIZE = 16\n\n    def __init__(self, parent, project, page):\n        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))\n        self._create_gui()\n        self.Update(project, page)\n\n",
+"text":"class TableOfContentsButton(wx.Panel):\n\n    SIZE = 16\n\n    def __init__(self, parent, *args, **kwargs):\n        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))\n        self.",
+"type":"code"
+},
+{
+"id":"5affa32461a54d70a681332cbfbcac11",
+"type":"variable"
+},
+{
+"text":"(*args, **kwargs)\n        self._create_gui()\n\n",
 "type":"code"
 },
 {
@@ -6900,6 +6908,32 @@
 }
 ],
 "id":"e91427b852754cb682eb63c881d490f4",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsButton"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"5affa32461a54d70a681332cbfbcac11",
+"type":"variable"
+},
+{
+"text":"(self, project, page):\n    self.project = project\n    self.page = page\n",
+"type":"code"
+}
+],
+"id":"87e5b9dcd50c48f9afe8058d38072577",
 "language":"",
 "type":"code"
 },
@@ -6931,7 +6965,23 @@
 ],
 "fragments":[
 {
-"text":"def Update(self, project, page):\n    self.project = project\n    self.page = page\n    self.Refresh()\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"d126e525b923499f9c0176206b3e886c",
+"type":"variable"
+},
+{
+"text":"(self, *args, **kwargs):\n    self.",
+"type":"code"
+},
+{
+"id":"5affa32461a54d70a681332cbfbcac11",
+"type":"variable"
+},
+{
+"text":"(*args, **kwargs)\n    self.Refresh()\n",
 "type":"code"
 }
 ],
@@ -14984,6 +15034,7 @@
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "5a66414227d04b228db871fc070f0b19":"_line_height_pixels",
+"5affa32461a54d70a681332cbfbcac11":"SetParameters",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "5e725316bce6426b88d46fe528e812ff":"_partition_characters",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
@@ -15047,6 +15098,7 @@
 "c65bff398b4a49af945b1c154a660687":"active_editor",
 "ccd9655841fb4311bad581f979730e47":"needs_saving",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
+"d126e525b923499f9c0176206b3e886c":"ReRender",
 "d3e26230c2c34d0986f2bbae0bab25b4":"Container",
 "d3f9252875944a4e94cbb00851a7384f":"variable_delimiters",
 "d4d8284a9d5f4e0abbbbc328581ef877":"value",
