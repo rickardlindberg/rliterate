@@ -2728,16 +2728,18 @@ class TableOfContentsButton(wx.Panel):
 
     def __init__(self, parent, project, page):
         wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.project = project
-        self.page = page
+        self._create_gui()
+        self.Update(project, page)
+
+    def _create_gui(self):
+        self.Bind(wx.EVT_PAINT, self._on_paint)
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
 
-    def OnLeftDown(self, event):
+    def _on_left_down(self, event):
         self.project.toggle_collapsed(self.page.id)
 
-    def OnPaint(self, event):
+    def _on_paint(self, event):
         dc = wx.GCDC(wx.PaintDC(self))
         dc.SetBrush(wx.BLACK_BRUSH)
         render = wx.RendererNative.Get()
@@ -2748,6 +2750,10 @@ class TableOfContentsButton(wx.Panel):
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
             flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED
         )
+    def Update(self, project, page):
+        self.project = project
+        self.page = page
+        self.Refresh()
 class PageContextMenu(wx.Menu):
 
     def __init__(self, project, page):

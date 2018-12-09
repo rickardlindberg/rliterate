@@ -6887,11 +6887,56 @@
 ],
 "fragments":[
 {
-"text":"class TableOfContentsButton(wx.Panel):\n\n    SIZE = 16\n\n    def __init__(self, parent, project, page):\n        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))\n        self.Bind(wx.EVT_PAINT, self.OnPaint)\n        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)\n        self.project = project\n        self.page = page\n        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n\n    def OnLeftDown(self, event):\n        self.project.toggle_collapsed(self.page.id)\n\n    def OnPaint(self, event):\n        dc = wx.GCDC(wx.PaintDC(self))\n        dc.SetBrush(wx.BLACK_BRUSH)\n        render = wx.RendererNative.Get()\n        (w, h) = self.Size\n        render.DrawTreeItemButton(\n            self,\n            dc,\n            (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),\n            flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED\n        )\n",
+"text":"class TableOfContentsButton(wx.Panel):\n\n    SIZE = 16\n\n    def __init__(self, parent, project, page):\n        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))\n        self._create_gui()\n        self.Update(project, page)\n\n",
 "type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"TableOfContentsButton"
+],
+"prefix":"    ",
+"type":"chunk"
 }
 ],
 "id":"e91427b852754cb682eb63c881d490f4",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsButton"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _create_gui(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n    self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n    self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n\ndef _on_left_down(self, event):\n    self.project.toggle_collapsed(self.page.id)\n\ndef _on_paint(self, event):\n    dc = wx.GCDC(wx.PaintDC(self))\n    dc.SetBrush(wx.BLACK_BRUSH)\n    render = wx.RendererNative.Get()\n    (w, h) = self.Size\n    render.DrawTreeItemButton(\n        self,\n        dc,\n        (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),\n        flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED\n    )\n",
+"type":"code"
+}
+],
+"id":"b15ce96c47a649ccb003498fa590b893",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsButton"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def Update(self, project, page):\n    self.project = project\n    self.page = page\n    self.Refresh()\n",
+"type":"code"
+}
+],
+"id":"bc6c3ee793a14b9dab2e38daf7503120",
+"language":"",
 "type":"code"
 }
 ],
