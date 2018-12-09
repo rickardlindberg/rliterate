@@ -994,6 +994,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "imports"
 ],
@@ -1001,6 +1002,7 @@
 "type":"chunk"
 },
 {
+"blank_lines_before":0,
 "path":[
 "constants"
 ],
@@ -1008,6 +1010,15 @@
 "type":"chunk"
 },
 {
+"blank_lines_before":0,
+"path":[
+"decorators"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"blank_lines_before":0,
 "path":[
 "base base classes"
 ],
@@ -1015,6 +1026,7 @@
 "type":"chunk"
 },
 {
+"blank_lines_before":0,
 "path":[
 "base classes"
 ],
@@ -1022,6 +1034,7 @@
 "type":"chunk"
 },
 {
+"blank_lines_before":0,
 "path":[
 "classes"
 ],
@@ -1029,6 +1042,7 @@
 "type":"chunk"
 },
 {
+"blank_lines_before":0,
 "path":[
 "functions"
 ],
@@ -1040,6 +1054,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "entry point"
 ],
@@ -1048,6 +1063,7 @@
 }
 ],
 "id":"93f40cf2b3364e0ca390f5cb0239ce0a",
+"language":"",
 "type":"code"
 },
 {
@@ -6326,6 +6342,7 @@
 }
 ],
 "id":"811a46cc4115441eb7d9fb27cd4b9916",
+"language":"",
 "type":"code"
 },
 {
@@ -12851,6 +12868,30 @@
 }
 ],
 "title":"Undo/Redo mechanisms"
+},
+{
+"children":[],
+"id":"2dd232b7a3234ccc8a74ac6d07212761",
+"paragraphs":[
+{
+"chunkpath":[
+"decorators"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def rltime(text):\n    def wrap(fn):\n        def fn_with_timing(*args, **kwargs):\n            t1 = time.time()\n            value = fn(*args, **kwargs)\n            t2 = time.time()\n            print(\"{: <20} {}ms\".format(text, int(1000*(t2-t1))))\n            return value\n        return fn_with_timing\n    return wrap\n",
+"type":"code"
+}
+],
+"id":"1a4fc6775a2c4173a7b5e866a78da814",
+"language":"",
+"type":"code"
+}
+],
+"title":"Profiling"
 }
 ],
 "id":"3573a22af9e64a118e00f358472039ac",

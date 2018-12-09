@@ -28,6 +28,16 @@ TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
 HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
 CONTINUE_PROCESSING = object()
 EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
+def rltime(text):
+    def wrap(fn):
+        def fn_with_timing(*args, **kwargs):
+            t1 = time.time()
+            value = fn(*args, **kwargs)
+            t2 = time.time()
+            print("{: <20} {}ms".format(text, int(1000*(t2-t1))))
+            return value
+        return fn_with_timing
+    return wrap
 class Editable(wx.Panel):
 
     def __init__(self, parent, project):
