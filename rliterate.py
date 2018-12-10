@@ -67,6 +67,22 @@ class Editable(wx.Panel):
     def Save(self):
         self.edit.Save()
         self.project.active_editor = None
+class BasePanel(wx.Panel):
+
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent)
+        self.values = kwargs
+        self._render()
+
+    def Update(self, **kwargs):
+        self.values.update(kwargs)
+        self._re_render()
+
+    def _render(self):
+        pass
+
+    def _re_render(self):
+        pass
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -2682,7 +2698,7 @@ class TableOfContentsRow(HorizontalPanel):
     def _render(self):
         self.AppendSpace(self.indentation*self.INDENTATION_SIZE)
         if self.page.children:
-            self.AppendChild(TableOfContentsButton(self, self.project, self.page), flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
+            self.AppendChild(TableOfContentsButton(self, project=self.project, page=self.page), flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
         else:
             self.AppendSpace(TableOfContentsButton.SIZE+1+self.BORDER)
         if self.project.is_open(self.page.id):
@@ -2722,25 +2738,18 @@ class TableOfContentsRow(HorizontalPanel):
 
     def _on_leave_window(self, event):
         self.SetBackgroundColour((255, 255, 255))
-class TableOfContentsButton(wx.Panel):
+class TableOfContentsButton(BasePanel):
 
     SIZE = 16
 
-    def __init__(self, parent, *args, **kwargs):
-        wx.Panel.__init__(self, parent, size=(self.SIZE+1, -1))
-        self.SetParameters(*args, **kwargs)
-        self._create_gui()
-
-    def SetParameters(self, project, page):
-        self.project = project
-        self.page = page
-    def _create_gui(self):
+    def _render(self):
         self.Bind(wx.EVT_PAINT, self._on_paint)
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+        self.SetMinSize((self.SIZE+1, -1))
 
     def _on_left_down(self, event):
-        self.project.toggle_collapsed(self.page.id)
+        self.values["project"].toggle_collapsed(self.values["page"].id)
 
     def _on_paint(self, event):
         dc = wx.GCDC(wx.PaintDC(self))
@@ -2751,11 +2760,8 @@ class TableOfContentsButton(wx.Panel):
             self,
             dc,
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
-            flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED
+            flags=0 if self.values["project"].is_collapsed(self.values["page"].id) else wx.CONTROL_EXPANDED
         )
-    def ReRender(self, *args, **kwargs):
-        self.SetParameters(*args, **kwargs)
-        self.Refresh()
 class PageContextMenu(wx.Menu):
 
     def __init__(self, project, page):
