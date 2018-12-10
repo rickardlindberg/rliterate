@@ -71,12 +71,16 @@ class BasePanel(wx.Panel):
 
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
+        self._init_mixins()
         self.values = kwargs
         self._render()
 
     def Update(self, **kwargs):
         self.values.update(kwargs)
         self._re_render()
+
+    def _init_mixins(self):
+        pass
 
     def _render(self):
         pass
@@ -118,6 +122,13 @@ class HorizontalPanel(wx.Panel, BoxSizerMixin):
 
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
+        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
+class HorizontalBasePanel(BasePanel, BoxSizerMixin):
+
+    def __init__(self, parent, **kwargs):
+        BasePanel.__init__(self, parent, **kwargs)
+
+    def _init_mixins(self):
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
 class SizeWrapper(object):
 
@@ -2608,7 +2619,7 @@ class TableOfContents(VerticalPanel):
     def _render_page(self, page, indentation=0):
         is_collapsed = self.project.is_collapsed(page.id)
         self.page_container.AppendChild(
-            TableOfContentsRow(self.page_container, self.project, page, indentation),
+            TableOfContentsRow(self.page_container, project=self.project, page=page, indentation=indentation),
             flag=wx.EXPAND
         )
         divider = self.page_container.AppendChild(
@@ -2683,51 +2694,50 @@ class TableOfContentsDropTarget(DropPointDropTarget):
             parent_page_id=drop_point.parent_page_id,
             before_page_id=drop_point.before_page_id
         )
-class TableOfContentsRow(HorizontalPanel):
-
-    def __init__(self, parent, project, page, indentation):
-        HorizontalPanel.__init__(self, parent)
-        self.project = project
-        self.page = page
-        self.indentation = indentation
-        self._render()
+class TableOfContentsRow(HorizontalBasePanel):
 
     BORDER = 2
     INDENTATION_SIZE = 16
 
     def _render(self):
-        self.AppendSpace(self.indentation*self.INDENTATION_SIZE)
-        if self.page.children:
-            self.AppendChild(TableOfContentsButton(self, project=self.project, page=self.page), flag=wx.EXPAND|wx.LEFT, border=self.BORDER)
-        else:
-            self.AppendSpace(TableOfContentsButton.SIZE+1+self.BORDER)
-        if self.project.is_open(self.page.id):
-            self.Font = create_font(**dict(self.project.theme.toc_font, bold=True))
-        else:
-            self.Font = create_font(**self.project.theme.toc_font)
-        text = self.AppendChild(self._label(), flag=wx.ALL, border=self.BORDER)
+        self._render_indent()
+        self._render_expand_collapse()
+        self._render_text()
         self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)
         self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
-        for helper in [MouseEventHelper(self), MouseEventHelper(text)]:
+        for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:
             helper.OnClick = self._on_click
             helper.OnRightClick = self._on_right_click
             helper.OnDrag = self._on_drag
+        self._re_render()
 
-    def _label(self):
-        label = wx.StaticText(self)
-        label.SetLabelText(self.page.title)
-        return label
+    def _render_indent(self):
+        self.indent = self.AppendSpace()
+
+    def _render_expand_collapse(self):
+        self.expand_collapse = self.AppendChild(
+            TableOfContentsButton(self, **self.values),
+            flag=wx.EXPAND|wx.LEFT|wx.RESERVE_SPACE_EVEN_IF_HIDDEN,
+            border=self.BORDER
+        )
+
+    def _render_text(self):
+        self.text = self.AppendChild(
+            wx.StaticText(self),
+            flag=wx.ALL,
+            border=self.BORDER
+        )
     def _on_click(self):
-        open_pages_gui(self, self.project, [self.page.id], column_index=0)
+        open_pages_gui(self, self.values["project"], [self.values["page"].id], column_index=0)
 
     def _on_right_click(self, event):
-        menu = PageContextMenu(self.project, self.page)
+        menu = PageContextMenu(self.values["project"], self.values["page"])
         self.PopupMenu(menu)
         menu.Destroy()
 
     def _on_drag(self):
         data = RliterateDataObject("page", {
-            "page_id": self.page.id,
+            "page_id": self.values["page"].id,
         })
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
@@ -2738,6 +2748,14 @@ class TableOfContentsRow(HorizontalPanel):
 
     def _on_leave_window(self, event):
         self.SetBackgroundColour((255, 255, 255))
+    def _re_render(self):
+        self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
+        self.expand_collapse.Update(**self.values)
+        if self.values["project"].is_open(self.values["page"].id):
+            self.Font = create_font(**dict(self.values["project"].theme.toc_font, bold=True))
+        else:
+            self.Font = create_font(**self.values["project"].theme.toc_font)
+        self.text.SetLabelText(self.values["page"].title)
 class TableOfContentsButton(BasePanel):
 
     SIZE = 16
@@ -2747,6 +2765,7 @@ class TableOfContentsButton(BasePanel):
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         self.SetMinSize((self.SIZE+1, -1))
+        self._re_render()
 
     def _on_left_down(self, event):
         self.values["project"].toggle_collapsed(self.values["page"].id)
@@ -2762,6 +2781,8 @@ class TableOfContentsButton(BasePanel):
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
             flags=0 if self.values["project"].is_collapsed(self.values["page"].id) else wx.CONTROL_EXPANDED
         )
+    def _re_render(self):
+        self.Show(bool(self.values["page"].children))
 class PageContextMenu(wx.Menu):
 
     def __init__(self, project, page):

@@ -6408,7 +6408,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        TableOfContentsRow(self.page_container, self.project, page, indentation),\n        flag=wx.EXPAND\n    )\n    divider = self.page_container.",
+"text":"(\n        ",
+"type":"code"
+},
+{
+"id":"5e10aeda67184296b8d29d6d4d54c2cb",
+"type":"variable"
+},
+{
+"text":"(self.page_container, project=self.project, page=page, indentation=indentation),\n        flag=wx.EXPAND\n    )\n    divider = self.page_container.",
 "type":"code"
 },
 {
@@ -6429,6 +6437,7 @@
 }
 ],
 "id":"89783cf4c0cc40f5a3c8a706be39b056",
+"language":"",
 "type":"code"
 },
 {
@@ -6448,7 +6457,31 @@
 "type":"variable"
 },
 {
-"text":".SIZE+1+TableOfContentsRow.BORDER\n        span_x_center = left_padding + TableOfContentsRow.INDENTATION_SIZE * (self.indentation + 1.5)\n        return abs(span_x_center - x)\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show(sum([\n            TableOfContentsRow.BORDER,\n            ",
+"text":".SIZE+1+",
+"type":"code"
+},
+{
+"id":"5e10aeda67184296b8d29d6d4d54c2cb",
+"type":"variable"
+},
+{
+"text":".BORDER\n        span_x_center = left_padding + ",
+"type":"code"
+},
+{
+"id":"5e10aeda67184296b8d29d6d4d54c2cb",
+"type":"variable"
+},
+{
+"text":".INDENTATION_SIZE * (self.indentation + 1.5)\n        return abs(span_x_center - x)\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show(sum([\n            ",
+"type":"code"
+},
+{
+"id":"5e10aeda67184296b8d29d6d4d54c2cb",
+"type":"variable"
+},
+{
+"text":".BORDER,\n            ",
 "type":"code"
 },
 {
@@ -6456,7 +6489,15 @@
 "type":"variable"
 },
 {
-"text":".SIZE,\n            1,\n            self.indentation*TableOfContentsRow.INDENTATION_SIZE,\n        ]))\n\n    def Hide(self):\n        self.divider.Hide()\n",
+"text":".SIZE,\n            1,\n            self.indentation*",
+"type":"code"
+},
+{
+"id":"5e10aeda67184296b8d29d6d4d54c2cb",
+"type":"variable"
+},
+{
+"text":".INDENTATION_SIZE,\n        ]))\n\n    def Hide(self):\n        self.divider.Hide()\n",
 "type":"code"
 }
 ],
@@ -6708,10 +6749,27 @@
 ],
 "fragments":[
 {
-"text":"class TableOfContentsRow(HorizontalPanel):\n\n    def __init__(self, parent, project, page, indentation):\n        HorizontalPanel.__init__(self, parent)\n        self.project = project\n        self.page = page\n        self.indentation = indentation\n        self._render()\n\n",
+"text":"class ",
 "type":"code"
 },
 {
+"id":"5e10aeda67184296b8d29d6d4d54c2cb",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"36204f60f46444b6ae7da695dcd1a7c2",
+"type":"variable"
+},
+{
+"text":"):\n\n    BORDER = 2\n    INDENTATION_SIZE = 16\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
 "path":[
 "TableOfContentsRow"
 ],
@@ -6720,6 +6778,7 @@
 }
 ],
 "id":"4edadec964c141f7a33b7cc691d6e00b",
+"language":"",
 "type":"code"
 },
 {
@@ -6742,7 +6801,23 @@
 ],
 "fragments":[
 {
-"text":"BORDER = 2\nINDENTATION_SIZE = 16\n\ndef _render(self):\n    self.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    self._render_indent()\n    self._render_expand_collapse()\n    self._render_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n    self.",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"()\n\ndef _render_indent(self):\n    self.indent = self.",
 "type":"code"
 },
 {
@@ -6750,7 +6825,7 @@
 "type":"variable"
 },
 {
-"text":"(self.indentation*self.INDENTATION_SIZE)\n    if self.page.children:\n        self.",
+"text":"()\n\ndef _render_expand_collapse(self):\n    self.expand_collapse = self.",
 "type":"code"
 },
 {
@@ -6758,7 +6833,7 @@
 "type":"variable"
 },
 {
-"text":"(",
+"text":"(\n        ",
 "type":"code"
 },
 {
@@ -6766,71 +6841,15 @@
 "type":"variable"
 },
 {
-"text":"(self, project=self.project, page=self.page), flag=wx.EXPAND|wx.LEFT, border=self.BORDER)\n    else:\n        self.",
+"text":"(self, **self.",
 "type":"code"
 },
 {
-"id":"31a17b208536469099ae5c084d35590d",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":"(",
-"type":"code"
-},
-{
-"id":"54f99e72df0b4006b2bd90465c8558c4",
-"type":"variable"
-},
-{
-"text":".SIZE+1+self.BORDER)\n    if self.project.is_open(self.page.id):\n        self.Font = ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**dict(self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"8970b68862714f158948f8ec1c68acb1",
-"type":"variable"
-},
-{
-"text":", bold=True))\n    else:\n        self.Font = ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"8970b68862714f158948f8ec1c68acb1",
-"type":"variable"
-},
-{
-"text":")\n    text = self.",
+"text":"),\n        flag=wx.EXPAND|wx.LEFT|wx.RESERVE_SPACE_EVEN_IF_HIDDEN,\n        border=self.BORDER\n    )\n\ndef _render_text(self):\n    self.text = self.",
 "type":"code"
 },
 {
@@ -6838,11 +6857,12 @@
 "type":"variable"
 },
 {
-"text":"(self._label(), flag=wx.ALL, border=self.BORDER)\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _label(self):\n    label = wx.StaticText(self)\n    label.SetLabelText(self.page.title)\n    return label\n",
+"text":"(\n        wx.StaticText(self),\n        flag=wx.ALL,\n        border=self.BORDER\n    )\n",
 "type":"code"
 }
 ],
 "id":"e7222f9d1f2e4c6dbcdee098b3f75ca4",
+"language":"",
 "type":"code"
 },
 {
@@ -6887,11 +6907,189 @@
 ],
 "fragments":[
 {
-"text":"def _on_click(self):\n    open_pages_gui(self, self.project, [self.page.id], column_index=0)\n\ndef _on_right_click(self, event):\n    menu = PageContextMenu(self.project, self.page)\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
+"text":"def _on_click(self):\n    open_pages_gui(self, self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"], [self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"].id], column_index=0)\n\ndef _on_right_click(self, event):\n    menu = PageContextMenu(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"], self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"])\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"].id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
 "type":"code"
 }
 ],
 "id":"38c32e72a6514307926cf2ae728dbbf6",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.indent.SetSize(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self.expand_collapse.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(**self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":")\n    if self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].is_open(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"].id):\n        self.Font = ",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**dict(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"8970b68862714f158948f8ec1c68acb1",
+"type":"variable"
+},
+{
+"text":", bold=True))\n    else:\n        self.Font = ",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"8970b68862714f158948f8ec1c68acb1",
+"type":"variable"
+},
+{
+"text":")\n    self.text.SetLabelText(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"].title)\n",
+"type":"code"
+}
+],
+"id":"244f3dbf888c4a6fb2bedda9ce9d224d",
+"language":"",
 "type":"code"
 }
 ],
@@ -6970,7 +7168,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n    self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n    self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    self.SetMinSize((self.SIZE+1, -1))\n\ndef _on_left_down(self, event):\n    self.",
+"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n    self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n    self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    self.SetMinSize((self.SIZE+1, -1))\n    self.",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"()\n\ndef _on_left_down(self, event):\n    self.",
 "type":"code"
 },
 {
@@ -7007,6 +7213,40 @@
 }
 ],
 "id":"b15ce96c47a649ccb003498fa590b893",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsButton"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.Show(bool(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"].children))\n",
+"type":"code"
+}
+],
+"id":"3cf91c71890446c089767f3836a58022",
 "language":"",
 "type":"code"
 }
@@ -12328,6 +12568,14 @@
 "type":"code"
 },
 {
+"id":"0e6dba8d1c3848478224db0b9019da60",
+"type":"variable"
+},
+{
+"text":"()\n        self.",
+"type":"code"
+},
+{
 "id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
@@ -12365,6 +12613,14 @@
 },
 {
 "text":"()\n\n    def ",
+"type":"code"
+},
+{
+"id":"0e6dba8d1c3848478224db0b9019da60",
+"type":"variable"
+},
+{
+"text":"(self):\n        pass\n\n    def ",
 "type":"code"
 },
 {
@@ -12505,6 +12761,55 @@
 }
 ],
 "id":"72985f3cbb2a4fbda2f876beec564231",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"36204f60f46444b6ae7da695dcd1a7c2",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"type":"variable"
+},
+{
+"text":", BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        ",
+"type":"code"
+},
+{
+"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"type":"variable"
+},
+{
+"text":".__init__(self, parent, **kwargs)\n\n    def ",
+"type":"code"
+},
+{
+"id":"0e6dba8d1c3848478224db0b9019da60",
+"type":"variable"
+},
+{
+"text":"(self):\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
+"type":"code"
+}
+],
+"id":"8e538763ecab4e4e97faf48f34aadfaf",
+"language":"",
 "type":"code"
 },
 {
@@ -15095,6 +15400,7 @@
 "03cf450743e9447da0a9becadacd7dda":"active_editor",
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
+"0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
 "13edfec5045f41d99010d539bc4ac956":"Layout",
 "1566854b9f4240408d4a8b17ae305740":"VerticalPanel",
@@ -15127,6 +15433,7 @@
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "359755e756af4e708b237cd9753ae046":"AppendChild",
 "35fc9d123bbc4572b1d559ec7f013016":"Style",
+"36204f60f46444b6ae7da695dcd1a7c2":"HorizontalBasePanel",
 "37f8b479b7eb4013bea0222eacc5ea6f":"SetPageId",
 "39785d8cdcb4445bad27a741363efa23":"SetPageId",
 "39e45626d4804403be92d31444a1281c":"text_font",
@@ -15148,6 +15455,7 @@
 "5affa32461a54d70a681332cbfbcac11":"SetParameters",
 "5bf37424f5634fcaaf91e43d607a41ca":"BasePanel",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
+"5e10aeda67184296b8d29d6d4d54c2cb":"TableOfContentsRow",
 "5e725316bce6426b88d46fe528e812ff":"_partition_characters",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
 "67ebf8be121a46768936eec41e336f11":"language",
