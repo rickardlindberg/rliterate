@@ -6383,7 +6383,7 @@
 "type":"variable"
 },
 {
-"text":"(self),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n",
+"text":"(self),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n    self.row_widgets = []\n",
 "type":"code"
 }
 ],
@@ -6409,15 +6409,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    with flicker_free_drawing(self):\n        self._update_unhoist_button()\n        self._update_page_container()\n        self.GetTopLevelParent().ChildReRendered()\n\ndef _update_unhoist_button(self):\n    self.unhoist_button.Show(self._get_hoisted_page() is not None)\n\ndef _update_page_container(self):\n    self.drop_points = []\n    self.page_container.",
-"type":"code"
-},
-{
-"id":"898556fcc0094d959568f97b261a5f5c",
-"type":"variable"
-},
-{
-"text":"()\n    if self._get_hoisted_page() is None:\n        self._render_page(self.",
+"text":"(self):\n    with flicker_free_drawing(self):\n        self._update_unhoist_button()\n        self._update_page_container()\n        self.GetTopLevelParent().ChildReRendered()\n\ndef _update_unhoist_button(self):\n    self.unhoist_button.Show(self._get_hoisted_page() is not None)\n\ndef _update_page_container(self):\n    self.drop_points = []\n    self.row_index = 0\n    if self._get_hoisted_page() is None:\n        self._render_page(self.",
 "type":"code"
 },
 {
@@ -6425,7 +6417,7 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"].get_page())\n    else:\n        self._render_page(self._get_hoisted_page())\n\ndef _get_hoisted_page(self):\n    if self.",
+"text":"[\"project\"].get_page())\n    else:\n        self._render_page(self._get_hoisted_page())\n    while self.row_index < len(self.row_widgets):\n        for widget in self.row_widgets.pop(-1):\n            widget.Destroy()\n\ndef _get_hoisted_page(self):\n    if self.",
 "type":"code"
 },
 {
@@ -6457,7 +6449,23 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"].is_collapsed(page.id)\n    self.page_container.",
+"text":"[\"project\"].is_collapsed(page.id)\n    divider = self._get_or_create_row(page, indentation)\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in ",
+"type":"code"
+},
+{
+"id":"2cce98597c264b5597564c1f9e51cb5f",
+"type":"variable"
+},
+{
+"text":"(page.children):\n            divider = self._render_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n\ndef _get_or_create_row(self, page, indentation):\n    if self.row_index < len(self.row_widgets):\n        row, divider = self.row_widgets[self.row_index]\n        row.Update(project=self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"], page=page, indentation=indentation)\n    else:\n        row = self.page_container.",
 "type":"code"
 },
 {
@@ -6465,7 +6473,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        ",
+"text":"(\n            ",
 "type":"code"
 },
 {
@@ -6481,7 +6489,7 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"], page=page, indentation=indentation),\n        flag=wx.EXPAND\n    )\n    divider = self.page_container.",
+"text":"[\"project\"], page=page, indentation=indentation),\n            flag=wx.EXPAND\n        )\n        divider = self.page_container.",
 "type":"code"
 },
 {
@@ -6489,15 +6497,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        Divider(self.page_container, padding=0, height=2),\n        flag=wx.EXPAND\n    )\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in ",
-"type":"code"
-},
-{
-"id":"2cce98597c264b5597564c1f9e51cb5f",
-"type":"variable"
-},
-{
-"text":"(page.children):\n            divider = self._render_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n",
+"text":"(\n            Divider(self.page_container, padding=0, height=2),\n            flag=wx.EXPAND\n        )\n        self.row_widgets.append((row, divider))\n    self.row_index += 1\n    return divider\n",
 "type":"code"
 }
 ],

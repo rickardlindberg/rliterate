@@ -2599,6 +2599,7 @@ class TableOfContents(VerticalBasePanel):
             flag=wx.EXPAND,
             proportion=1
         )
+        self.row_widgets = []
     def _update_gui(self):
         with flicker_free_drawing(self):
             self._update_unhoist_button()
@@ -2610,11 +2611,14 @@ class TableOfContents(VerticalBasePanel):
 
     def _update_page_container(self):
         self.drop_points = []
-        self.page_container.RemoveChildren()
+        self.row_index = 0
         if self._get_hoisted_page() is None:
             self._render_page(self.values["project"].get_page())
         else:
             self._render_page(self._get_hoisted_page())
+        while self.row_index < len(self.row_widgets):
+            for widget in self.row_widgets.pop(-1):
+                widget.Destroy()
 
     def _get_hoisted_page(self):
         if self.values["project"].hoisted_page is None:
@@ -2624,14 +2628,7 @@ class TableOfContents(VerticalBasePanel):
 
     def _render_page(self, page, indentation=0):
         is_collapsed = self.values["project"].is_collapsed(page.id)
-        self.page_container.AppendChild(
-            TableOfContentsRow(self.page_container, project=self.values["project"], page=page, indentation=indentation),
-            flag=wx.EXPAND
-        )
-        divider = self.page_container.AppendChild(
-            Divider(self.page_container, padding=0, height=2),
-            flag=wx.EXPAND
-        )
+        divider = self._get_or_create_row(page, indentation)
         if is_collapsed or len(page.children) == 0:
             before_page_id = None
         else:
@@ -2651,6 +2648,23 @@ class TableOfContents(VerticalBasePanel):
                     parent_page_id=page.id,
                     before_page_id=None if next_child is None else next_child.id
                 ))
+        return divider
+
+    def _get_or_create_row(self, page, indentation):
+        if self.row_index < len(self.row_widgets):
+            row, divider = self.row_widgets[self.row_index]
+            row.Update(project=self.values["project"], page=page, indentation=indentation)
+        else:
+            row = self.page_container.AppendChild(
+                TableOfContentsRow(self.page_container, project=self.values["project"], page=page, indentation=indentation),
+                flag=wx.EXPAND
+            )
+            divider = self.page_container.AppendChild(
+                Divider(self.page_container, padding=0, height=2),
+                flag=wx.EXPAND
+            )
+            self.row_widgets.append((row, divider))
+        self.row_index += 1
         return divider
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.page_container.ScreenToClient(screen_pos)
