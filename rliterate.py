@@ -2583,6 +2583,11 @@ class TableOfContents(VerticalBasePanel):
             self._create_unhoist_button()
             self._create_page_container()
 
+    def _update_gui(self):
+        with flicker_free_drawing(self):
+            self._update_unhoist_button()
+            self._update_page_container()
+            self.GetTopLevelParent().ChildReRendered()
     def _create_unhoist_button(self):
         self.unhoist_button = self.AppendChild(
             wx.Button(self, label="unhoist"),
@@ -2593,6 +2598,8 @@ class TableOfContents(VerticalBasePanel):
             lambda event: setattr(self.values["project"], "hoisted_page", None)
         )
 
+    def _update_unhoist_button(self):
+        self.unhoist_button.Show(self._get_hoisted_page() is not None)
     def _create_page_container(self):
         self.page_container = self.AppendChild(
             VerticalScrolledWindow(self),
@@ -2600,33 +2607,19 @@ class TableOfContents(VerticalBasePanel):
             proportion=1
         )
         self.row_widgets = []
-    def _update_gui(self):
-        with flicker_free_drawing(self):
-            self._update_unhoist_button()
-            self._update_page_container()
-            self.GetTopLevelParent().ChildReRendered()
-
-    def _update_unhoist_button(self):
-        self.unhoist_button.Show(self._get_hoisted_page() is not None)
 
     def _update_page_container(self):
-        self.drop_points = []
         self.row_index = 0
+        self.drop_points = []
         if self._get_hoisted_page() is None:
-            self._render_page(self.values["project"].get_page())
+            self._flatten_page(self.values["project"].get_page())
         else:
-            self._render_page(self._get_hoisted_page())
+            self._flatten_page(self._get_hoisted_page())
         while self.row_index < len(self.row_widgets):
             for widget in self.row_widgets.pop(-1):
                 widget.Destroy()
 
-    def _get_hoisted_page(self):
-        if self.values["project"].hoisted_page is None:
-            return None
-        else:
-            return self.values["project"].get_page(self.values["project"].hoisted_page)
-
-    def _render_page(self, page, indentation=0):
+    def _flatten_page(self, page, indentation=0):
         is_collapsed = self.values["project"].is_collapsed(page.id)
         divider = self._get_or_create_row(page, indentation)
         if is_collapsed or len(page.children) == 0:
@@ -2641,7 +2634,7 @@ class TableOfContents(VerticalBasePanel):
         ))
         if not is_collapsed:
             for child, next_child in pairs(page.children):
-                divider = self._render_page(child, indentation+1)
+                divider = self._flatten_page(child, indentation+1)
                 self.drop_points.append(TableOfContentsDropPoint(
                     divider=divider,
                     indentation=indentation+1,
@@ -2666,6 +2659,11 @@ class TableOfContents(VerticalBasePanel):
             self.row_widgets.append((row, divider))
         self.row_index += 1
         return divider
+    def _get_hoisted_page(self):
+        if self.values["project"].hoisted_page is None:
+            return None
+        else:
+            return self.values["project"].get_page(self.values["project"].hoisted_page)
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.page_container.ScreenToClient(screen_pos)
         if self.page_container.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
