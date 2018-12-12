@@ -346,14 +346,6 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class Box(wx.Panel):
-
-    def __init__(self, text, style, marker=None, extra=None):
-        self.text = text
-        self.style = style
-        self.marker = marker
-        self.extra = extra
-        self.rect = wx.Rect(0, 0, 0, 0)
 class TextProjection(wx.Panel):
 
     def __init__(self, parent, characters, **kwargs):
@@ -4077,6 +4069,14 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick(event)
+class Box(object):
+
+    def __init__(self, text, style, marker=None, extra=None):
+        self.text = text
+        self.style = style
+        self.marker = marker
+        self.extra = extra
+        self.rect = wx.Rect(0, 0, 0, 0)
 class Token(object):
 
     SPLIT_PATTERNS = [

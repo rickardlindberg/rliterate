@@ -11326,7 +11326,7 @@
 },
 {
 "chunkpath":[
-"base classes"
+"classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -11341,7 +11341,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel):\n\n    def __init__(self, text, style, marker=None, extra=None):\n        self.text = text\n        self.style = style\n        self.marker = marker\n        self.extra = extra\n        self.rect = wx.Rect(0, 0, 0, 0)\n",
+"text":"(object):\n\n    def __init__(self, text, style, marker=None, extra=None):\n        self.text = text\n        self.style = style\n        self.marker = marker\n        self.extra = extra\n        self.rect = wx.Rect(0, 0, 0, 0)\n",
 "type":"code"
 }
 ],
