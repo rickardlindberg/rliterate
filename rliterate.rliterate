@@ -6809,7 +6809,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self._create_indent()\n    self._create_expand_collapse()\n    self._create_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _create_indent(self):\n    self.indent = self.",
+"text":"(self):\n    self._set_font()\n    self._create_indent()\n    self._create_expand_collapse()\n    self._create_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _create_indent(self):\n    self.indent = self.",
 "type":"code"
 },
 {
@@ -6972,7 +6972,15 @@
 "type":"variable"
 },
 {
-"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    if self.",
+"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self._set_font()\n    self.text.SetLabelText(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"].title)\n\ndef _set_font(self):\n    if self.",
 "type":"code"
 },
 {
@@ -7052,15 +7060,7 @@
 "type":"variable"
 },
 {
-"text":")\n    self.text.SetLabelText(self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"].title)\n",
+"text":")\n",
 "type":"code"
 }
 ],

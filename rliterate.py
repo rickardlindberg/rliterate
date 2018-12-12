@@ -2705,6 +2705,7 @@ class TableOfContentsRow(HorizontalBasePanel):
     INDENTATION_SIZE = 16
 
     def _create_gui(self):
+        self._set_font()
         self._create_indent()
         self._create_expand_collapse()
         self._create_text()
@@ -2754,11 +2755,14 @@ class TableOfContentsRow(HorizontalBasePanel):
         self.SetBackgroundColour((255, 255, 255))
     def _update_gui(self):
         self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
+        self._set_font()
+        self.text.SetLabelText(self.values["page"].title)
+
+    def _set_font(self):
         if self.values["project"].is_open(self.values["page"].id):
             self.Font = create_font(**dict(self.values["project"].theme.toc_font, bold=True))
         else:
             self.Font = create_font(**self.values["project"].theme.toc_font)
-        self.text.SetLabelText(self.values["page"].title)
     def _update_children(self):
         self.expand_collapse.Update(**self.values)
 class TableOfContentsButton(BasePanel):
