@@ -6809,15 +6809,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self._render_indent()\n    self._render_expand_collapse()\n    self._render_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n    self.",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"()\n\ndef _render_indent(self):\n    self.indent = self.",
+"text":"(self):\n    self._create_indent()\n    self._create_expand_collapse()\n    self._create_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _create_indent(self):\n    self.indent = self.",
 "type":"code"
 },
 {
@@ -6825,7 +6817,7 @@
 "type":"variable"
 },
 {
-"text":"()\n\ndef _render_expand_collapse(self):\n    self.expand_collapse = self.",
+"text":"()\n\ndef _create_expand_collapse(self):\n    self.expand_collapse = self.",
 "type":"code"
 },
 {
@@ -6849,7 +6841,7 @@
 "type":"variable"
 },
 {
-"text":"),\n        flag=wx.EXPAND|wx.LEFT|wx.RESERVE_SPACE_EVEN_IF_HIDDEN,\n        border=self.BORDER\n    )\n\ndef _render_text(self):\n    self.text = self.",
+"text":"),\n        flag=wx.EXPAND|wx.LEFT|wx.RESERVE_SPACE_EVEN_IF_HIDDEN,\n        border=self.BORDER\n    )\n\ndef _create_text(self):\n    self.text = self.",
 "type":"code"
 },
 {
@@ -6980,23 +6972,7 @@
 "type":"variable"
 },
 {
-"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self.expand_collapse.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(**self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":")\n    if self.",
+"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    if self.",
 "type":"code"
 },
 {
@@ -7091,6 +7067,48 @@
 "id":"244f3dbf888c4a6fb2bedda9ce9d224d",
 "language":"",
 "type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"efd50cfe632b44e6a6620c3fbf66a664",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.expand_collapse.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(**self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":")\n",
+"type":"code"
+}
+],
+"id":"a282c6fed06444aba630d35537cbd88c",
+"language":"",
+"type":"code"
 }
 ],
 "title":"Row widget"
@@ -7168,15 +7186,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n    self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n    self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    self.SetMinSize((self.SIZE+1, -1))\n    self.",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"()\n\ndef _on_left_down(self, event):\n    self.",
+"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n    self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n    self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    self.SetMinSize((self.SIZE+1, -1))\n\ndef _on_left_down(self, event):\n    self.",
 "type":"code"
 },
 {
@@ -12588,6 +12598,14 @@
 "type":"variable"
 },
 {
+"text":"()\n        self.",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
 "text":"()\n\n    def ",
 "type":"code"
 },
@@ -12612,6 +12630,14 @@
 "type":"variable"
 },
 {
+"text":"()\n        self.",
+"type":"code"
+},
+{
+"id":"efd50cfe632b44e6a6620c3fbf66a664",
+"type":"variable"
+},
+{
 "text":"()\n\n    def ",
 "type":"code"
 },
@@ -12633,6 +12659,14 @@
 },
 {
 "id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n        pass\n\n    def ",
+"type":"code"
+},
+{
+"id":"efd50cfe632b44e6a6620c3fbf66a664",
 "type":"variable"
 },
 {
@@ -15410,7 +15444,7 @@
 "1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
 "1e117025a0e14327ba6598fb696799a3":"fragments",
 "1f56374d1e0340aca956a39b7e874ff4":"_show_beams",
-"1f5e6f3baaa0428cb1ce92e49af41f62":"_re_render",
+"1f5e6f3baaa0428cb1ce92e49af41f62":"_update_gui",
 "1f8f14208d274d0cbab10d21ec300882":"code_font",
 "20656ab448a944f7b3659aeb42405b15":"_line_height",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
@@ -15473,7 +15507,7 @@
 "879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",
 "883ac73a999c403e8274442301acdbb3":"Update",
 "885085190cef47709dd3922b7c386fab":"fragments",
-"887acc7e530b4d98933d11e223d58c42":"_render",
+"887acc7e530b4d98933d11e223d58c42":"_create_gui",
 "8970b68862714f158948f8ec1c68acb1":"toc_font",
 "898556fcc0094d959568f97b261a5f5c":"RemoveChildren",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
@@ -15546,6 +15580,7 @@
 "eabcfbe8e6c349d497353e55ad0b3685":"Selection",
 "ebae45a29f8649beb10a7e3cab576552":"\", \"",
 "ec33a5e51ade4f3283c735e5afaf45d8":"TextProjection",
+"efd50cfe632b44e6a6620c3fbf66a664":"_update_children",
 "f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
