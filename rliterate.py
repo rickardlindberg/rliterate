@@ -375,6 +375,10 @@ class TextProjection(BasePanel):
     def _break_at_word(self):
         return self.values["break_at_word"]
 
+    @property
+    def _font(self):
+        return self.values.get("font", self.GetFont())
+
     def _create_gui(self):
         self.Bind(wx.EVT_PAINT, self._on_paint)
 
@@ -399,11 +403,11 @@ class TextProjection(BasePanel):
 
     def _measure_character_size(self):
         dc = wx.MemoryDC()
-        dc.SetFont(self.GetFont())
+        dc.SetFont(self._font)
         dc.SelectObject(wx.EmptyBitmap(1, 1))
         self._line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self._line_height))
         for style, characters in self._characters_by_style.iteritems():
-            style.apply_to_wx_dc(dc, self.GetFont())
+            style.apply_to_wx_dc(dc, self._font)
             for character in characters:
                 character.rect.Size = dc.GetTextExtent(character.text)
 
@@ -480,7 +484,7 @@ class TextProjection(BasePanel):
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
         for style, strings_positions in self._strings_by_style.iteritems():
-            style.apply_to_wx_dc(dc, self.GetFont())
+            style.apply_to_wx_dc(dc, self._font)
             dc.DrawTextList(*strings_positions)
         if self._show_beams:
             dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))
@@ -2734,7 +2738,6 @@ class TableOfContentsRow(HorizontalBasePanel):
     INDENTATION_SIZE = 16
 
     def _create_gui(self):
-        self._update_font()
         self._create_indent()
         self._create_expand_collapse()
         self._create_text()
@@ -2757,7 +2760,7 @@ class TableOfContentsRow(HorizontalBasePanel):
 
     def _create_text(self):
         self.text = self.AppendChild(
-            wx.StaticText(self),
+            TextProjection(self),
             flag=wx.ALL,
             border=self.BORDER
         )
@@ -2784,16 +2787,23 @@ class TableOfContentsRow(HorizontalBasePanel):
         self.SetBackgroundColour((255, 255, 255))
     def _update_gui(self):
         self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
-        self._update_font()
-        self.text.SetLabelText(self.values["page"].title)
+        self.text.Update(
+            characters=self._get_characters(),
+            font=self._get_font()
+        )
 
-    def _update_font(self):
+    def _get_characters(self):
+        return [
+            Box(x, self.values["project"].get_style(TokenType.RLiterate))
+            for x
+            in self.values["page"].title
+        ]
+
+    def _get_font(self):
         if self.values["project"].is_open(self.values["page"].id):
-            new_font = create_font(**dict(self.values["project"].theme.toc_font, bold=True))
+            return create_font(**dict(self.values["project"].theme.toc_font, bold=True))
         else:
-            new_font = create_font(**self.values["project"].theme.toc_font)
-        if new_font != self.Font:
-            self.Font = new_font
+            return create_font(**self.values["project"].theme.toc_font)
     def _update_children(self):
         self.expand_collapse.Update(**self.values)
 class TableOfContentsButton(BasePanel):
