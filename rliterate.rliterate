@@ -8876,7 +8876,23 @@
 "type":"variable"
 },
 {
-"text":"(\n            self,\n            self._get_characters(),\n            max_width=self.project.",
+"text":"(\n            self,\n            ",
+"type":"code"
+},
+{
+"id":"94ebdf2d279b424580629906ad32a461",
+"type":"variable"
+},
+{
+"text":"=self._get_characters(),\n            ",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"=self.project.",
 "type":"code"
 },
 {
@@ -11366,23 +11382,23 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel):\n\n    def __init__(self, parent, characters, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.",
+"text":"(",
 "type":"code"
 },
 {
-"id":"ab468260e8344173a06b482194c9a6a4",
+"id":"5bf37424f5634fcaaf91e43d607a41ca",
 "type":"variable"
 },
 {
-"text":" = characters\n        self.",
+"text":"):\n\n    DEFAULTS = {\n        \"",
 "type":"code"
 },
 {
-"id":"20656ab448a944f7b3659aeb42405b15",
+"id":"94ebdf2d279b424580629906ad32a461",
 "type":"variable"
 },
 {
-"text":" = kwargs.get(\"",
+"text":"\": [],\n        \"",
 "type":"code"
 },
 {
@@ -11390,15 +11406,7 @@
 "type":"variable"
 },
 {
-"text":"\", 1)\n        self.",
-"type":"code"
-},
-{
-"id":"7a9fc5b110114e64b871a0f672c764c2",
-"type":"variable"
-},
-{
-"text":" = kwargs.get(\"",
+"text":"\": 1,\n        \"",
 "type":"code"
 },
 {
@@ -11406,15 +11414,7 @@
 "type":"variable"
 },
 {
-"text":"\", 100)\n        self.",
-"type":"code"
-},
-{
-"id":"457a1dbf134c431881e590e7b7db9907",
-"type":"variable"
-},
-{
-"text":" = kwargs.get(\"",
+"text":"\": None,\n        \"",
 "type":"code"
 },
 {
@@ -11422,23 +11422,103 @@
 "type":"variable"
 },
 {
-"text":"\", True)\n        self.",
+"text":"\": True,\n    }\n\n    @property\n    def ",
 "type":"code"
 },
 {
-"id":"ba63198235bb4716a96649f32f1f4ac4",
+"id":"ab468260e8344173a06b482194c9a6a4",
 "type":"variable"
 },
 {
-"text":"()\n        self.",
+"text":"(self):\n        return self.",
 "type":"code"
 },
 {
-"id":"25dfed2d02124924b27ccee34278dc26",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":"()\n        self.Bind(wx.EVT_PAINT, self._on_paint)\n\n",
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"94ebdf2d279b424580629906ad32a461",
+"type":"variable"
+},
+{
+"text":"\"]\n\n    @property\n    def ",
+"type":"code"
+},
+{
+"id":"20656ab448a944f7b3659aeb42405b15",
+"type":"variable"
+},
+{
+"text":"(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"1680a175cf4348e4ba5131efba2cb1c9",
+"type":"variable"
+},
+{
+"text":"\"]\n\n    @property\n    def ",
+"type":"code"
+},
+{
+"id":"7a9fc5b110114e64b871a0f672c764c2",
+"type":"variable"
+},
+{
+"text":"(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"\"]\n\n    @property\n    def ",
+"type":"code"
+},
+{
+"id":"457a1dbf134c431881e590e7b7db9907",
+"type":"variable"
+},
+{
+"text":"(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"fdd751029b984545a69a3570683a2b4a",
+"type":"variable"
+},
+{
+"text":"\"]\n\n",
 "type":"code"
 },
 {
@@ -11451,6 +11531,56 @@
 }
 ],
 "id":"17bd2540f3e244d39c9a05feaa2b13f1",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n\ndef ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"ba63198235bb4716a96649f32f1f4ac4",
+"type":"variable"
+},
+{
+"text":"()\n    self.",
+"type":"code"
+},
+{
+"id":"25dfed2d02124924b27ccee34278dc26",
+"type":"variable"
+},
+{
+"text":"()\n",
+"type":"code"
+}
+],
+"id":"899e4ad8f2d04b7b9b2284f647fcadfb",
 "language":"",
 "type":"code"
 },
@@ -11686,7 +11816,15 @@
 "type":"variable"
 },
 {
-"text":"[index]\n        if previous_character and previous_character.text == \" \" and character.text != \" \":\n            break_index, break_len = index, len(current_line)\n        if (character.text == \"\\n\" or\n            (x > 0 and x+character.rect.Width > self.",
+"text":"[index]\n        if previous_character and previous_character.text == \" \" and character.text != \" \":\n            break_index, break_len = index, len(current_line)\n        if (character.text == \"\\n\" or\n            (x > 0 and self.",
+"type":"code"
+},
+{
+"id":"7a9fc5b110114e64b871a0f672c764c2",
+"type":"variable"
+},
+{
+"text":" is not None and x+character.rect.Width > self.",
 "type":"code"
 },
 {
@@ -12076,7 +12214,15 @@
 "type":"variable"
 },
 {
-"text":".__init__(\n            self,\n            parent,\n            self.characters,\n            ",
+"text":".__init__(\n            self,\n            parent,\n            ",
+"type":"code"
+},
+{
+"id":"94ebdf2d279b424580629906ad32a461",
+"type":"variable"
+},
+{
+"text":"=self.characters,\n            ",
 "type":"code"
 },
 {
@@ -12669,7 +12815,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.",
+"text":"(wx.Panel):\n\n    DEFAULTS = {}\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.",
 "type":"code"
 },
 {
@@ -12685,7 +12831,23 @@
 "type":"variable"
 },
 {
-"text":" = kwargs\n        self.",
+"text":" = {}\n        self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":".update(self.DEFAULTS)\n        self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":".update(kwargs)\n        self.",
 "type":"code"
 },
 {
@@ -15660,6 +15822,7 @@
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "8db58d842ac34e0aa51ea908cd841520":"theme",
 "90d6de1e6f714f1497872ca757b501b6":"value",
+"94ebdf2d279b424580629906ad32a461":"characters",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
 "99872a7e246e4fc38f9e0029f076e120":"Box",
 "9afba42827fd435dab58673210d03785":"AppendChild",

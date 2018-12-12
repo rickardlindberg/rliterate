@@ -69,10 +69,14 @@ class Editable(wx.Panel):
         self.project.active_editor = None
 class BasePanel(wx.Panel):
 
+    DEFAULTS = {}
+
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         self._init_mixins()
-        self.values = kwargs
+        self.values = {}
+        self.values.update(self.DEFAULTS)
+        self.values.update(kwargs)
         self._create_gui()
         self._update_gui()
 
@@ -346,17 +350,37 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class TextProjection(wx.Panel):
+class TextProjection(BasePanel):
 
-    def __init__(self, parent, characters, **kwargs):
-        wx.Panel.__init__(self, parent)
-        self._characters = characters
-        self._line_height = kwargs.get("line_height", 1)
-        self._max_width = kwargs.get("max_width", 100)
-        self._break_at_word = kwargs.get("break_at_word", True)
+    DEFAULTS = {
+        "characters": [],
+        "line_height": 1,
+        "max_width": None,
+        "break_at_word": True,
+    }
+
+    @property
+    def _characters(self):
+        return self.values["characters"]
+
+    @property
+    def _line_height(self):
+        return self.values["line_height"]
+
+    @property
+    def _max_width(self):
+        return self.values["max_width"]
+
+    @property
+    def _break_at_word(self):
+        return self.values["break_at_word"]
+
+    def _create_gui(self):
+        self.Bind(wx.EVT_PAINT, self._on_paint)
+
+    def _update_gui(self):
         self._layout()
         self._setup_beams()
-        self.Bind(wx.EVT_PAINT, self._on_paint)
 
     def _layout(self):
         self._partition_characters()
@@ -394,7 +418,7 @@ class TextProjection(wx.Panel):
             if previous_character and previous_character.text == " " and character.text != " ":
                 break_index, break_len = index, len(current_line)
             if (character.text == "\n" or
-                (x > 0 and x+character.rect.Width > self._max_width)):
+                (x > 0 and self._max_width is not None and x+character.rect.Width > self._max_width)):
                 x = 0
                 y += self._line_height_pixels
                 if character.text != "\n" and break_index is not None and self._break_at_word:
@@ -501,7 +525,7 @@ class TokenView(TextProjection):
         TextProjection.__init__(
             self,
             parent,
-            self.characters,
+            characters=self.characters,
             line_height=kwargs.get("line_height", 1),
             max_width=kwargs.get("max_width", 100),
             break_at_word=kwargs.get("skip_extra_space", False)
@@ -3225,7 +3249,7 @@ class Title(HorizontalPanel):
         self.Font = create_font(**self.project.theme.title_font)
         self.text = self.AppendChild(TextProjection(
             self,
-            self._get_characters(),
+            characters=self._get_characters(),
             max_width=self.project.theme.page_body_width
         ), flag=wx.EXPAND, proportion=1)
         if self.selection.present:
