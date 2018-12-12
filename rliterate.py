@@ -135,6 +135,13 @@ class HorizontalBasePanel(BasePanel, BoxSizerMixin):
 
     def _init_mixins(self):
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
+class VerticalBasePanel(BasePanel, BoxSizerMixin):
+
+    def __init__(self, parent, **kwargs):
+        BasePanel.__init__(self, parent, **kwargs)
+
+    def _init_mixins(self):
+        BoxSizerMixin.__init__(self, wx.VERTICAL)
 class SizeWrapper(object):
 
     def __init__(self, orientation, sizer_item):
@@ -2357,7 +2364,7 @@ class MainFrame(wx.Frame, BoxSizerMixin):
             wx.Panel(self)
         )
         panel.AppendChild(
-            TableOfContents(panel, self.project),
+            TableOfContents(panel, project=self.project),
             flag=wx.EXPAND,
             proportion=0
         )
@@ -2565,66 +2572,60 @@ class Tool(object):
                 " / ".join(x.ToString() for x in self.accelerator_entries())
             )
         toolbar.SetToolShortHelp(self.id, text)
-class TableOfContents(VerticalPanel):
+class TableOfContents(VerticalBasePanel):
 
-    def __init__(self, parent, project):
-        VerticalPanel.__init__(self, parent, size=(250, -1))
-        self._init_project(project)
-        self.SetDropTarget(TableOfContentsDropTarget(self, self.project))
-        self._render()
-
-    def _init_project(self, project):
-        self.project = project
-        self.project.listen(self._re_render)
-
-    def _render(self):
+    def _create_gui(self):
         with flicker_free_drawing(self):
-            self.unhoist_button = None
-            self.page_container = self.AppendChild(
-                VerticalScrolledWindow(self),
-                flag=wx.EXPAND,
-                proportion=1
-            )
+            self.SetMinSize((250, -1))
             self.SetBackgroundColour((255, 255, 255))
-            self._re_render()
+            self.values["project"].listen(self.Update)
+            self.SetDropTarget(TableOfContentsDropTarget(self, self.values["project"]))
+            self._create_unhoist_button()
+            self._create_page_container()
 
-    def _re_render(self):
+    def _create_unhoist_button(self):
+        self.unhoist_button = self.AppendChild(
+            wx.Button(self, label="unhoist"),
+            flag=wx.EXPAND
+        )
+        self.unhoist_button.Bind(
+            wx.EVT_BUTTON,
+            lambda event: setattr(self.values["project"], "hoisted_page", None)
+        )
+
+    def _create_page_container(self):
+        self.page_container = self.AppendChild(
+            VerticalScrolledWindow(self),
+            flag=wx.EXPAND,
+            proportion=1
+        )
+    def _update_gui(self):
         with flicker_free_drawing(self):
-            self.drop_points = []
-            if self.unhoist_button is not None:
-                self.unhoist_button.Destroy()
-                self.unhoist_button = None
-            self.page_container.RemoveChildren()
-            self._render_unhoist_button()
-            self._render_page_container()
+            self._update_unhoist_button()
+            self._update_page_container()
             self.GetTopLevelParent().ChildReRendered()
-    def _render_unhoist_button(self):
-        if self._get_hoisted_page() is not None:
-            self.unhoist_button = self.InsertChild(
-                0,
-                wx.Button(self, label="unhoist"),
-                flag=wx.EXPAND
-            )
-            self.unhoist_button.Bind(
-                wx.EVT_BUTTON,
-                lambda event: setattr(self.project, "hoisted_page", None)
-            )
-    def _render_page_container(self):
+
+    def _update_unhoist_button(self):
+        self.unhoist_button.Show(self._get_hoisted_page() is not None)
+
+    def _update_page_container(self):
+        self.drop_points = []
+        self.page_container.RemoveChildren()
         if self._get_hoisted_page() is None:
-            self._render_page(self.project.get_page())
+            self._render_page(self.values["project"].get_page())
         else:
             self._render_page(self._get_hoisted_page())
 
     def _get_hoisted_page(self):
-        if self.project.hoisted_page is None:
+        if self.values["project"].hoisted_page is None:
             return None
         else:
-            return self.project.get_page(self.project.hoisted_page)
+            return self.values["project"].get_page(self.values["project"].hoisted_page)
 
     def _render_page(self, page, indentation=0):
-        is_collapsed = self.project.is_collapsed(page.id)
+        is_collapsed = self.values["project"].is_collapsed(page.id)
         self.page_container.AppendChild(
-            TableOfContentsRow(self.page_container, project=self.project, page=page, indentation=indentation),
+            TableOfContentsRow(self.page_container, project=self.values["project"], page=page, indentation=indentation),
             flag=wx.EXPAND
         )
         divider = self.page_container.AppendChild(

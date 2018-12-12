@@ -5586,7 +5586,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            TableOfContents(panel, self.project),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        panel.",
+"text":"(\n            TableOfContents(panel, project=self.project),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        panel.",
 "type":"code"
 },
 {
@@ -5598,6 +5598,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "MainFrame"
 ],
@@ -5606,6 +5607,7 @@
 }
 ],
 "id":"1184388e07e149eea4b71458b275b38b",
+"language":"",
 "type":"code"
 },
 {
@@ -6313,7 +6315,43 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.unhoist_button = None\n        self.page_container = self.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    with flicker_free_drawing(self):\n        self.SetMinSize((250, -1))\n        self.SetBackgroundColour((255, 255, 255))\n        self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].listen(self.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":")\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"_create_gui"
+],
+"prefix":"        ",
+"type":"chunk"
+},
+{
+"text":"        self._create_unhoist_button()\n        self._create_page_container()\n\ndef _create_unhoist_button(self):\n    self.unhoist_button = self.",
 "type":"code"
 },
 {
@@ -6321,7 +6359,23 @@
 "type":"variable"
 },
 {
-"text":"(\n            ",
+"text":"(\n        wx.Button(self, label=\"unhoist\"),\n        flag=wx.EXPAND\n    )\n    self.unhoist_button.Bind(\n        wx.EVT_BUTTON,\n        lambda event: setattr(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"], \"hoisted_page\", None)\n    )\n\ndef _create_page_container(self):\n    self.page_container = self.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        ",
 "type":"code"
 },
 {
@@ -6329,15 +6383,7 @@
 "type":"variable"
 },
 {
-"text":"(self),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.SetBackgroundColour((255, 255, 255))\n        self._re_render()\n\ndef _re_render(self):\n    with flicker_free_drawing(self):\n        self.drop_points = []\n        if self.unhoist_button is not None:\n            self.unhoist_button.Destroy()\n            self.unhoist_button = None\n        self.page_container.",
-"type":"code"
-},
-{
-"id":"898556fcc0094d959568f97b261a5f5c",
-"type":"variable"
-},
-{
-"text":"()\n        self._render_unhoist_button()\n        self._render_page_container()\n        self.GetTopLevelParent().ChildReRendered()\n",
+"text":"(self),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n",
 "type":"code"
 }
 ],
@@ -6346,16 +6392,6 @@
 "type":"code"
 },
 {
-"fragments":[
-{
-"text":"The unhoist button (only shown if a page has been hoisted):",
-"type":"text"
-}
-],
-"id":"8cf1468ca45b41d4a2d0f2e8de91c35d",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes",
 "TableOfContents"
@@ -6365,42 +6401,63 @@
 ],
 "fragments":[
 {
-"text":"def _render_unhoist_button(self):\n    if self._get_hoisted_page() is not None:\n        self.unhoist_button = self.",
+"text":"def ",
 "type":"code"
 },
 {
-"id":"64ef4d70610f452d83e90f00a07a45f1",
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
 "type":"variable"
 },
 {
-"text":"(\n            0,\n            wx.Button(self, label=\"unhoist\"),\n            flag=wx.EXPAND\n        )\n        self.unhoist_button.Bind(\n            wx.EVT_BUTTON,\n            lambda event: setattr(self.project, \"hoisted_page\", None)\n        )\n",
-"type":"code"
-}
-],
-"id":"87836442b7824a8891244f5c8e9dc07d",
+"text":"(self):\n    with flicker_free_drawing(self):\n        self._update_unhoist_button()\n        self._update_page_container()\n        self.GetTopLevelParent().ChildReRendered()\n\ndef _update_unhoist_button(self):\n    self.unhoist_button.Show(self._get_hoisted_page() is not None)\n\ndef _update_page_container(self):\n    self.drop_points = []\n    self.page_container.",
 "type":"code"
 },
 {
-"fragments":[
-{
-"text":"The page container is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.",
-"type":"text"
-}
-],
-"id":"48e403ac69b5492bb09ff41381d77b8f",
-"type":"text"
+"id":"898556fcc0094d959568f97b261a5f5c",
+"type":"variable"
 },
 {
-"chunkpath":[
-"classes",
-"TableOfContents"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
+"text":"()\n    if self._get_hoisted_page() is None:\n        self._render_page(self.",
+"type":"code"
+},
 {
-"text":"def _render_page_container(self):\n    if self._get_hoisted_page() is None:\n        self._render_page(self.project.get_page())\n    else:\n        self._render_page(self._get_hoisted_page())\n\ndef _get_hoisted_page(self):\n    if self.project.hoisted_page is None:\n        return None\n    else:\n        return self.project.get_page(self.project.hoisted_page)\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.project.is_collapsed(page.id)\n    self.page_container.",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].get_page())\n    else:\n        self._render_page(self._get_hoisted_page())\n\ndef _get_hoisted_page(self):\n    if self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].hoisted_page is None:\n        return None\n    else:\n        return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].get_page(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].hoisted_page)\n\ndef _render_page(self, page, indentation=0):\n    is_collapsed = self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"].is_collapsed(page.id)\n    self.page_container.",
 "type":"code"
 },
 {
@@ -6416,7 +6473,15 @@
 "type":"variable"
 },
 {
-"text":"(self.page_container, project=self.project, page=page, indentation=indentation),\n        flag=wx.EXPAND\n    )\n    divider = self.page_container.",
+"text":"(self.page_container, project=self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"], page=page, indentation=indentation),\n        flag=wx.EXPAND\n    )\n    divider = self.page_container.",
 "type":"code"
 },
 {
@@ -6436,9 +6501,43 @@
 "type":"code"
 }
 ],
-"id":"89783cf4c0cc40f5a3c8a706be39b056",
+"id":"223a89b6203f4d3094e6410543fc8ad8",
 "language":"",
 "type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"2cce98597c264b5597564c1f9e51cb5f",
+"type":"variable"
+},
+{
+"text":"(items):\n    return zip(items, items[1:]+[None])\n",
+"type":"code"
+}
+],
+"id":"d96081eefe194e4ba90f376b8414ff7f",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"The page container is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.",
+"type":"text"
+}
+],
+"id":"48e403ac69b5492bb09ff41381d77b8f",
+"type":"text"
 },
 {
 "chunkpath":[
@@ -6504,30 +6603,6 @@
 "id":"f1e8ef353eac47dd93dc76d86efcce6e",
 "language":"",
 "type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"2cce98597c264b5597564c1f9e51cb5f",
-"type":"variable"
-},
-{
-"text":"(items):\n    return zip(items, items[1:]+[None])\n",
-"type":"code"
-}
-],
-"id":"d96081eefe194e4ba90f376b8414ff7f",
-"type":"code"
 }
 ],
 "title":"Rendering"
@@ -6550,18 +6625,27 @@
 "chunkpath":[
 "classes",
 "TableOfContents",
-"__init__"
+"_create_gui"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"self.SetDropTarget(TableOfContentsDropTarget(self, self.project))\n",
+"text":"self.SetDropTarget(TableOfContentsDropTarget(self, self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"]))\n",
 "type":"code"
 }
 ],
 "id":"2d626c4528eb406c983b5d64851d10c9",
+"language":"",
 "type":"code"
 },
 {
@@ -6677,42 +6761,15 @@
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"50f1b4552c0340eab599c8bc578334de",
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project):\n        ",
+"text":"):\n\n",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, size=(250, -1))\n        self._init_project(project)\n",
-"type":"code"
-},
-{
-"path":[
-"TableOfContents",
-"__init__"
-],
-"prefix":"        ",
-"type":"chunk"
-},
-{
-"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.",
-"type":"code"
-},
-{
-"id":"c4f3b8bfcb0c4e449fdad901d978b7b0",
-"type":"variable"
-},
-{
-"text":"(self._re_render)\n\n",
-"type":"code"
-},
-{
+"blank_lines_before":0,
 "path":[
 "TableOfContents"
 ],
@@ -6721,6 +6778,7 @@
 }
 ],
 "id":"19989e3da6004e61b58d3a570b52d9fc",
+"language":"",
 "type":"code"
 }
 ],
@@ -12855,6 +12913,55 @@
 ],
 "fragments":[
 {
+"text":"class ",
+"type":"code"
+},
+{
+"id":"50f1b4552c0340eab599c8bc578334de",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"type":"variable"
+},
+{
+"text":", BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        ",
+"type":"code"
+},
+{
+"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"type":"variable"
+},
+{
+"text":".__init__(self, parent, **kwargs)\n\n    def ",
+"type":"code"
+},
+{
+"id":"0e6dba8d1c3848478224db0b9019da60",
+"type":"variable"
+},
+{
+"text":"(self):\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n",
+"type":"code"
+}
+],
+"id":"7e0481c7387a407e884c643d54a272b0",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
 "text":"class SizeWrapper(object):\n\n    def __init__(self, orientation, sizer_item):\n        self._orientation = orientation\n        self._sizer_item = sizer_item\n\n    def SetSize(self, size):\n        if self._orientation == wx.HORIZONTAL:\n            self._sizer_item.SetMinSize((size, 1))\n        else:\n            self._sizer_item.SetMinSize((1, size))\n\n    def WithSize(self, size):\n        self.SetSize(size)\n        return self\n",
 "type":"code"
 }
@@ -15480,6 +15587,7 @@
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
 "507782d786b84d209eef461ecd0b4544":"fragments",
+"50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
 "51198e87cf1944e49dea6e2a48938b8f":"chunk_delimiters",
 "52a4cb0c44124d518647a92eb25a876d":"page_body_width",
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
