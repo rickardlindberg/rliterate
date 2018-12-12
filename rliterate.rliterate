@@ -6903,7 +6903,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self._set_font()\n    self._create_indent()\n    self._create_expand_collapse()\n    self._create_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _create_indent(self):\n    self.indent = self.",
+"text":"(self):\n    self._update_font()\n    self._create_indent()\n    self._create_expand_collapse()\n    self._create_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _create_indent(self):\n    self.indent = self.",
 "type":"code"
 },
 {
@@ -7066,7 +7066,7 @@
 "type":"variable"
 },
 {
-"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self._set_font()\n    self.text.SetLabelText(self.",
+"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self._update_font()\n    self.text.SetLabelText(self.",
 "type":"code"
 },
 {
@@ -7074,7 +7074,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page\"].title)\n\ndef _set_font(self):\n    if self.",
+"text":"[\"page\"].title)\n\ndef _update_font(self):\n    if self.",
 "type":"code"
 },
 {
@@ -7090,7 +7090,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page\"].id):\n        self.Font = ",
+"text":"[\"page\"].id):\n        new_font = ",
 "type":"code"
 },
 {
@@ -7122,7 +7122,7 @@
 "type":"variable"
 },
 {
-"text":", bold=True))\n    else:\n        self.Font = ",
+"text":", bold=True))\n    else:\n        new_font = ",
 "type":"code"
 },
 {
@@ -7154,7 +7154,7 @@
 "type":"variable"
 },
 {
-"text":")\n",
+"text":")\n    if new_font != self.Font:\n        self.Font = new_font\n",
 "type":"code"
 }
 ],
@@ -12579,6 +12579,7 @@
 }
 ],
 "id":"16e1bed36fbb41a6b973079ce2304952",
+"language":"",
 "type":"code"
 }
 ],
@@ -13568,7 +13569,7 @@
 ],
 "fragments":[
 {
-"text":"def rltime(text):\n    def wrap(fn):\n        def fn_with_timing(*args, **kwargs):\n            t1 = time.time()\n            value = fn(*args, **kwargs)\n            t2 = time.time()\n            print(\"{: <20} {}ms\".format(text, int(1000*(t2-t1))))\n            return value\n        return fn_with_timing\n    return wrap\n",
+"text":"def rltime(text):\n    def wrap(fn):\n        def fn_with_timing(*args, **kwargs):\n            t1 = time.time()\n            value = fn(*args, **kwargs)\n            t2 = time.time()\n            print(\"{: <20} {}ms\".format(text, (1000*(t2-t1))))\n            return value\n        return fn_with_timing\n    return wrap\n",
 "type":"code"
 }
 ],
