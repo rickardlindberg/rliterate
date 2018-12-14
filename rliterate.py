@@ -77,11 +77,16 @@ class BasePanel(wx.Panel):
         self.values = {}
         self.values.update(self.DEFAULTS)
         self.values.update(kwargs)
+        self.has_changes = True
         self._create_gui()
         self._update_gui()
 
     def Update(self, **kwargs):
-        self.values.update(kwargs)
+        self.has_changes = False
+        for key, value in kwargs.items():
+            if key not in self.values or self.values[key] != value:
+                self.values[key] = value
+                self.has_changes = True
         self._update_gui()
         self._update_children()
 
@@ -361,10 +366,28 @@ class TextProjection(BasePanel):
 
     def _create_gui(self):
         self.Bind(wx.EVT_PAINT, self._on_paint)
+        self.Bind(wx.EVT_TIMER, self._on_timer)
+        self.timer = wx.Timer(self)
+        self._show_beams = True
 
     def _update_gui(self):
-        self._layout()
-        self._setup_beams()
+        if self.has_changes:
+            self._layout()
+            if self._beams:
+                self.timer.Start(400)
+            else:
+                self.timer.Stop()
+
+    def _setup_beams(self):
+        self._show_beams = True
+        if self._beams:
+            self.Bind(wx.EVT_TIMER, self._on_timer)
+            self.timer = wx.Timer(self)
+            self.timer.Start(400)
+
+    def _on_timer(self, event):
+        self._show_beams = not self._show_beams
+        self.Refresh()
 
     def _layout(self):
         self._partition_characters()
@@ -452,17 +475,6 @@ class TextProjection(BasePanel):
                 max_x = max(max_x, box.rect.X+box.rect.Width)
                 max_y = max(max_y, box.rect.Y+box.rect.Height)
         self.SetMinSize((max_x, max_y))
-
-    def _setup_beams(self):
-        self._show_beams = True
-        if self._beams:
-            self.Bind(wx.EVT_TIMER, self._on_timer)
-            self.timer = wx.Timer(self)
-            self.timer.Start(400)
-
-    def _on_timer(self, event):
-        self._show_beams = not self._show_beams
-        self.Refresh()
 
     def _on_paint(self, event):
         dc = wx.PaintDC(self)

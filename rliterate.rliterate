@@ -11473,7 +11473,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n\ndef ",
+"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n    self.Bind(wx.EVT_TIMER, self._on_timer)\n    self.timer = wx.Timer(self)\n    self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":" = True\n\ndef ",
 "type":"code"
 },
 {
@@ -11481,7 +11489,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.",
+"text":"(self):\n    if self.",
+"type":"code"
+},
+{
+"id":"efa648b2a8514099b295d2313e89768a",
+"type":"variable"
+},
+{
+"text":":\n        self.",
 "type":"code"
 },
 {
@@ -11489,7 +11505,33 @@
 "type":"variable"
 },
 {
-"text":"()\n    self.",
+"text":"()\n        if self.",
+"type":"code"
+},
+{
+"id":"dadd60f63fbf40638d412cd98a36846a",
+"type":"variable"
+},
+{
+"text":":\n            self.timer.Start(400)\n        else:\n            self.timer.Stop()\n",
+"type":"code"
+}
+],
+"id":"899e4ad8f2d04b7b9b2284f647fcadfb",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
 "type":"code"
 },
 {
@@ -11497,11 +11539,43 @@
 "type":"variable"
 },
 {
-"text":"()\n",
+"text":"(self):\n    self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":" = True\n    if self.",
+"type":"code"
+},
+{
+"id":"dadd60f63fbf40638d412cd98a36846a",
+"type":"variable"
+},
+{
+"text":":\n        self.Bind(wx.EVT_TIMER, self._on_timer)\n        self.timer = wx.Timer(self)\n        self.timer.Start(400)\n\ndef _on_timer(self, event):\n    self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":" = not self.",
+"type":"code"
+},
+{
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":"\n    self.Refresh()\n",
 "type":"code"
 }
 ],
-"id":"899e4ad8f2d04b7b9b2284f647fcadfb",
+"id":"93501ea02639413298f4c115eaf93c71",
 "language":"",
 "type":"code"
 },
@@ -11938,64 +12012,6 @@
 }
 ],
 "id":"0a6cac7e8942465980c82e4ee1a2accf",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes",
-"TextProjection"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"25dfed2d02124924b27ccee34278dc26",
-"type":"variable"
-},
-{
-"text":"(self):\n    self.",
-"type":"code"
-},
-{
-"id":"1f56374d1e0340aca956a39b7e874ff4",
-"type":"variable"
-},
-{
-"text":" = True\n    if self.",
-"type":"code"
-},
-{
-"id":"dadd60f63fbf40638d412cd98a36846a",
-"type":"variable"
-},
-{
-"text":":\n        self.Bind(wx.EVT_TIMER, self._on_timer)\n        self.timer = wx.Timer(self)\n        self.timer.Start(400)\n\ndef _on_timer(self, event):\n    self.",
-"type":"code"
-},
-{
-"id":"1f56374d1e0340aca956a39b7e874ff4",
-"type":"variable"
-},
-{
-"text":" = not self.",
-"type":"code"
-},
-{
-"id":"1f56374d1e0340aca956a39b7e874ff4",
-"type":"variable"
-},
-{
-"text":"\n    self.Refresh()\n",
-"type":"code"
-}
-],
-"id":"93501ea02639413298f4c115eaf93c71",
 "language":"",
 "type":"code"
 },
@@ -12828,6 +12844,14 @@
 "type":"code"
 },
 {
+"id":"efa648b2a8514099b295d2313e89768a",
+"type":"variable"
+},
+{
+"text":" = True\n        self.",
+"type":"code"
+},
+{
 "id":"887acc7e530b4d98933d11e223d58c42",
 "type":"variable"
 },
@@ -12852,11 +12876,43 @@
 "type":"code"
 },
 {
+"id":"efa648b2a8514099b295d2313e89768a",
+"type":"variable"
+},
+{
+"text":" = False\n        for key, value in kwargs.items():\n            if key not in self.",
+"type":"code"
+},
+{
 "id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":".update(kwargs)\n        self.",
+"text":" or self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[key] != value:\n                self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[key] = value\n                self.",
+"type":"code"
+},
+{
+"id":"efa648b2a8514099b295d2313e89768a",
+"type":"variable"
+},
+{
+"text":" = True\n        self.",
 "type":"code"
 },
 {
@@ -15871,6 +15927,7 @@
 "eabcfbe8e6c349d497353e55ad0b3685":"Selection",
 "ebae45a29f8649beb10a7e3cab576552":"\", \"",
 "ec33a5e51ade4f3283c735e5afaf45d8":"TextProjection",
+"efa648b2a8514099b295d2313e89768a":"has_changes",
 "efd50cfe632b44e6a6620c3fbf66a664":"_update_children",
 "f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
