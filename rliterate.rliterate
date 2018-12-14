@@ -7074,23 +7074,7 @@
 "type":"variable"
 },
 {
-"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self.text.Update(\n        characters=self._get_characters(),\n        font=self._get_font()\n    )\n\ndef _get_characters(self):\n    return [\n        Box(x, self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"].get_style(TokenType.RLiterate))\n        for x\n        in self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"].title\n    ]\n\ndef _get_font(self):\n    if self.",
+"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self.text.Update(characters=self._get_characters())\n\ndef _get_characters(self):\n    if self.",
 "type":"code"
 },
 {
@@ -7106,15 +7090,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page\"].id):\n        return ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**dict(self.",
+"text":"[\"page\"].id):\n        token_type = TokenType.RLiterate.Strong\n    else:\n        token_type = TokenType.RLiterate\n    style = self.",
 "type":"code"
 },
 {
@@ -7122,31 +7098,7 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"].",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"8970b68862714f158948f8ec1c68acb1",
-"type":"variable"
-},
-{
-"text":", bold=True))\n    else:\n        return ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**self.",
+"text":"[\"project\"].get_style(token_type)\n    return [\n        Box(x, style)\n        for x\n        in self.",
 "type":"code"
 },
 {
@@ -7154,23 +7106,7 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"].",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"8970b68862714f158948f8ec1c68acb1",
-"type":"variable"
-},
-{
-"text":")\n",
+"text":"[\"page\"].title\n    ]\n",
 "type":"code"
 }
 ],
@@ -11534,23 +11470,7 @@
 "type":"variable"
 },
 {
-"text":"\"]\n\n    @property\n    def ",
-"type":"code"
-},
-{
-"id":"198e9171ef6745c9b01c3ad10c882f3b",
-"type":"variable"
-},
-{
-"text":"(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":".get(\"font\", self.GetFont())\n\n",
+"text":"\"]\n\n",
 "type":"code"
 },
 {
@@ -11766,15 +11686,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.",
-"type":"code"
-},
-{
-"id":"198e9171ef6745c9b01c3ad10c882f3b",
-"type":"variable"
-},
-{
-"text":")\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.",
+"text":"(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.",
 "type":"code"
 },
 {
@@ -11806,15 +11718,7 @@
 "type":"variable"
 },
 {
-"text":"(dc, self.",
-"type":"code"
-},
-{
-"id":"198e9171ef6745c9b01c3ad10c882f3b",
-"type":"variable"
-},
-{
-"text":")\n        for character in characters:\n            character.rect.Size = dc.GetTextExtent(character.text)\n",
+"text":"(dc, self.GetFont())\n        for character in characters:\n            character.rect.Size = dc.GetTextExtent(character.text)\n",
 "type":"code"
 }
 ],
@@ -12104,15 +12008,7 @@
 "type":"variable"
 },
 {
-"text":"(dc, self.",
-"type":"code"
-},
-{
-"id":"198e9171ef6745c9b01c3ad10c882f3b",
-"type":"variable"
-},
-{
-"text":")\n        dc.DrawTextList(*strings_positions)\n    if self.",
+"text":"(dc, self.GetFont())\n        dc.DrawTextList(*strings_positions)\n    if self.",
 "type":"code"
 },
 {

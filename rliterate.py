@@ -375,10 +375,6 @@ class TextProjection(BasePanel):
     def _break_at_word(self):
         return self.values["break_at_word"]
 
-    @property
-    def _font(self):
-        return self.values.get("font", self.GetFont())
-
     def _create_gui(self):
         self.Bind(wx.EVT_PAINT, self._on_paint)
 
@@ -403,11 +399,11 @@ class TextProjection(BasePanel):
 
     def _measure_character_size(self):
         dc = wx.MemoryDC()
-        dc.SetFont(self._font)
+        dc.SetFont(self.GetFont())
         dc.SelectObject(wx.EmptyBitmap(1, 1))
         self._line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self._line_height))
         for style, characters in self._characters_by_style.iteritems():
-            style.apply_to_wx_dc(dc, self._font)
+            style.apply_to_wx_dc(dc, self.GetFont())
             for character in characters:
                 character.rect.Size = dc.GetTextExtent(character.text)
 
@@ -484,7 +480,7 @@ class TextProjection(BasePanel):
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
         for style, strings_positions in self._strings_by_style.iteritems():
-            style.apply_to_wx_dc(dc, self._font)
+            style.apply_to_wx_dc(dc, self.GetFont())
             dc.DrawTextList(*strings_positions)
         if self._show_beams:
             dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))
@@ -2787,23 +2783,19 @@ class TableOfContentsRow(HorizontalBasePanel):
         self.SetBackgroundColour((255, 255, 255))
     def _update_gui(self):
         self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
-        self.text.Update(
-            characters=self._get_characters(),
-            font=self._get_font()
-        )
+        self.text.Update(characters=self._get_characters())
 
     def _get_characters(self):
+        if self.values["project"].is_open(self.values["page"].id):
+            token_type = TokenType.RLiterate.Strong
+        else:
+            token_type = TokenType.RLiterate
+        style = self.values["project"].get_style(token_type)
         return [
-            Box(x, self.values["project"].get_style(TokenType.RLiterate))
+            Box(x, style)
             for x
             in self.values["page"].title
         ]
-
-    def _get_font(self):
-        if self.values["project"].is_open(self.values["page"].id):
-            return create_font(**dict(self.values["project"].theme.toc_font, bold=True))
-        else:
-            return create_font(**self.values["project"].theme.toc_font)
     def _update_children(self):
         self.expand_collapse.Update(**self.values)
 class TableOfContentsButton(BasePanel):
