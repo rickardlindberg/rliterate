@@ -93,7 +93,6 @@ class GuiUpdateMixin(object):
                 self.values[key] = value
                 self.changed.append(key)
         self._update_gui()
-        self._update_children()
 
     def did_change(self, name):
         return name in self.changed
@@ -102,9 +101,6 @@ class GuiUpdateMixin(object):
         pass
 
     def _update_gui(self):
-        pass
-
-    def _update_children(self):
         pass
 class GuiUpdatePanel(wx.Panel, GuiUpdateMixin):
 
@@ -2801,6 +2797,7 @@ class TableOfContentsRow(HorizontalBasePanel):
         self.SetBackgroundColour((255, 255, 255))
     def _update_gui(self):
         self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
+        self.expand_collapse.UpdateGui(**self.values)
         self.text.UpdateGui(characters=self._get_characters())
 
     def _get_characters(self):
@@ -2814,8 +2811,6 @@ class TableOfContentsRow(HorizontalBasePanel):
             for x
             in self.values["page"].title
         ]
-    def _update_children(self):
-        self.expand_collapse.UpdateGui(**self.values)
 class TableOfContentsButton(GuiUpdatePanel):
 
     SIZE = 16

@@ -7106,7 +7106,23 @@
 "type":"variable"
 },
 {
-"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self.text.",
+"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self.expand_collapse.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(**self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":")\n    self.text.",
 "type":"code"
 },
 {
@@ -7167,48 +7183,6 @@
 }
 ],
 "id":"244f3dbf888c4a6fb2bedda9ce9d224d",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"TableOfContentsRow"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"efd50cfe632b44e6a6620c3fbf66a664",
-"type":"variable"
-},
-{
-"text":"(self):\n    self.expand_collapse.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(**self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":")\n",
-"type":"code"
-}
-],
-"id":"a282c6fed06444aba630d35537cbd88c",
 "language":"",
 "type":"code"
 }
@@ -13351,14 +13325,6 @@
 "type":"variable"
 },
 {
-"text":"()\n        self.",
-"type":"code"
-},
-{
-"id":"efd50cfe632b44e6a6620c3fbf66a664",
-"type":"variable"
-},
-{
 "text":"()\n\n    def ",
 "type":"code"
 },
@@ -13388,14 +13354,6 @@
 },
 {
 "id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n        pass\n\n    def ",
-"type":"code"
-},
-{
-"id":"efd50cfe632b44e6a6620c3fbf66a664",
 "type":"variable"
 },
 {
