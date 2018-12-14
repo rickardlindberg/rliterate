@@ -153,8 +153,17 @@ class Editable(VerticalBasePanel):
     def project(self):
         return self.values["project"]
 
-    def __init__(self, parent, project):
-        VerticalBasePanel.__init__(self, parent, project=project)
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 
     def _create_gui(self):
         self.view = self.AppendChild(
@@ -260,12 +269,6 @@ class Style(namedtuple("Style", "foreground background bold underlined italic mo
     def highlight(self):
         return self._replace(foreground="#fcf4df", background="#b58900")
 class ParagraphBase(Editable):
-
-    def __init__(self, parent, project, page_id, paragraph, selection):
-        self.page_id = page_id
-        self.paragraph = paragraph
-        self.selection = selection
-        Editable.__init__(self, parent, project)
 
     def BindMouse(self, widget, controls, **overrides):
         def create_handler(name, fn):
@@ -3209,6 +3212,7 @@ class PagePanel(VerticalBasePanel):
             VerticalPanel(self),
             flag=wx.EXPAND
         )
+        self.paragraph_rows = []
 
     def _create_add_button(self):
         add_button = self.AppendChild(
@@ -3245,42 +3249,62 @@ class PagePanel(VerticalBasePanel):
         )
 
     def _update_paragraphs(self):
-        self.paragraph_container.RemoveChildren()
         self.drop_points = []
         divider = self.top_divider
-        for paragraph in self.project.get_page(self.page_id).paragraphs:
+        index = 0
+        for index, paragraph in enumerate(self.project.get_page(self.page_id).paragraphs):
             self.drop_points.append(PageDropPoint(
                 divider=divider,
                 page_id=self.page_id,
                 next_paragraph_id=paragraph.id
             ))
-            divider = self._render_paragraph({
-                "text": Text,
-                "quote": Quote,
-                "list": List,
-                "code": Code,
-                "image": Image,
-                "expanded_code": ExpandedCode,
-                "factory": Factory,
-            }[paragraph.type](
-                self.paragraph_container,
-                self.project,
-                self.page_id,
-                paragraph,
-                self.selection.get("paragraph").get(paragraph.id)
-            ))
+            divider = self._render_paragraph(index, paragraph)
         self.drop_points.append(PageDropPoint(
             divider=divider,
             page_id=self.page_id,
             next_paragraph_id=None
         ))
+        while index < len(self.paragraph_rows):
+            for widget in self.paragraph_rows.pop(-1):
+                widget.Destroy()
 
-    def _render_paragraph(self, paragraph):
-        self.paragraph_container.AppendChild(paragraph, flag=wx.EXPAND)
-        return self.paragraph_container.AppendChild(
-            self._create_divider(self.paragraph_container),
-            flag=wx.EXPAND
-        )
+    def _render_paragraph(self, index, paragraph):
+        widget_class = {
+            "text": Text,
+            "quote": Quote,
+            "list": List,
+            "code": Code,
+            "image": Image,
+            "expanded_code": ExpandedCode,
+            "factory": Factory,
+        }[paragraph.type]
+        while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:
+            for widget in self.paragraph_rows.pop(index):
+                widget.Destroy()
+        if index < len(self.paragraph_rows):
+            widget, divider = self.paragraph_rows[index]
+            widget.UpdateGui(
+                project=self.project,
+                page_id=self.page_id,
+                paragraph=paragraph,
+                selection=self.selection.get("paragraph").get(paragraph.id)
+            )
+            return divider
+        else:
+            print("create new")
+            widget = self.paragraph_container.AppendChild(widget_class(
+                self.paragraph_container,
+                project=self.project,
+                page_id=self.page_id,
+                paragraph=paragraph,
+                selection=self.selection.get("paragraph").get(paragraph.id)
+            ), flag=wx.EXPAND)
+            divider = self.paragraph_container.AppendChild(
+                self._create_divider(self.paragraph_container),
+                flag=wx.EXPAND
+            )
+            self.paragraph_rows.append((widget, divider))
+            return divider
 
     def _create_divider(self, parent):
         return Divider(

@@ -8651,7 +8651,7 @@
 "type":"variable"
 },
 {
-"text":"(self),\n        flag=wx.EXPAND\n    )\n\ndef _create_add_button(self):\n    add_button = self.",
+"text":"(self),\n        flag=wx.EXPAND\n    )\n    self.paragraph_rows = []\n\ndef _create_add_button(self):\n    add_button = self.",
 "type":"code"
 },
 {
@@ -8707,7 +8707,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        project=self.project,\n        page=self.project.get_page(self.page_id),\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.paragraph_container.RemoveChildren()\n    self.drop_points = []\n    divider = self.top_divider\n    for paragraph in self.project.get_page(self.page_id).paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"expanded_code\": ExpandedCode,\n            \"factory\": Factory,\n        }[paragraph.type](\n            self.paragraph_container,\n            self.project,\n            self.page_id,\n            paragraph,\n            self.selection.get(\"paragraph\").get(paragraph.id)\n        ))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n\ndef _render_paragraph(self, paragraph):\n    self.paragraph_container.",
+"text":"(\n        project=self.project,\n        page=self.project.get_page(self.page_id),\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.drop_points = []\n    divider = self.top_divider\n    index = 0\n    for index, paragraph in enumerate(self.project.get_page(self.page_id).paragraphs):\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    while index < len(self.paragraph_rows):\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(\n            project=self.project,\n            page_id=self.page_id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        )\n        return divider\n    else:\n        widget = self.paragraph_container.",
 "type":"code"
 },
 {
@@ -8715,7 +8723,7 @@
 "type":"variable"
 },
 {
-"text":"(paragraph, flag=wx.EXPAND)\n    return self.paragraph_container.",
+"text":"(widget_class(\n            self.paragraph_container,\n            project=self.project,\n            page_id=self.page_id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        ), flag=wx.EXPAND)\n        divider = self.paragraph_container.",
 "type":"code"
 },
 {
@@ -8723,7 +8731,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self._create_divider(self.paragraph_container),\n        flag=wx.EXPAND\n    )\n\ndef _create_divider(self, parent):\n    return Divider(\n        parent,\n        padding=(self.project.",
+"text":"(\n            self._create_divider(self.paragraph_container),\n            flag=wx.EXPAND\n        )\n        self.paragraph_rows.append((widget, divider))\n        return divider\n\ndef _create_divider(self, parent):\n    return Divider(\n        parent,\n        padding=(self.project.",
 "type":"code"
 },
 {
@@ -10898,18 +10906,11 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project, page_id, paragraph, selection):\n        self.page_id = page_id\n        self.paragraph = paragraph\n        self.selection = selection\n        ",
+"text":"):\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n",
 "type":"code"
 },
 {
-"id":"e327d4d3650047bc9eedb2a21d4c2613",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, project)\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n",
-"type":"code"
-},
-{
+"blank_lines_before":0,
 "path":[
 "ParagraphBase"
 ],
@@ -11127,15 +11128,31 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"]\n\n    def __init__(self, parent, project):\n        ",
+"text":"[\"project\"]\n\n    @property\n    def page_id(self):\n        return self.",
 "type":"code"
 },
 {
-"id":"50f1b4552c0340eab599c8bc578334de",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":".__init__(self, parent, project=project)\n\n    def ",
+"text":"[\"page_id\"]\n\n    @property\n    def paragraph(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"paragraph\"]\n\n    @property\n    def selection(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"]\n\n    def ",
 "type":"code"
 },
 {
