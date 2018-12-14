@@ -359,22 +359,6 @@ class TextProjection(BasePanel):
         "break_at_word": True,
     }
 
-    @property
-    def _characters(self):
-        return self.values["characters"]
-
-    @property
-    def _line_height(self):
-        return self.values["line_height"]
-
-    @property
-    def _max_width(self):
-        return self.values["max_width"]
-
-    @property
-    def _break_at_word(self):
-        return self.values["break_at_word"]
-
     def _create_gui(self):
         self.Bind(wx.EVT_PAINT, self._on_paint)
 
@@ -390,49 +374,52 @@ class TextProjection(BasePanel):
         self._set_min_size()
 
     def _partition_characters(self):
-        self._characters_by_style = defaultdict(list)
+        self._boxes = []
+        self._boxes_by_style = defaultdict(list)
         self._beams = []
-        for character in self._characters:
-            self._characters_by_style[character.style].append(character)
+        for character in self.values["characters"]:
+            box = Box(character)
+            self._boxes.append(box)
+            self._boxes_by_style[character.style].append(box)
             if character.marker == "beam":
-                self._beams.append(character)
+                self._beams.append(box)
 
     def _measure_character_size(self):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
         dc.SelectObject(wx.EmptyBitmap(1, 1))
-        self._line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self._line_height))
-        for style, characters in self._characters_by_style.iteritems():
+        self._line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self.values["line_height"]))
+        for style, boxes in self._boxes_by_style.iteritems():
             style.apply_to_wx_dc(dc, self.GetFont())
-            for character in characters:
-                character.rect.Size = dc.GetTextExtent(character.text)
+            for box in boxes:
+                box.rect.Size = dc.GetTextExtent(box.char.text)
 
     def _calculate_lines(self):
         self._lines = []
         current_line = []
         x, y = 0, 0
         index = 0
-        previous_character, break_index, break_len = None, None, None
-        while index < len(self._characters):
-            character = self._characters[index]
-            if previous_character and previous_character.text == " " and character.text != " ":
+        previous_box, break_index, break_len = None, None, None
+        while index < len(self._boxes):
+            box = self._boxes[index]
+            if previous_box and previous_box.char.text == " " and box.char.text != " ":
                 break_index, break_len = index, len(current_line)
-            if (character.text == "\n" or
-                (x > 0 and self._max_width is not None and x+character.rect.Width > self._max_width)):
+            if (box.char.text == "\n" or
+                (x > 0 and self.values["max_width"] is not None and x+box.rect.Width > self.values["max_width"])):
                 x = 0
                 y += self._line_height_pixels
-                if character.text != "\n" and break_index is not None and self._break_at_word:
+                if box.char.text != "\n" and break_index is not None and self.values["break_at_word"]:
                     index = break_index
-                    character = self._characters[index]
+                    box = self._boxes[index]
                     current_line = current_line[:break_len]
                 self._lines.append(current_line)
                 current_line = []
-                previous_character, break_index, break_len = None, None, None
-            character.rect.Position = (x, y)
-            x += character.rect.Width
-            if character.text != "\n":
-                current_line.append(character)
-            previous_character = character
+                previous_box, break_index, break_len = None, None, None
+            box.rect.Position = (x, y)
+            x += box.rect.Width
+            if box.char.text != "\n":
+                current_line.append(box)
+            previous_box = box
             index += 1
         if current_line:
             self._lines.append(current_line)
@@ -448,22 +435,22 @@ class TextProjection(BasePanel):
             style = None
             position = None
             text = []
-            for character in line:
-                if style is None or style != character.style:
+            for box in line:
+                if style is None or style != box.char.style:
                     push()
-                    style = character.style
-                    position = character.rect.Position
+                    style = box.char.style
+                    position = box.rect.Position
                     text = []
-                text.append(character.text)
+                text.append(box.char.text)
             push()
 
     def _set_min_size(self):
         max_x = 10
         max_y = self._line_height_pixels
         for line in self._lines:
-            for character in line:
-                max_x = max(max_x, character.rect.X+character.rect.Width)
-                max_y = max(max_y, character.rect.Y+character.rect.Height)
+            for box in line:
+                max_x = max(max_x, box.rect.X+box.rect.Width)
+                max_y = max(max_y, box.rect.Y+box.rect.Height)
         self.SetMinSize((max_x, max_y))
 
     def _setup_beams(self):
@@ -484,29 +471,29 @@ class TextProjection(BasePanel):
             dc.DrawTextList(*strings_positions)
         if self._show_beams:
             dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))
-            for character in self._beams:
-                dc.DrawLinePoint(character.rect.TopLeft, character.rect.BottomLeft)
+            for box in self._beams:
+                dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)
 
     def GetCharacterAt(self, position):
-        for character in self._characters:
-            if character.rect.Contains(position):
-                return character
+        for box in self._boxes:
+            if box.rect.Contains(position):
+                return box.char
 
     def GetClosestCharacter(self, position):
-        if len(self._characters) == 0:
+        if len(self._boxes) == 0:
             return None
         characters_by_y_distance = defaultdict(list)
-        for character in self._characters:
-            if character.rect.Contains(position):
-                characters_by_y_distance[0] = [character]
+        for box in self._boxes:
+            if box.rect.Contains(position):
+                characters_by_y_distance[0] = [box]
                 break
             characters_by_y_distance[
-                abs(character.rect.Y + int(character.rect.Height / 2) - position.y)
-            ].append(character)
+                abs(box.rect.Y + int(box.rect.Height / 2) - position.y)
+            ].append(box)
         return min(
             characters_by_y_distance[min(characters_by_y_distance.keys())],
-            key=lambda character: abs(character.rect.X + int(character.rect.Width / 2) - position.x)
-        )
+            key=lambda box: abs(box.rect.X + int(box.rect.Width / 2) - position.x)
+        ).char
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -517,7 +504,7 @@ class TokenView(TextProjection):
                 style = style.highlight()
             for subtoken in token.split():
                 for char in subtoken.text:
-                    self.characters.append(Box(
+                    self.characters.append(Character.create(
                         char,
                         style,
                         extra=subtoken
@@ -2792,7 +2779,7 @@ class TableOfContentsRow(HorizontalBasePanel):
             token_type = TokenType.RLiterate
         style = self.values["project"].get_style(token_type)
         return [
-            Box(x, style)
+            Character.create(x, style)
             for x
             in self.values["page"].title
         ]
@@ -3271,7 +3258,7 @@ class Title(HorizontalPanel):
     def _get_characters(self):
         characters = []
         for index, character in list(enumerate(self.page.title))+[(len(self.page.title), " ")]:
-            characters.append(Box(
+            characters.append(Character.create(
                 character,
                 self.project.get_style(TokenType.RLiterate),
                 marker="beam" if self.selection.present and self.selection.value == index else None,
@@ -4095,13 +4082,15 @@ class MouseEventHelper(object):
 
     def _on_right_up(self, event):
         self.OnRightClick(event)
+class Character(namedtuple("Character", "text style marker extra")):
+
+    @classmethod
+    def create(cls, text, style, marker=None, extra=None):
+        return cls(text, style, marker, extra)
 class Box(object):
 
-    def __init__(self, text, style, marker=None, extra=None):
-        self.text = text
-        self.style = style
-        self.marker = marker
-        self.extra = extra
+    def __init__(self, char):
+        self.char = char
         self.rect = wx.Rect(0, 0, 0, 0)
 class Token(object):
 

@@ -7098,7 +7098,23 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"].get_style(token_type)\n    return [\n        Box(x, style)\n        for x\n        in self.",
+"text":"[\"project\"].get_style(token_type)\n    return [\n        ",
+"type":"code"
+},
+{
+"id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"ae234077465241e39337f68165ffb11e",
+"type":"variable"
+},
+{
+"text":"(x, style)\n        for x\n        in self.",
 "type":"code"
 },
 {
@@ -8889,6 +8905,14 @@
 },
 {
 "id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"ae234077465241e39337f68165ffb11e",
 "type":"variable"
 },
 {
@@ -11309,11 +11333,52 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, text, style, marker=None, extra=None):\n        self.text = text\n        self.style = style\n        self.marker = marker\n        self.extra = extra\n        self.rect = wx.Rect(0, 0, 0, 0)\n",
+"text":"(namedtuple(\"",
+"type":"code"
+},
+{
+"id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":"\", \"text style marker extra\")):\n\n    @classmethod\n    def ",
+"type":"code"
+},
+{
+"id":"ae234077465241e39337f68165ffb11e",
+"type":"variable"
+},
+{
+"text":"(cls, text, style, marker=None, extra=None):\n        return cls(text, style, marker, extra)\n",
 "type":"code"
 }
 ],
 "id":"9314bdc42aca426f8ba6fdb330c01349",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"c814a047b6df48d3a18de974afe8505b",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, char):\n        self.char = char\n        self.rect = wx.Rect(0, 0, 0, 0)\n",
+"type":"code"
+}
+],
+"id":"f330536ab2364aad83d30fc7781e9c8c",
 "language":"",
 "type":"code"
 },
@@ -11374,103 +11439,7 @@
 "type":"variable"
 },
 {
-"text":"\": True,\n    }\n\n    @property\n    def ",
-"type":"code"
-},
-{
-"id":"ab468260e8344173a06b482194c9a6a4",
-"type":"variable"
-},
-{
-"text":"(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"",
-"type":"code"
-},
-{
-"id":"94ebdf2d279b424580629906ad32a461",
-"type":"variable"
-},
-{
-"text":"\"]\n\n    @property\n    def ",
-"type":"code"
-},
-{
-"id":"20656ab448a944f7b3659aeb42405b15",
-"type":"variable"
-},
-{
-"text":"(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"",
-"type":"code"
-},
-{
-"id":"1680a175cf4348e4ba5131efba2cb1c9",
-"type":"variable"
-},
-{
-"text":"\"]\n\n    @property\n    def ",
-"type":"code"
-},
-{
-"id":"7a9fc5b110114e64b871a0f672c764c2",
-"type":"variable"
-},
-{
-"text":"(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"\"]\n\n    @property\n    def ",
-"type":"code"
-},
-{
-"id":"457a1dbf134c431881e590e7b7db9907",
-"type":"variable"
-},
-{
-"text":"(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"",
-"type":"code"
-},
-{
-"id":"fdd751029b984545a69a3570683a2b4a",
-"type":"variable"
-},
-{
-"text":"\"]\n\n",
+"text":"\": True,\n    }\n\n",
 "type":"code"
 },
 {
@@ -11624,6 +11593,14 @@
 "type":"code"
 },
 {
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":" = []\n    self.",
+"type":"code"
+},
+{
 "id":"3208a1df72ac489b8ec6d2200e211220",
 "type":"variable"
 },
@@ -11640,11 +11617,19 @@
 "type":"code"
 },
 {
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"characters\"]:\n        box = Box(character)\n        self.",
+"type":"code"
+},
+{
 "id":"ab468260e8344173a06b482194c9a6a4",
 "type":"variable"
 },
 {
-"text":":\n        self.",
+"text":".append(box)\n        self.",
 "type":"code"
 },
 {
@@ -11652,7 +11637,7 @@
 "type":"variable"
 },
 {
-"text":"[character.style].append(character)\n        if character.marker == \"beam\":\n            self.",
+"text":"[character.style].append(box)\n        if character.marker == \"beam\":\n            self.",
 "type":"code"
 },
 {
@@ -11660,7 +11645,7 @@
 "type":"variable"
 },
 {
-"text":".append(character)\n",
+"text":".append(box)\n",
 "type":"code"
 }
 ],
@@ -11698,11 +11683,19 @@
 "type":"code"
 },
 {
-"id":"20656ab448a944f7b3659aeb42405b15",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":"))\n    for style, characters in self.",
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"1680a175cf4348e4ba5131efba2cb1c9",
+"type":"variable"
+},
+{
+"text":"\"]))\n    for style, boxes in self.",
 "type":"code"
 },
 {
@@ -11718,7 +11711,7 @@
 "type":"variable"
 },
 {
-"text":"(dc, self.GetFont())\n        for character in characters:\n            character.rect.Size = dc.GetTextExtent(character.text)\n",
+"text":"(dc, self.GetFont())\n        for box in boxes:\n            box.rect.Size = dc.GetTextExtent(box.char.text)\n",
 "type":"code"
 }
 ],
@@ -11752,7 +11745,7 @@
 "type":"variable"
 },
 {
-"text":" = []\n    current_line = []\n    x, y = 0, 0\n    index = 0\n    previous_character, break_index, break_len = None, None, None\n    while index < len(self.",
+"text":" = []\n    current_line = []\n    x, y = 0, 0\n    index = 0\n    previous_box, break_index, break_len = None, None, None\n    while index < len(self.",
 "type":"code"
 },
 {
@@ -11760,7 +11753,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        character = self.",
+"text":"):\n        box = self.",
 "type":"code"
 },
 {
@@ -11768,23 +11761,39 @@
 "type":"variable"
 },
 {
-"text":"[index]\n        if previous_character and previous_character.text == \" \" and character.text != \" \":\n            break_index, break_len = index, len(current_line)\n        if (character.text == \"\\n\" or\n            (x > 0 and self.",
+"text":"[index]\n        if previous_box and previous_box.char.text == \" \" and box.char.text != \" \":\n            break_index, break_len = index, len(current_line)\n        if (box.char.text == \"\\n\" or\n            (x > 0 and self.",
 "type":"code"
 },
 {
-"id":"7a9fc5b110114e64b871a0f672c764c2",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":" is not None and x+character.rect.Width > self.",
+"text":"[\"",
 "type":"code"
 },
 {
-"id":"7a9fc5b110114e64b871a0f672c764c2",
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
 "type":"variable"
 },
 {
-"text":")):\n            x = 0\n            y += self.",
+"text":"\"] is not None and x+box.rect.Width > self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"\"])):\n            x = 0\n            y += self.",
 "type":"code"
 },
 {
@@ -11792,15 +11801,23 @@
 "type":"variable"
 },
 {
-"text":"\n            if character.text != \"\\n\" and break_index is not None and self.",
+"text":"\n            if box.char.text != \"\\n\" and break_index is not None and self.",
 "type":"code"
 },
 {
-"id":"457a1dbf134c431881e590e7b7db9907",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":":\n                index = break_index\n                character = self.",
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"fdd751029b984545a69a3570683a2b4a",
+"type":"variable"
+},
+{
+"text":"\"]:\n                index = break_index\n                box = self.",
 "type":"code"
 },
 {
@@ -11816,7 +11833,7 @@
 "type":"variable"
 },
 {
-"text":".append(current_line)\n            current_line = []\n            previous_character, break_index, break_len = None, None, None\n        character.rect.Position = (x, y)\n        x += character.rect.Width\n        if character.text != \"\\n\":\n            current_line.append(character)\n        previous_character = character\n        index += 1\n    if current_line:\n        self.",
+"text":".append(current_line)\n            current_line = []\n            previous_box, break_index, break_len = None, None, None\n        box.rect.Position = (x, y)\n        x += box.rect.Width\n        if box.char.text != \"\\n\":\n            current_line.append(box)\n        previous_box = box\n        index += 1\n    if current_line:\n        self.",
 "type":"code"
 },
 {
@@ -11874,7 +11891,7 @@
 "type":"variable"
 },
 {
-"text":":\n        style = None\n        position = None\n        text = []\n        for character in line:\n            if style is None or style != character.style:\n                push()\n                style = character.style\n                position = character.rect.Position\n                text = []\n            text.append(character.text)\n        push()\n",
+"text":":\n        style = None\n        position = None\n        text = []\n        for box in line:\n            if style is None or style != box.char.style:\n                push()\n                style = box.char.style\n                position = box.rect.Position\n                text = []\n            text.append(box.char.text)\n        push()\n",
 "type":"code"
 }
 ],
@@ -11916,7 +11933,7 @@
 "type":"variable"
 },
 {
-"text":":\n        for character in line:\n            max_x = max(max_x, character.rect.X+character.rect.Width)\n            max_y = max(max_y, character.rect.Y+character.rect.Height)\n    self.SetMinSize((max_x, max_y))\n",
+"text":":\n        for box in line:\n            max_x = max(max_x, box.rect.X+box.rect.Width)\n            max_y = max(max_y, box.rect.Y+box.rect.Height)\n    self.SetMinSize((max_x, max_y))\n",
 "type":"code"
 }
 ],
@@ -12016,7 +12033,7 @@
 "type":"variable"
 },
 {
-"text":":\n        dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))\n        for character in self.",
+"text":":\n        dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))\n        for box in self.",
 "type":"code"
 },
 {
@@ -12024,7 +12041,7 @@
 "type":"variable"
 },
 {
-"text":":\n            dc.DrawLinePoint(character.rect.TopLeft, character.rect.BottomLeft)\n",
+"text":":\n            dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)\n",
 "type":"code"
 }
 ],
@@ -12050,7 +12067,7 @@
 "type":"variable"
 },
 {
-"text":"(self, position):\n    for character in self.",
+"text":"(self, position):\n    for box in self.",
 "type":"code"
 },
 {
@@ -12058,7 +12075,7 @@
 "type":"variable"
 },
 {
-"text":":\n        if character.rect.Contains(position):\n            return character\n",
+"text":":\n        if box.rect.Contains(position):\n            return box.char\n",
 "type":"code"
 }
 ],
@@ -12092,7 +12109,7 @@
 "type":"variable"
 },
 {
-"text":") == 0:\n        return None\n    characters_by_y_distance = defaultdict(list)\n    for character in self.",
+"text":") == 0:\n        return None\n    characters_by_y_distance = defaultdict(list)\n    for box in self.",
 "type":"code"
 },
 {
@@ -12100,7 +12117,7 @@
 "type":"variable"
 },
 {
-"text":":\n        if character.rect.Contains(position):\n            characters_by_y_distance[0] = [character]\n            break\n        characters_by_y_distance[\n            abs(character.rect.Y + int(character.rect.Height / 2) - position.y)\n        ].append(character)\n    return min(\n        characters_by_y_distance[min(characters_by_y_distance.keys())],\n        key=lambda character: abs(character.rect.X + int(character.rect.Width / 2) - position.x)\n    )\n",
+"text":":\n        if box.rect.Contains(position):\n            characters_by_y_distance[0] = [box]\n            break\n        characters_by_y_distance[\n            abs(box.rect.Y + int(box.rect.Height / 2) - position.y)\n        ].append(box)\n    return min(\n        characters_by_y_distance[min(characters_by_y_distance.keys())],\n        key=lambda box: abs(box.rect.X + int(box.rect.Width / 2) - position.x)\n    ).char\n",
 "type":"code"
 }
 ],
@@ -12155,6 +12172,14 @@
 },
 {
 "id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"ae234077465241e39337f68165ffb11e",
 "type":"variable"
 },
 {
@@ -15721,7 +15746,7 @@
 "30ba4e602df545be8fa892a31e88c6ce":"AppendChildWithSizer",
 "30eeb77f05c34590a6498edb391d0916":"paragraph_space",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
-"3208a1df72ac489b8ec6d2200e211220":"_characters_by_style",
+"3208a1df72ac489b8ec6d2200e211220":"_boxes_by_style",
 "3457c112c47c41a293d77cc79f99badf":"VerticalScrolledWindow",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "359755e756af4e708b237cd9753ae046":"AppendChild",
@@ -15777,7 +15802,7 @@
 "90d6de1e6f714f1497872ca757b501b6":"value",
 "94ebdf2d279b424580629906ad32a461":"characters",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
-"99872a7e246e4fc38f9e0029f076e120":"Box",
+"99872a7e246e4fc38f9e0029f076e120":"Character",
 "9afba42827fd435dab58673210d03785":"AppendChild",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
 "9e987210a686490c823a44d09e783833":"_load",
@@ -15790,12 +15815,14 @@
 "a8caeb6d2819489f994f081b84182472":"_partition_characters",
 "aa80683234dc421f81d21fbda0b91758":"code_font",
 "aa88810b795e4483b57bbdf05e8127d6":"workspace_background",
-"ab468260e8344173a06b482194c9a6a4":"_characters",
+"ab468260e8344173a06b482194c9a6a4":"_boxes",
 "ad7a061336df4d5da6e9e18d957c9726":"_measure_character_size",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
+"ae234077465241e39337f68165ffb11e":"create",
 "ae8e603135854b1787ca652bf6304e9e":"theme",
 "aed0c1af151440d889b3890fa971fb59":"save",
 "b0201e824c464356aa706a0440192e5c":"ShowRecursive",
+"b088ae244bc14a1abd35258193a12469":"values",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b3ef449947274fc597372ebb7fa1eaf7":"max_width",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
@@ -15813,6 +15840,7 @@
 "c55ce4bb53214f3d88571b8b8fd87f9e":"_lines",
 "c56b4a82a7d4441ab6ceb5610217a3c5":"editor_font",
 "c65bff398b4a49af945b1c154a660687":"active_editor",
+"c814a047b6df48d3a18de974afe8505b":"Box",
 "ccd9655841fb4311bad581f979730e47":"needs_saving",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d126e525b923499f9c0176206b3e886c":"ReRender",
@@ -15826,7 +15854,9 @@
 "dadd60f63fbf40638d412cd98a36846a":"_beams",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
 "dc235530a21f4f61bc79a447761fb07b":"_mark_for_saving",
+"dd8b5ece7fb24a94bc8e9adcb87c66ce":"_boxes",
 "de16dfdd628d459ba5af528db2604934":"fragments",
+"de2a97b0705243c784e1cd7884873895":"_e2666ed6e8d5428e901fc58bfe11a45b",
 "deed113aeefa46e7a4ffdf2d0ceff136":"_iter_characters_with_style",
 "df94156ca33b47a1beb10346870806ec":"shadow_size",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
