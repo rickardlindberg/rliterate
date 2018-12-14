@@ -3173,57 +3173,35 @@ class PagePanel(VerticalBasePanel):
     def selection(self):
         return self.values["selection"]
     def _create_gui(self):
-        self.drop_points = []
-        page = self.project.get_page(self.page_id)
-        divider = self._render_paragraph(Title(
-            self,
-            project=self.project,
-            page=page,
-            selection=self.selection.get("title")
-        ))
-        for paragraph in page.paragraphs:
-            self.drop_points.append(PageDropPoint(
-                divider=divider,
-                page_id=self.page_id,
-                next_paragraph_id=paragraph.id
-            ))
-            divider = self._render_paragraph({
-                "text": Text,
-                "quote": Quote,
-                "list": List,
-                "code": Code,
-                "image": Image,
-                "expanded_code": ExpandedCode,
-                "factory": Factory,
-            }[paragraph.type](
-                self,
-                self.project,
-                self.page_id,
-                paragraph,
-                self.selection.get("paragraph").get(paragraph.id)
-            ))
-        self.drop_points.append(PageDropPoint(
-            divider=divider,
-            page_id=self.page_id,
-            next_paragraph_id=None
-        ))
-        self._render_add_button()
+        self._create_title()
+        self._create_top_divider()
+        self._create_paragraph_container()
+        self._create_add_button()
         MouseEventHelper.bind([self], right_click=lambda event:
             SimpleContextMenu.ShowRecursive(self)
         )
 
-    def _render_paragraph(self, paragraph):
-        self.AppendChild(paragraph, flag=wx.EXPAND)
-        return self.AppendChild(
-            Divider(
-                self,
-                padding=(self.project.theme.paragraph_space-3)/2,
-                height=3
-            ),
+    def _create_title(self):
+        self.title = self.AppendChild(Title(
+            self,
+            project=self.project,
+            page=self.project.get_page(self.page_id),
+            selection=self.selection.get("title")
+        ), flag=wx.EXPAND)
+
+    def _create_top_divider(self):
+        self.top_divider = self.AppendChild(
+            self._create_divider(self),
             flag=wx.EXPAND
         )
 
-    def _render_add_button(self):
+    def _create_paragraph_container(self):
+        self.paragraph_container = self.AppendChild(
+            VerticalPanel(self),
+            flag=wx.EXPAND
+        )
+
+    def _create_add_button(self):
         add_button = self.AppendChild(
             wx.BitmapButton(
                 self,
@@ -3243,11 +3221,63 @@ class PagePanel(VerticalBasePanel):
         self.project.add_paragraph(self.page_id)
 
     def _update_gui(self):
-        self.RemoveChildren()
-        self._create_gui()
+        self._update_title()
+        self._update_paragraphs()
         self.MinSize = (
             self.project.theme.page_body_width,
             -1
+        )
+
+    def _update_title(self):
+        self.title.UpdateGui(
+            project=self.project,
+            page=self.project.get_page(self.page_id),
+            selection=self.selection.get("title")
+        )
+
+    def _update_paragraphs(self):
+        self.paragraph_container.RemoveChildren()
+        self.drop_points = []
+        divider = self.top_divider
+        for paragraph in self.project.get_page(self.page_id).paragraphs:
+            self.drop_points.append(PageDropPoint(
+                divider=divider,
+                page_id=self.page_id,
+                next_paragraph_id=paragraph.id
+            ))
+            divider = self._render_paragraph({
+                "text": Text,
+                "quote": Quote,
+                "list": List,
+                "code": Code,
+                "image": Image,
+                "expanded_code": ExpandedCode,
+                "factory": Factory,
+            }[paragraph.type](
+                self.paragraph_container,
+                self.project,
+                self.page_id,
+                paragraph,
+                self.selection.get("paragraph").get(paragraph.id)
+            ))
+        self.drop_points.append(PageDropPoint(
+            divider=divider,
+            page_id=self.page_id,
+            next_paragraph_id=None
+        ))
+
+    def _render_paragraph(self, paragraph):
+        self.paragraph_container.AppendChild(paragraph, flag=wx.EXPAND)
+        return self.paragraph_container.AppendChild(
+            self._create_divider(self.paragraph_container),
+            flag=wx.EXPAND
+        )
+
+    def _create_divider(self, parent):
+        return Divider(
+            parent,
+            padding=(self.project.theme.paragraph_space-3)/2,
+            height=3
         )
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)

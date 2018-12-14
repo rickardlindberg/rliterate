@@ -8685,15 +8685,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(",
-"type":"code"
-},
-{
-"id":"12f482d927e54efa94ec8c3165307f41",
-"type":"variable"
-},
-{
-"text":"(\n        self,\n        project=self.project,\n        page=page,\n        selection=self.selection.get(\"title\")\n    ))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"expanded_code\": ExpandedCode,\n            \"factory\": Factory,\n        }[paragraph.type](\n            self,\n            self.project,\n            self.page_id,\n            paragraph,\n            self.selection.get(\"paragraph\").get(paragraph.id)\n        ))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
+"text":"(self):\n    self._create_title()\n    self._create_top_divider()\n    self._create_paragraph_container()\n    self._create_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
 "type":"code"
 },
 {
@@ -8709,7 +8701,7 @@
 "type":"variable"
 },
 {
-"text":"(self)\n    )\n\ndef _render_paragraph(self, paragraph):\n    self.",
+"text":"(self)\n    )\n\ndef _create_title(self):\n    self.title = self.",
 "type":"code"
 },
 {
@@ -8717,7 +8709,15 @@
 "type":"variable"
 },
 {
-"text":"(paragraph, flag=wx.EXPAND)\n    return self.",
+"text":"(",
+"type":"code"
+},
+{
+"id":"12f482d927e54efa94ec8c3165307f41",
+"type":"variable"
+},
+{
+"text":"(\n        self,\n        project=self.project,\n        page=self.project.get_page(self.page_id),\n        selection=self.selection.get(\"title\")\n    ), flag=wx.EXPAND)\n\ndef _create_top_divider(self):\n    self.top_divider = self.",
 "type":"code"
 },
 {
@@ -8725,23 +8725,23 @@
 "type":"variable"
 },
 {
-"text":"(\n        Divider(\n            self,\n            padding=(self.project.",
+"text":"(\n        self._create_divider(self),\n        flag=wx.EXPAND\n    )\n\ndef _create_paragraph_container(self):\n    self.paragraph_container = self.",
 "type":"code"
 },
 {
-"id":"ae8e603135854b1787ca652bf6304e9e",
+"id":"359755e756af4e708b237cd9753ae046",
 "type":"variable"
 },
 {
-"text":".",
+"text":"(\n        ",
 "type":"code"
 },
 {
-"id":"30eeb77f05c34590a6498edb391d0916",
+"id":"1566854b9f4240408d4a8b17ae305740",
 "type":"variable"
 },
 {
-"text":"-3)/2,\n            height=3\n        ),\n        flag=wx.EXPAND\n    )\n\ndef _render_add_button(self):\n    add_button = self.",
+"text":"(self),\n        flag=wx.EXPAND\n    )\n\ndef _create_add_button(self):\n    add_button = self.",
 "type":"code"
 },
 {
@@ -8773,15 +8773,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.RemoveChildren()\n    self.",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"()\n    self.MinSize = (\n        self.project.",
+"text":"(self):\n    self._update_title()\n    self._update_paragraphs()\n    self.MinSize = (\n        self.project.",
 "type":"code"
 },
 {
@@ -8797,7 +8789,47 @@
 "type":"variable"
 },
 {
-"text":",\n        -1\n    )\n",
+"text":",\n        -1\n    )\n\ndef _update_title(self):\n    self.title.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(\n        project=self.project,\n        page=self.project.get_page(self.page_id),\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.paragraph_container.RemoveChildren()\n    self.drop_points = []\n    divider = self.top_divider\n    for paragraph in self.project.get_page(self.page_id).paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"expanded_code\": ExpandedCode,\n            \"factory\": Factory,\n        }[paragraph.type](\n            self.paragraph_container,\n            self.project,\n            self.page_id,\n            paragraph,\n            self.selection.get(\"paragraph\").get(paragraph.id)\n        ))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n\ndef _render_paragraph(self, paragraph):\n    self.paragraph_container.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(paragraph, flag=wx.EXPAND)\n    return self.paragraph_container.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        self._create_divider(self.paragraph_container),\n        flag=wx.EXPAND\n    )\n\ndef _create_divider(self, parent):\n    return Divider(\n        parent,\n        padding=(self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"30eeb77f05c34590a6498edb391d0916",
+"type":"variable"
+},
+{
+"text":"-3)/2,\n        height=3\n    )\n",
 "type":"code"
 }
 ],
