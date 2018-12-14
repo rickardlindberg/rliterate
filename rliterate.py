@@ -75,7 +75,6 @@ class GuiUpdateMixin(object):
     DEFAULTS = {}
 
     def __init__(self, **kwargs):
-        self._init_mixins()
         self.values = {}
         self.values.update(self.DEFAULTS)
         self.values.update(kwargs)
@@ -92,9 +91,6 @@ class GuiUpdateMixin(object):
         self._update_gui()
         self._update_children()
 
-    def _init_mixins(self):
-        pass
-
     def _create_gui(self):
         pass
 
@@ -103,11 +99,15 @@ class GuiUpdateMixin(object):
 
     def _update_children(self):
         pass
-class BasePanel(wx.Panel, GuiUpdateMixin):
+class GuiUpdatePanel(wx.Panel, GuiUpdateMixin):
 
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
+        self._init_mixins()
         GuiUpdateMixin.__init__(self, **kwargs)
+
+    def _init_mixins(self):
+        pass
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -144,17 +144,17 @@ class HorizontalPanel(wx.Panel, BoxSizerMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
-class HorizontalBasePanel(BasePanel, BoxSizerMixin):
+class HorizontalBasePanel(GuiUpdatePanel, BoxSizerMixin):
 
     def __init__(self, parent, **kwargs):
-        BasePanel.__init__(self, parent, **kwargs)
+        GuiUpdatePanel.__init__(self, parent, **kwargs)
 
     def _init_mixins(self):
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
-class VerticalBasePanel(BasePanel, BoxSizerMixin):
+class VerticalBasePanel(GuiUpdatePanel, BoxSizerMixin):
 
     def __init__(self, parent, **kwargs):
-        BasePanel.__init__(self, parent, **kwargs)
+        GuiUpdatePanel.__init__(self, parent, **kwargs)
 
     def _init_mixins(self):
         BoxSizerMixin.__init__(self, wx.VERTICAL)
@@ -362,7 +362,7 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class TextProjection(BasePanel):
+class TextProjection(GuiUpdatePanel):
 
     DEFAULTS = {
         "characters": [],
@@ -2402,7 +2402,7 @@ class MainFrame(wx.Frame, BoxSizerMixin):
     def UpdateGui(self):
         with flicker_free_drawing(self):
             self.toc.UpdateGui(project=self.project)
-            self.workspace._re_render()
+            self.workspace.UpdateGui(project=self.project)
             self.ChildReRendered()
 
     def ChildReRendered(self):
@@ -2809,7 +2809,7 @@ class TableOfContentsRow(HorizontalBasePanel):
         ]
     def _update_children(self):
         self.expand_collapse.UpdateGui(**self.values)
-class TableOfContentsButton(BasePanel):
+class TableOfContentsButton(GuiUpdatePanel):
 
     SIZE = 16
 
@@ -2891,25 +2891,26 @@ class PageContextMenu(wx.Menu):
             lambda event: self.page.delete(),
             delete_item
         )
-class Workspace(HorizontalScrolledWindow):
+class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
 
     def __init__(self, parent, project):
         HorizontalScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
-        self.project = project
-        self.SetDropTarget(WorkspaceDropTarget(self, self.project))
-        self._render()
+        GuiUpdateMixin.__init__(self, project=project)
 
-    def _render(self):
+    def _create_gui(self):
+        self.SetDropTarget(WorkspaceDropTarget(self, self.project))
         self.space = self.AppendSpace()
         self.columns = []
-        self._re_render()
     @rltime("update workspace")
-    def _re_render(self):
+    def _update_gui(self):
         if self.project.active_editor is not None:
             return
         self.SetBackgroundColour(self.project.theme.workspace_background)
         self._update_space()
         self._update_columns()
+    @property
+    def project(self):
+        return self.values["project"]
     def _update_space(self):
         self.space.SetSize(self.project.theme.page_padding)
     def _update_columns(self):
