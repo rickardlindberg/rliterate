@@ -41,35 +41,6 @@ def rltime(text):
         else:
             return fn
     return wrap
-class Editable(wx.Panel):
-
-    def __init__(self, parent, project):
-        wx.Panel.__init__(self, parent)
-        self.project = project
-        self.view = self.CreateView()
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)
-        self.SetSizer(self.sizer)
-        self.view.Bind(EVT_EDIT_START, self.OnEditStart)
-
-    def OnEditStart(self, event):
-        if self.project.active_editor is not None:
-            show_edit_in_progress_error(self)
-            return
-        with flicker_free_drawing(self):
-            self.edit = self.CreateEdit(event.extra)
-            self.edit.SetFocus()
-            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
-            self.sizer.Hide(self.view)
-            self.GetTopLevelParent().Layout()
-            self.project.active_editor = self
-
-    def Cancel(self):
-        self.project.active_editor = None
-
-    def Save(self):
-        self.edit.Save()
-        self.project.active_editor = None
 class GuiUpdateMixin(object):
 
     DEFAULTS = {}
@@ -176,6 +147,49 @@ class SizeWrapper(object):
     def WithSize(self, size):
         self.SetSize(size)
         return self
+class Editable(VerticalBasePanel):
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    def __init__(self, parent, project):
+        VerticalBasePanel.__init__(self, parent, project=project)
+
+    def _create_gui(self):
+        self.view = self.AppendChild(
+            self.CreateView(),
+            flag=wx.EXPAND,
+            proportion=1
+        )
+        self.view.Bind(EVT_EDIT_START, self.OnEditStart)
+
+    def _update_gui(self):
+        self.view.Destroy()
+        self.view = self.AppendChild(
+            self.CreateView(),
+            flag=wx.EXPAND,
+            proportion=1
+        )
+
+    def OnEditStart(self, event):
+        if self.project.active_editor is not None:
+            show_edit_in_progress_error(self)
+            return
+        with flicker_free_drawing(self):
+            self.edit = self.CreateEdit(event.extra)
+            self.edit.SetFocus()
+            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
+            self.sizer.Hide(self.view)
+            self.GetTopLevelParent().Layout()
+            self.project.active_editor = self
+
+    def Cancel(self):
+        self.project.active_editor = None
+
+    def Save(self):
+        self.edit.Save()
+        self.project.active_editor = None
 class Observable(object):
 
     def __init__(self):

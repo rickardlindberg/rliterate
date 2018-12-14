@@ -1020,6 +1020,14 @@
 {
 "blank_lines_before":0,
 "path":[
+"base base base classes"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"blank_lines_before":0,
+"path":[
 "base base classes"
 ],
 "prefix":"",
@@ -11103,7 +11111,47 @@
 "type":"variable"
 },
 {
-"text":"(wx.Panel):\n\n    def __init__(self, parent, project):\n        wx.Panel.__init__(self, parent)\n        self.project = project\n        self.view = self.",
+"text":"(",
+"type":"code"
+},
+{
+"id":"50f1b4552c0340eab599c8bc578334de",
+"type":"variable"
+},
+{
+"text":"):\n\n    @property\n    def project(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"]\n\n    def __init__(self, parent, project):\n        ",
+"type":"code"
+},
+{
+"id":"50f1b4552c0340eab599c8bc578334de",
+"type":"variable"
+},
+{
+"text":".__init__(self, parent, project=project)\n\n    def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.view = self.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n            self.",
 "type":"code"
 },
 {
@@ -11111,7 +11159,31 @@
 "type":"variable"
 },
 {
-"text":"()\n        self.sizer = wx.BoxSizer(wx.VERTICAL)\n        self.sizer.Add(self.view, flag=wx.EXPAND, proportion=1)\n        self.SetSizer(self.sizer)\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def OnEditStart(self, event):\n        if self.project.",
+"text":"(),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.view.Destroy()\n        self.view = self.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n            self.",
+"type":"code"
+},
+{
+"id":"740055857bb244038c203cea23c1af69",
+"type":"variable"
+},
+{
+"text":"(),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n\n    def OnEditStart(self, event):\n        if self.project.",
 "type":"code"
 },
 {
@@ -13110,7 +13182,7 @@
 "paragraphs":[
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13295,7 +13367,7 @@
 },
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13359,7 +13431,7 @@
 "paragraphs":[
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13427,11 +13499,12 @@
 }
 ],
 "id":"e607df295e134d2fbbd03923b5f8862f",
+"language":"",
 "type":"code"
 },
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13451,11 +13524,12 @@
 }
 ],
 "id":"5d77e54d14d8476d9ac9f81fc6f91ccf",
+"language":"",
 "type":"code"
 },
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13467,11 +13541,12 @@
 }
 ],
 "id":"72985f3cbb2a4fbda2f876beec564231",
+"language":"",
 "type":"code"
 },
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13520,7 +13595,7 @@
 },
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13569,7 +13644,7 @@
 },
 {
 "chunkpath":[
-"base base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -13581,6 +13656,7 @@
 }
 ],
 "id":"525d67e5706f4c74b484ea4f1355d9ec",
+"language":"",
 "type":"code"
 }
 ],
