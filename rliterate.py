@@ -3009,13 +3009,22 @@ class Column(VerticalScrolledWindow, GuiUpdateMixin):
                 if index >= len(self._containers):
                     self._containers.append(
                         self.AppendChild(
-                            PageContainer(self, self.project, page_id, self.values["selection"].get(index)),
+                            PageContainer(
+                                self,
+                                project=self.project,
+                                page_id=page_id,
+                                selection=self.values["selection"].get(index)
+                            ),
                             flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
                             border=self.project.theme.page_padding
                         )
                     )
                 else:
-                    self._containers[index].SetPageId(page_id, self.values["selection"].get(index))
+                    self._containers[index].UpdateGui(
+                        project=self.project,
+                        page_id=page_id,
+                        selection=self.values["selection"].get(index)
+                    )
                 num_added += 1
         while len(self._containers) > num_added:
             self._containers.pop(-1).Destroy()
@@ -3054,24 +3063,22 @@ class Column(VerticalScrolledWindow, GuiUpdateMixin):
             self._containers,
             lambda container: container.FindClosestDropPoint(screen_pos)
         )
-class PageContainer(VerticalPanel):
+class PageContainer(VerticalBasePanel):
 
-    def __init__(self, parent, project, page_id, selection):
-        VerticalPanel.__init__(self, parent)
-        self.project = project
-        self._render(page_id, selection)
+    @property
+    def project(self):
+        return self.values["project"]
 
-    def SetPageId(self, page_id, selection):
-        changed_id = self.page_id != page_id
-        self.page_id = page_id
-        self.selection = selection
-        self._re_render()
-        return changed_id
-    def _render(self, initial_page_id, selection):
-        self.page_id = initial_page_id
-        self.selection = selection
-        self._render_first_row()
-        self._render_second_row()
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+    def _create_gui(self):
+        self._create_first_row()
+        self._create_second_row()
         MouseEventHelper.bind(
             [
                 self.inner_container,
@@ -3083,9 +3090,8 @@ class PageContainer(VerticalPanel):
             right_click=lambda event:
                 SimpleContextMenu.ShowRecursive(self)
         )
-        self._re_render()
 
-    def _render_first_row(self):
+    def _create_first_row(self):
         first_row = self.AppendChild(
             HorizontalPanel(self),
             flag=wx.EXPAND,
@@ -3117,7 +3123,7 @@ class PageContainer(VerticalPanel):
             proportion=1
         )
 
-    def _render_second_row(self):
+    def _create_second_row(self):
         self.bottom = self.AppendChild(
             HorizontalPanel(self),
             flag=wx.EXPAND
@@ -3128,7 +3134,7 @@ class PageContainer(VerticalPanel):
             flag=wx.EXPAND,
             proportion=1
         )
-    def _re_render(self):
+    def _update_gui(self):
         self.page.SetPageId(self.page_id, self.selection.get(self.page_id))
         self.inner_container.SetBackgroundColour((255, 255, 255))
         self.right_border.SetBackgroundColour((150, 150, 150))

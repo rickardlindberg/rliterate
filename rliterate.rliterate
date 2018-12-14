@@ -8044,7 +8044,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                        PageContainer(self, self.project, page_id, self.",
+"text":"(\n                        PageContainer(\n                            self,\n                            project=self.project,\n                            page_id=page_id,\n                            selection=self.",
 "type":"code"
 },
 {
@@ -8052,7 +8052,7 @@
 "type":"variable"
 },
 {
-"text":"[\"selection\"].get(index)),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
+"text":"[\"selection\"].get(index)\n                        ),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
 "type":"code"
 },
 {
@@ -8072,11 +8072,11 @@
 "type":"code"
 },
 {
-"id":"37f8b479b7eb4013bea0222eacc5ea6f",
+"id":"883ac73a999c403e8274442301acdbb3",
 "type":"variable"
 },
 {
-"text":"(page_id, self.",
+"text":"(\n                    project=self.project,\n                    page_id=page_id,\n                    selection=self.",
 "type":"code"
 },
 {
@@ -8084,7 +8084,7 @@
 "type":"variable"
 },
 {
-"text":"[\"selection\"].get(index))\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n\n@property\ndef project(self):\n    return self.",
+"text":"[\"selection\"].get(index)\n                )\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n\n@property\ndef project(self):\n    return self.",
 "type":"code"
 },
 {
@@ -8287,7 +8287,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self, initial_page_id, selection):\n    self.page_id = initial_page_id\n    self.selection = selection\n    self._render_first_row()\n    self._render_second_row()\n    MouseEventHelper.bind(\n        [\n            self.inner_container,\n            self.right,\n            self.right_border,\n            self.bottom,\n            self.bottom_border,\n        ],\n        right_click=lambda event:\n            ",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    self._create_first_row()\n    self._create_second_row()\n    MouseEventHelper.bind(\n        [\n            self.inner_container,\n            self.right,\n            self.right_border,\n            self.bottom,\n            self.bottom_border,\n        ],\n        right_click=lambda event:\n            ",
 "type":"code"
 },
 {
@@ -8303,7 +8311,7 @@
 "type":"variable"
 },
 {
-"text":"(self)\n    )\n    self._re_render()\n\ndef _render_first_row(self):\n    first_row = self.",
+"text":"(self)\n    )\n\ndef _create_first_row(self):\n    first_row = self.",
 "type":"code"
 },
 {
@@ -8351,7 +8359,7 @@
 "type":"variable"
 },
 {
-"text":"(first_row),\n        flag=wx.EXPAND\n    )\n    self.right_space = self.right.AppendSpace()\n    self.right_border = self.right.AppendChild(\n        wx.Panel(self.right),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n\ndef _render_second_row(self):\n    self.bottom = self.",
+"text":"(first_row),\n        flag=wx.EXPAND\n    )\n    self.right_space = self.right.AppendSpace()\n    self.right_border = self.right.AppendChild(\n        wx.Panel(self.right),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n\ndef _create_second_row(self):\n    self.bottom = self.",
 "type":"code"
 },
 {
@@ -8364,6 +8372,7 @@
 }
 ],
 "id":"ca54d3c269204fdd8b473a10655ba7a0",
+"language":"",
 "type":"code"
 },
 {
@@ -8376,7 +8385,15 @@
 ],
 "fragments":[
 {
-"text":"def _re_render(self):\n    self.page.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.page.",
 "type":"code"
 },
 {
@@ -8389,6 +8406,7 @@
 }
 ],
 "id":"14a9f369ce9748ee838a45a9afdecec3",
+"language":"",
 "type":"code"
 }
 ],
@@ -8500,22 +8518,15 @@
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"50f1b4552c0340eab599c8bc578334de",
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project, page_id, selection):\n        ",
+"text":"):\n\n",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent)\n        self.project = project\n        self._render(page_id, selection)\n\n",
-"type":"code"
-},
-{
+"blank_lines_before":0,
 "path":[
 "PageContainer"
 ],
@@ -8524,6 +8535,7 @@
 }
 ],
 "id":"29a948082ed3467395fb08fcbc0ad7c9",
+"language":"",
 "type":"code"
 },
 {
@@ -8536,19 +8548,36 @@
 ],
 "fragments":[
 {
-"text":"def ",
+"text":"@property\ndef project(self):\n    return self.",
 "type":"code"
 },
 {
-"id":"37f8b479b7eb4013bea0222eacc5ea6f",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":"(self, page_id, selection):\n    changed_id = self.page_id != page_id\n    self.page_id = page_id\n    self.selection = selection\n    self._re_render()\n    return changed_id\n",
+"text":"[\"project\"]\n\n@property\ndef page_id(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page_id\"]\n\n@property\ndef selection(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"]\n",
 "type":"code"
 }
 ],
-"id":"65a346fd367648bf884b7250c3fdd57c",
+"id":"fa8603dca3824d91bfd5cc2519840460",
+"language":"",
 "type":"code"
 }
 ],
