@@ -3174,10 +3174,6 @@ class PagePanel(VerticalBasePanel):
         return self.values["selection"]
     def _create_gui(self):
         self.drop_points = []
-        self.MinSize = (
-            self.project.theme.page_body_width,
-            -1
-        )
         page = self.project.get_page(self.page_id)
         divider = self._render_paragraph(Title(
             self,
@@ -3245,9 +3241,14 @@ class PagePanel(VerticalBasePanel):
 
     def _on_add_button(self, event):
         self.project.add_paragraph(self.page_id)
+
     def _update_gui(self):
         self.RemoveChildren()
         self._create_gui()
+        self.MinSize = (
+            self.project.theme.page_body_width,
+            -1
+        )
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:

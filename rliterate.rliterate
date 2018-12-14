@@ -8685,23 +8685,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.drop_points = []\n    self.MinSize = (\n        self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":",\n        -1\n    )\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(\n        self,\n        self.project,\n        page,\n        self.selection.get(\"title\")\n    ))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"expanded_code\": ExpandedCode,\n            \"factory\": Factory,\n        }[paragraph.type](\n            self,\n            self.project,\n            self.page_id,\n            paragraph,\n            self.selection.get(\"paragraph\").get(paragraph.id)\n        ))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
+"text":"(self):\n    self.drop_points = []\n    page = self.project.get_page(self.page_id)\n    divider = self._render_paragraph(Title(\n        self,\n        self.project,\n        page,\n        self.selection.get(\"title\")\n    ))\n    for paragraph in page.paragraphs:\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph({\n            \"text\": Text,\n            \"quote\": Quote,\n            \"list\": List,\n            \"code\": Code,\n            \"image\": Image,\n            \"expanded_code\": ExpandedCode,\n            \"factory\": Factory,\n        }[paragraph.type](\n            self,\n            self.project,\n            self.page_id,\n            paragraph,\n            self.selection.get(\"paragraph\").get(paragraph.id)\n        ))\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    self._render_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
 "type":"code"
 },
 {
@@ -8773,25 +8757,7 @@
 "type":"variable"
 },
 {
-"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n",
-"type":"code"
-}
-],
-"id":"0d23868db06847a1800d8ef8659887f3",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"PagePanel"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
+"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n\ndef ",
 "type":"code"
 },
 {
@@ -8807,11 +8773,27 @@
 "type":"variable"
 },
 {
-"text":"()\n",
+"text":"()\n    self.MinSize = (\n        self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"52a4cb0c44124d518647a92eb25a876d",
+"type":"variable"
+},
+{
+"text":",\n        -1\n    )\n",
 "type":"code"
 }
 ],
-"id":"f5afcf2f7033422495653e091b2e6592",
+"id":"0d23868db06847a1800d8ef8659887f3",
 "language":"",
 "type":"code"
 },
