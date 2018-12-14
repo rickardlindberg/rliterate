@@ -70,12 +70,11 @@ class Editable(wx.Panel):
     def Save(self):
         self.edit.Save()
         self.project.active_editor = None
-class BasePanel(wx.Panel):
+class GuiUpdateMixin(object):
 
     DEFAULTS = {}
 
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
+    def __init__(self, **kwargs):
         self._init_mixins()
         self.values = {}
         self.values.update(self.DEFAULTS)
@@ -84,7 +83,7 @@ class BasePanel(wx.Panel):
         self._create_gui()
         self._update_gui()
 
-    def Update(self, **kwargs):
+    def UpdateGui(self, **kwargs):
         self.has_changes = False
         for key, value in kwargs.items():
             if key not in self.values or self.values[key] != value:
@@ -104,6 +103,11 @@ class BasePanel(wx.Panel):
 
     def _update_children(self):
         pass
+class BasePanel(wx.Panel, GuiUpdateMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent)
+        GuiUpdateMixin.__init__(self, **kwargs)
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -2387,17 +2391,17 @@ class MainFrame(wx.Frame, BoxSizerMixin):
             proportion=0
         )
         self.workspace = panel.AppendChild(
-            Workspace(panel, self.project),
+            Workspace(panel, project=self.project),
             flag=wx.EXPAND,
             proportion=1
         )
-        self.project.listen(self.Update)
+        self.project.listen(self.UpdateGui)
         return panel
 
     @rltime("update main frame")
-    def Update(self):
+    def UpdateGui(self):
         with flicker_free_drawing(self):
-            self.toc.Update(project=self.project)
+            self.toc.UpdateGui(project=self.project)
             self.workspace._re_render()
             self.ChildReRendered()
 
@@ -2669,7 +2673,7 @@ class TableOfContents(VerticalBasePanel):
     def _get_or_create_row(self, page, indentation):
         if self.row_index < len(self.row_widgets):
             row, divider = self.row_widgets[self.row_index]
-            row.Update(project=self.values["project"], page=page, indentation=indentation)
+            row.UpdateGui(project=self.values["project"], page=page, indentation=indentation)
         else:
             row = self.page_container.AppendChild(
                 TableOfContentsRow(self.page_container, project=self.values["project"], page=page, indentation=indentation),
@@ -2790,7 +2794,7 @@ class TableOfContentsRow(HorizontalBasePanel):
         self.SetBackgroundColour((255, 255, 255))
     def _update_gui(self):
         self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
-        self.text.Update(characters=self._get_characters())
+        self.text.UpdateGui(characters=self._get_characters())
 
     def _get_characters(self):
         if self.values["project"].is_open(self.values["page"].id):
@@ -2804,7 +2808,7 @@ class TableOfContentsRow(HorizontalBasePanel):
             in self.values["page"].title
         ]
     def _update_children(self):
-        self.expand_collapse.Update(**self.values)
+        self.expand_collapse.UpdateGui(**self.values)
 class TableOfContentsButton(BasePanel):
 
     SIZE = 16
