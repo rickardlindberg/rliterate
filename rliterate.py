@@ -2378,17 +2378,24 @@ class MainFrame(wx.Frame, BoxSizerMixin):
         self._focus_panel = panel.AppendChild(
             wx.Panel(self)
         )
-        panel.AppendChild(
+        self.toc = panel.AppendChild(
             TableOfContents(panel, project=self.project),
             flag=wx.EXPAND,
             proportion=0
         )
-        panel.AppendChild(
+        self.workspace = panel.AppendChild(
             Workspace(panel, self.project),
             flag=wx.EXPAND,
             proportion=1
         )
+        self.project.listen(self.Update)
         return panel
+
+    def Update(self):
+        with flicker_free_drawing(self):
+            self.toc.Update(project=self.project)
+            self.workspace._re_render()
+            self.ChildReRendered()
 
     def ChildReRendered(self):
         self.Layout()
@@ -2590,19 +2597,15 @@ class Tool(object):
 class TableOfContents(VerticalBasePanel):
 
     def _create_gui(self):
-        with flicker_free_drawing(self):
-            self.SetMinSize((250, -1))
-            self.SetBackgroundColour((255, 255, 255))
-            self.values["project"].listen(self.Update)
-            self.SetDropTarget(TableOfContentsDropTarget(self, self.values["project"]))
-            self._create_unhoist_button()
-            self._create_page_container()
+        self.SetMinSize((250, -1))
+        self.SetBackgroundColour((255, 255, 255))
+        self.SetDropTarget(TableOfContentsDropTarget(self, self.values["project"]))
+        self._create_unhoist_button()
+        self._create_page_container()
 
     def _update_gui(self):
-        with flicker_free_drawing(self):
-            self._update_unhoist_button()
-            self._update_page_container()
-            self.GetTopLevelParent().ChildReRendered()
+        self._update_unhoist_button()
+        self._update_page_container()
     def _create_unhoist_button(self):
         self.unhoist_button = self.AppendChild(
             wx.Button(self, label="unhoist"),
@@ -2883,27 +2886,20 @@ class Workspace(HorizontalScrolledWindow):
 
     def __init__(self, parent, project):
         HorizontalScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
-        self._init_project(project)
+        self.project = project
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
         self._render()
 
-    def _init_project(self, project):
-        self.project = project
-        self.project.listen(self._re_render)
-
     def _render(self):
-        with flicker_free_drawing(self):
-            self.space = self.AppendSpace()
-            self.columns = []
-            self._re_render()
+        self.space = self.AppendSpace()
+        self.columns = []
+        self._re_render()
     def _re_render(self):
         if self.project.active_editor is not None:
             return
-        with flicker_free_drawing(self):
-            self.SetBackgroundColour(self.project.theme.workspace_background)
-            self._update_space()
-            self._update_columns()
-            self.GetTopLevelParent().ChildReRendered()
+        self.SetBackgroundColour(self.project.theme.workspace_background)
+        self._update_space()
+        self._update_columns()
     def _update_space(self):
         self.space.SetSize(self.project.theme.page_padding)
     def _update_columns(self):

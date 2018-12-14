@@ -5578,7 +5578,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            wx.Panel(self)\n        )\n        panel.",
+"text":"(\n            wx.Panel(self)\n        )\n        self.toc = panel.",
 "type":"code"
 },
 {
@@ -5586,7 +5586,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            TableOfContents(panel, project=self.project),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        panel.",
+"text":"(\n            TableOfContents(panel, project=self.project),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        self.workspace = panel.",
 "type":"code"
 },
 {
@@ -5594,7 +5594,15 @@
 "type":"variable"
 },
 {
-"text":"(\n            Workspace(panel, self.project),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        return panel\n\n",
+"text":"(\n            Workspace(panel, self.project),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.project.listen(self.Update)\n        return panel\n\n    def Update(self):\n        with ",
+"type":"code"
+},
+{
+"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
+"type":"variable"
+},
+{
+"text":"(self):\n            self.toc.Update(project=self.project)\n            self.workspace._re_render()\n            self.ChildReRendered()\n\n",
 "type":"code"
 },
 {
@@ -6323,23 +6331,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    with flicker_free_drawing(self):\n        self.SetMinSize((250, -1))\n        self.SetBackgroundColour((255, 255, 255))\n        self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"].listen(self.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":")\n",
+"text":"(self):\n    self.SetMinSize((250, -1))\n    self.SetBackgroundColour((255, 255, 255))\n",
 "type":"code"
 },
 {
@@ -6347,11 +6339,11 @@
 "path":[
 "_create_gui"
 ],
-"prefix":"        ",
+"prefix":"    ",
 "type":"chunk"
 },
 {
-"text":"        self._create_unhoist_button()\n        self._create_page_container()\n\ndef ",
+"text":"    self._create_unhoist_button()\n    self._create_page_container()\n\ndef ",
 "type":"code"
 },
 {
@@ -6359,7 +6351,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    with flicker_free_drawing(self):\n        self._update_unhoist_button()\n        self._update_page_container()\n        self.GetTopLevelParent().ChildReRendered()\n",
+"text":"(self):\n    self._update_unhoist_button()\n    self._update_page_container()\n",
 "type":"code"
 }
 ],
@@ -7426,7 +7418,7 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    with flicker_free_drawing(self):\n        self.space = self.",
+"text":"def _render(self):\n    self.space = self.",
 "type":"code"
 },
 {
@@ -7434,7 +7426,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self.columns = []\n        self._re_render()\n",
+"text":"()\n    self.columns = []\n    self._re_render()\n",
 "type":"code"
 }
 ],
@@ -7451,11 +7443,12 @@
 ],
 "fragments":[
 {
-"text":"def _re_render(self):\n    if self.project.active_editor is not None:\n        return\n    with flicker_free_drawing(self):\n        self.SetBackgroundColour(self.project.theme.workspace_background)\n        self._update_space()\n        self._update_columns()\n        self.GetTopLevelParent().ChildReRendered()\n",
+"text":"def _re_render(self):\n    if self.project.active_editor is not None:\n        return\n    self.SetBackgroundColour(self.project.theme.workspace_background)\n    self._update_space()\n    self._update_columns()\n",
 "type":"code"
 }
 ],
 "id":"d1c861187a39436bb25beb4007595b68",
+"language":"",
 "type":"code"
 },
 {
@@ -7750,10 +7743,11 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, parent, style=wx.HSCROLL)\n        self._init_project(project)\n",
+"text":".__init__(self, parent, style=wx.HSCROLL)\n        self.project = project\n",
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "Workspace",
 "__init__"
@@ -7762,18 +7756,11 @@
 "type":"chunk"
 },
 {
-"text":"        self._render()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.",
+"text":"        self._render()\n\n",
 "type":"code"
 },
 {
-"id":"c4f3b8bfcb0c4e449fdad901d978b7b0",
-"type":"variable"
-},
-{
-"text":"(self._re_render)\n\n",
-"type":"code"
-},
-{
+"blank_lines_before":0,
 "path":[
 "Workspace"
 ],
@@ -10838,7 +10825,15 @@
 "type":"variable"
 },
 {
-"text":" is not None:\n            show_edit_in_progress_error(self)\n            return\n        with flicker_free_drawing(self):\n            self.edit = self.",
+"text":" is not None:\n            show_edit_in_progress_error(self)\n            return\n        with ",
+"type":"code"
+},
+{
+"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
+"type":"variable"
+},
+{
+"text":"(self):\n            self.edit = self.",
 "type":"code"
 },
 {
@@ -10874,6 +10869,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "Editable"
 ],
@@ -10882,6 +10878,7 @@
 }
 ],
 "id":"79cd58077311436295ce672e07703388",
+"language":"",
 "type":"code"
 },
 {
@@ -11223,11 +11220,28 @@
 "type":"variable"
 },
 {
-"text":"(self)\n        )\n\n    def Show(self, left_space=0):\n        with flicker_free_drawing(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with flicker_free_drawing(self):\n            self.line.Hide()\n            self.Layout()\n",
+"text":"(self)\n        )\n\n    def Show(self, left_space=0):\n        with ",
+"type":"code"
+},
+{
+"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
+"type":"variable"
+},
+{
+"text":"(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with ",
+"type":"code"
+},
+{
+"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
+"type":"variable"
+},
+{
+"text":"(self):\n            self.line.Hide()\n            self.Layout()\n",
 "type":"code"
 }
 ],
 "id":"e5b2434a29a64c10a347242181a98d3c",
+"language":"",
 "type":"code"
 }
 ],
@@ -12645,11 +12659,20 @@
 ],
 "fragments":[
 {
-"text":"@contextlib.contextmanager\ndef flicker_free_drawing(widget):\n    widget.Freeze()\n    yield\n    widget.Thaw()\n",
+"text":"@contextlib.contextmanager\ndef ",
+"type":"code"
+},
+{
+"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
+"type":"variable"
+},
+{
+"text":"(widget):\n    widget.Freeze()\n    yield\n    widget.Thaw()\n",
 "type":"code"
 }
 ],
 "id":"a1614750c637409bb1f56849b5749e3f",
+"language":"",
 "type":"code"
 }
 ],
@@ -15956,6 +15979,7 @@
 "f7276b0256114e3999f63bdc6d7ec078":"StyledText",
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
-"fdd751029b984545a69a3570683a2b4a":"break_at_word"
+"fdd751029b984545a69a3570683a2b4a":"break_at_word",
+"fe5fe3f1bdad48b0841dbdc9aa677bf9":"flicker_free_drawing"
 }
 }
