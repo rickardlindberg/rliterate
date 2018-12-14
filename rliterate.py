@@ -78,18 +78,25 @@ class GuiUpdateMixin(object):
         self.values = {}
         self.values.update(self.DEFAULTS)
         self.values.update(kwargs)
-        self.has_changes = True
+        self.changed = None
         self._create_gui()
         self._update_gui()
 
+    @property
+    def has_changes(self):
+        return self.changed is None or len(self.changed) > 0
+
     def UpdateGui(self, **kwargs):
-        self.has_changes = False
+        self.changed = []
         for key, value in kwargs.items():
             if key not in self.values or self.values[key] != value:
                 self.values[key] = value
-                self.has_changes = True
+                self.changed.append(key)
         self._update_gui()
         self._update_children()
+
+    def did_change(self, name):
+        return name in self.changed
 
     def _create_gui(self):
         pass
@@ -2893,9 +2900,9 @@ class PageContextMenu(wx.Menu):
         )
 class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
 
-    def __init__(self, parent, project):
+    def __init__(self, parent, **kwargs):
         HorizontalScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
-        GuiUpdateMixin.__init__(self, project=project)
+        GuiUpdateMixin.__init__(self, **kwargs)
 
     def _create_gui(self):
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
@@ -2914,31 +2921,36 @@ class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
     def _update_space(self):
         self.space.SetSize(self.project.theme.page_padding)
     def _update_columns(self):
-        column_count_changed = self._ensure_num_columns(len(self.project.columns))
-        last_column_changed_pages = False
+        self.column_count_changed = False
         for index, page_ids in enumerate(self.project.columns):
-            last_column_changed_pages = self.columns[index].SetPages(
-                page_ids,
-                self.project.selection.get(index)
-            )
-        if column_count_changed or last_column_changed_pages:
+            self._add_column(page_ids, index)
+        while len(self.columns) > len(self.project.columns):
+            self.columns.pop(-1).Destroy()
+            self.column_count_changed = True
+        if self.column_count_changed or self.columns[index].did_change("page_ids"):
             wx.CallAfter(self.ScrollToEnd)
 
-    def _ensure_num_columns(self, num):
-        count_changed = False
-        while len(self.columns) > num:
-            count_changed = True
-            self.columns.pop(-1).Destroy()
-        while len(self.columns) < num:
-            count_changed = True
-            self.columns.append(self._add_column())
-        return count_changed
-
-    def _add_column(self):
-        return self.AppendChild(
-            Column(self, project=self.project, index=len(self.columns)),
-            flag=wx.EXPAND
-        )
+    def _add_column(self, page_ids, index):
+        if index < len(self.columns):
+            self.columns[index].UpdateGui(
+                project=self.project,
+                index=index,
+                page_ids=page_ids,
+                selection=self.project.selection.get(index)
+            )
+        else:
+            self.columns.append(self.AppendChild(
+                Column(
+                    self,
+                    project=self.project,
+                    index=index,
+                    page_ids=page_ids,
+                    selection=self.project.selection.get(index)
+                ),
+                flag=wx.EXPAND
+            ))
+            self.column_count_changed = True
+        return self.columns[index]
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
             self.columns,
@@ -2958,33 +2970,22 @@ class WorkspaceDropTarget(DropPointDropTarget):
             target_page=drop_point.page_id,
             before_paragraph=drop_point.next_paragraph_id
         )
-class Column(VerticalScrolledWindow):
+class Column(VerticalScrolledWindow, GuiUpdateMixin):
 
-    def __init__(self, parent, project, index):
+    def __init__(self, parent, **kwargs):
         VerticalScrolledWindow.__init__(
             self,
             parent,
             style=wx.VSCROLL
         )
-        self.project = project
-        self.index = index
-        self._render()
+        GuiUpdateMixin.__init__(self, **kwargs)
+
+    def _create_gui(self):
         self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
         self.Bind(EVT_TOKEN_CLICK, self._on_token_click)
-
-    def SetPages(self, page_ids, selection):
-        ids_changed = page_ids != self._page_ids
-        self._page_ids = page_ids
-        self._selection = selection
-        self._re_render()
-        return ids_changed
-        # TODO: return if actual number of rows/containers changed
-    def _render(self):
-        self._page_ids = []
         self._containers = []
         self._space = self.AppendSpace()
-        self._re_render()
-    def _re_render(self):
+    def _update_gui(self):
         self._adjust_space()
         self._adjust_size()
         self._adjust_containers()
@@ -3003,23 +3004,31 @@ class Column(VerticalScrolledWindow):
 
     def _adjust_containers(self):
         num_added = 0
-        for index, page_id in enumerate(self._page_ids):
+        for index, page_id in enumerate(self.values["page_ids"]):
             if self.project.get_page(page_id) is not None:
                 if index >= len(self._containers):
                     self._containers.append(
                         self.AppendChild(
-                            PageContainer(self, self.project, page_id, self._selection.get(index)),
+                            PageContainer(self, self.project, page_id, self.values["selection"].get(index)),
                             flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
                             border=self.project.theme.page_padding
                         )
                     )
                 else:
-                    self._containers[index].SetPageId(page_id, self._selection.get(index))
+                    self._containers[index].SetPageId(page_id, self.values["selection"].get(index))
                 num_added += 1
         while len(self._containers) > num_added:
             self._containers.pop(-1).Destroy()
         # When?
         #self.ScrollToBeginning()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def index(self):
+        return self.values["index"]
     def _on_hovered_token_changed(self, event):
         if event.token is not None and event.token.token_type in [
             TokenType.RLiterate.Link,

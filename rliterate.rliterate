@@ -7597,15 +7597,23 @@
 ],
 "fragments":[
 {
-"text":"def _update_columns(self):\n    column_count_changed = self._ensure_num_columns(len(self.project.columns))\n    last_column_changed_pages = False\n    for index, page_ids in enumerate(self.project.columns):\n        last_column_changed_pages = self.columns[index].",
+"text":"def _update_columns(self):\n    self.column_count_changed = False\n    for index, page_ids in enumerate(self.project.columns):\n        self._add_column(page_ids, index)\n    while len(self.columns) > len(self.project.columns):\n        self.columns.pop(-1).Destroy()\n        self.column_count_changed = True\n    if self.column_count_changed or self.columns[index].",
 "type":"code"
 },
 {
-"id":"bba79578dc084c859c4f3eef0cd79771",
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
 "type":"variable"
 },
 {
-"text":"(\n            page_ids,\n            self.project.selection.get(index)\n        )\n    if column_count_changed or last_column_changed_pages:\n        wx.CallAfter(self.ScrollToEnd)\n\ndef _ensure_num_columns(self, num):\n    count_changed = False\n    while len(self.columns) > num:\n        count_changed = True\n        self.columns.pop(-1).Destroy()\n    while len(self.columns) < num:\n        count_changed = True\n        self.columns.append(self._add_column())\n    return count_changed\n\ndef _add_column(self):\n    return self.",
+"text":"(\"page_ids\"):\n        wx.CallAfter(self.ScrollToEnd)\n\ndef _add_column(self, page_ids, index):\n    if index < len(self.columns):\n        self.columns[index].",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(\n            project=self.project,\n            index=index,\n            page_ids=page_ids,\n            selection=self.project.selection.get(index)\n        )\n    else:\n        self.columns.append(self.",
 "type":"code"
 },
 {
@@ -7613,7 +7621,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        ",
+"text":"(\n            ",
 "type":"code"
 },
 {
@@ -7621,7 +7629,7 @@
 "type":"variable"
 },
 {
-"text":"(self, project=self.project, index=len(self.columns)),\n        flag=wx.EXPAND\n    )\n",
+"text":"(\n                self,\n                project=self.project,\n                index=index,\n                page_ids=page_ids,\n                selection=self.project.selection.get(index)\n            ),\n            flag=wx.EXPAND\n        ))\n        self.column_count_changed = True\n    return self.columns[index]\n",
 "type":"code"
 }
 ],
@@ -7847,7 +7855,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project):\n        ",
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        ",
 "type":"code"
 },
 {
@@ -7863,7 +7871,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, project=project)\n\n",
+"text":".__init__(self, **kwargs)\n\n",
 "type":"code"
 },
 {
@@ -7898,7 +7906,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self):\n    self._page_ids = []\n    self._containers = []\n    self._space = self.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n    self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n    self._containers = []\n    self._space = self.",
 "type":"code"
 },
 {
@@ -7906,11 +7922,12 @@
 "type":"variable"
 },
 {
-"text":"()\n    self._re_render()\n",
+"text":"()\n",
 "type":"code"
 }
 ],
 "id":"e4bf87e4142f4ff5b8843415e7c0e56d",
+"language":"",
 "type":"code"
 },
 {
@@ -7923,7 +7940,15 @@
 ],
 "fragments":[
 {
-"text":"def _re_render(self):\n    self._adjust_space()\n    self._adjust_size()\n    self._adjust_containers()\n\ndef _adjust_space(self):\n    self._space.SetSize(self.project.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    self._adjust_space()\n    self._adjust_size()\n    self._adjust_containers()\n\ndef _adjust_space(self):\n    self._space.SetSize(self.project.",
 "type":"code"
 },
 {
@@ -8003,7 +8028,15 @@
 "type":"variable"
 },
 {
-"text":",\n        -1\n    )\n\ndef _adjust_containers(self):\n    num_added = 0\n    for index, page_id in enumerate(self._page_ids):\n        if self.project.get_page(page_id) is not None:\n            if index >= len(self._containers):\n                self._containers.append(\n                    self.",
+"text":",\n        -1\n    )\n\ndef _adjust_containers(self):\n    num_added = 0\n    for index, page_id in enumerate(self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page_ids\"]):\n        if self.project.get_page(page_id) is not None:\n            if index >= len(self._containers):\n                self._containers.append(\n                    self.",
 "type":"code"
 },
 {
@@ -8011,7 +8044,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                        PageContainer(self, self.project, page_id, self._selection.get(index)),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
+"text":"(\n                        PageContainer(self, self.project, page_id, self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"].get(index)),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
 "type":"code"
 },
 {
@@ -8035,7 +8076,31 @@
 "type":"variable"
 },
 {
-"text":"(page_id, self._selection.get(index))\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n",
+"text":"(page_id, self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"].get(index))\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n\n@property\ndef project(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"]\n\n@property\ndef index(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"index\"]\n",
 "type":"code"
 }
 ],
@@ -8163,7 +8228,15 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project, index):\n        ",
+"text":", ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        ",
 "type":"code"
 },
 {
@@ -8171,10 +8244,19 @@
 "type":"variable"
 },
 {
-"text":".__init__(\n            self,\n            parent,\n            style=wx.VSCROLL\n        )\n        self.project = project\n        self.index = index\n        self._render()\n        self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n        self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n\n",
+"text":".__init__(\n            self,\n            parent,\n            style=wx.VSCROLL\n        )\n        ",
 "type":"code"
 },
 {
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
 "path":[
 "Column"
 ],
@@ -8183,31 +8265,7 @@
 }
 ],
 "id":"cb982a3129f940f18cd4bc9237d4c8f8",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Column"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"bba79578dc084c859c4f3eef0cd79771",
-"type":"variable"
-},
-{
-"text":"(self, page_ids, selection):\n    ids_changed = page_ids != self._page_ids\n    self._page_ids = page_ids\n    self._selection = selection\n    self._re_render()\n    return ids_changed\n    # TODO: return if actual number of rows/containers changed\n",
-"type":"code"
-}
-],
-"id":"4af6492651714fc4a0c5864ba8189bc2",
+"language":"",
 "type":"code"
 }
 ],
@@ -12967,11 +13025,11 @@
 "type":"code"
 },
 {
-"id":"efa648b2a8514099b295d2313e89768a",
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
 "type":"variable"
 },
 {
-"text":" = True\n        self.",
+"text":" = None\n        self.",
 "type":"code"
 },
 {
@@ -12987,7 +13045,31 @@
 "type":"variable"
 },
 {
-"text":"()\n\n    def ",
+"text":"()\n\n    @property\n    def ",
+"type":"code"
+},
+{
+"id":"efa648b2a8514099b295d2313e89768a",
+"type":"variable"
+},
+{
+"text":"(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":" is None or len(self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":") > 0\n\n    def ",
 "type":"code"
 },
 {
@@ -12999,11 +13081,11 @@
 "type":"code"
 },
 {
-"id":"efa648b2a8514099b295d2313e89768a",
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
 "type":"variable"
 },
 {
-"text":" = False\n        for key, value in kwargs.items():\n            if key not in self.",
+"text":" = []\n        for key, value in kwargs.items():\n            if key not in self.",
 "type":"code"
 },
 {
@@ -13031,11 +13113,11 @@
 "type":"code"
 },
 {
-"id":"efa648b2a8514099b295d2313e89768a",
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
 "type":"variable"
 },
 {
-"text":" = True\n        self.",
+"text":".append(key)\n        self.",
 "type":"code"
 },
 {
@@ -13052,6 +13134,22 @@
 },
 {
 "text":"()\n\n    def ",
+"type":"code"
+},
+{
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
+"type":"variable"
+},
+{
+"text":"(self, name):\n        return name in self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":"\n\n    def ",
 "type":"code"
 },
 {
@@ -16010,6 +16108,7 @@
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "457a1dbf134c431881e590e7b7db9907":"_break_at_word",
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
+"49916c3d2ee1468e9cbcb40d6b37bed6":"did_change",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
@@ -16130,6 +16229,7 @@
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
 "fdd751029b984545a69a3570683a2b4a":"break_at_word",
-"fe5fe3f1bdad48b0841dbdc9aa677bf9":"flicker_free_drawing"
+"fe5fe3f1bdad48b0841dbdc9aa677bf9":"flicker_free_drawing",
+"ff685beb0f9843aaa5d9362a7bb96989":"changed"
 }
 }
