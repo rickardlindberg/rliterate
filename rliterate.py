@@ -536,6 +536,20 @@ class TextProjection(GuiUpdatePanel):
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
+        TextProjection.__init__(
+            self,
+            parent,
+            characters=self._generate_characters(project, tokens),
+            line_height=kwargs.get("line_height", 1),
+            max_width=kwargs.get("max_width", 100),
+            break_at_word=kwargs.get("skip_extra_space", False)
+        )
+        self._default_cursor = self.GetCursor()
+
+    def UpdateTokens(self, project, tokens):
+        self.UpdateGui(characters=self._generate_characters(project, tokens))
+
+    def _generate_characters(self, project, tokens):
         self.characters = []
         for token in tokens:
             style = project.get_style(token.token_type)
@@ -548,15 +562,7 @@ class TokenView(TextProjection):
                         style,
                         extra=subtoken
                     ))
-        TextProjection.__init__(
-            self,
-            parent,
-            characters=self.characters,
-            line_height=kwargs.get("line_height", 1),
-            max_width=kwargs.get("max_width", 100),
-            break_at_word=kwargs.get("skip_extra_space", False)
-        )
-        self._default_cursor = self.GetCursor()
+        return self.characters
 
     def GetToken(self, position):
         character = self.GetCharacterAt(position)
@@ -3264,7 +3270,7 @@ class PagePanel(VerticalBasePanel):
             page_id=self.page_id,
             next_paragraph_id=None
         ))
-        while index < len(self.paragraph_rows):
+        while index < len(self.paragraph_rows) - 1:
             for widget in self.paragraph_rows.pop(-1):
                 widget.Destroy()
 
@@ -3291,7 +3297,6 @@ class PagePanel(VerticalBasePanel):
             )
             return divider
         else:
-            print("create new")
             widget = self.paragraph_container.AppendChild(widget_class(
                 self.paragraph_container,
                 project=self.project,
@@ -3413,12 +3418,18 @@ class Text(ParagraphBase):
         return TextView(
             self,
             self.project,
-            [
-                token.with_extra("text_index", (token.extra["fragment_index"],))
-                for token in self.paragraph.tokens
-            ],
+            self._tokens(),
             self
         )
+
+    def _update_gui(self):
+        self.view.UpdateTokens(self.project, self._tokens())
+
+    def _tokens(self):
+        return [
+            token.with_extra("text_index", (token.extra["fragment_index"],))
+            for token in self.paragraph.tokens
+        ]
 
     def CreateEdit(self, extra):
         return TextEdit(
@@ -3499,10 +3510,7 @@ class Quote(Text):
             TextView(
                 view,
                 self.project,
-                [
-                    token.with_extra("text_index", (token.extra["fragment_index"],))
-                    for token in self.paragraph.tokens
-                ],
+                self._tokens(),
                 self,
                 indented=self.INDENT
             ),
@@ -3510,6 +3518,9 @@ class Quote(Text):
             proportion=1
         )
         return view
+
+    def _update_gui(self):
+        self.text_view.UpdateTokens(self.project, self._tokens())
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
@@ -4227,6 +4238,18 @@ class Token(object):
         self.token_type = token_type
         self.extra = extra
         self.index = index
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, Token) and
+            self.text == other.text and
+            self.token_type == other.token_type and
+            self.extra == other.extra and
+            self.index == other.index
+        )
+
+    def __ne__(self, other):
+        return not (self == other)
 
     def with_extra(self, key, value):
         self.extra[key] = value

@@ -8707,7 +8707,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        project=self.project,\n        page=self.project.get_page(self.page_id),\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.drop_points = []\n    divider = self.top_divider\n    index = 0\n    for index, paragraph in enumerate(self.project.get_page(self.page_id).paragraphs):\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    while index < len(self.paragraph_rows):\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
+"text":"(\n        project=self.project,\n        page=self.project.get_page(self.page_id),\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.drop_points = []\n    divider = self.top_divider\n    index = 0\n    for index, paragraph in enumerate(self.project.get_page(self.page_id).paragraphs):\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    while index < len(self.paragraph_rows) - 1:\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
 "type":"code"
 },
 {
@@ -9282,7 +9282,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextView(\n            self,\n            self.project,\n            [\n                token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n                for token in self.paragraph.tokens\n            ],\n            self\n        )\n\n    def ",
+"text":"(self):\n        return TextView(\n            self,\n            self.project,\n            self._tokens(),\n            self\n        )\n\n    def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.view.",
+"type":"code"
+},
+{
+"id":"f9605031f42b4c37a170779d7ee7fe6e",
+"type":"variable"
+},
+{
+"text":"(self.project, self._tokens())\n\n    def _tokens(self):\n        return [\n            token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n            for token in self.paragraph.tokens\n        ]\n\n    def ",
 "type":"code"
 },
 {
@@ -9295,6 +9311,7 @@
 }
 ],
 "id":"7446201f4c6d46f3b33d94f4f36503d2",
+"language":"",
 "type":"code"
 },
 {
@@ -9543,11 +9560,28 @@
 "type":"variable"
 },
 {
-"text":"(\n            TextView(\n                view,\n                self.project,\n                [\n                    token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n                    for token in self.paragraph.tokens\n                ],\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        return view\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
+"text":"(\n            TextView(\n                view,\n                self.project,\n                self._tokens(),\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        return view\n\n    def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.text_view.",
+"type":"code"
+},
+{
+"id":"f9605031f42b4c37a170779d7ee7fe6e",
+"type":"variable"
+},
+{
+"text":"(self.project, self._tokens())\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
 "id":"bd65127796664140bf2823ed50b27f87",
+"language":"",
 "type":"code"
 }
 ],
@@ -12580,23 +12614,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project, tokens, **kwargs):\n        self.characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    self.characters.append(",
-"type":"code"
-},
-{
-"id":"99872a7e246e4fc38f9e0029f076e120",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"ae234077465241e39337f68165ffb11e",
-"type":"variable"
-},
-{
-"text":"(\n                        char,\n                        style,\n                        extra=subtoken\n                    ))\n        ",
+"text":"):\n\n    def __init__(self, parent, project, tokens, **kwargs):\n        ",
 "type":"code"
 },
 {
@@ -12612,7 +12630,7 @@
 "type":"variable"
 },
 {
-"text":"=self.characters,\n            ",
+"text":"=self._generate_characters(project, tokens),\n            ",
 "type":"code"
 },
 {
@@ -12665,7 +12683,47 @@
 "type":"chunk"
 },
 {
-"text":"\n",
+"text":"\n    def ",
+"type":"code"
+},
+{
+"id":"f9605031f42b4c37a170779d7ee7fe6e",
+"type":"variable"
+},
+{
+"text":"(self, project, tokens):\n        self.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"94ebdf2d279b424580629906ad32a461",
+"type":"variable"
+},
+{
+"text":"=self._generate_characters(project, tokens))\n\n    def _generate_characters(self, project, tokens):\n        self.characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    self.characters.append(",
+"type":"code"
+},
+{
+"id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"ae234077465241e39337f68165ffb11e",
+"type":"variable"
+},
+{
+"text":"(\n                        char,\n                        style,\n                        extra=subtoken\n                    ))\n        return self.characters\n\n",
 "type":"code"
 },
 {
@@ -12708,7 +12766,7 @@
 ],
 "fragments":[
 {
-"text":"class Token(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token_type=TokenType.RLiterate, index=0, **extra):\n        self.text = text\n        self.token_type = token_type\n        self.extra = extra\n        self.index = index\n\n    def with_extra(self, key, value):\n        self.extra[key] = value\n        return self\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        index = self.index\n        subtokens = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    subtokens.append(self._replace_text(match.group(0), index))\n                    text = text[match.end(0):]\n                    index += len(match.group(0))\n        return subtokens\n\n    def _replace_text(self, text, index):\n        return Token(\n            text=text,\n            token_type=self.token_type,\n            index=index,\n            **self.extra\n        )\n",
+"text":"class Token(object):\n\n    SPLIT_PATTERNS = [\n        re.compile(r\"\\n\"),\n        re.compile(r\"\\s+\"),\n        re.compile(r\"\\S+\"),\n    ]\n\n    def __init__(self, text, token_type=TokenType.RLiterate, index=0, **extra):\n        self.text = text\n        self.token_type = token_type\n        self.extra = extra\n        self.index = index\n\n    def __eq__(self, other):\n        return (\n            isinstance(other, Token) and\n            self.text == other.text and\n            self.token_type == other.token_type and\n            self.extra == other.extra and\n            self.index == other.index\n        )\n\n    def __ne__(self, other):\n        return not (self == other)\n\n    def with_extra(self, key, value):\n        self.extra[key] = value\n        return self\n\n    def is_newline(self):\n        return self.text == \"\\n\"\n\n    def is_space(self):\n        return re.match(r\"^\\s+$\", self.text)\n\n    def split(self):\n        index = self.index\n        subtokens = []\n        text = self.text\n        while text:\n            for split_pattern in self.SPLIT_PATTERNS:\n                match = split_pattern.match(text)\n                if match:\n                    subtokens.append(self._replace_text(match.group(0), index))\n                    text = text[match.end(0):]\n                    index += len(match.group(0))\n        return subtokens\n\n    def _replace_text(self, text, index):\n        return Token(\n            text=text,\n            token_type=self.token_type,\n            index=index,\n            **self.extra\n        )\n",
 "type":"code"
 }
 ],
@@ -16433,6 +16491,7 @@
 "f6b2d4f94b72424a88a47d636753a2b9":"min_or_none",
 "f7276b0256114e3999f63bdc6d7ec078":"StyledText",
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
+"f9605031f42b4c37a170779d7ee7fe6e":"UpdateTokens",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
 "fdd751029b984545a69a3570683a2b4a":"break_at_word",
 "fe5fe3f1bdad48b0841dbdc9aa677bf9":"flicker_free_drawing",
