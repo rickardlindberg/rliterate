@@ -15709,6 +15709,26 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Marker does not show at correct position",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Optimize TOC further by reusing rows to prevent re-render on expand/collapse?",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
