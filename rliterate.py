@@ -733,12 +733,12 @@ class Document(Observable):
             document = cls(load_json_from_file(path))
         else:
             document = cls()
-        document.listen(lambda:
+        document.listen(rltime("write document")(lambda:
             write_json_to_file(
                 path,
                 document.read_only_document_dict
             )
-        )
+        ))
         return document
     def _load(self, document_dict):
         self._history = History(
@@ -2546,6 +2546,7 @@ class ToolGroups(object):
         self._tool_groups.append(group)
         return group
 
+    @rltime("update toolbar")
     def populate(self, toolbar):
         items = []
         toolbar.ClearTools()

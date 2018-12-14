@@ -3803,7 +3803,7 @@
 "type":"variable"
 },
 {
-"text":"(lambda:\n        write_json_to_file(\n            path,\n            document.",
+"text":"(rltime(\"write document\")(lambda:\n        write_json_to_file(\n            path,\n            document.",
 "type":"code"
 },
 {
@@ -3811,7 +3811,7 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n    )\n    return document\n",
+"text":"\n        )\n    ))\n    return document\n",
 "type":"code"
 }
 ],
@@ -6203,7 +6203,7 @@
 ],
 "fragments":[
 {
-"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def populate(self, toolbar):\n        items = []\n        toolbar.ClearTools()\n        first = True\n        for group in self._tool_groups:\n            if group.is_active():\n                if not first:\n                    toolbar.AddSeparator()\n                first = False\n                group.populate(toolbar)\n                items.extend(group.accelerator_entries())\n        toolbar.Realize()\n        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n",
+"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    @rltime(\"update toolbar\")\n    def populate(self, toolbar):\n        items = []\n        toolbar.ClearTools()\n        first = True\n        for group in self._tool_groups:\n            if group.is_active():\n                if not first:\n                    toolbar.AddSeparator()\n                first = False\n                group.populate(toolbar)\n                items.extend(group.accelerator_entries())\n        toolbar.Realize()\n        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n",
 "type":"code"
 }
 ],
