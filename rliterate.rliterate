@@ -6336,16 +6336,6 @@
 "type":"text"
 },
 {
-"fragments":[
-{
-"text":"The scroll position of the page container is not preserved if it is destroyed and re-created. We therefore maintain the same instance across re-renders.",
-"type":"text"
-}
-],
-"id":"e7aef630ee3b44f48a4538b9518a6b4d",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes",
 "TableOfContents"
@@ -6598,16 +6588,6 @@
 "type":"code"
 },
 {
-"fragments":[
-{
-"text":"The page container is a scrolling container that contains a set of rows representing pages. Each row is appropriately intendent to create the illusion of a tree.",
-"type":"text"
-}
-],
-"id":"48e403ac69b5492bb09ff41381d77b8f",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes"
 ],
@@ -6682,7 +6662,7 @@
 {
 "fragments":[
 {
-"text":"Inside the table of contents, pages can be dragged and drop. The drag is initiated in the row widget and handled in the table of contents widget.",
+"text":"Inside the table of contents, pages can be dragged and dropped. The drag is initiated in the row widget and handled in the table of contents widget.",
 "type":"text"
 }
 ],
@@ -6807,16 +6787,6 @@
 "id":"f0c6aa103d2a45aa8737d7d964e860bc",
 "paragraphs":[
 {
-"fragments":[
-{
-"text":"The main table of contents widget listens for changes to a project (only events related to changes in the document and the layout of the table of contents) and then re-renders itself.",
-"type":"text"
-}
-],
-"id":"d7196568704f4228956b0166a06b2ab5",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes"
 ],
@@ -6908,16 +6878,6 @@
 "type":"code"
 },
 {
-"fragments":[
-{
-"text":"Rendering lays out the expand/collapse button (if the page has children) and the page title in a horizontal sizer. If the page is open, we highlight it with bold font. (For some reason, the font has to be set on the panel and not on the static text in order for size calculations to behave correctly.)",
-"type":"text"
-}
-],
-"id":"0b017f41b129456d9969b8b4115f3b6c",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes",
 "TableOfContentsRow"
@@ -6990,38 +6950,6 @@
 "id":"e7222f9d1f2e4c6dbcdee098b3f75ca4",
 "language":"",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"SetLabelText",
-"type":"code"
-},
-{
-"text":" is needed, otherwise '&' characters are not rendered in ",
-"type":"text"
-},
-{
-"text":"wx.StaticText",
-"type":"code"
-},
-{
-"text":".",
-"type":"text"
-}
-],
-"id":"9decd109e6244b559602400fdebb32ac",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"Event handlers:",
-"type":"text"
-}
-],
-"id":"2f458d6548464fc88dbde361469cfcba",
-"type":"text"
 },
 {
 "chunkpath":[
@@ -7384,7 +7312,7 @@
 {
 "fragments":[
 {
-"text":"The table of contents shows the outline of the document. It allows only subtrees to be shown (hoisting) and allows subtrees to be expanded/collapsed. It also provides navigation functions to allow pages to be opened.",
+"text":"The table of contents shows the outline of the document. It can show only subtrees (hoisting) and expand/collapse subtrees. It also provides functions to open pages in the workspace.",
 "type":"text"
 }
 ],
