@@ -5594,7 +5594,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            Workspace(panel, self.project),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.project.listen(self.Update)\n        return panel\n\n    def Update(self):\n        with ",
+"text":"(\n            Workspace(panel, self.project),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.project.listen(self.Update)\n        return panel\n\n    @rltime(\"update main frame\")\n    def Update(self):\n        with ",
 "type":"code"
 },
 {
@@ -6343,7 +6343,7 @@
 "type":"chunk"
 },
 {
-"text":"    self._create_unhoist_button()\n    self._create_page_container()\n\ndef ",
+"text":"    self._create_unhoist_button()\n    self._create_page_container()\n\n@rltime(\"update toc\")\ndef ",
 "type":"code"
 },
 {
@@ -7443,7 +7443,7 @@
 ],
 "fragments":[
 {
-"text":"def _re_render(self):\n    if self.project.active_editor is not None:\n        return\n    self.SetBackgroundColour(self.project.theme.workspace_background)\n    self._update_space()\n    self._update_columns()\n",
+"text":"@rltime(\"update workspace\")\ndef _re_render(self):\n    if self.project.active_editor is not None:\n        return\n    self.SetBackgroundColour(self.project.theme.workspace_background)\n    self._update_space()\n    self._update_columns()\n",
 "type":"code"
 }
 ],
@@ -13787,7 +13787,7 @@
 ],
 "fragments":[
 {
-"text":"def rltime(text):\n    def wrap(fn):\n        def fn_with_timing(*args, **kwargs):\n            t1 = time.time()\n            value = fn(*args, **kwargs)\n            t2 = time.time()\n            print(\"{: <20} {}ms\".format(text, (1000*(t2-t1))))\n            return value\n        return fn_with_timing\n    return wrap\n",
+"text":"def rltime(text):\n    def wrap(fn):\n        def fn_with_timing(*args, **kwargs):\n            t1 = time.time()\n            value = fn(*args, **kwargs)\n            t2 = time.time()\n            print(\"{: <20} {}ms\".format(text, (1000*(t2-t1))))\n            return value\n        if \"--profile\" in sys.argv:\n            return fn_with_timing\n        else:\n            return fn\n    return wrap\n",
 "type":"code"
 }
 ],

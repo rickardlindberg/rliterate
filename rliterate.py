@@ -36,7 +36,10 @@ def rltime(text):
             t2 = time.time()
             print("{: <20} {}ms".format(text, (1000*(t2-t1))))
             return value
-        return fn_with_timing
+        if "--profile" in sys.argv:
+            return fn_with_timing
+        else:
+            return fn
     return wrap
 class Editable(wx.Panel):
 
@@ -2391,6 +2394,7 @@ class MainFrame(wx.Frame, BoxSizerMixin):
         self.project.listen(self.Update)
         return panel
 
+    @rltime("update main frame")
     def Update(self):
         with flicker_free_drawing(self):
             self.toc.Update(project=self.project)
@@ -2603,6 +2607,7 @@ class TableOfContents(VerticalBasePanel):
         self._create_unhoist_button()
         self._create_page_container()
 
+    @rltime("update toc")
     def _update_gui(self):
         self._update_unhoist_button()
         self._update_page_container()
@@ -2894,6 +2899,7 @@ class Workspace(HorizontalScrolledWindow):
         self.space = self.AppendSpace()
         self.columns = []
         self._re_render()
+    @rltime("update workspace")
     def _re_render(self):
         if self.project.active_editor is not None:
             return
