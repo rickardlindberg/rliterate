@@ -3105,9 +3105,9 @@ class PageContainer(VerticalBasePanel):
         self.page, self.page_sizer = self.inner_container.AppendChildWithSizer(
             PagePanel(
                 self.inner_container,
-                self.project,
-                self.page_id,
-                self.selection.get(self.page_id)
+                project=self.project,
+                page_id=self.page_id,
+                selection=self.selection.get(self.page_id)
             ),
             flag=wx.ALL|wx.EXPAND,
             proportion=1
@@ -3135,7 +3135,11 @@ class PageContainer(VerticalBasePanel):
             proportion=1
         )
     def _update_gui(self):
-        self.page.SetPageId(self.page_id, self.selection.get(self.page_id))
+        self.page.UpdateGui(
+            project=self.project,
+            page_id=self.page_id,
+            selection=self.selection.get(self.page_id)
+        )
         self.inner_container.SetBackgroundColour((255, 255, 255))
         self.right_border.SetBackgroundColour((150, 150, 150))
         self.bottom_border.SetBackgroundColour((150, 150, 150))
@@ -3155,19 +3159,20 @@ class PageContainer(VerticalBasePanel):
         return menu
     def FindClosestDropPoint(self, screen_pos):
         return self.page.FindClosestDropPoint(screen_pos)
-class PagePanel(VerticalPanel):
+class PagePanel(VerticalBasePanel):
 
-    def __init__(self, parent, project, page_id, selection):
-        VerticalPanel.__init__(self, parent)
-        self.project = project
-        self._render(page_id, selection)
+    @property
+    def project(self):
+        return self.values["project"]
 
-    def SetPageId(self, page_id, selection):
-        self.RemoveChildren()
-        self._render(page_id, selection)
-    def _render(self, initial_page_id, selection):
-        self.page_id = initial_page_id
-        self.selection = selection
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+    def _create_gui(self):
         self.drop_points = []
         self.MinSize = (
             self.project.theme.page_body_width,
@@ -3240,6 +3245,9 @@ class PagePanel(VerticalPanel):
 
     def _on_add_button(self, event):
         self.project.add_paragraph(self.page_id)
+    def _update_gui(self):
+        self.RemoveChildren()
+        self._create_gui()
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:

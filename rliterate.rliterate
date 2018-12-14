@@ -8343,7 +8343,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        PagePanel(\n            self.inner_container,\n            self.project,\n            self.page_id,\n            self.selection.get(self.page_id)\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.right = first_row.",
+"text":"(\n        PagePanel(\n            self.inner_container,\n            project=self.project,\n            page_id=self.page_id,\n            selection=self.selection.get(self.page_id)\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.right = first_row.",
 "type":"code"
 },
 {
@@ -8397,11 +8397,11 @@
 "type":"code"
 },
 {
-"id":"39785d8cdcb4445bad27a741363efa23",
+"id":"883ac73a999c403e8274442301acdbb3",
 "type":"variable"
 },
 {
-"text":"(self.page_id, self.selection.get(self.page_id))\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
+"text":"(\n        project=self.project,\n        page_id=self.page_id,\n        selection=self.selection.get(self.page_id)\n    )\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
 "type":"code"
 }
 ],
@@ -8677,7 +8677,15 @@
 ],
 "fragments":[
 {
-"text":"def _render(self, initial_page_id, selection):\n    self.page_id = initial_page_id\n    self.selection = selection\n    self.drop_points = []\n    self.MinSize = (\n        self.project.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.drop_points = []\n    self.MinSize = (\n        self.project.",
 "type":"code"
 },
 {
@@ -8770,6 +8778,40 @@
 }
 ],
 "id":"0d23868db06847a1800d8ef8659887f3",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"PagePanel"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.RemoveChildren()\n    self.",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"()\n",
+"type":"code"
+}
+],
+"id":"f5afcf2f7033422495653e091b2e6592",
 "language":"",
 "type":"code"
 },
@@ -8900,22 +8942,15 @@
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"50f1b4552c0340eab599c8bc578334de",
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project, page_id, selection):\n        ",
+"text":"):\n\n",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent)\n        self.project = project\n        self._render(page_id, selection)\n\n",
-"type":"code"
-},
-{
+"blank_lines_before":0,
 "path":[
 "PagePanel"
 ],
@@ -8924,6 +8959,7 @@
 }
 ],
 "id":"1994c9452817497c92e1d51cf6a050bc",
+"language":"",
 "type":"code"
 },
 {
@@ -8936,19 +8972,36 @@
 ],
 "fragments":[
 {
-"text":"def ",
+"text":"@property\ndef project(self):\n    return self.",
 "type":"code"
 },
 {
-"id":"39785d8cdcb4445bad27a741363efa23",
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
 "type":"variable"
 },
 {
-"text":"(self, page_id, selection):\n    self.RemoveChildren()\n    self._render(page_id, selection)\n",
+"text":"[\"project\"]\n\n@property\ndef page_id(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page_id\"]\n\n@property\ndef selection(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"]\n",
 "type":"code"
 }
 ],
-"id":"f5afcf2f7033422495653e091b2e6592",
+"id":"c05d9598dbb247ba932b175e9f843be0",
+"language":"",
 "type":"code"
 }
 ],
