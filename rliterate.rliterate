@@ -5688,7 +5688,7 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    self.Layout()\n    self.Refresh()\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if focused_widget and hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            return\n        self._focus_panel.SetFocus()\n",
+"text":"def ChildReRendered(self):\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if not focused_widget or not hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            self._focus_panel.SetFocus()\n    self.Layout()\n    self.Refresh()\n    self.Update()\n",
 "type":"code"
 }
 ],

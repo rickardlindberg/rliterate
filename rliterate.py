@@ -2466,13 +2466,13 @@ class MainFrame(wx.Frame, BoxSizerMixin):
             self.ChildReRendered()
 
     def ChildReRendered(self):
-        self.Layout()
-        self.Refresh()
         if self.project.active_editor is None:
             focused_widget = wx.Window.FindFocus()
-            if focused_widget and hasattr(focused_widget, "DONT_RESET_FOCUS"):
-                return
-            self._focus_panel.SetFocus()
+            if not focused_widget or not hasattr(focused_widget, "DONT_RESET_FOCUS"):
+                self._focus_panel.SetFocus()
+        self.Layout()
+        self.Refresh()
+        self.Update()
 class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
