@@ -2575,6 +2575,7 @@ class ToolGroups(object):
     def __init__(self, frame):
         self._frame = frame
         self._tool_groups = []
+        self._last_state = []
 
     def add_group(self, *args, **kwargs):
         group = ToolGroup(self._frame, *args, **kwargs)
@@ -2582,18 +2583,24 @@ class ToolGroups(object):
         return group
 
     def populate(self, toolbar):
-        items = []
-        toolbar.ClearTools()
-        first = True
-        for group in self._tool_groups:
-            if group.is_active():
-                if not first:
-                    toolbar.AddSeparator()
-                first = False
-                group.populate(toolbar)
-                items.extend(group.accelerator_entries())
-        toolbar.Realize()
-        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))
+        new_state = self.get_state()
+        if new_state != self._last_state:
+            self._last_state = new_state
+            items = []
+            toolbar.ClearTools()
+            first = True
+            for group in self._tool_groups:
+                if group.is_active():
+                    if not first:
+                        toolbar.AddSeparator()
+                    first = False
+                    group.populate(toolbar)
+                    items.extend(group.accelerator_entries())
+            toolbar.Realize()
+            self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))
+
+    def get_state(self):
+        return [group.get_state() for group in self._tool_groups]
 class ToolGroup(object):
 
     def __init__(self, frame, active_fn=None):
@@ -2619,6 +2626,9 @@ class ToolGroup(object):
     def populate(self, toolbar):
         for tool in self._tools:
             tool.populate(toolbar)
+
+    def get_state(self):
+        return (self.is_active(), [tool.get_state() for tool in self._tools])
 class Tool(object):
 
     def __init__(self, frame, art, action_fn, short_help="", enabled_fn=None, shortcuts=[]):
@@ -2663,6 +2673,9 @@ class Tool(object):
                 " / ".join(x.ToString() for x in self.accelerator_entries())
             )
         toolbar.SetToolShortHelp(self.id, text)
+
+    def get_state(self):
+        return self._is_enabled()
 class TableOfContents(VerticalBasePanel):
 
     def _create_gui(self):
