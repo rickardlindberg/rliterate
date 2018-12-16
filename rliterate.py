@@ -549,14 +549,22 @@ class TokenView(TextProjection):
             max_width=kwargs.get("max_width", 100),
             break_at_word=kwargs.get("skip_extra_space", False)
         )
+        self.last_tokens = []
         self._default_cursor = self.GetCursor()
 
     def UpdateTokens(self, project, tokens, max_width):
-        self.UpdateGui(
-            characters=self._generate_characters(project, tokens),
-            max_width=max_width
-        )
+        if tokens != self.last_tokens:
+            self.UpdateGui(
+                characters=self._generate_characters(project, tokens),
+                max_width=max_width
+            )
+            self.last_tokens = tokens
+        else:
+            self.UpdateGui(
+                max_width=max_width
+            )
 
+    @rltime("generate characters")
     def _generate_characters(self, project, tokens):
         self.characters = []
         for token in tokens:
@@ -3674,7 +3682,6 @@ class CodeView(VerticalBasePanel):
             self._highlight_variables(self.paragraph.tokens),
             self.project.theme.page_body_width-2*self.PADDING
         )
-    @rltime("create path")
     def _create_path(self):
         panel = HorizontalPanel(self)
         panel.SetBackgroundColour((248, 241, 223))
@@ -3702,6 +3709,7 @@ class CodeView(VerticalBasePanel):
         )
         return panel
 
+    @rltime("create path tokens")
     def _create_path_tokens(self, path):
         tokens = []
         last_subpath = None
@@ -3741,7 +3749,6 @@ class CodeView(VerticalBasePanel):
                 ))
                 last_subpath = subpath
         return tokens
-    @rltime("create code")
     def _create_code(self):
         panel = HorizontalPanel(self)
         panel.SetBackgroundColour((253, 246, 227))
@@ -3770,6 +3777,7 @@ class CodeView(VerticalBasePanel):
         )
         return panel
 
+    @rltime("create code tokens")
     def _highlight_variables(self, tokens):
         def foo(token):
             if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get("variable"):
