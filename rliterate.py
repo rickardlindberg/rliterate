@@ -1350,6 +1350,17 @@ class CodeParagraph(Paragraph):
 
     def iter_code_fragments(self):
         return iter(self.fragments)
+
+    @property
+    def body_data(self):
+        data = {
+            "fragments": copy.deepcopy(self._paragraph_dict["fragments"]),
+            "ids": {},
+        }
+        for fragment in self.fragments:
+            if fragment.type == "variable":
+                data["ids"][fragment.id] = fragment.name
+        return data
     @property
     def text_version(self):
         self._variable_map = {}
@@ -3679,6 +3690,7 @@ class CodeView(VerticalBasePanel):
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
         self.SetBackgroundColour((243, 236, 219))
+        self.last_body_data = None
 
     def _update_gui(self):
         self.path.Show(not self.paragraph.path.is_empty)
@@ -3687,11 +3699,13 @@ class CodeView(VerticalBasePanel):
             self._create_path_tokens(self.paragraph.path),
             self.project.theme.page_body_width-2*self.PADDING
         )
-        self.body_token_view.UpdateTokens(
-            self.project,
-            self._highlight_variables(self.paragraph.tokens),
-            self.project.theme.page_body_width-2*self.PADDING
-        )
+        if self.paragraph.body_data != self.last_body_data:
+            self.body_token_view.UpdateTokens(
+                self.project,
+                self._highlight_variables(self.paragraph.tokens),
+                self.project.theme.page_body_width-2*self.PADDING
+            )
+            self.last_body_data = self.paragraph.body_data
     def _create_path(self):
         panel = HorizontalPanel(self)
         panel.SetBackgroundColour((248, 241, 223))

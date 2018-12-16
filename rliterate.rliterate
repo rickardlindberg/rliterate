@@ -1960,7 +1960,23 @@
 "type":"variable"
 },
 {
-"text":"\"]\n    )\n\ndef iter_code_fragments(self):\n    return iter(self.fragments)\n",
+"text":"\"]\n    )\n\ndef iter_code_fragments(self):\n    return iter(self.fragments)\n\n@property\ndef body_data(self):\n    data = {\n        \"fragments\": copy.deepcopy(self._paragraph_dict[\"",
+"type":"code"
+},
+{
+"id":"5d5cbe77035c40379816eb19327f1267",
+"type":"variable"
+},
+{
+"text":"\"]),\n        \"ids\": {},\n    }\n    for fragment in self.",
+"type":"code"
+},
+{
+"id":"2449e9bb4a8143fbb06bf888bc1d1f9c",
+"type":"variable"
+},
+{
+"text":":\n        if fragment.type == \"variable\":\n            data[\"ids\"][fragment.id] = fragment.name\n    return data\n",
 "type":"code"
 }
 ],
@@ -9789,7 +9805,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetBackgroundColour((243, 236, 219))\n\ndef ",
+"text":"(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetBackgroundColour((243, 236, 219))\n    self.last_body_data = None\n\ndef ",
 "type":"code"
 },
 {
@@ -9805,7 +9821,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        self.project.theme.page_body_width-2*self.PADDING\n    )\n    self.body_token_view.",
+"text":"(\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        self.project.theme.page_body_width-2*self.PADDING\n    )\n    if self.paragraph.body_data != self.last_body_data:\n        self.body_token_view.",
 "type":"code"
 },
 {
@@ -9813,7 +9829,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self.project,\n        self._highlight_variables(self.paragraph.tokens),\n        self.project.theme.page_body_width-2*self.PADDING\n    )\n",
+"text":"(\n            self.project,\n            self._highlight_variables(self.paragraph.tokens),\n            self.project.theme.page_body_width-2*self.PADDING\n        )\n        self.last_body_data = self.paragraph.body_data\n",
 "type":"code"
 }
 ],
