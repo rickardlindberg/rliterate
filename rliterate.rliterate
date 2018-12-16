@@ -9286,27 +9286,11 @@
 "type":"code"
 },
 {
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"id":"a4ee3530a5f140f5bc70b87fca825372",
 "type":"variable"
 },
 {
-"text":"(self):\n        if hasattr(self, \"edit\"):\n            ",
-"type":"code"
-},
-{
-"id":"07b4671de05745a7bddd1eea74535277",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self)\n        else:\n            self.view.",
+"text":"(self):\n        self.view.",
 "type":"code"
 },
 {
@@ -9314,7 +9298,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                self.project,\n                self._tokens(),\n                self.project.theme.page_body_width\n            )\n\n    def _tokens(self):\n        return [\n            token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n            for token in self.paragraph.tokens\n        ]\n\n    def ",
+"text":"(\n            self.project,\n            self._tokens(),\n            self.project.theme.page_body_width\n        )\n\n    def _tokens(self):\n        return [\n            token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n            for token in self.paragraph.tokens\n        ]\n\n    def ",
 "type":"code"
 },
 {
@@ -9580,27 +9564,11 @@
 "type":"code"
 },
 {
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"id":"a4ee3530a5f140f5bc70b87fca825372",
 "type":"variable"
 },
 {
-"text":"(self):\n        if hasattr(self, \"edit\"):\n            ",
-"type":"code"
-},
-{
-"id":"10d0077dd6454d79a892bbcbebe5d438",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self)\n        else:\n            self.text_view.",
+"text":"(self):\n        self.text_view.",
 "type":"code"
 },
 {
@@ -9608,7 +9576,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                self.project,\n                self._tokens(),\n                self.project.theme.page_body_width-self.INDENT\n            )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
+"text":"(\n            self.project,\n            self._tokens(),\n            self.project.theme.page_body_width-self.INDENT\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
@@ -11250,7 +11218,31 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        if hasattr(self, \"edit\"):\n            self.edit.Destroy()\n            del self.edit\n        self.view.Destroy()\n        self.",
+"text":"(self):\n        if hasattr(self, \"edit\"):\n            self.edit.Destroy()\n            del self.edit\n            self.view.Destroy()\n            self.",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"()\n        else:\n            self.",
+"type":"code"
+},
+{
+"id":"a4ee3530a5f140f5bc70b87fca825372",
+"type":"variable"
+},
+{
+"text":"()\n\n    def ",
+"type":"code"
+},
+{
+"id":"a4ee3530a5f140f5bc70b87fca825372",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.view.Destroy()\n        self.",
 "type":"code"
 },
 {
@@ -16487,6 +16479,7 @@
 "9e987210a686490c823a44d09e783833":"_load",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
+"a4ee3530a5f140f5bc70b87fca825372":"_update_paragraph_gui",
 "a5bace68289b40e78df93409e362a63b":"from_file",
 "a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
 "a886e97ceb3d427c8190487d23d12bc1":"Column",

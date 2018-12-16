@@ -177,6 +177,12 @@ class Editable(VerticalBasePanel):
         if hasattr(self, "edit"):
             self.edit.Destroy()
             del self.edit
+            self.view.Destroy()
+            self._create_gui()
+        else:
+            self._update_paragraph_gui()
+
+    def _update_paragraph_gui(self):
         self.view.Destroy()
         self._create_gui()
 
@@ -3425,15 +3431,12 @@ class Text(ParagraphBase):
             self
         )
 
-    def _update_gui(self):
-        if hasattr(self, "edit"):
-            ParagraphBase._update_gui(self)
-        else:
-            self.view.UpdateTokens(
-                self.project,
-                self._tokens(),
-                self.project.theme.page_body_width
-            )
+    def _update_paragraph_gui(self):
+        self.view.UpdateTokens(
+            self.project,
+            self._tokens(),
+            self.project.theme.page_body_width
+        )
 
     def _tokens(self):
         return [
@@ -3529,15 +3532,12 @@ class Quote(Text):
         )
         return view
 
-    def _update_gui(self):
-        if hasattr(self, "edit"):
-            ParagraphBase._update_gui(self)
-        else:
-            self.text_view.UpdateTokens(
-                self.project,
-                self._tokens(),
-                self.project.theme.page_body_width-self.INDENT
-            )
+    def _update_paragraph_gui(self):
+        self.text_view.UpdateTokens(
+            self.project,
+            self._tokens(),
+            self.project.theme.page_body_width-self.INDENT
+        )
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
