@@ -2467,6 +2467,7 @@ class MainFrame(wx.Frame, BoxSizerMixin):
 
     def ChildReRendered(self):
         self.Layout()
+        self.Refresh()
         if self.project.active_editor is None:
             focused_widget = wx.Window.FindFocus()
             if focused_widget and hasattr(focused_widget, "DONT_RESET_FOCUS"):

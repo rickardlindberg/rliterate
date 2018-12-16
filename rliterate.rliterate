@@ -5688,11 +5688,12 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    self.Layout()\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if focused_widget and hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            return\n        self._focus_panel.SetFocus()\n",
+"text":"def ChildReRendered(self):\n    self.Layout()\n    self.Refresh()\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if focused_widget and hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            return\n        self._focus_panel.SetFocus()\n",
 "type":"code"
 }
 ],
 "id":"ecd0d38324a74c9ba453317c417e46ce",
+"language":"",
 "type":"code"
 }
 ],
