@@ -9290,7 +9290,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self.view.",
+"text":"(self):\n        if hasattr(self, \"edit\"):\n            ",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self)\n        else:\n            self.view.",
 "type":"code"
 },
 {
@@ -9568,7 +9584,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self.text_view.",
+"text":"(self):\n        if hasattr(self, \"edit\"):\n            ",
+"type":"code"
+},
+{
+"id":"10d0077dd6454d79a892bbcbebe5d438",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self)\n        else:\n            self.text_view.",
 "type":"code"
 },
 {
@@ -11218,23 +11250,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self.view.Destroy()\n        self.view = self.",
+"text":"(self):\n        if hasattr(self, \"edit\"):\n            self.edit.Destroy()\n            del self.edit\n        self.view.Destroy()\n        self.",
 "type":"code"
 },
 {
-"id":"359755e756af4e708b237cd9753ae046",
+"id":"887acc7e530b4d98933d11e223d58c42",
 "type":"variable"
 },
 {
-"text":"(\n            self.",
-"type":"code"
-},
-{
-"id":"740055857bb244038c203cea23c1af69",
-"type":"variable"
-},
-{
-"text":"(),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n\n    def OnEditStart(self, event):\n        if self.project.",
+"text":"()\n\n    def OnEditStart(self, event):\n        if self.project.",
 "type":"code"
 },
 {
@@ -11258,7 +11282,7 @@
 "type":"variable"
 },
 {
-"text":"(event.extra)\n            self.edit.SetFocus()\n            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.sizer.Hide(self.view)\n            self.GetTopLevelParent().Layout()\n            self.project.",
+"text":"(event.extra)\n            self.edit.SetFocus()\n            self.GetSizer().Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.GetSizer().Hide(self.view)\n            self.GetTopLevelParent().Layout()\n            self.project.",
 "type":"code"
 },
 {
@@ -14759,6 +14783,25 @@
 ],
 "id":"c4a31ff1f421477086c7cb7bea96dd81",
 "type":"text"
+},
+{
+"fragments":[
+{
+"text":"On ",
+"type":"text"
+},
+{
+"text":"WYSIWYG",
+"type":"link",
+"url":"https://www.quora.com/What-exactly-is-WYSIWYG/answer/Alan-Kay-11"
+},
+{
+"text":" by Alan Kay.",
+"type":"text"
+}
+],
+"id":"096321c322b949fd8c0c0a9738777695",
+"type":"text"
 }
 ],
 "title":"Direct manipulation"
@@ -16327,6 +16370,7 @@
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
+"10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
 "12f482d927e54efa94ec8c3165307f41":"Title",
 "13edfec5045f41d99010d539bc4ac956":"Layout",

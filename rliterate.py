@@ -174,12 +174,11 @@ class Editable(VerticalBasePanel):
         self.view.Bind(EVT_EDIT_START, self.OnEditStart)
 
     def _update_gui(self):
+        if hasattr(self, "edit"):
+            self.edit.Destroy()
+            del self.edit
         self.view.Destroy()
-        self.view = self.AppendChild(
-            self.CreateView(),
-            flag=wx.EXPAND,
-            proportion=1
-        )
+        self._create_gui()
 
     def OnEditStart(self, event):
         if self.project.active_editor is not None:
@@ -188,8 +187,8 @@ class Editable(VerticalBasePanel):
         with flicker_free_drawing(self):
             self.edit = self.CreateEdit(event.extra)
             self.edit.SetFocus()
-            self.sizer.Add(self.edit, flag=wx.EXPAND, proportion=1)
-            self.sizer.Hide(self.view)
+            self.GetSizer().Add(self.edit, flag=wx.EXPAND, proportion=1)
+            self.GetSizer().Hide(self.view)
             self.GetTopLevelParent().Layout()
             self.project.active_editor = self
 
@@ -3424,7 +3423,10 @@ class Text(ParagraphBase):
         )
 
     def _update_gui(self):
-        self.view.UpdateTokens(self.project, self._tokens())
+        if hasattr(self, "edit"):
+            ParagraphBase._update_gui(self)
+        else:
+            self.view.UpdateTokens(self.project, self._tokens())
 
     def _tokens(self):
         return [
@@ -3521,7 +3523,10 @@ class Quote(Text):
         return view
 
     def _update_gui(self):
-        self.text_view.UpdateTokens(self.project, self._tokens())
+        if hasattr(self, "edit"):
+            ParagraphBase._update_gui(self)
+        else:
+            self.text_view.UpdateTokens(self.project, self._tokens())
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
