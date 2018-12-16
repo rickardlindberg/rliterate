@@ -404,18 +404,12 @@ class TextProjection(GuiUpdatePanel):
 
     def _update_gui(self):
         if self.has_changes:
+            self._show_beams = True
             self._layout()
             if self._beams:
                 self.timer.Start(400)
             else:
                 self.timer.Stop()
-
-    def _setup_beams(self):
-        self._show_beams = True
-        if self._beams:
-            self.Bind(wx.EVT_TIMER, self._on_timer)
-            self.timer = wx.Timer(self)
-            self.timer.Start(400)
 
     def _on_timer(self, event):
         self._show_beams = not self._show_beams

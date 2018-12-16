@@ -3832,6 +3832,7 @@
 }
 ],
 "id":"53de8670b4164bc7a0ab502d2960da63",
+"language":"",
 "type":"code"
 },
 {
@@ -12007,6 +12008,14 @@
 "type":"code"
 },
 {
+"id":"1f56374d1e0340aca956a39b7e874ff4",
+"type":"variable"
+},
+{
+"text":" = True\n        self.",
+"type":"code"
+},
+{
 "id":"ba63198235bb4716a96649f32f1f4ac4",
 "type":"variable"
 },
@@ -12037,31 +12046,7 @@
 ],
 "fragments":[
 {
-"text":"def ",
-"type":"code"
-},
-{
-"id":"25dfed2d02124924b27ccee34278dc26",
-"type":"variable"
-},
-{
-"text":"(self):\n    self.",
-"type":"code"
-},
-{
-"id":"1f56374d1e0340aca956a39b7e874ff4",
-"type":"variable"
-},
-{
-"text":" = True\n    if self.",
-"type":"code"
-},
-{
-"id":"dadd60f63fbf40638d412cd98a36846a",
-"type":"variable"
-},
-{
-"text":":\n        self.Bind(wx.EVT_TIMER, self._on_timer)\n        self.timer = wx.Timer(self)\n        self.timer.Start(400)\n\ndef _on_timer(self, event):\n    self.",
+"text":"def _on_timer(self, event):\n    self.",
 "type":"code"
 },
 {
