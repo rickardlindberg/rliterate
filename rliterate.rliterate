@@ -5588,7 +5588,7 @@
 "type":"variable"
 },
 {
-"text":"(self._create_main_panel(), flag=wx.EXPAND, proportion=1)\n\n    def _create_main_panel(self):\n        panel = HorizontalPanel(self)\n        self.SetToolBar(ToolBar(panel, self.project))\n        self._focus_panel = panel.",
+"text":"(self._create_main_panel(), flag=wx.EXPAND, proportion=1)\n\n    def _create_main_panel(self):\n        panel = HorizontalPanel(self)\n        self.toolbar = ToolBar(panel, self.project)\n        self.SetToolBar(self.toolbar)\n        self._focus_panel = panel.",
 "type":"code"
 },
 {
@@ -5636,7 +5636,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n            self.toc.",
+"text":"(self):\n            self.toolbar.UpdateGui()\n            self.toc.",
 "type":"code"
 },
 {
@@ -6161,15 +6161,7 @@
 ],
 "fragments":[
 {
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n        self.project.",
-"type":"code"
-},
-{
-"id":"c4f3b8bfcb0c4e449fdad901d978b7b0",
-"type":"variable"
-},
-{
-"text":"(lambda:\n            self._tool_groups.populate(self)\n        )\n\n    def _init_tools(self):\n        main_frame = self.GetTopLevelParent()\n        self._tool_groups = ToolGroups(main_frame)\n",
+"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n\n    def _init_tools(self):\n        main_frame = self.GetTopLevelParent()\n        self._tool_groups = ToolGroups(main_frame)\n",
 "type":"code"
 },
 {
@@ -6182,7 +6174,7 @@
 "type":"chunk"
 },
 {
-"text":"        self._tool_groups.populate(self)\n",
+"text":"        self.UpdateGui()\n\n    @rltime(\"update toolbar\")\n    def UpdateGui(self):\n        self._tool_groups.populate(self)\n",
 "type":"code"
 }
 ],
@@ -6213,7 +6205,7 @@
 ],
 "fragments":[
 {
-"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    @rltime(\"update toolbar\")\n    def populate(self, toolbar):\n        items = []\n        toolbar.ClearTools()\n        first = True\n        for group in self._tool_groups:\n            if group.is_active():\n                if not first:\n                    toolbar.AddSeparator()\n                first = False\n                group.populate(toolbar)\n                items.extend(group.accelerator_entries())\n        toolbar.Realize()\n        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n",
+"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def populate(self, toolbar):\n        items = []\n        toolbar.ClearTools()\n        first = True\n        for group in self._tool_groups:\n            if group.is_active():\n                if not first:\n                    toolbar.AddSeparator()\n                first = False\n                group.populate(toolbar)\n                items.extend(group.accelerator_entries())\n        toolbar.Realize()\n        self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n",
 "type":"code"
 }
 ],
@@ -13185,7 +13177,7 @@
 {
 "fragments":[
 {
-"text":"This code seems to be needed on Windows only, but does not harm on other platforms. If many layout operations are done, the GUI otherwise becomes slow and flickers.",
+"text":"This code seems to be needed on Windows only. If many layout operations are done, the GUI otherwise becomes slow and flickers.",
 "type":"text"
 }
 ],
@@ -13209,7 +13201,7 @@
 "type":"variable"
 },
 {
-"text":"(widget):\n    widget.Freeze()\n    yield\n    widget.Thaw()\n",
+"text":"(widget):\n    if \"wxMSW\" in wx.PlatformInfo:\n        widget.Freeze()\n        yield\n        widget.Thaw()\n    else:\n        yield\n",
 "type":"code"
 }
 ],

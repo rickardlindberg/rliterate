@@ -2439,7 +2439,8 @@ class MainFrame(wx.Frame, BoxSizerMixin):
 
     def _create_main_panel(self):
         panel = HorizontalPanel(self)
-        self.SetToolBar(ToolBar(panel, self.project))
+        self.toolbar = ToolBar(panel, self.project)
+        self.SetToolBar(self.toolbar)
         self._focus_panel = panel.AppendChild(
             wx.Panel(self)
         )
@@ -2459,6 +2460,7 @@ class MainFrame(wx.Frame, BoxSizerMixin):
     @rltime("update main frame")
     def UpdateGui(self):
         with flicker_free_drawing(self):
+            self.toolbar.UpdateGui()
             self.toc.UpdateGui(project=self.project)
             self.workspace.UpdateGui(project=self.project)
             self.ChildReRendered()
@@ -2479,9 +2481,6 @@ class ToolBar(wx.ToolBar):
 
     def _init_project(self, project):
         self.project = project
-        self.project.listen(lambda:
-            self._tool_groups.populate(self)
-        )
 
     def _init_tools(self):
         main_frame = self.GetTopLevelParent()
@@ -2566,6 +2565,10 @@ class ToolBar(wx.ToolBar):
                 (wx.ACCEL_CTRL, ord('Q')),
             ]
         )
+        self.UpdateGui()
+
+    @rltime("update toolbar")
+    def UpdateGui(self):
         self._tool_groups.populate(self)
 class ToolGroups(object):
 
@@ -2578,7 +2581,6 @@ class ToolGroups(object):
         self._tool_groups.append(group)
         return group
 
-    @rltime("update toolbar")
     def populate(self, toolbar):
         items = []
         toolbar.ClearTools()
@@ -4850,9 +4852,12 @@ def show_edit_in_progress_error(window):
     dialog.Destroy()
 @contextlib.contextmanager
 def flicker_free_drawing(widget):
-    widget.Freeze()
-    yield
-    widget.Thaw()
+    if "wxMSW" in wx.PlatformInfo:
+        widget.Freeze()
+        yield
+        widget.Thaw()
+    else:
+        yield
 def create_font(monospace=False, size=10, bold=False):
     return wx.Font(
         size,
