@@ -1567,6 +1567,16 @@ class Path(object):
         self.filepath = filepath
         self.chunkpath = chunkpath
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, Path) and
+            self.filepath == other.filepath and
+            self.chunkpath == other.chunkpath
+        )
+
+    def __ne__(self, other):
+        return not (self == other)
+
     def is_prefix(self, other):
         if len(self.chunkpath) > 0:
             return self.filepath == other.filepath and self.chunkpath == other.chunkpath[:len(self.chunkpath)]
