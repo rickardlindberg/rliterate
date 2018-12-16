@@ -5688,7 +5688,7 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if not focused_widget or not hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            self._focus_panel.SetFocus()\n    self.Layout()\n    self.Refresh()\n    self.Update()\n",
+"text":"def ChildReRendered(self):\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if not focused_widget or not hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            self._focus_panel.SetFocus()\n    self.Layout()\n    self.Update()\n",
 "type":"code"
 }
 ],
@@ -7267,7 +7267,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page\"].children))\n",
+"text":"[\"page\"].children))\n    self.Refresh()\n",
 "type":"code"
 }
 ],
@@ -12014,7 +12014,7 @@
 "type":"variable"
 },
 {
-"text":":\n            self.timer.Start(400)\n        else:\n            self.timer.Stop()\n",
+"text":":\n            self.timer.Start(400)\n        else:\n            self.timer.Stop()\n        self.Refresh()\n",
 "type":"code"
 }
 ],

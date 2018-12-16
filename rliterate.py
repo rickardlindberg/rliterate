@@ -410,6 +410,7 @@ class TextProjection(GuiUpdatePanel):
                 self.timer.Start(400)
             else:
                 self.timer.Stop()
+            self.Refresh()
 
     def _on_timer(self, event):
         self._show_beams = not self._show_beams
@@ -2471,7 +2472,6 @@ class MainFrame(wx.Frame, BoxSizerMixin):
             if not focused_widget or not hasattr(focused_widget, "DONT_RESET_FOCUS"):
                 self._focus_panel.SetFocus()
         self.Layout()
-        self.Refresh()
         self.Update()
 class ToolBar(wx.ToolBar):
 
@@ -2909,6 +2909,7 @@ class TableOfContentsButton(GuiUpdatePanel):
         )
     def _update_gui(self):
         self.Show(bool(self.values["page"].children))
+        self.Refresh()
 class PageContextMenu(wx.Menu):
 
     def __init__(self, project, page):
