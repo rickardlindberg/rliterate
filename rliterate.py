@@ -545,8 +545,11 @@ class TokenView(TextProjection):
         )
         self._default_cursor = self.GetCursor()
 
-    def UpdateTokens(self, project, tokens):
-        self.UpdateGui(characters=self._generate_characters(project, tokens))
+    def UpdateTokens(self, project, tokens, max_width):
+        self.UpdateGui(
+            characters=self._generate_characters(project, tokens),
+            max_width=max_width
+        )
 
     def _generate_characters(self, project, tokens):
         self.characters = []
@@ -3426,7 +3429,11 @@ class Text(ParagraphBase):
         if hasattr(self, "edit"):
             ParagraphBase._update_gui(self)
         else:
-            self.view.UpdateTokens(self.project, self._tokens())
+            self.view.UpdateTokens(
+                self.project,
+                self._tokens(),
+                self.project.theme.page_body_width
+            )
 
     def _tokens(self):
         return [
@@ -3526,7 +3533,11 @@ class Quote(Text):
         if hasattr(self, "edit"):
             ParagraphBase._update_gui(self)
         else:
-            self.text_view.UpdateTokens(self.project, self._tokens())
+            self.text_view.UpdateTokens(
+                self.project,
+                self._tokens(),
+                self.project.theme.page_body_width-self.INDENT
+            )
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(

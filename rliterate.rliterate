@@ -9314,7 +9314,7 @@
 "type":"variable"
 },
 {
-"text":"(self.project, self._tokens())\n\n    def _tokens(self):\n        return [\n            token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n            for token in self.paragraph.tokens\n        ]\n\n    def ",
+"text":"(\n                self.project,\n                self._tokens(),\n                self.project.theme.page_body_width\n            )\n\n    def _tokens(self):\n        return [\n            token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n            for token in self.paragraph.tokens\n        ]\n\n    def ",
 "type":"code"
 },
 {
@@ -9608,7 +9608,7 @@
 "type":"variable"
 },
 {
-"text":"(self.project, self._tokens())\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
+"text":"(\n                self.project,\n                self._tokens(),\n                self.project.theme.page_body_width-self.INDENT\n            )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
@@ -12715,7 +12715,15 @@
 "type":"variable"
 },
 {
-"text":"(self, project, tokens):\n        self.",
+"text":"(self, project, tokens, ",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"):\n        self.",
 "type":"code"
 },
 {
@@ -12723,7 +12731,7 @@
 "type":"variable"
 },
 {
-"text":"(",
+"text":"(\n            ",
 "type":"code"
 },
 {
@@ -12731,7 +12739,23 @@
 "type":"variable"
 },
 {
-"text":"=self._generate_characters(project, tokens))\n\n    def _generate_characters(self, project, tokens):\n        self.characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    self.characters.append(",
+"text":"=self._generate_characters(project, tokens),\n            ",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"=",
+"type":"code"
+},
+{
+"id":"b3ef449947274fc597372ebb7fa1eaf7",
+"type":"variable"
+},
+{
+"text":"\n        )\n\n    def _generate_characters(self, project, tokens):\n        self.characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    self.characters.append(",
 "type":"code"
 },
 {
