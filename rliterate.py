@@ -1029,6 +1029,7 @@ class Page(object):
     def title(self):
         return self._page_dict["title"]
 
+    @rltime("set title")
     def set_title(self, title):
         with self._document.modify("Change title") as document_dict:
             document_dict.update_page_dict(self.id, {"title": title})
@@ -3430,6 +3431,7 @@ class Title(HorizontalBasePanel):
             ))
         return characters
 
+    @rltime("on title char")
     def _on_char(self, event):
         if self.selection.present:
             character = event.GetUnicodeKey()
