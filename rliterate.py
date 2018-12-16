@@ -3603,7 +3603,12 @@ class List(ParagraphBase):
 class Code(ParagraphBase):
 
     def CreateView(self):
-        return CodeView(self, self.project, self.paragraph, self)
+        return CodeView(
+            self,
+            project=self.project,
+            paragraph=self.paragraph,
+            base=self
+        )
 
     def CreateEdit(self, extra):
         return CodeEditor(self, self.project, self.paragraph, self.view, extra)
@@ -3620,30 +3625,56 @@ class Code(ParagraphBase):
                 }
             )
         )
-class CodeView(VerticalPanel):
+
+    @rltime("update code view")
+    def _update_paragraph_gui(self):
+        self.view.UpdateGui(
+            project=self.project,
+            paragraph=self.paragraph,
+            base=self
+        )
+class CodeView(VerticalBasePanel):
 
     BORDER = 0
     PADDING = 5
 
-    def __init__(self, parent, project, paragraph, base):
-        VerticalPanel.__init__(self, parent)
-        self.project = project
-        self.paragraph = paragraph
-        self.base = base
-        self._create_gui()
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def base(self):
+        return self.values["base"]
 
     def _create_gui(self):
         self.Font = create_font(**self.project.theme.code_font)
-        if not self.paragraph.path.is_empty:
-            self.AppendChild(
-                self._create_path(),
-                flag=wx.ALL|wx.EXPAND, border=self.BORDER
-            )
-        self.AppendChild(
+        self.path = self.AppendChild(
+            self._create_path(),
+            flag=wx.ALL|wx.EXPAND, border=self.BORDER
+        )
+        self.code = self.AppendChild(
             self._create_code(),
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
         )
         self.SetBackgroundColour((243, 236, 219))
+
+    def _update_gui(self):
+        self.path.Show(not self.paragraph.path.is_empty)
+        self.path_token_view.UpdateTokens(
+            self.project,
+            self._create_path_tokens(self.paragraph.path),
+            self.project.theme.page_body_width-2*self.PADDING
+        )
+        self.body_token_view.UpdateTokens(
+            self.project,
+            self._highlight_variables(self.paragraph.tokens),
+            self.project.theme.page_body_width-2*self.PADDING
+        )
+    @rltime("create path")
     def _create_path(self):
         panel = HorizontalPanel(self)
         panel.SetBackgroundColour((248, 241, 223))
@@ -3710,6 +3741,7 @@ class CodeView(VerticalPanel):
                 ))
                 last_subpath = subpath
         return tokens
+    @rltime("create code")
     def _create_code(self):
         panel = HorizontalPanel(self)
         panel.SetBackgroundColour((253, 246, 227))

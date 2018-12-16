@@ -9711,22 +9711,15 @@
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"50f1b4552c0340eab599c8bc578334de",
 "type":"variable"
 },
 {
-"text":"):\n\n    BORDER = 0\n    PADDING = 5\n\n    def __init__(self, parent, project, paragraph, base):\n        ",
+"text":"):\n\n    BORDER = 0\n    PADDING = 5\n\n    @property\n    def project(self):\n        return self.values[\"project\"]\n\n    @property\n    def paragraph(self):\n        return self.values[\"paragraph\"]\n\n    @property\n    def base(self):\n        return self.values[\"base\"]\n\n",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent)\n        self.project = project\n        self.paragraph = paragraph\n        self.base = base\n        self._create_gui()\n\n",
-"type":"code"
-},
-{
+"blank_lines_before":0,
 "path":[
 "CodeView"
 ],
@@ -9735,6 +9728,7 @@
 }
 ],
 "id":"397eb97b4763418c9e8e4a8cbcb75a72",
+"language":"",
 "type":"code"
 },
 {
@@ -9747,7 +9741,15 @@
 ],
 "fragments":[
 {
-"text":"def _create_gui(self):\n    self.Font = ",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.Font = ",
 "type":"code"
 },
 {
@@ -9771,7 +9773,7 @@
 "type":"variable"
 },
 {
-"text":")\n    if not self.paragraph.path.is_empty:\n        self.",
+"text":")\n    self.path = self.",
 "type":"code"
 },
 {
@@ -9779,7 +9781,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self._create_path(),\n            flag=wx.ALL|wx.EXPAND, border=self.BORDER\n        )\n    self.",
+"text":"(\n        self._create_path(),\n        flag=wx.ALL|wx.EXPAND, border=self.BORDER\n    )\n    self.code = self.",
 "type":"code"
 },
 {
@@ -9787,11 +9789,36 @@
 "type":"variable"
 },
 {
-"text":"(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetBackgroundColour((243, 236, 219))\n",
+"text":"(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetBackgroundColour((243, 236, 219))\n\ndef ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.path.Show(not self.paragraph.path.is_empty)\n    self.path_token_view.",
+"type":"code"
+},
+{
+"id":"f9605031f42b4c37a170779d7ee7fe6e",
+"type":"variable"
+},
+{
+"text":"(\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        self.project.theme.page_body_width-2*self.PADDING\n    )\n    self.body_token_view.",
+"type":"code"
+},
+{
+"id":"f9605031f42b4c37a170779d7ee7fe6e",
+"type":"variable"
+},
+{
+"text":"(\n        self.project,\n        self._highlight_variables(self.paragraph.tokens),\n        self.project.theme.page_body_width-2*self.PADDING\n    )\n",
 "type":"code"
 }
 ],
 "id":"2d17b1adc0b149b1b05374fb065578b0",
+"language":"",
 "type":"code"
 },
 {
@@ -9814,7 +9841,7 @@
 ],
 "fragments":[
 {
-"text":"def _create_path(self):\n    panel = HorizontalPanel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = panel.",
+"text":"@rltime(\"create path\")\ndef _create_path(self):\n    panel = HorizontalPanel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = panel.",
 "type":"code"
 },
 {
@@ -9873,7 +9900,7 @@
 ],
 "fragments":[
 {
-"text":"def _create_code(self):\n    panel = HorizontalPanel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = panel.",
+"text":"@rltime(\"create code\")\ndef _create_code(self):\n    panel = HorizontalPanel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = panel.",
 "type":"code"
 },
 {
@@ -10291,7 +10318,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return CodeView(self, self.project, self.paragraph, self)\n\n    def ",
+"text":"(self):\n        return CodeView(\n            self,\n            project=self.project,\n            paragraph=self.paragraph,\n            base=self\n        )\n\n    def ",
 "type":"code"
 },
 {
@@ -10299,7 +10326,23 @@
 "type":"variable"
 },
 {
-"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n",
+"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    @rltime(\"update code view\")\n    def ",
+"type":"code"
+},
+{
+"id":"a4ee3530a5f140f5bc70b87fca825372",
+"type":"variable"
+},
+{
+"text":"(self):\n        self.view.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(\n            project=self.project,\n            paragraph=self.paragraph,\n            base=self\n        )\n",
 "type":"code"
 }
 ],
