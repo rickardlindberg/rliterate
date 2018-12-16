@@ -3753,7 +3753,7 @@
 ],
 "fragments":[
 {
-"text":"class Document(Observable):\n\n    def __init__(self, document_dict=None):\n        Observable.__init__(self)\n        self.",
+"text":"class Document(Observable):\n\n    def __init__(self, path, document_dict=None):\n        Observable.__init__(self)\n        self.path = path\n        self.",
 "type":"code"
 },
 {
@@ -3765,6 +3765,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "Document"
 ],
@@ -3811,15 +3812,7 @@
 "type":"variable"
 },
 {
-"text":"(cls, path):\n    if os.path.exists(path):\n        document = cls(load_json_from_file(path))\n    else:\n        document = cls()\n    document.",
-"type":"code"
-},
-{
-"id":"c4f3b8bfcb0c4e449fdad901d978b7b0",
-"type":"variable"
-},
-{
-"text":"(rltime(\"write document\")(lambda:\n        write_json_to_file(\n            path,\n            document.",
+"text":"(cls, path):\n    if os.path.exists(path):\n        return cls(path, load_json_from_file(path))\n    else:\n        return cls(path)\n\ndef save(self):\n    write_json_to_file(\n        self.path,\n        self.",
 "type":"code"
 },
 {
@@ -3827,7 +3820,7 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n    ))\n    return document\n",
+"text":"\n    )\n",
 "type":"code"
 }
 ],
@@ -4143,7 +4136,7 @@
 "type":"variable"
 },
 {
-"text":":\n        with self.notify():\n            ",
+"text":":\n        with self.notify():\n            self.document.save()\n            ",
 "type":"code"
 },
 {

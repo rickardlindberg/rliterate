@@ -733,23 +733,23 @@ class JsonSettings(Observable):
         )
 class Document(Observable):
 
-    def __init__(self, document_dict=None):
+    def __init__(self, path, document_dict=None):
         Observable.__init__(self)
+        self.path = path
         self._load(document_dict)
 
     @classmethod
     def from_file(cls, path):
         if os.path.exists(path):
-            document = cls(load_json_from_file(path))
+            return cls(path, load_json_from_file(path))
         else:
-            document = cls()
-        document.listen(rltime("write document")(lambda:
-            write_json_to_file(
-                path,
-                document.read_only_document_dict
-            )
-        ))
-        return document
+            return cls(path)
+
+    def save(self):
+        write_json_to_file(
+            self.path,
+            self.read_only_document_dict
+        )
     def _load(self, document_dict):
         self._history = History(
             DocumentDictWrapper(
@@ -2248,6 +2248,7 @@ class Project(Observable):
     def save(self):
         if self._needs_saving:
             with self.notify():
+                self.document.save()
                 CodeExpander(self.document).generate_files()
                 self._needs_saving = False
 class EditInProgress(Exception):
