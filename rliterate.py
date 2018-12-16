@@ -559,7 +559,6 @@ class TokenView(TextProjection):
                 max_width=max_width
             )
 
-    @rltime("generate characters")
     def _generate_characters(self, project, tokens):
         self.characters = []
         for token in tokens:
@@ -3667,7 +3666,6 @@ class Code(ParagraphBase):
             )
         )
 
-    @rltime("update code view")
     def _update_paragraph_gui(self):
         self.view.UpdateGui(
             project=self.project,
@@ -3745,7 +3743,6 @@ class CodeView(VerticalBasePanel):
         )
         return panel
 
-    @rltime("create path tokens")
     def _create_path_tokens(self, path):
         tokens = []
         last_subpath = None
@@ -3813,7 +3810,6 @@ class CodeView(VerticalBasePanel):
         )
         return panel
 
-    @rltime("create code tokens")
     def _highlight_variables(self, tokens):
         def foo(token):
             if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get("variable"):
