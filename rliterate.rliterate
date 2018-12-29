@@ -1116,6 +1116,19 @@
 "children":[
 {
 "children":[],
+"id":"c06eb52127254249bf3b98a59bf7debb",
+"paragraphs":[],
+"title":"Variables"
+}
+],
+"id":"c11fbbc655e44c5db278437258d572e5",
+"paragraphs":[],
+"title":"Concepts"
+},
+{
+"children":[
+{
+"children":[],
 "id":"745dcf0d093a4f179dc7fbe1dc8b7bdd",
 "paragraphs":[
 {
@@ -16451,6 +16464,16 @@
 "fragments":[
 {
 "text":"No modes experiment",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"First paragraph is not removed upon re-render",
 "type":"text"
 }
 ]
