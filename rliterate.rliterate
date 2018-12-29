@@ -552,9 +552,127 @@
 ],
 "id":"54adfab3c5a2436d95fda4bdd95849c7",
 "type":"text"
+},
+{
+"fragments":[
+{
+"text":"Why literate programming?",
+"type":"text"
 }
 ],
-"title":"The idea"
+"id":"60b2c720c6b3497099aff622da227784",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"To me, the most central idea in literate programming is that we should write programs for other humans. Only secondary for the machine. I find code easier to understand if I can understand it in isolated pieces. One example where it is difficult to isolate a piece without literate programming is test code. Usually the test code is located in one file, and the implementation in another. To fully understand the piece it is useful to both read the tests and the implementation. To do this we have to find this related information in two unrelated files. I wrote about this problem in 2013 in ",
+"type":"text"
+},
+{
+"text":"Related things are not kept together",
+"type":"link",
+"url":"http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/"
+},
+{
+"text":". Literate programming allows us to present the test and the implementation in the same place, yet have the different pieces written to different files. The compiler might require that they are in separate files, but with literate programming, we care first about the other human that will read our code, and only second about the compiler.",
+"type":"text"
+}
+],
+"id":"fe04c847a4f54b3e80e49e60f650119e",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Another argument for literate programming is to express the \"why\". Why is this code here? Timothy Daly talks about it in his talk ",
+"type":"text"
+},
+{
+"text":"Literate Programming in the Large",
+"type":"link",
+"url":"https://www.youtube.com/watch?v=Av0PQDVTP4A"
+},
+{
+"text":". He also argues that programmers must change the mindset from wring a program to writing a book. Some more can be read in ",
+"type":"text"
+},
+{
+"text":"Example of Literate Programming in HTML",
+"type":"link",
+"url":"http://axiom-developer.org/axiom-website/litprog.html"
+},
+{
+"text":".",
+"type":"text"
+}
+],
+"id":"683d2cd7bded485cb4659cd40065ea93",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Some more resources about literate programming:",
+"type":"text"
+}
+],
+"id":"ead08e336d8749f79b82f0093feeeb94",
+"type":"text"
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"\"Eve\" by Chris Granger",
+"type":"link",
+"url":"https://www.youtube.com/watch?v=5V1ynVyud4M"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"",
+"type":"link",
+"url":"http://eve-lang.com/deepdives/literate.html"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"",
+"type":"link",
+"url":"https://software-carpentry.org/blog/2011/03/literate-programming.html"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"",
+"type":"link",
+"url":"http://akkartik.name/post/literate-programming"
+}
+]
+}
+],
+"id":"ab0371f11dd4469d982a7ea0ef617eb6",
+"type":"list"
+}
+],
+"title":"The idea (winter 2017)"
 },
 {
 "children":[],
@@ -796,6 +914,23 @@
 ],
 "id":"a28ef005c5fb46f882d33121b9e94b3b",
 "type":"text"
+}
+],
+"title":"The prototype (winter 2018)"
+},
+{
+"children":[],
+"id":"87d385c6cd894ef092864d59e36f2e06",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"Dogfeeding. I imporoved RLiterate inside RLiterate.",
+"type":"text"
+}
+],
+"id":"f874150013614adbba00a24b99517e5f",
+"type":"text"
 },
 {
 "fragments":[
@@ -806,129 +941,17 @@
 ],
 "id":"64341df7a91148ac8e11d1b55ed8fe0f",
 "type":"text"
-}
-],
-"title":"The prototype"
 },
-{
-"children":[],
-"id":"f496615acbe44223a64e1db1fc154b12",
-"paragraphs":[
 {
 "fragments":[
 {
-"text":"To me, the most central idea in literate programming is that we should write programs for other humans. Only secondary for the machine. I find code easier to understand if I can understand it in isolated pieces. One example where it is difficult to isolate a piece without literate programming is test code. Usually the test code is located in one file, and the implementation in another. To fully understand the piece it is useful to both read the tests and the implementation. To do this we have to find this related information in two unrelated files. I wrote about this problem in 2013 in ",
-"type":"text"
-},
-{
-"text":"Related things are not kept together",
-"type":"link",
-"url":"http://rickardlindberg.me/writing/reflections-on-programming/2013-02-24-related-things-are-not-kept-together/"
-},
-{
-"text":". Literate programming allows us to present the test and the implementation in the same place, yet have the different pieces written to different files. The compiler might require that they are in separate files, but with literate programming, we care first about the other human that will read our code, and only second about the compiler.",
+"text":"ProjecturED was an influence for introducing variables.",
 "type":"text"
 }
 ],
-"id":"fe04c847a4f54b3e80e49e60f650119e",
+"id":"89300daa1c0247259915d27e7467ef9e",
 "type":"text"
 },
-{
-"fragments":[
-{
-"text":"Another argument for literate programming is to express the \"why\". Why is this code here? Timothy Daly talks about it in his talk ",
-"type":"text"
-},
-{
-"text":"Literate Programming in the Large",
-"type":"link",
-"url":"https://www.youtube.com/watch?v=Av0PQDVTP4A"
-},
-{
-"text":". He also argues that programmers must change the mindset from wring a program to writing a book. Some more can be read in ",
-"type":"text"
-},
-{
-"text":"Example of Literate Programming in HTML",
-"type":"link",
-"url":"http://axiom-developer.org/axiom-website/litprog.html"
-},
-{
-"text":".",
-"type":"text"
-}
-],
-"id":"683d2cd7bded485cb4659cd40065ea93",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"Some more resources about literate programming:",
-"type":"text"
-}
-],
-"id":"ead08e336d8749f79b82f0093feeeb94",
-"type":"text"
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"\"Eve\" by Chris Granger",
-"type":"link",
-"url":"https://www.youtube.com/watch?v=5V1ynVyud4M"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"",
-"type":"link",
-"url":"http://eve-lang.com/deepdives/literate.html"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"",
-"type":"link",
-"url":"https://software-carpentry.org/blog/2011/03/literate-programming.html"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"",
-"type":"link",
-"url":"http://akkartik.name/post/literate-programming"
-}
-]
-}
-],
-"id":"ab0371f11dd4469d982a7ea0ef617eb6",
-"type":"list"
-}
-],
-"title":"Why literate programming?"
-},
-{
-"children":[],
-"id":"e836cd0edf4a4b66ab8dd1e5d7fbbea3",
-"paragraphs":[
 {
 "fragments":[
 {
@@ -949,7 +972,129 @@
 "type":"text"
 }
 ],
-"title":"Similar tools"
+"title":"Improving the prototype (summer 2018)"
+},
+{
+"children":[],
+"id":"c779367270f2442baf9741b71ece6a77",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"I started writing the article and noticed other features I was missing.",
+"type":"text"
+}
+],
+"id":"fa987d100b534b2a9627d627916a1a72",
+"type":"text"
+}
+],
+"title":"Writing \"the program\" (autumn 2018)"
+},
+{
+"children":[],
+"id":"fd6aff2242ff4dfb8a432e97e739f79e",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"Started work on getting rid of modes.",
+"type":"text"
+}
+],
+"id":"f0810ca6b1e741dca68179a931c023a9",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Inspired by Alan Kay and Lary Tesler.",
+"type":"text"
+}
+],
+"id":"ed0918e5890047deaf3d2d6150f7cdf6",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Successful experiment with no-modes editing of titles in dec 2018.",
+"type":"text"
+}
+],
+"id":"a50efc429b304311a9c701ab78cd4928",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"RLiterate works in modes: view and edit. This is in conflict with \"no modes\". ProjecturED is more direct. It can show multiple projections of the same data structure, but full direct editing is available in both projections. RLiterate can show two projections (view and edit) but only supports edits in one.",
+"type":"text"
+}
+],
+"id":"ae9cd0eb452947af890cfeb41ff4a5aa",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Support for more direct editing might be desierable. But I'm a Vim user, and I think modes are powerful. I need to investigate this area more. Can direct manipulation feel as \"precise\" as different modes? How can automatic save work if there is no explicit \"edit ends\"?",
+"type":"text"
+}
+],
+"id":"9b2cf3338b7843ebb133924bc03e7a52",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"PDF by Lary Tesler about modes: ",
+"type":"text"
+},
+{
+"text":"A Personal History of Modeless Text Editing and Cut/Copy-Paste ",
+"type":"link",
+"url":"http://delivery.acm.org/10.1145/2220000/2212896/p70-tesler.pdf"
+},
+{
+"text":".",
+"type":"text"
+}
+],
+"id":"35d11444a2d24727a2c040f16e3aa9f1",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"If modes must be used, it should be visually clearly indicated that you are in a mode.",
+"type":"text"
+}
+],
+"id":"c4a31ff1f421477086c7cb7bea96dd81",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"On ",
+"type":"text"
+},
+{
+"text":"WYSIWYG",
+"type":"link",
+"url":"https://www.quora.com/What-exactly-is-WYSIWYG/answer/Alan-Kay-11"
+},
+{
+"text":" by Alan Kay.",
+"type":"text"
+}
+],
+"id":"096321c322b949fd8c0c0a9738777695",
+"type":"text"
+}
+],
+"title":"Direct manipulation (winter 2018-2019)"
 }
 ],
 "id":"95150c4f0d92428bbeef4ae5a865398d",
@@ -957,7 +1102,7 @@
 {
 "fragments":[
 {
-"text":"This chapter explains why RLiterate exists and how it came about.",
+"text":"This chapter explains how RLiterate came about.",
 "type":"text"
 }
 ],
@@ -965,7 +1110,7 @@
 "type":"text"
 }
 ],
-"title":"Background"
+"title":"History"
 },
 {
 "children":[
@@ -14801,81 +14946,6 @@
 }
 ],
 "title":"Clear thinking => clearn writing"
-},
-{
-"children":[],
-"id":"be4017f5ebd848809614724ad8361062",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"RLiterate works in modes: view and edit. This is in conflict with \"no modes\". ProjecturED is more direct. It can show multiple projections of the same data structure, but full direct editing is available in both projections. RLiterate can show two projections (view and edit) but only supports edits in one.",
-"type":"text"
-}
-],
-"id":"ae9cd0eb452947af890cfeb41ff4a5aa",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"Support for more direct editing might be desierable. But I'm a Vim user, and I think modes are powerful. I need to investigate this area more. Can direct manipulation feel as \"precise\" as different modes? How can automatic save work if there is no explicit \"edit ends\"?",
-"type":"text"
-}
-],
-"id":"9b2cf3338b7843ebb133924bc03e7a52",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"PDF by Lary Tesler about modes: ",
-"type":"text"
-},
-{
-"text":"A Personal History of Modeless Text Editing and Cut/Copy-Paste ",
-"type":"link",
-"url":"http://delivery.acm.org/10.1145/2220000/2212896/p70-tesler.pdf"
-},
-{
-"text":".",
-"type":"text"
-}
-],
-"id":"35d11444a2d24727a2c040f16e3aa9f1",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"If modes must be used, it should be visually clearly indicated that you are in a mode.",
-"type":"text"
-}
-],
-"id":"c4a31ff1f421477086c7cb7bea96dd81",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"On ",
-"type":"text"
-},
-{
-"text":"WYSIWYG",
-"type":"link",
-"url":"https://www.quora.com/What-exactly-is-WYSIWYG/answer/Alan-Kay-11"
-},
-{
-"text":" by Alan Kay.",
-"type":"text"
-}
-],
-"id":"096321c322b949fd8c0c0a9738777695",
-"type":"text"
-}
-],
-"title":"Direct manipulation"
 },
 {
 "children":[],
