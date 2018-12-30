@@ -2012,30 +2012,6 @@ class LinkTextFragment(TextFragment):
         text_version.add("(")
         text_version.add(self.url)
         text_version.add(")")
-class TextVersion(object):
-
-    def __init__(self):
-        self.text = ""
-        self.indicies = {}
-        self._index_prefix = []
-
-    def get_selection(self, index):
-        return self.indicies.get(index, (0, 0))
-
-    @contextlib.contextmanager
-    def index(self, index):
-        self._index_prefix.append(index)
-        yield
-        self._index_prefix.pop(-1)
-
-    def add_with_index(self, text, index):
-        start = len(self.text)
-        end = start + len(text)
-        self.indicies[tuple(self._index_prefix + [index])] = (start, end)
-        self.add(text)
-
-    def add(self, text):
-        self.text += text
 class LegacyInlineTextParser(object):
 
     SPACE_RE = re.compile(r"\s+")
@@ -2160,6 +2136,30 @@ class LegacyListParser(object):
             else:
                 bodies.append(self.lines.pop(0))
         return bodies
+class TextVersion(object):
+
+    def __init__(self):
+        self.text = ""
+        self.indicies = {}
+        self._index_prefix = []
+
+    def get_selection(self, index):
+        return self.indicies.get(index, (0, 0))
+
+    @contextlib.contextmanager
+    def index(self, index):
+        self._index_prefix.append(index)
+        yield
+        self._index_prefix.pop(-1)
+
+    def add_with_index(self, text, index):
+        start = len(self.text)
+        end = start + len(text)
+        self.indicies[tuple(self._index_prefix + [index])] = (start, end)
+        self.add(text)
+
+    def add(self, text):
+        self.text += text
 class Project(Observable):
 
     def __init__(self, filepath):

@@ -3517,47 +3517,6 @@
 },
 {
 "children":[],
-"id":"ae995cc524634e718e7b5078f1683398",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"It is common that paragraphs are converted to text for editing. The edited text then needs to be parsed to convert it back to a \"rich object\". The ",
-"type":"text"
-},
-{
-"text":"TextVersion",
-"type":"code"
-},
-{
-"text":" class helps keep track of where items are rendered to the text version.",
-"type":"text"
-}
-],
-"id":"da0f431c5fc244daa463d51f19b73214",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class TextVersion(object):\n\n    def __init__(self):\n        self.text = \"\"\n        self.indicies = {}\n        self._index_prefix = []\n\n    def get_selection(self, index):\n        return self.indicies.get(index, (0, 0))\n\n    @contextlib.contextmanager\n    def index(self, index):\n        self._index_prefix.append(index)\n        yield\n        self._index_prefix.pop(-1)\n\n    def add_with_index(self, text, index):\n        start = len(self.text)\n        end = start + len(text)\n        self.indicies[tuple(self._index_prefix + [index])] = (start, end)\n        self.add(text)\n\n    def add(self, text):\n        self.text += text\n",
-"type":"code"
-}
-],
-"id":"3c698b1f9c074b6598b866026bf97fb1",
-"type":"code"
-}
-],
-"title":"Text version"
-},
-{
-"children":[],
 "id":"605b8fccd5bd43ceab1ca4487976122c",
 "paragraphs":[
 {
@@ -4563,6 +4522,47 @@
 }
 ],
 "title":"ID generator"
+},
+{
+"children":[],
+"id":"ae995cc524634e718e7b5078f1683398",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"It is common that paragraphs are converted to text for editing. The edited text then needs to be parsed to convert it back to a \"rich object\". The ",
+"type":"text"
+},
+{
+"text":"TextVersion",
+"type":"code"
+},
+{
+"text":" class helps keep track of where items are rendered to the text version.",
+"type":"text"
+}
+],
+"id":"da0f431c5fc244daa463d51f19b73214",
+"type":"text"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class TextVersion(object):\n\n    def __init__(self):\n        self.text = \"\"\n        self.indicies = {}\n        self._index_prefix = []\n\n    def get_selection(self, index):\n        return self.indicies.get(index, (0, 0))\n\n    @contextlib.contextmanager\n    def index(self, index):\n        self._index_prefix.append(index)\n        yield\n        self._index_prefix.pop(-1)\n\n    def add_with_index(self, text, index):\n        start = len(self.text)\n        end = start + len(text)\n        self.indicies[tuple(self._index_prefix + [index])] = (start, end)\n        self.add(text)\n\n    def add(self, text):\n        self.text += text\n",
+"type":"code"
+}
+],
+"id":"3c698b1f9c074b6598b866026bf97fb1",
+"type":"code"
+}
+],
+"title":"Text version"
 }
 ],
 "id":"ce4dc071bada48bb9294c937631e0214",
