@@ -1033,8 +1033,8 @@ class Page(DocumentFragment):
         return self._fragment["title"]
 
     def set_title(self, title):
-        self._document.modify_fn("Change title", modify_fn=lambda x:
-            x.replace(self._path+["title"], title)
+        self._document.modify_fn("Change title", lambda document_dict:
+            document_dict.replace(self._path+["title"], title)
         )
 
     @property
@@ -1063,10 +1063,10 @@ class Page(DocumentFragment):
         ]
 
     def add_child(self, page_dict):
-        self._document.modify_fn("Add page", modify_fn=lambda x:
-            x.replace(
+        self._document.modify_fn("Add page", lambda document_dict:
+            document_dict.replace(
                 self._path+["children"],
-                lambda y: y+[page_dict]
+                lambda children: children+[page_dict]
             )
         )
 
@@ -1076,10 +1076,10 @@ class Page(DocumentFragment):
 
     def delete_child(self, child):
         index = index_with_id(self._fragment["children"], child.id)
-        self._document.modify_fn("Delete page", modify_fn=lambda x:
-            x.replace(
+        self._document.modify_fn("Delete page", lambda document_dict:
+            document_dict.replace(
                 self._path+["children"],
-                lambda y: y[:index]+y[index]["children"]+y[index+1:]
+                lambda children: children[:index]+children[index]["children"]+children[index+1:]
             )
         )
 

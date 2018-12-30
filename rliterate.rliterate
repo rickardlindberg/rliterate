@@ -1789,15 +1789,7 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Change title\", ",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"=lambda x:\n            x.replace(self.",
+"text":".modify_fn(\"Change title\", lambda document_dict:\n            document_dict.replace(self.",
 "type":"code"
 },
 {
@@ -1869,15 +1861,7 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Add page\", ",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"=lambda x:\n            x.replace(\n                self.",
+"text":".modify_fn(\"Add page\", lambda document_dict:\n            document_dict.replace(\n                self.",
 "type":"code"
 },
 {
@@ -1885,7 +1869,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\"],\n                lambda y: y+[page_dict]\n            )\n        )\n\n    def delete(self):\n        if self.parent is not None:\n            self.parent.delete_child(self)\n\n    def delete_child(self, child):\n        index = index_with_id(self.",
+"text":"+[\"children\"],\n                lambda children: children+[page_dict]\n            )\n        )\n\n    def delete(self):\n        if self.parent is not None:\n            self.parent.delete_child(self)\n\n    def delete_child(self, child):\n        index = index_with_id(self.",
 "type":"code"
 },
 {
@@ -1901,15 +1885,7 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Delete page\", ",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"=lambda x:\n            x.replace(\n                self.",
+"text":".modify_fn(\"Delete page\", lambda document_dict:\n            document_dict.replace(\n                self.",
 "type":"code"
 },
 {
@@ -1917,7 +1893,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\"],\n                lambda y: y[:index]+y[index][\"children\"]+y[index+1:]\n            )\n        )\n\n    def move(self, parent_page_id, before_page_id):\n        with self.",
+"text":"+[\"children\"],\n                lambda children: children[:index]+children[index][\"children\"]+children[index+1:]\n            )\n        )\n\n    def move(self, parent_page_id, before_page_id):\n        with self.",
 "type":"code"
 },
 {
