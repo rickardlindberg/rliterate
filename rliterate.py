@@ -942,9 +942,6 @@ class DocumentDictWrapper(dict):
             parent_page["children"].insert(index, child)
             self._parent_pages[child["id"]] = parent_page
 
-    def update_page_dict(self, page_id, data):
-        self._pages[page_id].update(copy.deepcopy(data))
-
     def move_page_dict(self, page_id, parent_page_id, before_page_id):
         if page_id == before_page_id:
             return
