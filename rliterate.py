@@ -234,9 +234,10 @@ class Observable(object):
                 fn()
 class DocumentFragment(object):
 
-    def __init__(self, document, path):
+    def __init__(self, document, path, fragment):
         self._document = document
         self._path = path
+        self._fragment = fragment
 class Style(namedtuple("Style", "foreground background bold underlined italic monospace")):
 
     @classmethod
@@ -1018,10 +1019,6 @@ class DocumentDictWrapper(dict):
         return DocumentDictWrapper(replace(self, path, new_value))
 class Page(DocumentFragment):
 
-    def __init__(self, document, path, page_dict):
-        DocumentFragment.__init__(self, document, path)
-        self._page_dict = page_dict
-
     @property
     def parent(self):
         return self._document.get_parent_page(self.id)
@@ -1051,11 +1048,11 @@ class Page(DocumentFragment):
 
     @property
     def id(self):
-        return self._page_dict["id"]
+        return self._fragment["id"]
 
     @property
     def title(self):
-        return self._page_dict["title"]
+        return self._fragment["title"]
 
     def set_title(self, title):
         self._document.modify_fn("Change title", modify_fn=lambda x:
@@ -1074,8 +1071,8 @@ class Page(DocumentFragment):
             )
             for (index, (paragraph_dict, next_paragraph_dict))
             in enumerate(zip(
-                self._page_dict["paragraphs"],
-                self._page_dict["paragraphs"][1:]+[None]
+                self._fragment["paragraphs"],
+                self._fragment["paragraphs"][1:]+[None]
             ))
         ]
 
@@ -1084,7 +1081,7 @@ class Page(DocumentFragment):
         return [
             Page(self._document, self._path+["children", index], child_dict)
             for index, child_dict
-            in enumerate(self._page_dict["children"])
+            in enumerate(self._fragment["children"])
         ]
 
     def delete(self):
@@ -1108,14 +1105,13 @@ class Paragraph(DocumentFragment):
         }.get(paragraph_dict["type"], Paragraph)(document, path, page, paragraph_dict, next_id)
 
     def __init__(self, document, path, page, paragraph_dict, next_id):
-        DocumentFragment.__init__(self, document, path)
+        DocumentFragment.__init__(self, document, path, paragraph_dict)
         self._page = page
-        self._paragraph_dict = paragraph_dict
         self._next_id = next_id
 
     @property
     def id(self):
-        return self._paragraph_dict["id"]
+        return self._fragment["id"]
 
     @property
     def next_id(self):
@@ -1123,7 +1119,7 @@ class Paragraph(DocumentFragment):
 
     @property
     def type(self):
-        return self._paragraph_dict["type"]
+        return self._fragment["type"]
 
     @contextlib.contextmanager
     def multi_update(self):
@@ -1145,7 +1141,7 @@ class Paragraph(DocumentFragment):
     def duplicate(self):
         with self._document.modify("Duplicate paragraph") as document_dict:
             document_dict.add_paragraph_dict(
-                dict(copy.deepcopy(self._paragraph_dict), id=genid()),
+                dict(copy.deepcopy(self._fragment), id=genid()),
                 page_id=self._page.id,
                 before_id=self.next_id
             )
@@ -1163,7 +1159,7 @@ class TextParagraph(Paragraph):
 
     @property
     def fragments(self):
-        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
+        return TextFragment.create_list(self._document, self._fragment["fragments"])
 
     @property
     def tokens(self):
@@ -1273,11 +1269,11 @@ class ListParagraph(Paragraph):
 
     @property
     def child_type(self):
-        return self._paragraph_dict["child_type"]
+        return self._fragment["child_type"]
 
     @property
     def children(self):
-        return [ListItem(self._document, x) for x in self._paragraph_dict["children"]]
+        return [ListItem(self._document, x) for x in self._fragment["children"]]
 
     def get_text_index(self, list_and_fragment_index):
         return self._text_version.get_selection(list_and_fragment_index)[0]
@@ -1351,8 +1347,8 @@ class CodeParagraph(Paragraph):
     @property
     def path(self):
         return Path(
-            [x for x in self._paragraph_dict["filepath"] if x],
-            [x for x in self._paragraph_dict["chunkpath"] if x]
+            [x for x in self._fragment["filepath"] if x],
+            [x for x in self._fragment["chunkpath"] if x]
         )
 
     @path.setter
@@ -1369,7 +1365,7 @@ class CodeParagraph(Paragraph):
         return CodeFragment.create_list(
             self._document,
             self,
-            self._paragraph_dict["fragments"]
+            self._fragment["fragments"]
         )
 
     def iter_code_fragments(self):
@@ -1378,7 +1374,7 @@ class CodeParagraph(Paragraph):
     @property
     def body_data(self):
         data = {
-            "fragments": copy.deepcopy(self._paragraph_dict["fragments"]),
+            "fragments": copy.deepcopy(self._fragment["fragments"]),
             "ids": {},
         }
         for fragment in self.fragments:
@@ -1505,7 +1501,7 @@ class CodeParagraph(Paragraph):
 
     @property
     def raw_language(self):
-        return self._paragraph_dict.get("language", "")
+        return self._fragment.get("language", "")
 
     @raw_language.setter
     def raw_language(self, value):
@@ -1826,7 +1822,7 @@ class ImageParagraph(Paragraph):
 
     @property
     def fragments(self):
-        return TextFragment.create_list(self._document, self._paragraph_dict["fragments"])
+        return TextFragment.create_list(self._document, self._fragment["fragments"])
 
     @property
     def tokens(self):
@@ -1834,7 +1830,7 @@ class ImageParagraph(Paragraph):
 
     @property
     def image_base64(self):
-        return self._paragraph_dict.get("image_base64", None)
+        return self._fragment.get("image_base64", None)
 
     @property
     def text_version(self):
@@ -1857,7 +1853,7 @@ class ExpandedCodeParagraph(Paragraph):
 
     @property
     def code_id(self):
-        return self._paragraph_dict.get("code_id")
+        return self._fragment.get("code_id")
 class TextFragment(object):
 
     @staticmethod
