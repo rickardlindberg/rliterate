@@ -522,7 +522,7 @@
 "type":"text"
 },
 {
-"text":"Literate programming",
+"text":"literate programming",
 "type":"link",
 "url":"https://en.wikipedia.org/wiki/Literate_programming"
 },
@@ -551,16 +551,6 @@
 }
 ],
 "id":"54adfab3c5a2436d95fda4bdd95849c7",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"Why literate programming?",
-"type":"text"
-}
-],
-"id":"60b2c720c6b3497099aff622da227784",
 "type":"text"
 },
 {
@@ -670,6 +660,16 @@
 ],
 "id":"ab0371f11dd4469d982a7ea0ef617eb6",
 "type":"list"
+},
+{
+"fragments":[
+{
+"text":"So the tool I envisoned was one that would allow literate programming also allow more interaction with the content.",
+"type":"text"
+}
+],
+"id":"39ca45b776a6481bba5c97c42f762a74",
+"type":"text"
 }
 ],
 "title":"The idea (winter 2017)"
@@ -681,7 +681,7 @@
 {
 "fragments":[
 {
-"text":"So I decided to build a prototype to learn what such a program might be like.",
+"text":"So I decided to build a prototype to learn what such a tool might be like.",
 "type":"text"
 }
 ],
@@ -945,7 +945,16 @@
 {
 "fragments":[
 {
-"text":"ProjecturED was an influence for introducing variables.",
+"text":"ProjecturED was an influence for introducing ",
+"type":"text"
+},
+{
+"page_id":"c06eb52127254249bf3b98a59bf7debb",
+"text":"variables",
+"type":"reference"
+},
+{
+"text":".",
 "type":"text"
 }
 ],
