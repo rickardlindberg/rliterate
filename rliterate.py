@@ -3307,7 +3307,7 @@ class PagePanel(VerticalBasePanel):
     def _update_paragraphs(self):
         self.drop_points = []
         divider = self.top_divider
-        index = 0
+        index = -1
         for index, paragraph in enumerate(self.project.get_page(self.page_id).paragraphs):
             self.drop_points.append(PageDropPoint(
                 divider=divider,
