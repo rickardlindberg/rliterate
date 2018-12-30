@@ -795,8 +795,7 @@ class Document(Observable):
         if self._history.can_forward():
             return (self._history.forward_name(), redo)
     def add_page(self, title="New page", parent_id=None):
-        with self.modify("Add page") as document_dict:
-            document_dict.add_page_dict(self._empty_page(), parent_id=parent_id)
+        self.get_page(parent_id).add_child(self._empty_page())
 
     def _empty_page(self):
         return {
@@ -929,13 +928,6 @@ class DocumentDictWrapper(dict):
             self._paragraphs[paragraph["id"]] = paragraph
         for child in page["children"]:
             self._cache_page(child, page)
-
-    def add_page_dict(self, page_dict, parent_id=None):
-        page_dict = copy.deepcopy(page_dict)
-        parent_page = self._pages[parent_id]
-        parent_page["children"].append(page_dict)
-        self._pages[page_dict["id"]] = page_dict
-        self._parent_pages[page_dict["id"]] = parent_page
 
     def delete_page_dict(self, page_id):
         if page_id == self["root_page"]["id"]:
@@ -1083,6 +1075,11 @@ class Page(DocumentFragment):
             for index, child_dict
             in enumerate(self._fragment["children"])
         ]
+
+    def add_child(self, page_dict):
+        self._document.modify_fn("Add page", modify_fn=lambda x:
+            x.replace(self._path+["children"], self._fragment["children"]+[page_dict])
+        )
 
     def delete(self):
         with self._document.modify("Delete page") as document_dict:
