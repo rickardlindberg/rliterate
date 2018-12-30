@@ -1741,7 +1741,15 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, document, path)\n        self._page_dict = page_dict\n\n    @property\n    def parent(self):\n        return self._document.get_parent_page(self.id)\n\n    @property\n    def ",
+"text":".__init__(self, document, path)\n        self._page_dict = page_dict\n\n    @property\n    def parent(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".get_parent_page(self.id)\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -1765,7 +1773,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        result = []\n        page = self\n        while page is not None:\n            result.insert(0, page)\n            page = page.parent\n        return result\n\n    def iter_code_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_code_fragments():\n                yield fragment\n\n    def iter_text_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_text_fragments():\n                yield fragment\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        self._document.modify_fn(\"Change title\", ",
+"text":"(self):\n        result = []\n        page = self\n        while page is not None:\n            result.insert(0, page)\n            page = page.parent\n        return result\n\n    def iter_code_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_code_fragments():\n                yield fragment\n\n    def iter_text_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_text_fragments():\n                yield fragment\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify_fn(\"Change title\", ",
 "type":"code"
 },
 {
@@ -1773,7 +1789,63 @@
 "type":"variable"
 },
 {
-"text":"=lambda x:\n            x.replace(self._path+[\"title\"], title)\n        )\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(\n                self._document,\n                self,\n                paragraph_dict,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for paragraph_dict, next_paragraph_dict\n            in zip(\n                self._page_dict[\"paragraphs\"],\n                self._page_dict[\"paragraphs\"][1:]+[None]\n            )\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, self._path+[\"children\", index], child_dict)\n            for index, child_dict\n            in enumerate(self._page_dict[\"children\"])\n        ]\n\n    def delete(self):\n        with self._document.modify(\"Delete page\") as document_dict:\n            document_dict.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.modify(\"Move page\") as document_dict:\n            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)\n",
+"text":"=lambda x:\n            x.replace(self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"title\"], title)\n        )\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(\n                self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":",\n                self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"paragraphs\", index],\n                self,\n                paragraph_dict,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for (index, (paragraph_dict, next_paragraph_dict))\n            in enumerate(zip(\n                self._page_dict[\"paragraphs\"],\n                self._page_dict[\"paragraphs\"][1:]+[None]\n            ))\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":", self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"children\", index], child_dict)\n            for index, child_dict\n            in enumerate(self._page_dict[\"children\"])\n        ]\n\n    def delete(self):\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Delete page\") as document_dict:\n            document_dict.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Move page\") as document_dict:\n            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)\n",
 "type":"code"
 }
 ],
@@ -1807,7 +1879,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextFragment.create_list(self._document, self._paragraph_dict[\"",
+"text":"(self):\n        return TextFragment.create_list(self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":", self._paragraph_dict[\"",
 "type":"code"
 },
 {
@@ -1852,6 +1932,7 @@
 }
 ],
 "id":"0a73bece721f44899efa8c493dff8916",
+"language":"",
 "type":"code"
 },
 {
@@ -2005,7 +2086,15 @@
 ],
 "fragments":[
 {
-"text":"class ListParagraph(Paragraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._paragraph_dict[\"children\"]]\n\n    def get_text_index(self, list_and_fragment_index):\n        return self._text_version.get_selection(list_and_fragment_index)[0]\n\n    @property\n    def text_version(self):\n        return self._text_version.text\n\n    @property\n    def _text_version(self):\n        def list_item_to_text(text_version, child_type, item, indent=0, index=0):\n            text_version.add(\"    \"*indent)\n            if child_type == \"ordered\":\n                text_version.add(\"{}. \".format(index+1))\n            else:\n                text_version.add(\"* \")\n            for fragment in item.",
+"text":"class ListParagraph(Paragraph):\n\n    @property\n    def child_type(self):\n        return self._paragraph_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":", x) for x in self._paragraph_dict[\"children\"]]\n\n    def get_text_index(self, list_and_fragment_index):\n        return self._text_version.get_selection(list_and_fragment_index)[0]\n\n    @property\n    def text_version(self):\n        return self._text_version.text\n\n    @property\n    def _text_version(self):\n        def list_item_to_text(text_version, child_type, item, indent=0, index=0):\n            text_version.add(\"    \"*indent)\n            if child_type == \"ordered\":\n                text_version.add(\"{}. \".format(index+1))\n            else:\n                text_version.add(\"* \")\n            for fragment in item.",
 "type":"code"
 },
 {
@@ -2018,6 +2107,7 @@
 }
 ],
 "id":"688f0da89af846a2b2de0a9a131fab3e",
+"language":"",
 "type":"code"
 },
 {
@@ -2029,7 +2119,15 @@
 ],
 "fragments":[
 {
-"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self._document = document\n        self._item_dict = item_dict\n\n    @property\n    def ",
+"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":" = document\n        self._item_dict = item_dict\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -2037,7 +2135,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextFragment.create_list(self._document, self._item_dict[\"",
+"text":"(self):\n        return TextFragment.create_list(self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":", self._item_dict[\"",
 "type":"code"
 },
 {
@@ -2045,7 +2151,15 @@
 "type":"variable"
 },
 {
-"text":"\"])\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self._document, x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
+"text":"\"])\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":", x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
 "type":"code"
 },
 {
@@ -2058,6 +2172,7 @@
 }
 ],
 "id":"b1df900b20ce4fd195ba8b9e6040ab24",
+"language":"",
 "type":"code"
 }
 ],
@@ -2162,7 +2277,15 @@
 ],
 "fragments":[
 {
-"text":"class VariableCodeFragment(CodeFragment):\n\n    @property\n    def id(self):\n        return self._code_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self._document.lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        start, end = self._code_paragraph.",
+"text":"class VariableCodeFragment(CodeFragment):\n\n    @property\n    def id(self):\n        return self._code_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        start, end = self._code_paragraph.",
 "type":"code"
 },
 {
@@ -2175,6 +2298,7 @@
 }
 ],
 "id":"beec99d02df24b8a9f7ede6c8023390b",
+"language":"",
 "type":"code"
 }
 ],
@@ -2286,7 +2410,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    return CodeFragment.create_list(\n        self._document,\n        self,\n        self._paragraph_dict[\"",
+"text":"(self):\n    return CodeFragment.create_list(\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":",\n        self,\n        self._paragraph_dict[\"",
 "type":"code"
 },
 {
@@ -2315,6 +2447,7 @@
 }
 ],
 "id":"4527d0fd662b40bd886cc5fbc6bdd3b3",
+"language":"",
 "type":"code"
 },
 {
@@ -2326,11 +2459,20 @@
 ],
 "fragments":[
 {
-"text":"class CodeFragment(object):\n\n    @staticmethod\n    def create_list(document, code_paragraph, code_fragment_dicts):\n        return [\n            CodeFragment.create(document, code_paragraph, code_fragment_dict)\n            for code_fragment_dict\n            in code_fragment_dicts\n        ]\n\n    @staticmethod\n    def create(document, code_paragraph, code_fragment_dict):\n        return {\n            \"variable\": VariableCodeFragment,\n            \"chunk\": ChunkCodeFragment,\n            \"code\": CodeCodeFragment,\n            \"tabstop\": TabstopCodeFragment,\n        }.get(code_fragment_dict[\"type\"], CodeFragment)(document, code_paragraph, code_fragment_dict)\n\n    def __init__(self, document, code_paragraph, code_fragment_dict):\n        self._document = document\n        self._code_paragraph = code_paragraph\n        self._code_fragment_dict = code_fragment_dict\n\n    @property\n    def type(self):\n        return self._code_fragment_dict[\"type\"]\n",
+"text":"class CodeFragment(object):\n\n    @staticmethod\n    def create_list(document, code_paragraph, code_fragment_dicts):\n        return [\n            CodeFragment.create(document, code_paragraph, code_fragment_dict)\n            for code_fragment_dict\n            in code_fragment_dicts\n        ]\n\n    @staticmethod\n    def create(document, code_paragraph, code_fragment_dict):\n        return {\n            \"variable\": VariableCodeFragment,\n            \"chunk\": ChunkCodeFragment,\n            \"code\": CodeCodeFragment,\n            \"tabstop\": TabstopCodeFragment,\n        }.get(code_fragment_dict[\"type\"], CodeFragment)(document, code_paragraph, code_fragment_dict)\n\n    def __init__(self, document, code_paragraph, code_fragment_dict):\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":" = document\n        self._code_paragraph = code_paragraph\n        self._code_fragment_dict = code_fragment_dict\n\n    @property\n    def type(self):\n        return self._code_fragment_dict[\"type\"]\n",
 "type":"code"
 }
 ],
 "id":"78a90a66a532460ab18a3f1fc453fecc",
+"language":"",
 "type":"code"
 },
 {
@@ -2396,7 +2538,23 @@
 "type":"variable"
 },
 {
-"text":"\": self._parse(value)\n        })\n\ndef _parse(self, value):\n    self._parsed_fragments = []\n    self._parse_buffer = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            self._parse_clear()\n            body_match = re.match(r\"^(.*?)(, blank_lines_before=(\\d+))?$\", match.group(2))\n            if body_match.group(2):\n                blank_lines_before = int(body_match.group(3))\n            else:\n                blank_lines_before = 0\n            self._parsed_fragments.append({\n                \"type\": \"chunk\",\n                \"path\": body_match.group(1).split(\"/\"),\n                \"prefix\": match.group(1),\n                \"blank_lines_before\": blank_lines_before,\n            })\n        else:\n            while line:\n                variable_match = re.match(self._variable_fragment_re(), line)\n                tabstop_match = re.match(self._tabstop_fragment_re(), line)\n                if variable_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"variable\",\n                        \"id\": self._get_variable_id(variable_match.group(1))\n                    })\n                    line = line[len(variable_match.group(0)):]\n                elif tabstop_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"tabstop\",\n                        \"index\": int(tabstop_match.group(1))\n                    })\n                    line = line[len(tabstop_match.group(0)):]\n                else:\n                    self._parse_buffer += line[0]\n                    line = line[1:]\n            self._parse_buffer += \"\\n\"\n    self._parse_clear()\n    return self._parsed_fragments\n\ndef _get_variable_id(self, identifier):\n    if identifier in self._variable_map:\n        return self._variable_map[identifier]\n    elif self._document.lookup_variable(identifier) is None:\n        return self._document.new_variable(identifier)\n    else:\n        return identifier\n\ndef _parse_clear(self):\n    if self._parse_buffer:\n        self._parsed_fragments.append({\"type\": \"code\", \"text\": self._parse_buffer})\n    self._parse_buffer = \"\"\n\ndef _chunk_fragment_re(self):\n    start, end = self.",
+"text":"\": self._parse(value)\n        })\n\ndef _parse(self, value):\n    self._parsed_fragments = []\n    self._parse_buffer = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            self._parse_clear()\n            body_match = re.match(r\"^(.*?)(, blank_lines_before=(\\d+))?$\", match.group(2))\n            if body_match.group(2):\n                blank_lines_before = int(body_match.group(3))\n            else:\n                blank_lines_before = 0\n            self._parsed_fragments.append({\n                \"type\": \"chunk\",\n                \"path\": body_match.group(1).split(\"/\"),\n                \"prefix\": match.group(1),\n                \"blank_lines_before\": blank_lines_before,\n            })\n        else:\n            while line:\n                variable_match = re.match(self._variable_fragment_re(), line)\n                tabstop_match = re.match(self._tabstop_fragment_re(), line)\n                if variable_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"variable\",\n                        \"id\": self._get_variable_id(variable_match.group(1))\n                    })\n                    line = line[len(variable_match.group(0)):]\n                elif tabstop_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"tabstop\",\n                        \"index\": int(tabstop_match.group(1))\n                    })\n                    line = line[len(tabstop_match.group(0)):]\n                else:\n                    self._parse_buffer += line[0]\n                    line = line[1:]\n            self._parse_buffer += \"\\n\"\n    self._parse_clear()\n    return self._parsed_fragments\n\ndef _get_variable_id(self, identifier):\n    if identifier in self._variable_map:\n        return self._variable_map[identifier]\n    elif self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".lookup_variable(identifier) is None:\n        return self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".new_variable(identifier)\n    else:\n        return identifier\n\ndef _parse_clear(self):\n    if self._parse_buffer:\n        self._parsed_fragments.append({\"type\": \"code\", \"text\": self._parse_buffer})\n    self._parse_buffer = \"\"\n\ndef _chunk_fragment_re(self):\n    start, end = self.",
 "type":"code"
 },
 {
@@ -2425,6 +2583,7 @@
 }
 ],
 "id":"b8876217fc6747f3b501f98c29e3f0ad",
+"language":"",
 "type":"code"
 }
 ],
@@ -2660,7 +2819,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextFragment.create_list(self._document, self._paragraph_dict[\"",
+"text":"(self):\n        return TextFragment.create_list(self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":", self._paragraph_dict[\"",
 "type":"code"
 },
 {
@@ -2705,6 +2872,7 @@
 }
 ],
 "id":"299a34e6b9654d51a1d9e3d7ba0644e5",
+"language":"",
 "type":"code"
 }
 ],
@@ -2731,7 +2899,15 @@
 "type":"variable"
 },
 {
-"text":"(self._document).expand_id(self.code_id)\n        if paragraph is not None:\n            chain.colorize(paragraph.",
+"text":"(self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":").expand_id(self.code_id)\n        if paragraph is not None:\n            chain.colorize(paragraph.",
 "type":"code"
 },
 {
@@ -2779,11 +2955,68 @@
 ],
 "fragments":[
 {
-"text":"class Paragraph(object):\n\n    @staticmethod\n    def create(document, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n            \"expanded_code\": ExpandedCodeParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, page, paragraph_dict, next_id)\n\n    def __init__(self, document, page, paragraph_dict, next_id):\n        self._document = document\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self._document.modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self._document.modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self._document.modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self._document.modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self._document.modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(copy.deepcopy(self._paragraph_dict), id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
+"text":"class Paragraph(",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":"):\n\n    @staticmethod\n    def create(document, path, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n            \"expanded_code\": ExpandedCodeParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, path, page, paragraph_dict, next_id)\n\n    def __init__(self, document, path, page, paragraph_dict, next_id):\n        ",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":".__init__(self, document, path)\n        self._page = page\n        self._paragraph_dict = paragraph_dict\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self._paragraph_dict[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self._paragraph_dict[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(copy.deepcopy(self._paragraph_dict), id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
 "type":"code"
 }
 ],
 "id":"da88f3daf0d742e394fc3be9d21f522f",
+"language":"",
 "type":"code"
 }
 ],
@@ -2873,11 +3106,20 @@
 ],
 "fragments":[
 {
-"text":"class VariableTextFragment(TextFragment):\n\n    @property\n    def id(self):\n        return self._text_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self._document.lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"``\")\n        text_version.add_with_index(self.id, self._index)\n        text_version.add(\"``\")\n\n    @property\n    def token(self):\n        return Token(self.name, token_type=TokenType.RLiterate.Variable, fragment_index=self._index)\n",
+"text":"class VariableTextFragment(TextFragment):\n\n    @property\n    def id(self):\n        return self._text_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"``\")\n        text_version.add_with_index(self.id, self._index)\n        text_version.add(\"``\")\n\n    @property\n    def token(self):\n        return Token(self.name, token_type=TokenType.RLiterate.Variable, fragment_index=self._index)\n",
 "type":"code"
 }
 ],
 "id":"ce734c9048bf421698c7f5f4ed990122",
+"language":"",
 "type":"code"
 }
 ],
@@ -2896,11 +3138,28 @@
 ],
 "fragments":[
 {
-"text":"class ReferenceTextFragment(TextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self._document.get_page(self.page_id) is not None:\n            return self._document.get_page(self.page_id).title\n        return self.page_id\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Reference, page_id=self.page_id, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"[[\")\n        text_version.add_with_index(self.page_id, self._index)\n        if self.text:\n            text_version.add(\":\")\n            text_version.add(self.text)\n        text_version.add(\"]]\")\n",
+"text":"class ReferenceTextFragment(TextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".get_page(self.page_id) is not None:\n            return self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".get_page(self.page_id).title\n        return self.page_id\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Reference, page_id=self.page_id, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"[[\")\n        text_version.add_with_index(self.page_id, self._index)\n        if self.text:\n            text_version.add(\":\")\n            text_version.add(self.text)\n        text_version.add(\"]]\")\n",
 "type":"code"
 }
 ],
 "id":"d68e50f52bc14653bd56b333ae0f0c76",
+"language":"",
 "type":"code"
 }
 ],
@@ -2941,11 +3200,20 @@
 ],
 "fragments":[
 {
-"text":"class TextFragment(object):\n\n    @staticmethod\n    def create_list(document, text_fragment_dicts):\n        return [\n            TextFragment.create(document, text_fragment_dict, index)\n            for index, text_fragment_dict\n            in enumerate(text_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, text_fragment_dict, index):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"variable\": VariableTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict, index)\n\n    def __init__(self, document, text_fragment_dict, index):\n        self._document = document\n        self._text_fragment_dict = text_fragment_dict\n        self._index = index\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def token(self):\n        return Token(self.text, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add_with_index(self.text, self._index)\n",
+"text":"class TextFragment(object):\n\n    @staticmethod\n    def create_list(document, text_fragment_dicts):\n        return [\n            TextFragment.create(document, text_fragment_dict, index)\n            for index, text_fragment_dict\n            in enumerate(text_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, text_fragment_dict, index):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"variable\": VariableTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict, index)\n\n    def __init__(self, document, text_fragment_dict, index):\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":" = document\n        self._text_fragment_dict = text_fragment_dict\n        self._index = index\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def token(self):\n        return Token(self.text, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add_with_index(self.text, self._index)\n",
 "type":"code"
 }
 ],
 "id":"dfa5a6b87808453888a9699ba0e62192",
+"language":"",
 "type":"code"
 }
 ],
@@ -3023,6 +3291,54 @@
 }
 ],
 "title":"Text version"
+},
+{
+"children":[],
+"id":"605b8fccd5bd43ceab1ca4487976122c",
+"paragraphs":[
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, document, path):\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":" = document\n        self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":" = path\n",
+"type":"code"
+}
+],
+"id":"9ff7d00bc0de470f98947d222b24b388",
+"language":"",
+"type":"code"
+}
+],
+"title":"Document fragment"
 },
 {
 "children":[
@@ -3975,54 +4291,6 @@
 }
 ],
 "title":"ID generator"
-},
-{
-"children":[],
-"id":"605b8fccd5bd43ceab1ca4487976122c",
-"paragraphs":[
-{
-"chunkpath":[
-"base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"b389117f3e4740ad83a6da246473fb19",
-"type":"variable"
-},
-{
-"text":"(object):\n\n    def __init__(self, document, path):\n        self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":" = document\n        self.",
-"type":"code"
-},
-{
-"id":"bd4d6a828d4642078b99cb92a72839c9",
-"type":"variable"
-},
-{
-"text":" = path\n",
-"type":"code"
-}
-],
-"id":"9ff7d00bc0de470f98947d222b24b388",
-"language":"",
-"type":"code"
-}
-],
-"title":"Document fragment"
 }
 ],
 "id":"ce4dc071bada48bb9294c937631e0214",

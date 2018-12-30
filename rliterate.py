@@ -1067,15 +1067,16 @@ class Page(DocumentFragment):
         return [
             Paragraph.create(
                 self._document,
+                self._path+["paragraphs", index],
                 self,
                 paragraph_dict,
                 next_paragraph_dict["id"] if next_paragraph_dict is not None else None
             )
-            for paragraph_dict, next_paragraph_dict
-            in zip(
+            for (index, (paragraph_dict, next_paragraph_dict))
+            in enumerate(zip(
                 self._page_dict["paragraphs"],
                 self._page_dict["paragraphs"][1:]+[None]
-            )
+            ))
         ]
 
     @property
@@ -1093,10 +1094,10 @@ class Page(DocumentFragment):
     def move(self, parent_page_id, before_page_id):
         with self._document.modify("Move page") as document_dict:
             document_dict.move_page_dict(self.id, parent_page_id, before_page_id)
-class Paragraph(object):
+class Paragraph(DocumentFragment):
 
     @staticmethod
-    def create(document, page, paragraph_dict, next_id):
+    def create(document, path, page, paragraph_dict, next_id):
         return {
             "text": TextParagraph,
             "quote": QuoteParagraph,
@@ -1104,10 +1105,10 @@ class Paragraph(object):
             "code": CodeParagraph,
             "image": ImageParagraph,
             "expanded_code": ExpandedCodeParagraph,
-        }.get(paragraph_dict["type"], Paragraph)(document, page, paragraph_dict, next_id)
+        }.get(paragraph_dict["type"], Paragraph)(document, path, page, paragraph_dict, next_id)
 
-    def __init__(self, document, page, paragraph_dict, next_id):
-        self._document = document
+    def __init__(self, document, path, page, paragraph_dict, next_id):
+        DocumentFragment.__init__(self, document, path)
         self._page = page
         self._paragraph_dict = paragraph_dict
         self._next_id = next_id
