@@ -765,14 +765,15 @@ class Document(Observable):
     def read_only_document_dict(self):
         return self._history.value
     @contextlib.contextmanager
-    def modify(self, name, modify_fn=None):
+    def modify(self, name):
         with self.notify():
-            if modify_fn is None:
-                with self._history.new_value(name) as value:
-                    yield value
-            else:
-                with self._history.new_value(name, modify_fn=modify_fn) as value:
-                    yield value
+            with self._history.new_value(name) as value:
+                yield value
+
+    def modify_fn(self, name, modify_fn):
+        with self.notify():
+            with self._history.new_value(name, modify_fn=modify_fn):
+                pass
 
     def get_undo_operation(self):
         def undo():
@@ -930,14 +931,6 @@ class DocumentDictWrapper(dict):
         self._pages[page_dict["id"]] = page_dict
         self._parent_pages[page_dict["id"]] = parent_page
 
-    def get_page_dict(self, page_id=None):
-        if page_id is None:
-            page_id = self["root_page"]["id"]
-        return self._pages.get(page_id, None)
-
-    def get_parent_page_dict(self, page_id):
-        return self._parent_pages.get(page_id, None)
-
     def delete_page_dict(self, page_id):
         if page_id == self["root_page"]["id"]:
             return
@@ -1003,6 +996,21 @@ class DocumentDictWrapper(dict):
 
     def update_paragraph_dict(self, paragraph_id, data):
         self._paragraphs[paragraph_id].update(copy.deepcopy(data))
+
+    def replace(self, path, new_value):
+        def replace(obj, path, new_value):
+            if path:
+                if isinstance(obj, list):
+                    new_obj = obj[:]
+                elif isinstance(obj, dict):
+                    new_obj = dict(obj)
+                else:
+                    raise ValueError("unknown type")
+                new_obj[path[0]] = replace(new_obj[path[0]], path[1:], new_value)
+                return new_obj
+            else:
+                return new_value
+        return DocumentDictWrapper(replace(self, path, new_value))
 class Page(object):
 
     def __init__(self, document, path, page_dict):
@@ -1046,10 +1054,9 @@ class Page(object):
         return self._page_dict["title"]
 
     def set_title(self, title):
-        with self._document.modify("Change title", modify_fn=lambda x:
-            DocumentDictWrapper(replace(x, self._path+["title"], title))
-        ):
-            pass
+        self._document.modify_fn("Change title", modify_fn=lambda x:
+            x.replace(self._path+["title"], title)
+        )
 
     @property
     def paragraphs(self):
@@ -4767,18 +4774,6 @@ def index_with_id(items, item_id):
     for index, item in enumerate(items):
         if item["id"] == item_id:
             return index
-def replace(obj, path, new_value):
-    if path:
-        if isinstance(obj, list):
-            new_obj = obj[:]
-        elif isinstance(obj, dict):
-            new_obj = dict(obj)
-        else:
-            raise ValueError("unknown type")
-        new_obj[path[0]] = replace(new_obj[path[0]], path[1:], new_value)
-        return new_obj
-    else:
-        return new_value
 def fragments_to_text(fragments):
     text_version = TextVersion()
     for fragment in fragments:
