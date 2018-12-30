@@ -1159,7 +1159,11 @@ class TextParagraph(Paragraph):
 
     @property
     def fragments(self):
-        return TextFragment.create_list(self._document, self._fragment["fragments"])
+        return TextFragment.create_list(
+            self._document,
+            self._path+["fragments"],
+            self._fragment["fragments"]
+        )
 
     @property
     def tokens(self):
@@ -1273,7 +1277,11 @@ class ListParagraph(Paragraph):
 
     @property
     def children(self):
-        return [ListItem(self._document, x) for x in self._fragment["children"]]
+        return [
+            ListItem(self._document, self._path+["children", index], x)
+            for index, x
+            in enumerate(self._fragment["children"])
+        ]
 
     def get_text_index(self, list_and_fragment_index):
         return self._text_version.get_selection(list_and_fragment_index)[0]
@@ -1314,23 +1322,27 @@ class ListParagraph(Paragraph):
         for item in self.children:
             for fragment in item.iter_text_fragments():
                 yield fragment
-class ListItem(object):
-
-    def __init__(self, document, item_dict):
-        self._document = document
-        self._item_dict = item_dict
+class ListItem(DocumentFragment):
 
     @property
     def fragments(self):
-        return TextFragment.create_list(self._document, self._item_dict["fragments"])
+        return TextFragment.create_list(
+            self._document,
+            self._path+["fragments"],
+            self._fragment["fragments"]
+        )
 
     @property
     def child_type(self):
-        return self._item_dict["child_type"]
+        return self._fragment["child_type"]
 
     @property
     def children(self):
-        return [ListItem(self._document, x) for x in self._item_dict["children"]]
+        return [
+            ListItem(self._document, self._path+["children", index], x)
+            for index, x
+            in enumerate(self._fragment["children"])
+        ]
 
     @property
     def tokens(self):
@@ -1822,7 +1834,11 @@ class ImageParagraph(Paragraph):
 
     @property
     def fragments(self):
-        return TextFragment.create_list(self._document, self._fragment["fragments"])
+        return TextFragment.create_list(
+            self._document,
+            self._path+["fragments"],
+            self._fragment["fragments"]
+        )
 
     @property
     def tokens(self):
@@ -1854,18 +1870,18 @@ class ExpandedCodeParagraph(Paragraph):
     @property
     def code_id(self):
         return self._fragment.get("code_id")
-class TextFragment(object):
+class TextFragment(DocumentFragment):
 
     @staticmethod
-    def create_list(document, text_fragment_dicts):
+    def create_list(document, path, text_fragment_dicts):
         return [
-            TextFragment.create(document, text_fragment_dict, index)
+            TextFragment.create(document, path+[index], text_fragment_dict, index)
             for index, text_fragment_dict
             in enumerate(text_fragment_dicts)
         ]
 
     @staticmethod
-    def create(document, text_fragment_dict, index):
+    def create(document, path, text_fragment_dict, index):
         return {
             "strong": StrongTextFragment,
             "emphasis": EmphasisTextFragment,
@@ -1873,20 +1889,19 @@ class TextFragment(object):
             "variable": VariableTextFragment,
             "reference": ReferenceTextFragment,
             "link": LinkTextFragment,
-        }.get(text_fragment_dict["type"], TextFragment)(document, text_fragment_dict, index)
+        }.get(text_fragment_dict["type"], TextFragment)(document, path, text_fragment_dict, index)
 
-    def __init__(self, document, text_fragment_dict, index):
-        self._document = document
-        self._text_fragment_dict = text_fragment_dict
+    def __init__(self, document, path, text_fragment_dict, index):
+        DocumentFragment.__init__(self, document, path, text_fragment_dict)
         self._index = index
 
     @property
     def type(self):
-        return self._text_fragment_dict["type"]
+        return self._fragment["type"]
 
     @property
     def text(self):
-        return self._text_fragment_dict["text"]
+        return self._fragment["text"]
 
     @property
     def token(self):
@@ -1928,7 +1943,7 @@ class VariableTextFragment(TextFragment):
 
     @property
     def id(self):
-        return self._text_fragment_dict["id"]
+        return self._fragment["id"]
 
     @property
     def name(self):
@@ -1950,7 +1965,7 @@ class ReferenceTextFragment(TextFragment):
 
     @property
     def page_id(self):
-        return self._text_fragment_dict["page_id"]
+        return self._fragment["page_id"]
 
     @property
     def title(self):
@@ -1975,7 +1990,7 @@ class LinkTextFragment(TextFragment):
 
     @property
     def url(self):
-        return self._text_fragment_dict["url"]
+        return self._fragment["url"]
 
     @property
     def title(self):

@@ -1911,7 +1911,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextFragment.create_list(self.",
+"text":"(self):\n        return TextFragment.",
+"type":"code"
+},
+{
+"id":"39e82e917b36405caa218fe04a43d0ba",
+"type":"variable"
+},
+{
+"text":"(\n            self.",
 "type":"code"
 },
 {
@@ -1919,7 +1927,15 @@
 "type":"variable"
 },
 {
-"text":", self.",
+"text":",\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"fragments\"],\n            self.",
 "type":"code"
 },
 {
@@ -1935,7 +1951,7 @@
 "type":"variable"
 },
 {
-"text":"\"])\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
+"text":"\"]\n        )\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
 "type":"code"
 },
 {
@@ -2134,7 +2150,7 @@
 "type":"variable"
 },
 {
-"text":"[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self.",
+"text":"[\"child_type\"]\n\n    @property\n    def children(self):\n        return [\n            ListItem(self.",
 "type":"code"
 },
 {
@@ -2142,7 +2158,7 @@
 "type":"variable"
 },
 {
-"text":", x) for x in self.",
+"text":", self._path+[\"children\", index], x)\n            for index, x\n            in enumerate(self.",
 "type":"code"
 },
 {
@@ -2150,7 +2166,7 @@
 "type":"variable"
 },
 {
-"text":"[\"children\"]]\n\n    def get_text_index(self, list_and_fragment_index):\n        return self._text_version.get_selection(list_and_fragment_index)[0]\n\n    @property\n    def text_version(self):\n        return self._text_version.text\n\n    @property\n    def _text_version(self):\n        def list_item_to_text(text_version, child_type, item, indent=0, index=0):\n            text_version.add(\"    \"*indent)\n            if child_type == \"ordered\":\n                text_version.add(\"{}. \".format(index+1))\n            else:\n                text_version.add(\"* \")\n            for fragment in item.",
+"text":"[\"children\"])\n        ]\n\n    def get_text_index(self, list_and_fragment_index):\n        return self._text_version.get_selection(list_and_fragment_index)[0]\n\n    @property\n    def text_version(self):\n        return self._text_version.text\n\n    @property\n    def _text_version(self):\n        def list_item_to_text(text_version, child_type, item, indent=0, index=0):\n            text_version.add(\"    \"*indent)\n            if child_type == \"ordered\":\n                text_version.add(\"{}. \".format(index+1))\n            else:\n                text_version.add(\"* \")\n            for fragment in item.",
 "type":"code"
 },
 {
@@ -2175,15 +2191,15 @@
 ],
 "fragments":[
 {
-"text":"class ListItem(object):\n\n    def __init__(self, document, item_dict):\n        self.",
+"text":"class ListItem(",
 "type":"code"
 },
 {
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"id":"b389117f3e4740ad83a6da246473fb19",
 "type":"variable"
 },
 {
-"text":" = document\n        self._item_dict = item_dict\n\n    @property\n    def ",
+"text":"):\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -2191,7 +2207,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextFragment.create_list(self.",
+"text":"(self):\n        return TextFragment.",
+"type":"code"
+},
+{
+"id":"39e82e917b36405caa218fe04a43d0ba",
+"type":"variable"
+},
+{
+"text":"(\n            self.",
 "type":"code"
 },
 {
@@ -2199,7 +2223,15 @@
 "type":"variable"
 },
 {
-"text":", self._item_dict[\"",
+"text":",\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"",
 "type":"code"
 },
 {
@@ -2207,7 +2239,31 @@
 "type":"variable"
 },
 {
-"text":"\"])\n\n    @property\n    def child_type(self):\n        return self._item_dict[\"child_type\"]\n\n    @property\n    def children(self):\n        return [ListItem(self.",
+"text":"\"],\n            self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"1e117025a0e14327ba6598fb696799a3",
+"type":"variable"
+},
+{
+"text":"\"]\n        )\n\n    @property\n    def child_type(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"child_type\"]\n\n    @property\n    def children(self):\n        return [\n            ListItem(self.",
 "type":"code"
 },
 {
@@ -2215,7 +2271,23 @@
 "type":"variable"
 },
 {
-"text":", x) for x in self._item_dict[\"children\"]]\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
+"text":", self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"children\", index], x)\n            for index, x\n            in enumerate(self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"children\"])\n        ]\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
 "type":"code"
 },
 {
@@ -2915,7 +2987,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextFragment.create_list(self.",
+"text":"(self):\n        return TextFragment.",
+"type":"code"
+},
+{
+"id":"39e82e917b36405caa218fe04a43d0ba",
+"type":"variable"
+},
+{
+"text":"(\n            self.",
 "type":"code"
 },
 {
@@ -2923,7 +3003,23 @@
 "type":"variable"
 },
 {
-"text":", self.",
+"text":",\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"",
+"type":"code"
+},
+{
+"id":"de16dfdd628d459ba5af528db2604934",
+"type":"variable"
+},
+{
+"text":"\"],\n            self.",
 "type":"code"
 },
 {
@@ -2939,7 +3035,7 @@
 "type":"variable"
 },
 {
-"text":"\"])\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
+"text":"\"]\n        )\n\n    @property\n    def tokens(self):\n        return [x.token for x in self.",
 "type":"code"
 },
 {
@@ -3250,7 +3346,15 @@
 ],
 "fragments":[
 {
-"text":"class VariableTextFragment(TextFragment):\n\n    @property\n    def id(self):\n        return self._text_fragment_dict[\"id\"]\n\n    @property\n    def name(self):\n        name = self.",
+"text":"class VariableTextFragment(TextFragment):\n\n    @property\n    def id(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"id\"]\n\n    @property\n    def name(self):\n        name = self.",
 "type":"code"
 },
 {
@@ -3282,7 +3386,15 @@
 ],
 "fragments":[
 {
-"text":"class ReferenceTextFragment(TextFragment):\n\n    @property\n    def page_id(self):\n        return self._text_fragment_dict[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self.",
+"text":"class ReferenceTextFragment(TextFragment):\n\n    @property\n    def page_id(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"page_id\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        if self.",
 "type":"code"
 },
 {
@@ -3322,7 +3434,15 @@
 ],
 "fragments":[
 {
-"text":"class LinkTextFragment(TextFragment):\n\n    @property\n    def url(self):\n        return self._text_fragment_dict[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"[\")\n        text_version.add_with_index(self.text, self._index)\n        text_version.add(\"]\")\n        text_version.add(\"(\")\n        text_version.add(self.url)\n        text_version.add(\")\")\n",
+"text":"class LinkTextFragment(TextFragment):\n\n    @property\n    def url(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"[\")\n        text_version.add_with_index(self.text, self._index)\n        text_version.add(\"]\")\n        text_version.add(\"(\")\n        text_version.add(self.url)\n        text_version.add(\")\")\n",
 "type":"code"
 }
 ],
@@ -3344,15 +3464,47 @@
 ],
 "fragments":[
 {
-"text":"class TextFragment(object):\n\n    @staticmethod\n    def create_list(document, text_fragment_dicts):\n        return [\n            TextFragment.create(document, text_fragment_dict, index)\n            for index, text_fragment_dict\n            in enumerate(text_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, text_fragment_dict, index):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"variable\": VariableTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, text_fragment_dict, index)\n\n    def __init__(self, document, text_fragment_dict, index):\n        self.",
+"text":"class TextFragment(",
 "type":"code"
 },
 {
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"id":"b389117f3e4740ad83a6da246473fb19",
 "type":"variable"
 },
 {
-"text":" = document\n        self._text_fragment_dict = text_fragment_dict\n        self._index = index\n\n    @property\n    def type(self):\n        return self._text_fragment_dict[\"type\"]\n\n    @property\n    def text(self):\n        return self._text_fragment_dict[\"text\"]\n\n    @property\n    def token(self):\n        return Token(self.text, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add_with_index(self.text, self._index)\n",
+"text":"):\n\n    @staticmethod\n    def ",
+"type":"code"
+},
+{
+"id":"39e82e917b36405caa218fe04a43d0ba",
+"type":"variable"
+},
+{
+"text":"(document, path, text_fragment_dicts):\n        return [\n            TextFragment.create(document, path+[index], text_fragment_dict, index)\n            for index, text_fragment_dict\n            in enumerate(text_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, path, text_fragment_dict, index):\n        return {\n            \"strong\": StrongTextFragment,\n            \"emphasis\": EmphasisTextFragment,\n            \"code\": CodeTextFragment,\n            \"variable\": VariableTextFragment,\n            \"reference\": ReferenceTextFragment,\n            \"link\": LinkTextFragment,\n        }.get(text_fragment_dict[\"type\"], TextFragment)(document, path, text_fragment_dict, index)\n\n    def __init__(self, document, path, text_fragment_dict, index):\n        ",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":".__init__(self, document, path, text_fragment_dict)\n        self._index = index\n\n    @property\n    def type(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"type\"]\n\n    @property\n    def text(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"text\"]\n\n    @property\n    def token(self):\n        return Token(self.text, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add_with_index(self.text, self._index)\n",
 "type":"code"
 }
 ],
@@ -17232,6 +17384,7 @@
 "37f8b479b7eb4013bea0222eacc5ea6f":"SetPageId",
 "39785d8cdcb4445bad27a741363efa23":"SetPageId",
 "39e45626d4804403be92d31444a1281c":"text_font",
+"39e82e917b36405caa218fe04a43d0ba":"create_list",
 "3acdc29e28484de3b989d6eb1b75a97e":"create_font",
 "3d6ead2c4a274ae78afa33875235e150":"_apply_style",
 "3f3b43d27029407baea6e0281eaa456d":"_paragraph_dict",
@@ -17305,6 +17458,7 @@
 "ae234077465241e39337f68165ffb11e":"create",
 "ae8e603135854b1787ca652bf6304e9e":"theme",
 "aed0c1af151440d889b3890fa971fb59":"save",
+"aefd69dc8f8e491499de72f6a1898ef9":"_text_fragment_dict",
 "b0201e824c464356aa706a0440192e5c":"ShowRecursive",
 "b088ae244bc14a1abd35258193a12469":"values",
 "b389117f3e4740ad83a6da246473fb19":"DocumentFragment",
