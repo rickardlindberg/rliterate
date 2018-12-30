@@ -1450,7 +1450,15 @@
 ],
 "fragments":[
 {
-"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.",
+"text":"@contextlib.contextmanager\ndef modify(self, name, ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"=None):\n    with self.",
 "type":"code"
 },
 {
@@ -1458,7 +1466,31 @@
 "type":"variable"
 },
 {
-"text":"():\n        with self._history.new_value(name) as value:\n            yield value\n\ndef get_undo_operation(self):\n    def undo():\n        with self.",
+"text":"():\n        if ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":" is None:\n            with self._history.new_value(name) as value:\n                yield value\n        else:\n            with self._history.new_value(name, ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"=",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":") as value:\n                yield value\n\ndef get_undo_operation(self):\n    def undo():\n        with self.",
 "type":"code"
 },
 {
@@ -1585,6 +1617,38 @@
 ],
 "id":"fc0b2a5550bb4e95b5e7543818159b98",
 "type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(obj, path, new_value):\n    if path:\n        if isinstance(obj, list):\n            new_obj = obj[:]\n        elif isinstance(obj, dict):\n            new_obj = dict(obj)\n        else:\n            raise ValueError(\"unknown type\")\n        new_obj[path[0]] = ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(new_obj[path[0]], path[1:], new_value)\n        return new_obj\n    else:\n        return new_value\n",
+"type":"code"
+}
+],
+"id":"34bfeb51d9de406ba519f2c0edc5c8ff",
+"type":"code"
 }
 ],
 "title":"Document dict wrapper"
@@ -1620,7 +1684,7 @@
 ],
 "fragments":[
 {
-"text":"def get_page(self, page_id=None):\n    page_dict = self.",
+"text":"def get_parent_page(self, page_id):\n    return self._find_page(\n        None,\n        Page(self, [\"root_page\"], self.",
 "type":"code"
 },
 {
@@ -1628,7 +1692,7 @@
 "type":"variable"
 },
 {
-"text":".get_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n\ndef get_parent_page(self, page_id):\n    page_dict = self.",
+"text":"[\"root_page\"]),\n        page_id\n    )[0]\n\ndef get_page(self, page_id=None):\n    return self._find_page(\n        None,\n        Page(self, [\"root_page\"], self.",
 "type":"code"
 },
 {
@@ -1636,7 +1700,7 @@
 "type":"variable"
 },
 {
-"text":".get_parent_page_dict(page_id)\n    if page_dict is None:\n        return None\n    return Page(self, page_dict)\n",
+"text":"[\"root_page\"]),\n        page_id\n    )[1]\n\ndef _find_page(self, parent, page, page_id):\n    if page_id is None or page.id == page_id:\n        return (parent, page)\n    for child in page.children:\n        match = self._find_page(page, child, page_id)\n        if match != (None, None):\n            return match\n    return (None, None)\n",
 "type":"code"
 }
 ],
@@ -1652,7 +1716,7 @@
 ],
 "fragments":[
 {
-"text":"class Page(object):\n\n    def __init__(self, document, page_dict):\n        self._document = document\n        self._page_dict = page_dict\n\n    @property\n    def parent(self):\n        return self._document.get_parent_page(self.id)\n\n    @property\n    def ",
+"text":"class Page(object):\n\n    def __init__(self, document, path, page_dict):\n        self._document = document\n        self._path = path\n        self._page_dict = page_dict\n\n    @property\n    def parent(self):\n        return self._document.get_parent_page(self.id)\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -1676,7 +1740,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        result = []\n        page = self\n        while page is not None:\n            result.insert(0, page)\n            page = page.parent\n        return result\n\n    def iter_code_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_code_fragments():\n                yield fragment\n\n    def iter_text_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_text_fragments():\n                yield fragment\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    @rltime(\"set title\")\n    def set_title(self, title):\n        with self._document.modify(\"Change title\") as document_dict:\n            document_dict.update_page_dict(self.id, {\"title\": title})\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(\n                self._document,\n                self,\n                paragraph_dict,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for paragraph_dict, next_paragraph_dict\n            in zip(\n                self._page_dict[\"paragraphs\"],\n                self._page_dict[\"paragraphs\"][1:]+[None]\n            )\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, child_dict)\n            for child_dict\n            in self._page_dict[\"children\"]\n        ]\n\n    def delete(self):\n        with self._document.modify(\"Delete page\") as document_dict:\n            document_dict.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.modify(\"Move page\") as document_dict:\n            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)\n",
+"text":"(self):\n        result = []\n        page = self\n        while page is not None:\n            result.insert(0, page)\n            page = page.parent\n        return result\n\n    def iter_code_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_code_fragments():\n                yield fragment\n\n    def iter_text_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_text_fragments():\n                yield fragment\n\n    @property\n    def id(self):\n        return self._page_dict[\"id\"]\n\n    @property\n    def title(self):\n        return self._page_dict[\"title\"]\n\n    def set_title(self, title):\n        with self._document.modify(\"Change title\", ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"=lambda x:\n            DocumentDictWrapper(replace(x, self._path+[\"title\"], title))\n        ):\n            pass\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(\n                self._document,\n                self,\n                paragraph_dict,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for paragraph_dict, next_paragraph_dict\n            in zip(\n                self._page_dict[\"paragraphs\"],\n                self._page_dict[\"paragraphs\"][1:]+[None]\n            )\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self._document, self._path+[\"children\", index], child_dict)\n            for index, child_dict\n            in enumerate(self._page_dict[\"children\"])\n        ]\n\n    def delete(self):\n        with self._document.modify(\"Delete page\") as document_dict:\n            document_dict.delete_page_dict(self.id)\n\n    def move(self, parent_page_id, before_page_id):\n        with self._document.modify(\"Move page\") as document_dict:\n            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)\n",
 "type":"code"
 }
 ],
@@ -14605,7 +14677,23 @@
 ],
 "fragments":[
 {
-"text":"class History(object):\n\n    def __init__(self, initial_value, size=10):\n        self._history = [(\"\", initial_value)]\n        self._history_index = 0\n        self._new_history_entry = None\n        self._size = size\n\n    @property\n    def value(self):\n        return self._history[self._history_index][1]\n\n    @contextlib.contextmanager\n    def new_value(self, name=\"\"):\n        if self._new_history_entry is None:\n            self._new_history_entry = (name, copy.deepcopy(self.value))\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-self._size:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\n    def can_back(self):\n        return self._history_index > 0\n\n    def back_name(self):\n        if self.can_back():\n            return self._history[self._history_index][0]\n\n    def back(self):\n        if self.can_back():\n            self._history_index -= 1\n\n    def can_forward(self):\n        return self._history_index < (len(self._history) - 1)\n\n    def forward_name(self):\n        return self._history[self._history_index+1][0]\n\n    def forward(self):\n        if self.can_forward():\n            self._history_index += 1\n",
+"text":"class History(object):\n\n    def __init__(self, initial_value, size=10):\n        self._history = [(\"\", initial_value)]\n        self._history_index = 0\n        self._new_history_entry = None\n        self._size = size\n\n    @property\n    def value(self):\n        return self._history[self._history_index][1]\n\n    @contextlib.contextmanager\n    def new_value(self, name=\"\", ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"=copy.deepcopy):\n        if self._new_history_entry is None:\n            self._new_history_entry = (name, ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(self.value))\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-self._size:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\n    def can_back(self):\n        return self._history_index > 0\n\n    def back_name(self):\n        if self.can_back():\n            return self._history[self._history_index][0]\n\n    def back(self):\n        if self.can_back():\n            self._history_index -= 1\n\n    def can_forward(self):\n        return self._history_index < (len(self._history) - 1)\n\n    def forward_name(self):\n        return self._history[self._history_index+1][0]\n\n    def forward(self):\n        if self.can_forward():\n            self._history_index += 1\n",
 "type":"code"
 }
 ],
@@ -16663,6 +16751,7 @@
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
 "51198e87cf1944e49dea6e2a48938b8f":"chunk_delimiters",
+"51708e28ba3245859e0554a504cc015c":"replace",
 "52a4cb0c44124d518647a92eb25a876d":"page_body_width",
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
 "54f99e72df0b4006b2bd90465c8558c4":"TableOfContentsButton",
@@ -16706,6 +16795,7 @@
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a4ee3530a5f140f5bc70b87fca825372":"_update_paragraph_gui",
+"a5aea35d34d74689b025122b40dc23b4":"modify_fn",
 "a5bace68289b40e78df93409e362a63b":"from_file",
 "a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
 "a886e97ceb3d427c8190487d23d12bc1":"Column",

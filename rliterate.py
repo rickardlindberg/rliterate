@@ -765,10 +765,14 @@ class Document(Observable):
     def read_only_document_dict(self):
         return self._history.value
     @contextlib.contextmanager
-    def modify(self, name):
+    def modify(self, name, modify_fn=None):
         with self.notify():
-            with self._history.new_value(name) as value:
-                yield value
+            if modify_fn is None:
+                with self._history.new_value(name) as value:
+                    yield value
+            else:
+                with self._history.new_value(name, modify_fn=modify_fn) as value:
+                    yield value
 
     def get_undo_operation(self):
         def undo():
@@ -802,17 +806,28 @@ class Document(Observable):
                 for sub_page in iter_pages(child):
                     yield sub_page
         return iter_pages(self.get_page())
-    def get_page(self, page_id=None):
-        page_dict = self.read_only_document_dict.get_page_dict(page_id)
-        if page_dict is None:
-            return None
-        return Page(self, page_dict)
-
     def get_parent_page(self, page_id):
-        page_dict = self.read_only_document_dict.get_parent_page_dict(page_id)
-        if page_dict is None:
-            return None
-        return Page(self, page_dict)
+        return self._find_page(
+            None,
+            Page(self, ["root_page"], self.read_only_document_dict["root_page"]),
+            page_id
+        )[0]
+
+    def get_page(self, page_id=None):
+        return self._find_page(
+            None,
+            Page(self, ["root_page"], self.read_only_document_dict["root_page"]),
+            page_id
+        )[1]
+
+    def _find_page(self, parent, page, page_id):
+        if page_id is None or page.id == page_id:
+            return (parent, page)
+        for child in page.children:
+            match = self._find_page(page, child, page_id)
+            if match != (None, None):
+                return match
+        return (None, None)
     def add_paragraph(self, page_id, before_id=None, paragraph_dict={"type": "factory"}):
         with self.modify("Add paragraph") as document_dict:
             document_dict.add_paragraph_dict(
@@ -990,8 +1005,9 @@ class DocumentDictWrapper(dict):
         self._paragraphs[paragraph_id].update(copy.deepcopy(data))
 class Page(object):
 
-    def __init__(self, document, page_dict):
+    def __init__(self, document, path, page_dict):
         self._document = document
+        self._path = path
         self._page_dict = page_dict
 
     @property
@@ -1029,10 +1045,11 @@ class Page(object):
     def title(self):
         return self._page_dict["title"]
 
-    @rltime("set title")
     def set_title(self, title):
-        with self._document.modify("Change title") as document_dict:
-            document_dict.update_page_dict(self.id, {"title": title})
+        with self._document.modify("Change title", modify_fn=lambda x:
+            DocumentDictWrapper(replace(x, self._path+["title"], title))
+        ):
+            pass
 
     @property
     def paragraphs(self):
@@ -1053,9 +1070,9 @@ class Page(object):
     @property
     def children(self):
         return [
-            Page(self._document, child_dict)
-            for child_dict
-            in self._page_dict["children"]
+            Page(self._document, self._path+["children", index], child_dict)
+            for index, child_dict
+            in enumerate(self._page_dict["children"])
         ]
 
     def delete(self):
@@ -4714,9 +4731,9 @@ class History(object):
         return self._history[self._history_index][1]
 
     @contextlib.contextmanager
-    def new_value(self, name=""):
+    def new_value(self, name="", modify_fn=copy.deepcopy):
         if self._new_history_entry is None:
-            self._new_history_entry = (name, copy.deepcopy(self.value))
+            self._new_history_entry = (name, modify_fn(self.value))
             yield self._new_history_entry[1]
             self._history = self._history[:self._history_index+1]
             self._history.append(self._new_history_entry)
@@ -4750,6 +4767,18 @@ def index_with_id(items, item_id):
     for index, item in enumerate(items):
         if item["id"] == item_id:
             return index
+def replace(obj, path, new_value):
+    if path:
+        if isinstance(obj, list):
+            new_obj = obj[:]
+        elif isinstance(obj, dict):
+            new_obj = dict(obj)
+        else:
+            raise ValueError("unknown type")
+        new_obj[path[0]] = replace(new_obj[path[0]], path[1:], new_value)
+        return new_obj
+    else:
+        return new_value
 def fragments_to_text(fragments):
     text_version = TextVersion()
     for fragment in fragments:
