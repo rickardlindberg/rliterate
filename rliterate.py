@@ -974,9 +974,6 @@ class DocumentDictWrapper(dict):
             before_paragraph
         )
 
-    def update_paragraph_dict(self, paragraph_id, data):
-        self._paragraphs[paragraph_id].update(copy.deepcopy(data))
-
     def replace(self, path, new_value):
         def replace(obj, path, new_value):
             if path:
@@ -1130,8 +1127,12 @@ class Paragraph(DocumentFragment):
             yield
 
     def update(self, data):
-        with self._document.modify("Edit paragraph") as document_dict:
-            document_dict.update_paragraph_dict(self.id, data)
+        self._document.modify_fn("Edit paragraph", lambda document_dict:
+            document_dict.replace(
+                self._path,
+                lambda paragraph: dict(paragraph, **data)
+            )
+        )
 
     def delete(self):
         with self._document.modify("Delete paragraph") as document_dict:
@@ -4767,6 +4768,11 @@ class History(object):
             self._history_index = len(self._history) - 1
             self._new_history_entry = None
         else:
+            if modify_fn != copy.deepcopy:
+                self._new_history_entry = (
+                    self._new_history_entry[0],
+                    modify_fn(self._new_history_entry[1])
+                )
             yield self._new_history_entry[1]
 
     def can_back(self):

@@ -1547,7 +1547,7 @@
 "type":"variable"
 },
 {
-"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def update_paragraph_dict(self, paragraph_id, data):\n        self._paragraphs[paragraph_id].update(copy.deepcopy(data))\n\n    def ",
+"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def move_page_dict(self, page_id, parent_page_id, before_page_id):\n        if page_id == before_page_id:\n            return\n        parent = self._pages[parent_page_id]\n        while parent is not None:\n            if parent[\"id\"] == page_id:\n                return\n            parent = self._parent_pages[parent[\"id\"]]\n        parent = self._parent_pages[page_id]\n        page = parent[\"children\"].pop(index_with_id(parent[\"children\"], page_id))\n        new_parent = self._pages[parent_page_id]\n        self._parent_pages[page_id] = new_parent\n        if before_page_id is None:\n            new_parent[\"children\"].append(page)\n        else:\n            new_parent[\"children\"].insert(\n                index_with_id(new_parent[\"children\"], before_page_id),\n                page\n            )\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def ",
 "type":"code"
 },
 {
@@ -3179,7 +3179,7 @@
 "type":"variable"
 },
 {
-"text":".modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        with self.",
+"text":".modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        self.",
 "type":"code"
 },
 {
@@ -3187,7 +3187,7 @@
 "type":"variable"
 },
 {
-"text":".modify(\"Edit paragraph\") as document_dict:\n            document_dict.update_paragraph_dict(self.id, data)\n\n    def delete(self):\n        with self.",
+"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            document_dict.replace(\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        with self.",
 "type":"code"
 },
 {
@@ -15347,7 +15347,23 @@
 "type":"variable"
 },
 {
-"text":"(self.value))\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-self._size:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            yield self._new_history_entry[1]\n\n    def can_back(self):\n        return self._history_index > 0\n\n    def back_name(self):\n        if self.can_back():\n            return self._history[self._history_index][0]\n\n    def back(self):\n        if self.can_back():\n            self._history_index -= 1\n\n    def can_forward(self):\n        return self._history_index < (len(self._history) - 1)\n\n    def forward_name(self):\n        return self._history[self._history_index+1][0]\n\n    def forward(self):\n        if self.can_forward():\n            self._history_index += 1\n",
+"text":"(self.value))\n            yield self._new_history_entry[1]\n            self._history = self._history[:self._history_index+1]\n            self._history.append(self._new_history_entry)\n            self._history = self._history[-self._size:]\n            self._history_index = len(self._history) - 1\n            self._new_history_entry = None\n        else:\n            if ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":" != copy.deepcopy:\n                self._new_history_entry = (\n                    self._new_history_entry[0],\n                    ",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(self._new_history_entry[1])\n                )\n            yield self._new_history_entry[1]\n\n    def can_back(self):\n        return self._history_index > 0\n\n    def back_name(self):\n        if self.can_back():\n            return self._history[self._history_index][0]\n\n    def back(self):\n        if self.can_back():\n            self._history_index -= 1\n\n    def can_forward(self):\n        return self._history_index < (len(self._history) - 1)\n\n    def forward_name(self):\n        return self._history[self._history_index+1][0]\n\n    def forward(self):\n        if self.can_forward():\n            self._history_index += 1\n",
 "type":"code"
 }
 ],
