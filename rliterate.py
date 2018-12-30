@@ -232,6 +232,11 @@ class Observable(object):
         if self._notify_count == 0:
             for fn in self._listeners:
                 fn()
+class DocumentFragment(object):
+
+    def __init__(self, document, path):
+        self._document = document
+        self._path = path
 class Style(namedtuple("Style", "foreground background bold underlined italic monospace")):
 
     @classmethod
@@ -1011,11 +1016,10 @@ class DocumentDictWrapper(dict):
             else:
                 return new_value
         return DocumentDictWrapper(replace(self, path, new_value))
-class Page(object):
+class Page(DocumentFragment):
 
     def __init__(self, document, path, page_dict):
-        self._document = document
-        self._path = path
+        DocumentFragment.__init__(self, document, path)
         self._page_dict = page_dict
 
     @property

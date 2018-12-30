@@ -1725,7 +1725,23 @@
 ],
 "fragments":[
 {
-"text":"class Page(object):\n\n    def __init__(self, document, path, page_dict):\n        self._document = document\n        self._path = path\n        self._page_dict = page_dict\n\n    @property\n    def parent(self):\n        return self._document.get_parent_page(self.id)\n\n    @property\n    def ",
+"text":"class Page(",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, document, path, page_dict):\n        ",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":".__init__(self, document, path)\n        self._page_dict = page_dict\n\n    @property\n    def parent(self):\n        return self._document.get_parent_page(self.id)\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -3959,6 +3975,54 @@
 }
 ],
 "title":"ID generator"
+},
+{
+"children":[],
+"id":"605b8fccd5bd43ceab1ca4487976122c",
+"paragraphs":[
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, document, path):\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":" = document\n        self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":" = path\n",
+"type":"code"
+}
+],
+"id":"9ff7d00bc0de470f98947d222b24b388",
+"language":"",
+"type":"code"
+}
+],
+"title":"Document fragment"
 }
 ],
 "id":"ce4dc071bada48bb9294c937631e0214",
@@ -16790,6 +16854,7 @@
 "887acc7e530b4d98933d11e223d58c42":"_create_gui",
 "8970b68862714f158948f8ec1c68acb1":"toc_font",
 "898556fcc0094d959568f97b261a5f5c":"RemoveChildren",
+"8b6dd5393fca465cbd6f0d076c41d742":"_document",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
 "8d2b6dc31cdb4b2dba29488fa3263c53":"HorizontalScrolledWindow",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
@@ -16820,6 +16885,7 @@
 "aed0c1af151440d889b3890fa971fb59":"save",
 "b0201e824c464356aa706a0440192e5c":"ShowRecursive",
 "b088ae244bc14a1abd35258193a12469":"values",
+"b389117f3e4740ad83a6da246473fb19":"DocumentFragment",
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b3ef449947274fc597372ebb7fa1eaf7":"max_width",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
@@ -16829,6 +16895,7 @@
 "ba63198235bb4716a96649f32f1f4ac4":"_layout",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
 "bba79578dc084c859c4f3eef0cd79771":"SetPages",
+"bd4d6a828d4642078b99cb92a72839c9":"_path",
 "c0363497d8b6457ea2e652a9f8ec0afe":"ok_fn",
 "c25dba288acc4daba02327df732b1a7a":"FindClosestDropPoint",
 "c3265b04592340babd3f640c80a378d1":"_de16dfdd628d459ba5af528db2604934",
