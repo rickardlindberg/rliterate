@@ -1765,7 +1765,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"paragraphs\", index],\n                self,\n                paragraph_dict,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for (index, (paragraph_dict, next_paragraph_dict))\n            in enumerate(zip(\n                self.",
+"text":"+[\"paragraphs\", index],\n                paragraph_dict,\n                index,\n                self,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for (index, (paragraph_dict, next_paragraph_dict))\n            in enumerate(zip(\n                self.",
 "type":"code"
 },
 {
@@ -1781,7 +1781,23 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"][1:]+[None]\n            ))\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(\n                self.",
+"text":"[\"paragraphs\"][1:]+[None]\n            ))\n        ]\n\n    def delete_paragraph_at_index(self, index):\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify_fn(\"Delete paragraph\", lambda document_dict:\n            document_dict.replace(\n                self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"paragraphs\"],\n                lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n            )\n        )\n\n    @property\n    def children(self):\n        return [\n            Page(\n                self.",
 "type":"code"
 },
 {
@@ -3147,7 +3163,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    @staticmethod\n    def create(document, path, page, paragraph_dict, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n            \"expanded_code\": ExpandedCodeParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, path, page, paragraph_dict, next_id)\n\n    def __init__(self, document, path, page, paragraph_dict, next_id):\n        ",
+"text":"):\n\n    @staticmethod\n    def create(document, path, paragraph_dict, index, page, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n            \"expanded_code\": ExpandedCodeParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, path, paragraph_dict, index, page, next_id)\n\n    def __init__(self, document, path, paragraph_dict, index, page, next_id):\n        ",
 "type":"code"
 },
 {
@@ -3155,7 +3171,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, document, path, paragraph_dict)\n        self._page = page\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self.",
+"text":".__init__(self, document, path, paragraph_dict)\n        self._index = index\n        self._page = page\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self.",
 "type":"code"
 },
 {
@@ -3187,15 +3203,7 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            document_dict.replace(\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        with self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":".modify(\"Delete paragraph\") as document_dict:\n            document_dict.delete_paragraph_dict(self._page.id, self.id)\n\n    def move(self, target_page, before_paragraph):\n        with self.",
+"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            document_dict.replace(\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        self._page.delete_paragraph_at_index(self._index)\n\n    def move(self, target_page, before_paragraph):\n        with self.",
 "type":"code"
 },
 {

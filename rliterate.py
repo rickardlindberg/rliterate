@@ -1043,8 +1043,9 @@ class Page(DocumentFragment):
             Paragraph.create(
                 self._document,
                 self._path+["paragraphs", index],
-                self,
                 paragraph_dict,
+                index,
+                self,
                 next_paragraph_dict["id"] if next_paragraph_dict is not None else None
             )
             for (index, (paragraph_dict, next_paragraph_dict))
@@ -1053,6 +1054,14 @@ class Page(DocumentFragment):
                 self._fragment["paragraphs"][1:]+[None]
             ))
         ]
+
+    def delete_paragraph_at_index(self, index):
+        self._document.modify_fn("Delete paragraph", lambda document_dict:
+            document_dict.replace(
+                self._path+["paragraphs"],
+                lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
+            )
+        )
 
     @property
     def children(self):
@@ -1094,7 +1103,7 @@ class Page(DocumentFragment):
 class Paragraph(DocumentFragment):
 
     @staticmethod
-    def create(document, path, page, paragraph_dict, next_id):
+    def create(document, path, paragraph_dict, index, page, next_id):
         return {
             "text": TextParagraph,
             "quote": QuoteParagraph,
@@ -1102,10 +1111,11 @@ class Paragraph(DocumentFragment):
             "code": CodeParagraph,
             "image": ImageParagraph,
             "expanded_code": ExpandedCodeParagraph,
-        }.get(paragraph_dict["type"], Paragraph)(document, path, page, paragraph_dict, next_id)
+        }.get(paragraph_dict["type"], Paragraph)(document, path, paragraph_dict, index, page, next_id)
 
-    def __init__(self, document, path, page, paragraph_dict, next_id):
+    def __init__(self, document, path, paragraph_dict, index, page, next_id):
         DocumentFragment.__init__(self, document, path, paragraph_dict)
+        self._index = index
         self._page = page
         self._next_id = next_id
 
@@ -1135,8 +1145,7 @@ class Paragraph(DocumentFragment):
         )
 
     def delete(self):
-        with self._document.modify("Delete paragraph") as document_dict:
-            document_dict.delete_paragraph_dict(self._page.id, self.id)
+        self._page.delete_paragraph_at_index(self._index)
 
     def move(self, target_page, before_paragraph):
         with self._document.modify("Move paragraph") as document_dict:
