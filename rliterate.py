@@ -812,19 +812,8 @@ class Document(Observable):
                 for sub_page in iter_pages(child):
                     yield sub_page
         return iter_pages(self.get_page())
-    def get_parent_page(self, page_id):
-        return self._find_page(
-            None,
-            self._root_page(),
-            page_id
-        )[0]
-
     def get_page(self, page_id=None):
-        return self._find_page(
-            None,
-            self._root_page(),
-            page_id
-        )[1]
+        return self._find_page(self._root_page(), page_id)
 
     def _root_page(self):
         return Page(
@@ -835,14 +824,14 @@ class Document(Observable):
             None
         )
 
-    def _find_page(self, parent, page, page_id):
+    def _find_page(self, page, page_id):
         if page_id is None or page.id == page_id:
-            return (parent, page)
+            return page
         for child in page.children:
-            match = self._find_page(page, child, page_id)
-            if match != (None, None):
+            match = self._find_page(child, page_id)
+            if match is not None:
                 return match
-        return (None, None)
+        return None
     def add_paragraph(self, page_id, before_id=None, paragraph_dict={"type": "factory"}):
         with self.modify("Add paragraph") as document_dict:
             document_dict.add_paragraph_dict(
