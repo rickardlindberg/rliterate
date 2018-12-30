@@ -1653,7 +1653,7 @@
 ],
 "fragments":[
 {
-"text":"def get_parent_page(self, page_id):\n    return self._find_page(\n        None,\n        Page(self, [\"root_page\"], self.",
+"text":"def get_parent_page(self, page_id):\n    return self._find_page(\n        None,\n        self._root_page(),\n        page_id\n    )[0]\n\ndef get_page(self, page_id=None):\n    return self._find_page(\n        None,\n        self._root_page(),\n        page_id\n    )[1]\n\ndef _root_page(self):\n    return Page(\n        self,\n        [\"root_page\"],\n        self.",
 "type":"code"
 },
 {
@@ -1661,15 +1661,7 @@
 "type":"variable"
 },
 {
-"text":"[\"root_page\"]),\n        page_id\n    )[0]\n\ndef get_page(self, page_id=None):\n    return self._find_page(\n        None,\n        Page(self, [\"root_page\"], self.",
-"type":"code"
-},
-{
-"id":"b7da0c1f7b7845c8a2c816963948740d",
-"type":"variable"
-},
-{
-"text":"[\"root_page\"]),\n        page_id\n    )[1]\n\ndef _find_page(self, parent, page, page_id):\n    if page_id is None or page.id == page_id:\n        return (parent, page)\n    for child in page.children:\n        match = self._find_page(page, child, page_id)\n        if match != (None, None):\n            return match\n    return (None, None)\n",
+"text":"[\"root_page\"],\n        None\n    )\n\ndef _find_page(self, parent, page, page_id):\n    if page_id is None or page.id == page_id:\n        return (parent, page)\n    for child in page.children:\n        match = self._find_page(page, child, page_id)\n        if match != (None, None):\n            return match\n    return (None, None)\n",
 "type":"code"
 }
 ],
@@ -1693,7 +1685,15 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    @property\n    def parent(self):\n        return self.",
+"text":"):\n\n    def __init__(self, document, path, fragment, index):\n        ",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":".__init__(self, document, path, fragment)\n        self._index = index\n\n    @property\n    def parent(self):\n        return self.",
 "type":"code"
 },
 {
@@ -1789,7 +1789,7 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"][1:]+[None]\n            ))\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(self.",
+"text":"[\"paragraphs\"][1:]+[None]\n            ))\n        ]\n\n    @property\n    def children(self):\n        return [\n            Page(\n                self.",
 "type":"code"
 },
 {
@@ -1797,7 +1797,7 @@
 "type":"variable"
 },
 {
-"text":", self.",
+"text":",\n                self.",
 "type":"code"
 },
 {
@@ -1805,7 +1805,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\", index], child_dict)\n            for index, child_dict\n            in enumerate(self.",
+"text":"+[\"children\", index],\n                child_dict,\n                index\n            )\n            for index, child_dict\n            in enumerate(self.",
 "type":"code"
 },
 {
@@ -1829,15 +1829,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\"],\n                lambda children: children+[page_dict]\n            )\n        )\n\n    def delete(self):\n        if self.parent is not None:\n            self.parent.delete_child(self)\n\n    def delete_child(self, child):\n        index = index_with_id(self.",
-"type":"code"
-},
-{
-"id":"75d0d294fd5a4cc5beaf14009875e662",
-"type":"variable"
-},
-{
-"text":"[\"children\"], child.id)\n        self.",
+"text":"+[\"children\"],\n                lambda children: children+[page_dict]\n            )\n        )\n\n    def delete(self):\n        if self.parent is not None:\n            self.parent.delete_child_at_index(self._index)\n\n    def delete_child_at_index(self, index):\n        self.",
 "type":"code"
 },
 {

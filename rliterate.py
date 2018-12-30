@@ -815,16 +815,24 @@ class Document(Observable):
     def get_parent_page(self, page_id):
         return self._find_page(
             None,
-            Page(self, ["root_page"], self.read_only_document_dict["root_page"]),
+            self._root_page(),
             page_id
         )[0]
 
     def get_page(self, page_id=None):
         return self._find_page(
             None,
-            Page(self, ["root_page"], self.read_only_document_dict["root_page"]),
+            self._root_page(),
             page_id
         )[1]
+
+    def _root_page(self):
+        return Page(
+            self,
+            ["root_page"],
+            self.read_only_document_dict["root_page"],
+            None
+        )
 
     def _find_page(self, parent, page, page_id):
         if page_id is None or page.id == page_id:
@@ -997,6 +1005,10 @@ class DocumentDictWrapper(dict):
         return DocumentDictWrapper(replace(self, path, new_value))
 class Page(DocumentFragment):
 
+    def __init__(self, document, path, fragment, index):
+        DocumentFragment.__init__(self, document, path, fragment)
+        self._index = index
+
     @property
     def parent(self):
         return self._document.get_parent_page(self.id)
@@ -1057,7 +1069,12 @@ class Page(DocumentFragment):
     @property
     def children(self):
         return [
-            Page(self._document, self._path+["children", index], child_dict)
+            Page(
+                self._document,
+                self._path+["children", index],
+                child_dict,
+                index
+            )
             for index, child_dict
             in enumerate(self._fragment["children"])
         ]
@@ -1072,10 +1089,9 @@ class Page(DocumentFragment):
 
     def delete(self):
         if self.parent is not None:
-            self.parent.delete_child(self)
+            self.parent.delete_child_at_index(self._index)
 
-    def delete_child(self, child):
-        index = index_with_id(self._fragment["children"], child.id)
+    def delete_child_at_index(self, index):
         self._document.modify_fn("Delete page", lambda document_dict:
             document_dict.replace(
                 self._path+["children"],
