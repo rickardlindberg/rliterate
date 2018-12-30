@@ -929,19 +929,6 @@ class DocumentDictWrapper(dict):
         for child in page["children"]:
             self._cache_page(child, page)
 
-    def delete_page_dict(self, page_id):
-        if page_id == self["root_page"]["id"]:
-            return
-        page = self._pages[page_id]
-        parent_page = self._parent_pages[page_id]
-        index = index_with_id(parent_page["children"], page_id)
-        parent_page["children"].pop(index)
-        self._pages.pop(page_id)
-        self._parent_pages.pop(page_id)
-        for child in reversed(page["children"]):
-            parent_page["children"].insert(index, child)
-            self._parent_pages[child["id"]] = parent_page
-
     def move_page_dict(self, page_id, parent_page_id, before_page_id):
         if page_id == before_page_id:
             return
@@ -1003,6 +990,8 @@ class DocumentDictWrapper(dict):
                     raise ValueError("unknown type")
                 new_obj[path[0]] = replace(new_obj[path[0]], path[1:], new_value)
                 return new_obj
+            elif callable(new_value):
+                return new_value(obj)
             else:
                 return new_value
         return DocumentDictWrapper(replace(self, path, new_value))
@@ -1075,12 +1064,24 @@ class Page(DocumentFragment):
 
     def add_child(self, page_dict):
         self._document.modify_fn("Add page", modify_fn=lambda x:
-            x.replace(self._path+["children"], self._fragment["children"]+[page_dict])
+            x.replace(
+                self._path+["children"],
+                lambda y: y+[page_dict]
+            )
         )
 
     def delete(self):
-        with self._document.modify("Delete page") as document_dict:
-            document_dict.delete_page_dict(self.id)
+        if self.parent is not None:
+            self.parent.delete_child(self)
+
+    def delete_child(self, child):
+        index = index_with_id(self._fragment["children"], child.id)
+        self._document.modify_fn("Delete page", modify_fn=lambda x:
+            x.replace(
+                self._path+["children"],
+                lambda y: y[:index]+y[index]["children"]+y[index+1:]
+            )
+        )
 
     def move(self, parent_page_id, before_page_id):
         with self._document.modify("Move page") as document_dict:
