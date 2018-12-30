@@ -1531,46 +1531,6 @@
 "type":"text"
 },
 {
-"fragments":[
-{
-"text":"A document dict has the following structure:",
-"type":"text"
-}
-],
-"id":"7ac89c3808a64a50ac82e25f348405a7",
-"type":"text"
-},
-{
-"chunkpath":[],
-"filepath":[],
-"fragments":[
-{
-"text":"{\n  \"root_page\": {\n    \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n    \"title\": \"Root\",\n    \"paragraphs\": [\n      {\n        \"id\": \"8f0a9f84821540e89d7c9ca93ed0fbe7\",\n        \"type\": \"text\",\n        \"",
-"type":"code"
-},
-{
-"id":"da4a7d55fc3e4f2981c61dad8a455bfd",
-"type":"variable"
-},
-{
-"text":"\": [\n          {\"text\": \"This \", \"type\": \"text\" },\n          {\"text\": \"is\",    \"type\": \"strong\" },\n          {\"text\": \"cool\",  \"type\": \"emphasis\" }\n        ]\n      },\n      ...\n    ],\n    \"children\": [ ... ]\n  },\n  \"variables\": { ... }\n}\n",
-"type":"code"
-}
-],
-"id":"60501b1422714246b4aa8cf33866c0ea",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"The root object represents a document. It has a root page and variables. The root page has a unique id, a title, paragraphs, and child pages. Paragraphs also have unique ids and different attributes depending on type. (The text paragraph has a list of text fragments with different styles.)",
-"type":"text"
-}
-],
-"id":"80730ed23d8849329c521c7d42af624d",
-"type":"text"
-},
-{
 "chunkpath":[
 "classes"
 ],
@@ -4626,7 +4586,48 @@
 {
 "fragments":[
 {
-"text":"An RLiterate document is a JSON object (hereafter called the document dict) stored in a file. The ",
+"text":"An RLiterate document is represented as a Python dictionary with the following stucture:",
+"type":"text"
+}
+],
+"id":"1f1c6f42d2ad47229c4411c0f1a824c8",
+"type":"text"
+},
+{
+"chunkpath":[],
+"filepath":[],
+"fragments":[
+{
+"text":"{\n  \"root_page\": {\n    \"id\": \"106af6f8665c45e8ab751993a6abc876\",\n    \"title\": \"Root\",\n    \"paragraphs\": [\n      {\n        \"id\": \"8f0a9f84821540e89d7c9ca93ed0fbe7\",\n        \"type\": \"text\",\n        \"",
+"type":"code"
+},
+{
+"id":"da4a7d55fc3e4f2981c61dad8a455bfd",
+"type":"variable"
+},
+{
+"text":"\": [\n          {\"text\": \"This \", \"type\": \"text\" },\n          {\"text\": \"is\",    \"type\": \"strong\" },\n          {\"text\": \"cool\",  \"type\": \"emphasis\" }\n        ]\n      },\n      ...\n    ],\n    \"children\": [ ... ]\n  },\n  \"variables\": { ... }\n}\n",
+"type":"code"
+}
+],
+"id":"60501b1422714246b4aa8cf33866c0ea",
+"language":"Python",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"It has a root page and variables. The root page has a unique id, a title, paragraphs, and child pages. Paragraphs also have unique ids and different attributes depending on type. (The text paragraph has a list of text fragments with different styles.)",
+"type":"text"
+}
+],
+"id":"80730ed23d8849329c521c7d42af624d",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"The ",
 "type":"text"
 },
 {
@@ -4634,11 +4635,11 @@
 "type":"code"
 },
 {
-"text":" class provides a friendly interface for working with RLiterate documents.",
+"text":" class provides a friendly interface for working with an RLiterate document:",
 "type":"text"
 }
 ],
-"id":"1f1c6f42d2ad47229c4411c0f1a824c8",
+"id":"88ddc11e6f0c4206bd069066f20979ee",
 "type":"text"
 },
 {
@@ -4667,7 +4668,7 @@
 "children":[],
 "fragments":[
 {
-"text":"It provides \"rich\" wrappers for different pars of the document dict that provide friendly interfaces for querying and editing.",
+"text":"It provides \"rich\" wrappers for different fragments of the document that provide friendly interfaces for querying and modifying.",
 "type":"text"
 }
 ]
@@ -4687,7 +4688,7 @@
 "children":[],
 "fragments":[
 {
-"text":"It saves the document dict back to file (if the document was opened from a file).",
+"text":"It can load and save a document from disk.",
 "type":"text"
 }
 ]
@@ -4707,7 +4708,7 @@
 "type":"code"
 },
 {
-"text":" class is initialized with a documetn dict (or ",
+"text":" class is initialized with a document dict (or ",
 "type":"text"
 },
 {
