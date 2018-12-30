@@ -831,6 +831,7 @@ class Document(Observable):
             self,
             ["root_page"],
             self.read_only_document_dict["root_page"],
+            None,
             None
         )
 
@@ -1005,13 +1006,14 @@ class DocumentDictWrapper(dict):
         return DocumentDictWrapper(replace(self, path, new_value))
 class Page(DocumentFragment):
 
-    def __init__(self, document, path, fragment, index):
+    def __init__(self, document, path, fragment, parent, index):
         DocumentFragment.__init__(self, document, path, fragment)
+        self._parent = parent
         self._index = index
 
     @property
     def parent(self):
-        return self._document.get_parent_page(self.id)
+        return self._parent
 
     @property
     def full_title(self):
@@ -1073,6 +1075,7 @@ class Page(DocumentFragment):
                 self._document,
                 self._path+["children", index],
                 child_dict,
+                self,
                 index
             )
             for index, child_dict

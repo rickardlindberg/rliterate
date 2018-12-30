@@ -1661,7 +1661,7 @@
 "type":"variable"
 },
 {
-"text":"[\"root_page\"],\n        None\n    )\n\ndef _find_page(self, parent, page, page_id):\n    if page_id is None or page.id == page_id:\n        return (parent, page)\n    for child in page.children:\n        match = self._find_page(page, child, page_id)\n        if match != (None, None):\n            return match\n    return (None, None)\n",
+"text":"[\"root_page\"],\n        None,\n        None\n    )\n\ndef _find_page(self, parent, page, page_id):\n    if page_id is None or page.id == page_id:\n        return (parent, page)\n    for child in page.children:\n        match = self._find_page(page, child, page_id)\n        if match != (None, None):\n            return match\n    return (None, None)\n",
 "type":"code"
 }
 ],
@@ -1685,7 +1685,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, document, path, fragment, index):\n        ",
+"text":"):\n\n    def __init__(self, document, path, fragment, parent, index):\n        ",
 "type":"code"
 },
 {
@@ -1693,15 +1693,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, document, path, fragment)\n        self._index = index\n\n    @property\n    def parent(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":".get_parent_page(self.id)\n\n    @property\n    def ",
+"text":".__init__(self, document, path, fragment)\n        self._parent = parent\n        self._index = index\n\n    @property\n    def parent(self):\n        return self._parent\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -1805,7 +1797,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\", index],\n                child_dict,\n                index\n            )\n            for index, child_dict\n            in enumerate(self.",
+"text":"+[\"children\", index],\n                child_dict,\n                self,\n                index\n            )\n            for index, child_dict\n            in enumerate(self.",
 "type":"code"
 },
 {
