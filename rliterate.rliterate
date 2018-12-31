@@ -1547,7 +1547,7 @@
 "type":"variable"
 },
 {
-"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def ",
+"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def ",
 "type":"code"
 },
 {

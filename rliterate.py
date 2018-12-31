@@ -912,14 +912,10 @@ class DocumentDictWrapper(dict):
 
     def __init__(self, document_dict):
         dict.__init__(self, document_dict)
-        self._pages = {}
-        self._parent_pages = {}
         self._paragraphs = {}
         self._cache_page(self["root_page"])
 
     def _cache_page(self, page, parent_page=None):
-        self._pages[page["id"]] = page
-        self._parent_pages[page["id"]] = parent_page
         for paragraph in page["paragraphs"]:
             self._paragraphs[paragraph["id"]] = paragraph
         for child in page["children"]:
@@ -927,11 +923,6 @@ class DocumentDictWrapper(dict):
 
     def paragraph_dict_iterator(self):
         return self._paragraphs.values()
-
-    def delete_paragraph_dict(self, page_id, paragraph_id):
-        paragraphs = self._pages[page_id]["paragraphs"]
-        paragraphs.pop(index_with_id(paragraphs, paragraph_id))
-        return self._paragraphs.pop(paragraph_id)
 
     def replace(self, path, new_value):
         def replace(obj, path, new_value):
