@@ -927,26 +927,6 @@ class DocumentDictWrapper(dict):
         for child in page["children"]:
             self._cache_page(child, page)
 
-    def move_page_dict(self, page_id, parent_page_id, before_page_id):
-        if page_id == before_page_id:
-            return
-        parent = self._pages[parent_page_id]
-        while parent is not None:
-            if parent["id"] == page_id:
-                return
-            parent = self._parent_pages[parent["id"]]
-        parent = self._parent_pages[page_id]
-        page = parent["children"].pop(index_with_id(parent["children"], page_id))
-        new_parent = self._pages[parent_page_id]
-        self._parent_pages[page_id] = new_parent
-        if before_page_id is None:
-            new_parent["children"].append(page)
-        else:
-            new_parent["children"].insert(
-                index_with_id(new_parent["children"], before_page_id),
-                page
-            )
-
     def paragraph_dict_iterator(self):
         return self._paragraphs.values()
 
@@ -1103,8 +1083,47 @@ class Page(DocumentFragment):
         )
 
     def move(self, parent_page_id, before_page_id):
-        with self._document.modify("Move page") as document_dict:
-            document_dict.move_page_dict(self.id, parent_page_id, before_page_id)
+        parent_page = self._document.get_page(parent_page_id)
+        # Abort if invalid move
+        page = parent_page
+        while page is not None:
+            if page.id == self.id:
+                return
+            page = page.parent
+        # Abort if no-op mode
+        if before_page_id == self.id:
+            return
+        # Do the move
+        def insert(items, item):
+            if before_page_id is None:
+                return items+[item]
+            else:
+                index = index_with_id(items, before_page_id)
+                return items[:index]+[item]+items[index:]
+        def remove(items, index):
+            return items[:index]+items[index+1:]
+        def do_move(document_dict):
+            changes = []
+            if parent_page.id == self.parent.id:
+                changes.append((
+                    self.parent._path+["children"],
+                    lambda x: insert(remove(x, self._index), self._fragment)
+                ))
+            else:
+                changes.append((
+                    self.parent._path+["children"],
+                    lambda x: remove(x, self._index)
+                ))
+                changes.append((
+                    parent_page._path+["children"],
+                    lambda x: insert(x, self._fragment)
+                ))
+            if len(parent_page._path) > len(self.parent._path):
+                changes = reversed(changes)
+            for path, new_value in changes:
+                document_dict = document_dict.replace(path, new_value)
+            return document_dict
+        self._document.modify_fn("Move page", do_move)
 class Paragraph(DocumentFragment):
 
     @staticmethod
