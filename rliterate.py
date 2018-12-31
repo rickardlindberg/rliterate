@@ -1077,11 +1077,16 @@ class Page(DocumentFragment):
             in enumerate(self._fragment["children"])
         ]
 
-    def add_child(self, page_dict):
+    def add_child(self, page_dict, index=None):
+        def insert(items, item, index):
+            if index is None:
+                return items+[item]
+            else:
+                return items[:index]+[item]+items[index+1:]
         self._document.modify_fn("Add page", lambda document_dict:
             document_dict.replace(
                 self._path+["children"],
-                lambda children: children+[page_dict]
+                lambda children: insert(children, page_dict, index)
             )
         )
 

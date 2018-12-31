@@ -1821,7 +1821,7 @@
 "type":"variable"
 },
 {
-"text":"[\"children\"])\n        ]\n\n    def add_child(self, page_dict):\n        self.",
+"text":"[\"children\"])\n        ]\n\n    def add_child(self, page_dict, index=None):\n        def insert(items, item, index):\n            if index is None:\n                return items+[item]\n            else:\n                return items[:index]+[item]+items[index+1:]\n        self.",
 "type":"code"
 },
 {
@@ -1837,7 +1837,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\"],\n                lambda children: children+[page_dict]\n            )\n        )\n\n    def delete(self):\n        if self.parent is not None:\n            self.parent.delete_child_at_index(self._index)\n\n    def delete_child_at_index(self, index):\n        self.",
+"text":"+[\"children\"],\n                lambda children: insert(children, page_dict, index)\n            )\n        )\n\n    def delete(self):\n        if self.parent is not None:\n            self.parent.delete_child_at_index(self._index)\n\n    def delete_child_at_index(self, index):\n        self.",
 "type":"code"
 },
 {
