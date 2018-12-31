@@ -4804,6 +4804,15 @@ class History(object):
     def forward(self):
         if self.can_forward():
             self._history_index += 1
+def fragments_to_text(fragments):
+    text_version = TextVersion()
+    for fragment in fragments:
+        fragment.fill_text_version(text_version)
+    return text_version.text
+
+
+def text_to_fragments(text):
+    return TextParser().parse(text)
 def im_replace(obj, path, new_value):
     if path:
         if isinstance(obj, list):
@@ -4822,15 +4831,6 @@ def index_with_id(items, item_id):
     for index, item in enumerate(items):
         if item["id"] == item_id:
             return index
-def fragments_to_text(fragments):
-    text_version = TextVersion()
-    for fragment in fragments:
-        fragment.fill_text_version(text_version)
-    return text_version.text
-
-
-def text_to_fragments(text):
-    return TextParser().parse(text)
 def split_legacy_path(path):
     filepath = []
     chunkpath = []

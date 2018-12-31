@@ -1518,80 +1518,6 @@
 },
 {
 "children":[],
-"id":"2f0a69c6ad7e4b84b4b3bfa55aebd182",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"The document dict wrapper is a helper for working with a document dict. It mainly maintains caches.",
-"type":"text"
-}
-],
-"id":"86b37eee509b483aa0fb70c86ce7845a",
-"type":"text"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"51708e28ba3245859e0554a504cc015c",
-"type":"variable"
-},
-{
-"text":"(obj, path, new_value):\n    if path:\n        if isinstance(obj, list):\n            new_obj = obj[:]\n        elif isinstance(obj, dict):\n            new_obj = dict(obj)\n        else:\n            raise ValueError(\"unknown type\")\n        new_obj[path[0]] = ",
-"type":"code"
-},
-{
-"id":"51708e28ba3245859e0554a504cc015c",
-"type":"variable"
-},
-{
-"text":"(new_obj[path[0]], path[1:], new_value)\n        return new_obj\n    elif callable(new_value):\n        return new_value(obj)\n    else:\n        return new_value\n",
-"type":"code"
-}
-],
-"id":"a98a71cabc4942b885af73a3d49172ae",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"6e076e2955c4476fbe194f0a38a97cee",
-"type":"variable"
-},
-{
-"text":"(items, item_id):\n    for index, item in enumerate(items):\n        if item[\"id\"] == item_id:\n            return index\n",
-"type":"code"
-}
-],
-"id":"fc0b2a5550bb4e95b5e7543818159b98",
-"type":"code"
-}
-],
-"title":"Document dict wrapper"
-},
-{
-"children":[],
 "id":"95df0269255943f297d3ffc6de48874f",
 "paragraphs":[
 {
@@ -3667,6 +3593,70 @@
 }
 ],
 "title":"Document fragment"
+},
+{
+"children":[],
+"id":"2f0a69c6ad7e4b84b4b3bfa55aebd182",
+"paragraphs":[
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(obj, path, new_value):\n    if path:\n        if isinstance(obj, list):\n            new_obj = obj[:]\n        elif isinstance(obj, dict):\n            new_obj = dict(obj)\n        else:\n            raise ValueError(\"unknown type\")\n        new_obj[path[0]] = ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(new_obj[path[0]], path[1:], new_value)\n        return new_obj\n    elif callable(new_value):\n        return new_value(obj)\n    else:\n        return new_value\n",
+"type":"code"
+}
+],
+"id":"a98a71cabc4942b885af73a3d49172ae",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"6e076e2955c4476fbe194f0a38a97cee",
+"type":"variable"
+},
+{
+"text":"(items, item_id):\n    for index, item in enumerate(items):\n        if item[\"id\"] == item_id:\n            return index\n",
+"type":"code"
+}
+],
+"id":"fc0b2a5550bb4e95b5e7543818159b98",
+"type":"code"
+}
+],
+"title":"Immutable helpers"
 },
 {
 "children":[
