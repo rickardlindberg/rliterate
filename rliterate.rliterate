@@ -3520,7 +3520,7 @@
 ],
 "fragments":[
 {
-"text":"def new_variable(self, name):\n    with self.modify(\"New variable\") as document_dict:\n        variable_id = genid()\n        document_dict[\"variables\"][variable_id] = name\n        return variable_id\n\ndef rename_variable(self, variable_id, name):\n    with self.modify(\"Rename variable\") as document_dict:\n        document_dict[\"variables\"][variable_id] = name\n\ndef lookup_variable(self, variable_id):\n    return self.",
+"text":"def new_variable(self, name):\n    variable_id = genid()\n    self.modify_fn(\"New variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\"],\n            dict(document_dict[\"variables\"], **{variable_id: name})\n        )\n    )\n    return variable_id\n\ndef rename_variable(self, variable_id, name):\n    self.modify_fn(\"Rename variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\", variable_id],\n            name\n        )\n    )\n\ndef lookup_variable(self, variable_id):\n    return self.",
 "type":"code"
 },
 {

@@ -874,14 +874,24 @@ class Document(Observable):
                 if p.type == "code":
                     yield p
     def new_variable(self, name):
-        with self.modify("New variable") as document_dict:
-            variable_id = genid()
-            document_dict["variables"][variable_id] = name
-            return variable_id
+        variable_id = genid()
+        self.modify_fn("New variable", lambda document_dict:
+            im_replace(
+                document_dict,
+                ["variables"],
+                dict(document_dict["variables"], **{variable_id: name})
+            )
+        )
+        return variable_id
 
     def rename_variable(self, variable_id, name):
-        with self.modify("Rename variable") as document_dict:
-            document_dict["variables"][variable_id] = name
+        self.modify_fn("Rename variable", lambda document_dict:
+            im_replace(
+                document_dict,
+                ["variables", variable_id],
+                name
+            )
+        )
 
     def lookup_variable(self, variable_id):
         return self.read_only_document_dict["variables"].get(variable_id)
