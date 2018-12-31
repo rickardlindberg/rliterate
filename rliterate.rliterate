@@ -1547,7 +1547,7 @@
 "type":"variable"
 },
 {
-"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):\n        if (page_id == target_page and\n            paragraph_id == before_paragraph):\n            return\n        self.add_paragraph_dict(\n            self.delete_paragraph_dict(page_id, paragraph_id),\n            target_page,\n            before_paragraph\n        )\n\n    def ",
+"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def ",
 "type":"code"
 },
 {
@@ -1797,7 +1797,23 @@
 "type":"variable"
 },
 {
-"text":"+[\"paragraphs\"],\n                lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n            )\n        )\n\n    @property\n    def children(self):\n        return [\n            Page(\n                self.",
+"text":"+[\"paragraphs\"],\n                lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n            )\n        )\n\n    def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):\n        def insert(paragraphs):\n            if before_paragraph_id is None:\n                return paragraphs+[paragraph_dict]\n            else:\n                index = index_with_id(paragraphs, before_paragraph_id)\n                return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n        self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify_fn(\"Insert paragraph\", lambda document_dict:\n            document_dict.replace(\n                self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"paragraphs\"],\n                insert\n            )\n        )\n\n    @property\n    def children(self):\n        return [\n            Page(\n                self.",
 "type":"code"
 },
 {
@@ -3211,7 +3227,7 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            document_dict.replace(\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        self._page.delete_paragraph_at_index(self._index)\n\n    def move(self, target_page, before_paragraph):\n        with self.",
+"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            document_dict.replace(\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        self._page.delete_paragraph_at_index(self._index)\n\n    def move(self, target_page, before_paragraph):\n        x = self.",
 "type":"code"
 },
 {
@@ -3219,7 +3235,15 @@
 "type":"variable"
 },
 {
-"text":".modify(\"Move paragraph\") as document_dict:\n            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)\n\n    def duplicate(self):\n        with self.",
+"text":".get_page(target_page)\n        if x.id == self._page.id and before_paragraph == self.id:\n            return\n        with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".modify(\"Move paragraph\") as document_dict:\n            self._page.delete_paragraph_at_index(self._index)\n            x.insert_paragraph_before(self._fragment, before_paragraph)\n\n    def duplicate(self):\n        with self.",
 "type":"code"
 },
 {

@@ -944,16 +944,6 @@ class DocumentDictWrapper(dict):
         paragraphs.pop(index_with_id(paragraphs, paragraph_id))
         return self._paragraphs.pop(paragraph_id)
 
-    def move_paragraph_dict(self, page_id, paragraph_id, target_page, before_paragraph):
-        if (page_id == target_page and
-            paragraph_id == before_paragraph):
-            return
-        self.add_paragraph_dict(
-            self.delete_paragraph_dict(page_id, paragraph_id),
-            target_page,
-            before_paragraph
-        )
-
     def replace(self, path, new_value):
         def replace(obj, path, new_value):
             if path:
@@ -1040,6 +1030,20 @@ class Page(DocumentFragment):
             document_dict.replace(
                 self._path+["paragraphs"],
                 lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
+            )
+        )
+
+    def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):
+        def insert(paragraphs):
+            if before_paragraph_id is None:
+                return paragraphs+[paragraph_dict]
+            else:
+                index = index_with_id(paragraphs, before_paragraph_id)
+                return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
+        self._document.modify_fn("Insert paragraph", lambda document_dict:
+            document_dict.replace(
+                self._path+["paragraphs"],
+                insert
             )
         )
 
@@ -1172,8 +1176,12 @@ class Paragraph(DocumentFragment):
         self._page.delete_paragraph_at_index(self._index)
 
     def move(self, target_page, before_paragraph):
+        x = self._document.get_page(target_page)
+        if x.id == self._page.id and before_paragraph == self.id:
+            return
         with self._document.modify("Move paragraph") as document_dict:
-            document_dict.move_paragraph_dict(self._page.id, self.id, target_page, before_paragraph)
+            self._page.delete_paragraph_at_index(self._index)
+            x.insert_paragraph_before(self._fragment, before_paragraph)
 
     def duplicate(self):
         with self._document.modify("Duplicate paragraph") as document_dict:
