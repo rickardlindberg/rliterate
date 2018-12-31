@@ -1741,7 +1741,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Change title\", lambda document_dict:\n            document_dict.replace(self.",
+"text":".modify_fn(\"Change title\", lambda document_dict:\n            document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(self.",
 "type":"code"
 },
 {
@@ -1789,7 +1797,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Delete paragraph\", lambda document_dict:\n            document_dict.replace(\n                self.",
+"text":".modify_fn(\"Delete paragraph\", lambda document_dict:\n            document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                self.",
 "type":"code"
 },
 {
@@ -1805,7 +1821,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Insert paragraph\", lambda document_dict:\n            document_dict.replace(\n                self.",
+"text":".modify_fn(\"Insert paragraph\", lambda document_dict:\n            document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                self.",
 "type":"code"
 },
 {
@@ -1845,7 +1869,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Add page\", lambda document_dict:\n            document_dict.replace(\n                self.",
+"text":".modify_fn(\"Add page\", lambda document_dict:\n            document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                self.",
 "type":"code"
 },
 {
@@ -1861,7 +1893,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Delete page\", lambda document_dict:\n            document_dict.replace(\n                self.",
+"text":".modify_fn(\"Delete page\", lambda document_dict:\n            document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                self.",
 "type":"code"
 },
 {
@@ -1877,7 +1917,15 @@
 "type":"variable"
 },
 {
-"text":".get_page(parent_page_id)\n        # Abort if invalid move\n        page = parent_page\n        while page is not None:\n            if page.id == self.id:\n                return\n            page = page.parent\n        # Abort if no-op mode\n        if before_page_id == self.id:\n            return\n        # Do the move\n        def insert(items, item):\n            if before_page_id is None:\n                return items+[item]\n            else:\n                index = index_with_id(items, before_page_id)\n                return items[:index]+[item]+items[index:]\n        def remove(items, index):\n            return items[:index]+items[index+1:]\n        def do_move(document_dict):\n            changes = []\n            if parent_page.id == self.parent.id:\n                changes.append((\n                    self.parent._path+[\"children\"],\n                    lambda x: insert(remove(x, self._index), self._fragment)\n                ))\n            else:\n                changes.append((\n                    self.parent._path+[\"children\"],\n                    lambda x: remove(x, self._index)\n                ))\n                changes.append((\n                    parent_page._path+[\"children\"],\n                    lambda x: insert(x, self._fragment)\n                ))\n            if len(parent_page._path) > len(self.parent._path):\n                changes = reversed(changes)\n            for path, new_value in changes:\n                document_dict = document_dict.replace(path, new_value)\n            return document_dict\n        self.",
+"text":".get_page(parent_page_id)\n        # Abort if invalid move\n        page = parent_page\n        while page is not None:\n            if page.id == self.id:\n                return\n            page = page.parent\n        # Abort if no-op mode\n        if before_page_id == self.id:\n            return\n        # Do the move\n        def insert(items, item):\n            if before_page_id is None:\n                return items+[item]\n            else:\n                index = index_with_id(items, before_page_id)\n                return items[:index]+[item]+items[index:]\n        def remove(items, index):\n            return items[:index]+items[index+1:]\n        def do_move(document_dict):\n            changes = []\n            if parent_page.id == self.parent.id:\n                changes.append((\n                    self.parent._path+[\"children\"],\n                    lambda x: insert(remove(x, self._index), self._fragment)\n                ))\n            else:\n                changes.append((\n                    self.parent._path+[\"children\"],\n                    lambda x: remove(x, self._index)\n                ))\n                changes.append((\n                    parent_page._path+[\"children\"],\n                    lambda x: insert(x, self._fragment)\n                ))\n            if len(parent_page._path) > len(self.parent._path):\n                changes = reversed(changes)\n            for path, new_value in changes:\n                document_dict = document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(path, new_value)\n            return document_dict\n        self.",
 "type":"code"
 },
 {
@@ -2396,7 +2444,31 @@
 ],
 "fragments":[
 {
-"text":"def rename_path(self, path, name):\n    with self.modify(\"Rename path\") as document_dict:\n        for p in self._code_paragraph_iterator():\n            filelen = len(p.path.filepath)\n            chunklen = len(p.path.chunkpath)\n            if path.is_prefix(p.path):\n                if path.length > filelen:\n                    self.modify_fn(\"\", lambda document_dict: document_dict.replace(\n                        p._path+[\"chunkpath\", path.length-1-filelen],\n                        name\n                    ))\n                else:\n                    self.modify_fn(\"\", lambda document_dict: document_dict.replace(\n                        p._path+[\"filepath\", path.length-1],\n                        name\n                    ))\n            else:\n                for f in p.fragments:\n                    if f.type == \"chunk\":\n                        if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):\n                            self.modify_fn(\"\", lambda document_dict: document_dict.replace(\n                                f._path+[\"path\", path.length-1-filelen-chunklen],\n                                name\n                            ))\n\ndef _code_paragraph_iterator(self):\n    for page in self.iter_pages():\n        for p in page.paragraphs:\n            if p.type == \"code\":\n                yield p\n",
+"text":"def rename_path(self, path, name):\n    with self.modify(\"Rename path\") as document_dict:\n        for p in self._code_paragraph_iterator():\n            filelen = len(p.path.filepath)\n            chunklen = len(p.path.chunkpath)\n            if path.is_prefix(p.path):\n                if path.length > filelen:\n                    self.modify_fn(\"\", lambda document_dict: document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                        p._path+[\"chunkpath\", path.length-1-filelen],\n                        name\n                    ))\n                else:\n                    self.modify_fn(\"\", lambda document_dict: document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                        p._path+[\"filepath\", path.length-1],\n                        name\n                    ))\n            else:\n                for f in p.fragments:\n                    if f.type == \"chunk\":\n                        if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):\n                            self.modify_fn(\"\", lambda document_dict: document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                                f._path+[\"path\", path.length-1-filelen-chunklen],\n                                name\n                            ))\n\ndef _code_paragraph_iterator(self):\n    for page in self.iter_pages():\n        for p in page.paragraphs:\n            if p.type == \"code\":\n                yield p\n",
 "type":"code"
 }
 ],
@@ -3236,7 +3308,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            document_dict.replace(\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        self._page.delete_paragraph_at_index(self._index)\n\n    def move(self, target_page, before_paragraph):\n        x = self.",
+"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            document_dict.",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        self._page.delete_paragraph_at_index(self._index)\n\n    def move(self, target_page, before_paragraph):\n        x = self.",
 "type":"code"
 },
 {
