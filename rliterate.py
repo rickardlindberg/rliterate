@@ -833,12 +833,10 @@ class Document(Observable):
                 return match
         return None
     def add_paragraph(self, page_id, before_id=None, paragraph_dict={"type": "factory"}):
-        with self.modify("Add paragraph") as document_dict:
-            document_dict.add_paragraph_dict(
-                dict(paragraph_dict, id=genid()),
-                page_id,
-                before_id=before_id
-            )
+        self.get_page(page_id).insert_paragraph_before(
+            dict(paragraph_dict, id=genid()),
+            before_id
+        )
 
     def get_paragraph(self, page_id, paragraph_id):
         for paragraph in self.get_page(page_id).paragraphs:
@@ -929,15 +927,6 @@ class DocumentDictWrapper(dict):
 
     def paragraph_dict_iterator(self):
         return self._paragraphs.values()
-
-    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):
-        paragraph_dict = copy.deepcopy(paragraph_dict)
-        paragraphs = self._pages[page_id]["paragraphs"]
-        if before_id is None:
-            paragraphs.append(paragraph_dict)
-        else:
-            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)
-        self._paragraphs[paragraph_dict["id"]] = paragraph_dict
 
     def delete_paragraph_dict(self, page_id, paragraph_id):
         paragraphs = self._pages[page_id]["paragraphs"]
@@ -1185,10 +1174,9 @@ class Paragraph(DocumentFragment):
 
     def duplicate(self):
         with self._document.modify("Duplicate paragraph") as document_dict:
-            document_dict.add_paragraph_dict(
+            self._page.insert_paragraph_before(
                 dict(copy.deepcopy(self._fragment), id=genid()),
-                page_id=self._page.id,
-                before_id=self.next_id
+                self.next_id
             )
 
     @property

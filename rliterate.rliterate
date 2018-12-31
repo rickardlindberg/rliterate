@@ -1547,7 +1547,7 @@
 "type":"variable"
 },
 {
-"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def add_paragraph_dict(self, paragraph_dict, page_id, before_id):\n        paragraph_dict = copy.deepcopy(paragraph_dict)\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        if before_id is None:\n            paragraphs.append(paragraph_dict)\n        else:\n            paragraphs.insert(index_with_id(paragraphs, before_id), paragraph_dict)\n        self._paragraphs[paragraph_dict[\"id\"]] = paragraph_dict\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def ",
+"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._pages = {}\n        self._parent_pages = {}\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        self._pages[page[\"id\"]] = page\n        self._parent_pages[page[\"id\"]] = parent_page\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def delete_paragraph_dict(self, page_id, paragraph_id):\n        paragraphs = self._pages[page_id][\"paragraphs\"]\n        paragraphs.pop(index_with_id(paragraphs, paragraph_id))\n        return self._paragraphs.pop(paragraph_id)\n\n    def ",
 "type":"code"
 },
 {
@@ -3163,11 +3163,12 @@
 ],
 "fragments":[
 {
-"text":"def add_paragraph(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    with self.modify(\"Add paragraph\") as document_dict:\n        document_dict.add_paragraph_dict(\n            dict(paragraph_dict, id=genid()),\n            page_id,\n            before_id=before_id\n        )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
+"text":"def add_paragraph(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    self.get_page(page_id).insert_paragraph_before(\n        dict(paragraph_dict, id=genid()),\n        before_id\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.get_page(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
 "type":"code"
 }
 ],
 "id":"377391e542c6475a85cb59faffecfa47",
+"language":"",
 "type":"code"
 },
 {
@@ -3251,7 +3252,7 @@
 "type":"variable"
 },
 {
-"text":".modify(\"Duplicate paragraph\") as document_dict:\n            document_dict.add_paragraph_dict(\n                dict(copy.deepcopy(self.",
+"text":".modify(\"Duplicate paragraph\") as document_dict:\n            self._page.insert_paragraph_before(\n                dict(copy.deepcopy(self.",
 "type":"code"
 },
 {
@@ -3259,7 +3260,7 @@
 "type":"variable"
 },
 {
-"text":"), id=genid()),\n                page_id=self._page.id,\n                before_id=self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
+"text":"), id=genid()),\n                self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
 "type":"code"
 }
 ],
