@@ -844,20 +844,34 @@ class Document(Observable):
                 return paragraph
     def rename_path(self, path, name):
         with self.modify("Rename path") as document_dict:
-            for p in document_dict.paragraph_dict_iterator():
-                if p["type"] == "code":
-                    filelen = len(p["filepath"])
-                    chunklen = len(p["chunkpath"])
-                    if path.is_prefix(Path(p["filepath"], p["chunkpath"])):
-                        if path.length > filelen:
-                            p["chunkpath"][path.length-1-filelen] = name
-                        else:
-                            p["filepath"][path.length-1] = name
+            for p in self._code_paragraph_iterator():
+                filelen = len(p.path.filepath)
+                chunklen = len(p.path.chunkpath)
+                if path.is_prefix(p.path):
+                    if path.length > filelen:
+                        self.modify_fn("", lambda document_dict: document_dict.replace(
+                            p._path+["chunkpath", path.length-1-filelen],
+                            name
+                        ))
                     else:
-                        for f in p["fragments"]:
-                            if f["type"] == "chunk":
-                                if path.is_prefix(Path(p["filepath"], p["chunkpath"]+f["path"])):
-                                    f["path"][path.length-1-filelen-chunklen] = name
+                        self.modify_fn("", lambda document_dict: document_dict.replace(
+                            p._path+["filepath", path.length-1],
+                            name
+                        ))
+                else:
+                    for f in p.fragments:
+                        if f.type == "chunk":
+                            if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):
+                                self.modify_fn("", lambda document_dict: document_dict.replace(
+                                    f._path+["path", path.length-1-filelen-chunklen],
+                                    name
+                                ))
+
+    def _code_paragraph_iterator(self):
+        for page in self.iter_pages():
+            for p in page.paragraphs:
+                if p.type == "code":
+                    yield p
     def new_variable(self, name):
         with self.modify("New variable") as document_dict:
             variable_id = genid()
@@ -909,20 +923,6 @@ class Document(Observable):
         else:
             return document_dict
 class DocumentDictWrapper(dict):
-
-    def __init__(self, document_dict):
-        dict.__init__(self, document_dict)
-        self._paragraphs = {}
-        self._cache_page(self["root_page"])
-
-    def _cache_page(self, page, parent_page=None):
-        for paragraph in page["paragraphs"]:
-            self._paragraphs[paragraph["id"]] = paragraph
-        for child in page["children"]:
-            self._cache_page(child, page)
-
-    def paragraph_dict_iterator(self):
-        return self._paragraphs.values()
 
     def replace(self, path, new_value):
         def replace(obj, path, new_value):
@@ -1400,6 +1400,7 @@ class CodeParagraph(Paragraph):
     def fragments(self):
         return CodeFragment.create_list(
             self._document,
+            self._path+["fragments"],
             self,
             self._fragment["fragments"]
         )
@@ -1668,27 +1669,27 @@ class Path(object):
                 self.chunkpath[index],
                 Path(self.filepath[:], self.chunkpath[:index+1])
             )
-class CodeFragment(object):
+class CodeFragment(DocumentFragment):
 
     @staticmethod
-    def create_list(document, code_paragraph, code_fragment_dicts):
+    def create_list(document, path, code_paragraph, code_fragment_dicts):
         return [
-            CodeFragment.create(document, code_paragraph, code_fragment_dict)
-            for code_fragment_dict
-            in code_fragment_dicts
+            CodeFragment.create(document, path+[index], code_paragraph, code_fragment_dict)
+            for index, code_fragment_dict
+            in enumerate(code_fragment_dicts)
         ]
 
     @staticmethod
-    def create(document, code_paragraph, code_fragment_dict):
+    def create(document, path, code_paragraph, code_fragment_dict):
         return {
             "variable": VariableCodeFragment,
             "chunk": ChunkCodeFragment,
             "code": CodeCodeFragment,
             "tabstop": TabstopCodeFragment,
-        }.get(code_fragment_dict["type"], CodeFragment)(document, code_paragraph, code_fragment_dict)
+        }.get(code_fragment_dict["type"], CodeFragment)(document, path, code_paragraph, code_fragment_dict)
 
-    def __init__(self, document, code_paragraph, code_fragment_dict):
-        self._document = document
+    def __init__(self, document, path, code_paragraph, code_fragment_dict):
+        DocumentFragment.__init__(self, document, path, code_fragment_dict)
         self._code_paragraph = code_paragraph
         self._code_fragment_dict = code_fragment_dict
 

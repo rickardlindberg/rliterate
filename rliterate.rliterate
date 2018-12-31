@@ -1547,7 +1547,7 @@
 "type":"variable"
 },
 {
-"text":"(dict):\n\n    def __init__(self, document_dict):\n        dict.__init__(self, document_dict)\n        self._paragraphs = {}\n        self._cache_page(self[\"root_page\"])\n\n    def _cache_page(self, page, parent_page=None):\n        for paragraph in page[\"paragraphs\"]:\n            self._paragraphs[paragraph[\"id\"]] = paragraph\n        for child in page[\"children\"]:\n            self._cache_page(child, page)\n\n    def paragraph_dict_iterator(self):\n        return self._paragraphs.values()\n\n    def ",
+"text":"(dict):\n\n    def ",
 "type":"code"
 },
 {
@@ -2396,15 +2396,7 @@
 ],
 "fragments":[
 {
-"text":"def rename_path(self, path, name):\n    with self.modify(\"Rename path\") as document_dict:\n        for p in document_dict.paragraph_dict_iterator():\n            if p[\"type\"] == \"code\":\n                filelen = len(p[\"filepath\"])\n                chunklen = len(p[\"chunkpath\"])\n                if path.is_prefix(Path(p[\"filepath\"], p[\"chunkpath\"])):\n                    if path.length > filelen:\n                        p[\"chunkpath\"][path.length-1-filelen] = name\n                    else:\n                        p[\"filepath\"][path.length-1] = name\n                else:\n                    for f in p[\"",
-"type":"code"
-},
-{
-"id":"5d5cbe77035c40379816eb19327f1267",
-"type":"variable"
-},
-{
-"text":"\"]:\n                        if f[\"type\"] == \"chunk\":\n                            if path.is_prefix(Path(p[\"filepath\"], p[\"chunkpath\"]+f[\"path\"])):\n                                f[\"path\"][path.length-1-filelen-chunklen] = name\n",
+"text":"def rename_path(self, path, name):\n    with self.modify(\"Rename path\") as document_dict:\n        for p in self._code_paragraph_iterator():\n            filelen = len(p.path.filepath)\n            chunklen = len(p.path.chunkpath)\n            if path.is_prefix(p.path):\n                if path.length > filelen:\n                    self.modify_fn(\"\", lambda document_dict: document_dict.replace(\n                        p._path+[\"chunkpath\", path.length-1-filelen],\n                        name\n                    ))\n                else:\n                    self.modify_fn(\"\", lambda document_dict: document_dict.replace(\n                        p._path+[\"filepath\", path.length-1],\n                        name\n                    ))\n            else:\n                for f in p.fragments:\n                    if f.type == \"chunk\":\n                        if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):\n                            self.modify_fn(\"\", lambda document_dict: document_dict.replace(\n                                f._path+[\"path\", path.length-1-filelen-chunklen],\n                                name\n                            ))\n\ndef _code_paragraph_iterator(self):\n    for page in self.iter_pages():\n        for p in page.paragraphs:\n            if p.type == \"code\":\n                yield p\n",
 "type":"code"
 }
 ],
@@ -2570,7 +2562,15 @@
 "type":"variable"
 },
 {
-"text":",\n        self,\n        self.",
+"text":",\n        self._path+[\"",
+"type":"code"
+},
+{
+"id":"5d5cbe77035c40379816eb19327f1267",
+"type":"variable"
+},
+{
+"text":"\"],\n        self,\n        self.",
 "type":"code"
 },
 {
@@ -2627,15 +2627,23 @@
 ],
 "fragments":[
 {
-"text":"class CodeFragment(object):\n\n    @staticmethod\n    def create_list(document, code_paragraph, code_fragment_dicts):\n        return [\n            CodeFragment.create(document, code_paragraph, code_fragment_dict)\n            for code_fragment_dict\n            in code_fragment_dicts\n        ]\n\n    @staticmethod\n    def create(document, code_paragraph, code_fragment_dict):\n        return {\n            \"variable\": VariableCodeFragment,\n            \"chunk\": ChunkCodeFragment,\n            \"code\": CodeCodeFragment,\n            \"tabstop\": TabstopCodeFragment,\n        }.get(code_fragment_dict[\"type\"], CodeFragment)(document, code_paragraph, code_fragment_dict)\n\n    def __init__(self, document, code_paragraph, code_fragment_dict):\n        self.",
+"text":"class CodeFragment(",
 "type":"code"
 },
 {
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"id":"b389117f3e4740ad83a6da246473fb19",
 "type":"variable"
 },
 {
-"text":" = document\n        self._code_paragraph = code_paragraph\n        self._code_fragment_dict = code_fragment_dict\n\n    @property\n    def type(self):\n        return self._code_fragment_dict[\"type\"]\n",
+"text":"):\n\n    @staticmethod\n    def create_list(document, path, code_paragraph, code_fragment_dicts):\n        return [\n            CodeFragment.create(document, path+[index], code_paragraph, code_fragment_dict)\n            for index, code_fragment_dict\n            in enumerate(code_fragment_dicts)\n        ]\n\n    @staticmethod\n    def create(document, path, code_paragraph, code_fragment_dict):\n        return {\n            \"variable\": VariableCodeFragment,\n            \"chunk\": ChunkCodeFragment,\n            \"code\": CodeCodeFragment,\n            \"tabstop\": TabstopCodeFragment,\n        }.get(code_fragment_dict[\"type\"], CodeFragment)(document, path, code_paragraph, code_fragment_dict)\n\n    def __init__(self, document, path, code_paragraph, code_fragment_dict):\n        ",
+"type":"code"
+},
+{
+"id":"b389117f3e4740ad83a6da246473fb19",
+"type":"variable"
+},
+{
+"text":".__init__(self, document, path, code_fragment_dict)\n        self._code_paragraph = code_paragraph\n        self._code_fragment_dict = code_fragment_dict\n\n    @property\n    def type(self):\n        return self._code_fragment_dict[\"type\"]\n",
 "type":"code"
 }
 ],
