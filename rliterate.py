@@ -758,12 +758,10 @@ class Document(Observable):
         )
     def _load(self, document_dict):
         self._history = History(
-            DocumentDictWrapper(
-                self._convert_to_latest(
-                    self._empty_page()
-                    if document_dict is None else
-                    document_dict
-                )
+            self._convert_to_latest(
+                self._empty_page()
+                if document_dict is None else
+                document_dict
             ),
             size=UNDO_BUFFER_SIZE
         )
@@ -849,12 +847,14 @@ class Document(Observable):
                 chunklen = len(p.path.chunkpath)
                 if path.is_prefix(p.path):
                     if path.length > filelen:
-                        self.modify_fn("", lambda document_dict: document_dict.replace(
+                        self.modify_fn("", lambda document_dict: im_replace(
+                            document_dict,
                             p._path+["chunkpath", path.length-1-filelen],
                             name
                         ))
                     else:
-                        self.modify_fn("", lambda document_dict: document_dict.replace(
+                        self.modify_fn("", lambda document_dict: im_replace(
+                            document_dict,
                             p._path+["filepath", path.length-1],
                             name
                         ))
@@ -862,7 +862,8 @@ class Document(Observable):
                     for f in p.fragments:
                         if f.type == "chunk":
                             if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):
-                                self.modify_fn("", lambda document_dict: document_dict.replace(
+                                self.modify_fn("", lambda document_dict: im_replace(
+                                    document_dict,
                                     f._path+["path", path.length-1-filelen-chunklen],
                                     name
                                 ))
@@ -922,24 +923,6 @@ class Document(Observable):
             }
         else:
             return document_dict
-class DocumentDictWrapper(dict):
-
-    def replace(self, path, new_value):
-        def replace(obj, path, new_value):
-            if path:
-                if isinstance(obj, list):
-                    new_obj = obj[:]
-                elif isinstance(obj, dict):
-                    new_obj = dict(obj)
-                else:
-                    raise ValueError("unknown type")
-                new_obj[path[0]] = replace(new_obj[path[0]], path[1:], new_value)
-                return new_obj
-            elif callable(new_value):
-                return new_value(obj)
-            else:
-                return new_value
-        return DocumentDictWrapper(replace(self, path, new_value))
 class Page(DocumentFragment):
 
     def __init__(self, document, path, fragment, parent, index):
@@ -984,7 +967,7 @@ class Page(DocumentFragment):
 
     def set_title(self, title):
         self._document.modify_fn("Change title", lambda document_dict:
-            document_dict.replace(self._path+["title"], title)
+            im_replace(document_dict, self._path+["title"], title)
         )
 
     @property
@@ -1007,7 +990,8 @@ class Page(DocumentFragment):
 
     def delete_paragraph_at_index(self, index):
         self._document.modify_fn("Delete paragraph", lambda document_dict:
-            document_dict.replace(
+            im_replace(
+                document_dict,
                 self._path+["paragraphs"],
                 lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
             )
@@ -1021,7 +1005,8 @@ class Page(DocumentFragment):
                 index = index_with_id(paragraphs, before_paragraph_id)
                 return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
         self._document.modify_fn("Insert paragraph", lambda document_dict:
-            document_dict.replace(
+            im_replace(
+                document_dict,
                 self._path+["paragraphs"],
                 insert
             )
@@ -1048,7 +1033,8 @@ class Page(DocumentFragment):
             else:
                 return items[:index]+[item]+items[index+1:]
         self._document.modify_fn("Add page", lambda document_dict:
-            document_dict.replace(
+            im_replace(
+                document_dict,
                 self._path+["children"],
                 lambda children: insert(children, page_dict, index)
             )
@@ -1060,7 +1046,8 @@ class Page(DocumentFragment):
 
     def delete_child_at_index(self, index):
         self._document.modify_fn("Delete page", lambda document_dict:
-            document_dict.replace(
+            im_replace(
+                document_dict,
                 self._path+["children"],
                 lambda children: children[:index]+children[index]["children"]+children[index+1:]
             )
@@ -1105,7 +1092,7 @@ class Page(DocumentFragment):
             if len(parent_page._path) > len(self.parent._path):
                 changes = reversed(changes)
             for path, new_value in changes:
-                document_dict = document_dict.replace(path, new_value)
+                document_dict = im_replace(document_dict, path, new_value)
             return document_dict
         self._document.modify_fn("Move page", do_move)
 class Paragraph(DocumentFragment):
@@ -1146,7 +1133,8 @@ class Paragraph(DocumentFragment):
 
     def update(self, data):
         self._document.modify_fn("Edit paragraph", lambda document_dict:
-            document_dict.replace(
+            im_replace(
+                document_dict,
                 self._path,
                 lambda paragraph: dict(paragraph, **data)
             )
@@ -4816,6 +4804,20 @@ class History(object):
     def forward(self):
         if self.can_forward():
             self._history_index += 1
+def im_replace(obj, path, new_value):
+    if path:
+        if isinstance(obj, list):
+            new_obj = obj[:]
+        elif isinstance(obj, dict):
+            new_obj = dict(obj)
+        else:
+            raise ValueError("unknown type")
+        new_obj[path[0]] = im_replace(new_obj[path[0]], path[1:], new_value)
+        return new_obj
+    elif callable(new_value):
+        return new_value(obj)
+    else:
+        return new_value
 def index_with_id(items, item_id):
     for index, item in enumerate(items):
         if item["id"] == item_id:
