@@ -750,12 +750,6 @@ class Document(Observable):
             return cls(path, load_json_from_file(path))
         else:
             return cls(path)
-
-    def save(self):
-        write_json_to_file(
-            self.path,
-            self.read_only_document_dict
-        )
     def _load(self, document_dict):
         self._history = History(
             self._convert_to_latest(
@@ -765,8 +759,13 @@ class Document(Observable):
             ),
             size=UNDO_BUFFER_SIZE
         )
+    def save(self):
+        write_json_to_file(
+            self.path,
+            self.document_dict
+        )
     @property
-    def read_only_document_dict(self):
+    def document_dict(self):
         return self._history.value
     @contextlib.contextmanager
     def transaction(self, name):
@@ -817,7 +816,7 @@ class Document(Observable):
         return Page(
             self,
             ["root_page"],
-            self.read_only_document_dict["root_page"],
+            self.document_dict["root_page"],
             None,
             None
         )
@@ -894,7 +893,7 @@ class Document(Observable):
         )
 
     def lookup_variable(self, variable_id):
-        return self.read_only_document_dict["variables"].get(variable_id)
+        return self.document_dict["variables"].get(variable_id)
     def _convert_to_latest(self, document_dict):
         for fn in [
             self._legacy_inline_text,

@@ -1383,6 +1383,210 @@
 "children":[
 {
 "children":[],
+"id":"49fd8c2e669a467d98abd7ad9a69be80",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@classmethod\ndef ",
+"type":"code"
+},
+{
+"id":"a5bace68289b40e78df93409e362a63b",
+"type":"variable"
+},
+{
+"text":"(cls, path):\n    if os.path.exists(path):\n        return cls(path, load_json_from_file(path))\n    else:\n        return cls(path)\n",
+"type":"code"
+}
+],
+"id":"53de8670b4164bc7a0ab502d2960da63",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"72f25430d25e4a469bfa5e017370e0f2",
+"type":"variable"
+},
+{
+"text":"(Observable):\n\n    def __init__(self, path, document_dict=None):\n        Observable.__init__(self)\n        self.path = path\n        self.",
+"type":"code"
+},
+{
+"id":"9e987210a686490c823a44d09e783833",
+"type":"variable"
+},
+{
+"text":"(document_dict)\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"Document"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"f488adc5a56f4b83bf43b66fef2c5545",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"9e987210a686490c823a44d09e783833",
+"type":"variable"
+},
+{
+"text":"(self, document_dict):\n    self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":" = History(\n        self.",
+"type":"code"
+},
+{
+"id":"d6cbae294f8e4eec91f8a110b0d29761",
+"type":"variable"
+},
+{
+"text":"(\n            self._empty_page()\n            if document_dict is None else\n            document_dict\n        ),\n        size=",
+"type":"code"
+},
+{
+"id":"f0c23b7747d64c099e653337bb185c00",
+"type":"variable"
+},
+{
+"text":"\n    )\n",
+"type":"code"
+}
+],
+"id":"4b50dfd6dcd64c59b9d3a53346944a5d",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def save(self):\n    write_json_to_file(\n        self.path,\n        self.",
+"type":"code"
+},
+{
+"id":"b7da0c1f7b7845c8a2c816963948740d",
+"type":"variable"
+},
+{
+"text":"\n    )\n",
+"type":"code"
+}
+],
+"id":"df447b3de296466db8d8beccaf20270c",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"constants"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"f0c23b7747d64c099e653337bb185c00",
+"type":"variable"
+},
+{
+"text":" = 10\n",
+"type":"code"
+}
+],
+"id":"2aece28b30644f9e91653342ed592c68",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Document"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef ",
+"type":"code"
+},
+{
+"id":"b7da0c1f7b7845c8a2c816963948740d",
+"type":"variable"
+},
+{
+"text":"(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".value\n",
+"type":"code"
+}
+],
+"id":"bc45428e3cfd4935a9b81d9bbb04c326",
+"language":"",
+"type":"code"
+}
+],
+"title":"Loading and saving"
+},
+{
+"children":[],
 "id":"c0ca0270ab9645ae9e225267153f2484",
 "paragraphs":[
 {
@@ -1466,7 +1670,15 @@
 "type":"variable"
 },
 {
-"text":"():\n        with self._history.new_value(name, ",
+"text":"():\n        with self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".new_value(name, ",
 "type":"code"
 },
 {
@@ -1498,7 +1710,15 @@
 "type":"variable"
 },
 {
-"text":"():\n        with self._history.new_value(name, ",
+"text":"():\n        with self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".new_value(name, ",
 "type":"code"
 },
 {
@@ -1522,7 +1742,31 @@
 "type":"variable"
 },
 {
-"text":"():\n            self._history.back()\n    if self._history.can_back():\n        return (self._history.back_name(), undo)\n\ndef get_redo_operation(self):\n    def redo():\n        with self.",
+"text":"():\n            self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".back()\n    if self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".can_back():\n        return (self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".back_name(), undo)\n\ndef get_redo_operation(self):\n    def redo():\n        with self.",
 "type":"code"
 },
 {
@@ -1530,7 +1774,31 @@
 "type":"variable"
 },
 {
-"text":"():\n            self._history.forward()\n    if self._history.can_forward():\n        return (self._history.forward_name(), redo)\n",
+"text":"():\n            self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".forward()\n    if self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".can_forward():\n        return (self.",
+"type":"code"
+},
+{
+"id":"e48f335915b94544a04357b0e4fcea31",
+"type":"variable"
+},
+{
+"text":".forward_name(), redo)\n",
 "type":"code"
 }
 ],
@@ -4863,350 +5131,16 @@
 "type":"text"
 },
 {
-"text":"Document",
-"type":"code"
+"id":"72f25430d25e4a469bfa5e017370e0f2",
+"type":"variable"
 },
 {
-"text":" class provides a friendly interface for working with an RLiterate document:",
+"text":" class defined in this section provides a friendly interface for working with an RLiterate document:",
 "type":"text"
 }
 ],
 "id":"88ddc11e6f0c4206bd069066f20979ee",
 "type":"text"
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"It is an ",
-"type":"text"
-},
-{
-"text":"Observable",
-"type":"code"
-},
-{
-"text":" so that others can listen for changes.",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"It provides \"rich\" wrappers for different fragments of the document that provide friendly interfaces for querying and modifying.",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"It provides an undo/redo mechanism.",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"It can load and save a document from disk.",
-"type":"text"
-}
-]
-}
-],
-"id":"3b48f03c91b34a4db9007d1271e6f7f3",
-"type":"list"
-},
-{
-"fragments":[
-{
-"text":"The ",
-"type":"text"
-},
-{
-"text":"Document",
-"type":"code"
-},
-{
-"text":" class is initialized with a document dictionary (or ",
-"type":"text"
-},
-{
-"text":"None",
-"type":"code"
-},
-{
-"text":" to create a new document):",
-"type":"text"
-}
-],
-"id":"ee245646bb074d07b5e0f0aa526bd23a",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class Document(Observable):\n\n    def __init__(self, path, document_dict=None):\n        Observable.__init__(self)\n        self.path = path\n        self.",
-"type":"code"
-},
-{
-"id":"9e987210a686490c823a44d09e783833",
-"type":"variable"
-},
-{
-"text":"(document_dict)\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"Document"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"f488adc5a56f4b83bf43b66fef2c5545",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"The default constructor does not know anything about files. It just creates an in-memory document. The ",
-"type":"text"
-},
-{
-"id":"a5bace68289b40e78df93409e362a63b",
-"type":"variable"
-},
-{
-"text":" constructor reads a document from file and also writes it back to file when it changes:",
-"type":"text"
-}
-],
-"id":"d46a68d807374208bfe62ab0014d955f",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"Document"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@classmethod\ndef ",
-"type":"code"
-},
-{
-"id":"a5bace68289b40e78df93409e362a63b",
-"type":"variable"
-},
-{
-"text":"(cls, path):\n    if os.path.exists(path):\n        return cls(path, load_json_from_file(path))\n    else:\n        return cls(path)\n\ndef save(self):\n    write_json_to_file(\n        self.path,\n        self.",
-"type":"code"
-},
-{
-"id":"b7da0c1f7b7845c8a2c816963948740d",
-"type":"variable"
-},
-{
-"text":"\n    )\n",
-"type":"code"
-}
-],
-"id":"53de8670b4164bc7a0ab502d2960da63",
-"language":"",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Loading is the same in both cases and involves",
-"type":"text"
-}
-],
-"id":"e17a270a05d846c2973d259cce30ea6f",
-"type":"text"
-},
-{
-"child_type":"ordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Creating a new empty document dict if none was passed",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Convert the document dict to the latest format",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Wrap it",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Put it in a history object for undo/redo",
-"type":"text"
-}
-]
-}
-],
-"id":"e74bd7999b4f4e2b81bbf899cb8f34b5",
-"type":"list"
-},
-{
-"chunkpath":[
-"classes",
-"Document"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"9e987210a686490c823a44d09e783833",
-"type":"variable"
-},
-{
-"text":"(self, document_dict):\n    self._history = History(\n        self.",
-"type":"code"
-},
-{
-"id":"d6cbae294f8e4eec91f8a110b0d29761",
-"type":"variable"
-},
-{
-"text":"(\n            self._empty_page()\n            if document_dict is None else\n            document_dict\n        ),\n        size=",
-"type":"code"
-},
-{
-"id":"f0c23b7747d64c099e653337bb185c00",
-"type":"variable"
-},
-{
-"text":"\n    )\n",
-"type":"code"
-}
-],
-"id":"4b50dfd6dcd64c59b9d3a53346944a5d",
-"type":"code"
-},
-{
-"chunkpath":[
-"constants"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"id":"f0c23b7747d64c099e653337bb185c00",
-"type":"variable"
-},
-{
-"text":" = 10\n",
-"type":"code"
-}
-],
-"id":"2aece28b30644f9e91653342ed592c68",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"The current document dict can be accessed via the ",
-"type":"text"
-},
-{
-"text":"read_only_document_dict",
-"type":"code"
-},
-{
-"text":" property. But it should be considered read only. For undo/redo to work properly, all edits must go through ",
-"type":"text"
-},
-{
-"id":"0397a216ff674867aa422a0778df2f44",
-"type":"variable"
-},
-{
-"text":".",
-"type":"text"
-}
-],
-"id":"54525c52f8a04347baba3c893feef9a5",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"Document"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef ",
-"type":"code"
-},
-{
-"id":"b7da0c1f7b7845c8a2c816963948740d",
-"type":"variable"
-},
-{
-"text":"(self):\n    return self._history.value\n",
-"type":"code"
-}
-],
-"id":"bc45428e3cfd4935a9b81d9bbb04c326",
-"type":"code"
 }
 ],
 "title":"Document model"
@@ -17690,6 +17624,7 @@
 "6a754b8a39e24518b76e88d57a89eff6":"container_border",
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
+"72f25430d25e4a469bfa5e017370e0f2":"Document",
 "740055857bb244038c203cea23c1af69":"CreateView",
 "74949da897df45e6862e45ffe667fc6e":"text_to_fragments",
 "75d0d294fd5a4cc5beaf14009875e662":"_fragment",
@@ -17741,7 +17676,7 @@
 "b3ef449947274fc597372ebb7fa1eaf7":"max_width",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
 "b7d3ecae71fd4c3ead275b008cfc71e8":"_needs_saving",
-"b7da0c1f7b7845c8a2c816963948740d":"read_only_document_dict",
+"b7da0c1f7b7845c8a2c816963948740d":"document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "ba63198235bb4716a96649f32f1f4ac4":"_layout",
 "bab7b7c32bd84606952fd1aa50993b6d":"_highlighted_variable",
@@ -17781,6 +17716,7 @@
 "e2c3589873b445459e152e0472402dc2":"_partition_strings",
 "e327d4d3650047bc9eedb2a21d4c2613":"Editable",
 "e3f662313fd1489c9fc8347b0d24ca9d":"SimpleContextMenu",
+"e48f335915b94544a04357b0e4fcea31":"_history",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
 "e4f044d70bf7427a8ddc1884b24fdf1f":"_calculate_lines",
 "e6cb5d6d0639494ebace6dcdef664d49":"multi_update",
