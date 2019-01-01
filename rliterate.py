@@ -769,12 +769,12 @@ class Document(Observable):
     def read_only_document_dict(self):
         return self._history.value
     @contextlib.contextmanager
-    def modify(self, name):
+    def transaction(self, name):
         with self.notify():
-            with self._history.new_value(name) as value:
-                yield value
+            with self._history.new_value(name, modify_fn=lambda x: x):
+                yield
 
-    def modify_fn(self, name, modify_fn):
+    def modify(self, name, modify_fn):
         with self.notify():
             with self._history.new_value(name, modify_fn=modify_fn):
                 pass
@@ -841,19 +841,19 @@ class Document(Observable):
             if paragraph.id == paragraph_id:
                 return paragraph
     def rename_path(self, path, name):
-        with self.modify("Rename path") as document_dict:
+        with self.transaction("Rename path"):
             for p in self._code_paragraph_iterator():
                 filelen = len(p.path.filepath)
                 chunklen = len(p.path.chunkpath)
                 if path.is_prefix(p.path):
                     if path.length > filelen:
-                        self.modify_fn("", lambda document_dict: im_replace(
+                        self.modify("", lambda document_dict: im_replace(
                             document_dict,
                             p._path+["chunkpath", path.length-1-filelen],
                             name
                         ))
                     else:
-                        self.modify_fn("", lambda document_dict: im_replace(
+                        self.modify("", lambda document_dict: im_replace(
                             document_dict,
                             p._path+["filepath", path.length-1],
                             name
@@ -862,7 +862,7 @@ class Document(Observable):
                     for f in p.fragments:
                         if f.type == "chunk":
                             if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):
-                                self.modify_fn("", lambda document_dict: im_replace(
+                                self.modify("", lambda document_dict: im_replace(
                                     document_dict,
                                     f._path+["path", path.length-1-filelen-chunklen],
                                     name
@@ -875,7 +875,7 @@ class Document(Observable):
                     yield p
     def new_variable(self, name):
         variable_id = genid()
-        self.modify_fn("New variable", lambda document_dict:
+        self.modify("New variable", lambda document_dict:
             im_replace(
                 document_dict,
                 ["variables"],
@@ -885,7 +885,7 @@ class Document(Observable):
         return variable_id
 
     def rename_variable(self, variable_id, name):
-        self.modify_fn("Rename variable", lambda document_dict:
+        self.modify("Rename variable", lambda document_dict:
             im_replace(
                 document_dict,
                 ["variables", variable_id],
@@ -976,7 +976,7 @@ class Page(DocumentFragment):
         return self._fragment["title"]
 
     def set_title(self, title):
-        self._document.modify_fn("Change title", lambda document_dict:
+        self._document.modify("Change title", lambda document_dict:
             im_replace(document_dict, self._path+["title"], title)
         )
 
@@ -999,7 +999,7 @@ class Page(DocumentFragment):
         ]
 
     def delete_paragraph_at_index(self, index):
-        self._document.modify_fn("Delete paragraph", lambda document_dict:
+        self._document.modify("Delete paragraph", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["paragraphs"],
@@ -1014,7 +1014,7 @@ class Page(DocumentFragment):
             else:
                 index = index_with_id(paragraphs, before_paragraph_id)
                 return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
-        self._document.modify_fn("Insert paragraph", lambda document_dict:
+        self._document.modify("Insert paragraph", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["paragraphs"],
@@ -1042,7 +1042,7 @@ class Page(DocumentFragment):
                 return items+[item]
             else:
                 return items[:index]+[item]+items[index+1:]
-        self._document.modify_fn("Add page", lambda document_dict:
+        self._document.modify("Add page", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["children"],
@@ -1055,7 +1055,7 @@ class Page(DocumentFragment):
             self.parent.delete_child_at_index(self._index)
 
     def delete_child_at_index(self, index):
-        self._document.modify_fn("Delete page", lambda document_dict:
+        self._document.modify("Delete page", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["children"],
@@ -1104,7 +1104,7 @@ class Page(DocumentFragment):
             for path, new_value in changes:
                 document_dict = im_replace(document_dict, path, new_value)
             return document_dict
-        self._document.modify_fn("Move page", do_move)
+        self._document.modify("Move page", do_move)
 class Paragraph(DocumentFragment):
 
     @staticmethod
@@ -1138,11 +1138,11 @@ class Paragraph(DocumentFragment):
 
     @contextlib.contextmanager
     def multi_update(self):
-        with self._document.modify("Edit paragraph"):
+        with self._document.transaction("Edit paragraph"):
             yield
 
     def update(self, data):
-        self._document.modify_fn("Edit paragraph", lambda document_dict:
+        self._document.modify("Edit paragraph", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path,
@@ -1157,12 +1157,12 @@ class Paragraph(DocumentFragment):
         x = self._document.get_page(target_page)
         if x.id == self._page.id and before_paragraph == self.id:
             return
-        with self._document.modify("Move paragraph") as document_dict:
+        with self._document.transaction("Move paragraph"):
             self._page.delete_paragraph_at_index(self._index)
             x.insert_paragraph_before(self._fragment, before_paragraph)
 
     def duplicate(self):
-        with self._document.modify("Duplicate paragraph") as document_dict:
+        with self._document.transaction("Duplicate paragraph"):
             self._page.insert_paragraph_before(
                 dict(copy.deepcopy(self._fragment), id=genid()),
                 self.next_id

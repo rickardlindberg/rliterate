@@ -1407,11 +1407,11 @@
 "type":"text"
 },
 {
-"text":"modify",
+"text":"`0397a216ff674867aa422a0778df2f44",
 "type":"code"
 },
 {
-"text":" method",
+"text":"` method",
 "type":"text"
 }
 ]
@@ -1450,7 +1450,15 @@
 ],
 "fragments":[
 {
-"text":"@contextlib.contextmanager\ndef modify(self, name):\n    with self.",
+"text":"@contextlib.contextmanager\ndef ",
+"type":"code"
+},
+{
+"id":"0397a216ff674867aa422a0778df2f44",
+"type":"variable"
+},
+{
+"text":"(self, name):\n    with self.",
 "type":"code"
 },
 {
@@ -1458,11 +1466,27 @@
 "type":"variable"
 },
 {
-"text":"():\n        with self._history.new_value(name) as value:\n            yield value\n\ndef modify_fn(self, name, ",
+"text":"():\n        with self._history.new_value(name, ",
+"type":"code"
+},
+{
+"id":"fa5caec06ed84470a3797f18af6cde3a",
+"type":"variable"
+},
+{
+"text":"=lambda x: x):\n            yield\n\ndef ",
 "type":"code"
 },
 {
 "id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(self, name, ",
+"type":"code"
+},
+{
+"id":"fa5caec06ed84470a3797f18af6cde3a",
 "type":"variable"
 },
 {
@@ -1478,7 +1502,7 @@
 "type":"code"
 },
 {
-"id":"a5aea35d34d74689b025122b40dc23b4",
+"id":"fa5caec06ed84470a3797f18af6cde3a",
 "type":"variable"
 },
 {
@@ -1486,7 +1510,7 @@
 "type":"code"
 },
 {
-"id":"a5aea35d34d74689b025122b40dc23b4",
+"id":"fa5caec06ed84470a3797f18af6cde3a",
 "type":"variable"
 },
 {
@@ -1511,6 +1535,7 @@
 }
 ],
 "id":"f2c5232417964cbabc4f03f310b3a0a4",
+"language":"",
 "type":"code"
 }
 ],
@@ -1635,7 +1660,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Change title\", lambda document_dict:\n            ",
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Change title\", lambda document_dict:\n            ",
 "type":"code"
 },
 {
@@ -1691,7 +1724,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Delete paragraph\", lambda document_dict:\n            ",
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Delete paragraph\", lambda document_dict:\n            ",
 "type":"code"
 },
 {
@@ -1715,7 +1756,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Insert paragraph\", lambda document_dict:\n            ",
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Insert paragraph\", lambda document_dict:\n            ",
 "type":"code"
 },
 {
@@ -1763,7 +1812,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Add page\", lambda document_dict:\n            ",
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Add page\", lambda document_dict:\n            ",
 "type":"code"
 },
 {
@@ -1787,7 +1844,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Delete page\", lambda document_dict:\n            ",
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Delete page\", lambda document_dict:\n            ",
 "type":"code"
 },
 {
@@ -1827,7 +1892,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Move page\", do_move)\n",
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Move page\", do_move)\n",
 "type":"code"
 }
 ],
@@ -2338,7 +2411,23 @@
 ],
 "fragments":[
 {
-"text":"def rename_path(self, path, name):\n    with self.modify(\"Rename path\") as document_dict:\n        for p in self._code_paragraph_iterator():\n            filelen = len(p.path.filepath)\n            chunklen = len(p.path.chunkpath)\n            if path.is_prefix(p.path):\n                if path.length > filelen:\n                    self.modify_fn(\"\", lambda document_dict: ",
+"text":"def rename_path(self, path, name):\n    with self.",
+"type":"code"
+},
+{
+"id":"0397a216ff674867aa422a0778df2f44",
+"type":"variable"
+},
+{
+"text":"(\"Rename path\"):\n        for p in self._code_paragraph_iterator():\n            filelen = len(p.path.filepath)\n            chunklen = len(p.path.chunkpath)\n            if path.is_prefix(p.path):\n                if path.length > filelen:\n                    self.",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"\", lambda document_dict: ",
 "type":"code"
 },
 {
@@ -2346,7 +2435,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                        document_dict,\n                        p._path+[\"chunkpath\", path.length-1-filelen],\n                        name\n                    ))\n                else:\n                    self.modify_fn(\"\", lambda document_dict: ",
+"text":"(\n                        document_dict,\n                        p._path+[\"chunkpath\", path.length-1-filelen],\n                        name\n                    ))\n                else:\n                    self.",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"\", lambda document_dict: ",
 "type":"code"
 },
 {
@@ -2354,7 +2451,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                        document_dict,\n                        p._path+[\"filepath\", path.length-1],\n                        name\n                    ))\n            else:\n                for f in p.fragments:\n                    if f.type == \"chunk\":\n                        if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):\n                            self.modify_fn(\"\", lambda document_dict: ",
+"text":"(\n                        document_dict,\n                        p._path+[\"filepath\", path.length-1],\n                        name\n                    ))\n            else:\n                for f in p.fragments:\n                    if f.type == \"chunk\":\n                        if path.is_prefix(Path(p.path.filepath, p.path.chunkpath+f.path)):\n                            self.",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"\", lambda document_dict: ",
 "type":"code"
 },
 {
@@ -3194,7 +3299,15 @@
 "type":"variable"
 },
 {
-"text":".modify(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        self.",
+"text":".",
+"type":"code"
+},
+{
+"id":"0397a216ff674867aa422a0778df2f44",
+"type":"variable"
+},
+{
+"text":"(\"Edit paragraph\"):\n            yield\n\n    def update(self, data):\n        self.",
 "type":"code"
 },
 {
@@ -3202,7 +3315,15 @@
 "type":"variable"
 },
 {
-"text":".modify_fn(\"Edit paragraph\", lambda document_dict:\n            ",
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Edit paragraph\", lambda document_dict:\n            ",
 "type":"code"
 },
 {
@@ -3226,7 +3347,15 @@
 "type":"variable"
 },
 {
-"text":".modify(\"Move paragraph\") as document_dict:\n            self._page.delete_paragraph_at_index(self._index)\n            x.insert_paragraph_before(self._fragment, before_paragraph)\n\n    def duplicate(self):\n        with self.",
+"text":".",
+"type":"code"
+},
+{
+"id":"0397a216ff674867aa422a0778df2f44",
+"type":"variable"
+},
+{
+"text":"(\"Move paragraph\"):\n            self._page.delete_paragraph_at_index(self._index)\n            x.insert_paragraph_before(self._fragment, before_paragraph)\n\n    def duplicate(self):\n        with self.",
 "type":"code"
 },
 {
@@ -3234,7 +3363,15 @@
 "type":"variable"
 },
 {
-"text":".modify(\"Duplicate paragraph\") as document_dict:\n            self._page.insert_paragraph_before(\n                dict(copy.deepcopy(self.",
+"text":".",
+"type":"code"
+},
+{
+"id":"0397a216ff674867aa422a0778df2f44",
+"type":"variable"
+},
+{
+"text":"(\"Duplicate paragraph\"):\n            self._page.insert_paragraph_before(\n                dict(copy.deepcopy(self.",
 "type":"code"
 },
 {
@@ -3520,7 +3657,23 @@
 ],
 "fragments":[
 {
-"text":"def new_variable(self, name):\n    variable_id = genid()\n    self.modify_fn(\"New variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\"],\n            dict(document_dict[\"variables\"], **{variable_id: name})\n        )\n    )\n    return variable_id\n\ndef rename_variable(self, variable_id, name):\n    self.modify_fn(\"Rename variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\", variable_id],\n            name\n        )\n    )\n\ndef lookup_variable(self, variable_id):\n    return self.",
+"text":"def new_variable(self, name):\n    variable_id = genid()\n    self.",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"New variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\"],\n            dict(document_dict[\"variables\"], **{variable_id: name})\n        )\n    )\n    return variable_id\n\ndef rename_variable(self, variable_id, name):\n    self.",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Rename variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\", variable_id],\n            name\n        )\n    )\n\ndef lookup_variable(self, variable_id):\n    return self.",
 "type":"code"
 },
 {
@@ -5011,8 +5164,8 @@
 "type":"text"
 },
 {
-"text":"modify",
-"type":"code"
+"id":"0397a216ff674867aa422a0778df2f44",
+"type":"variable"
 },
 {
 "text":".",
@@ -15414,7 +15567,7 @@
 "type":"code"
 },
 {
-"id":"a5aea35d34d74689b025122b40dc23b4",
+"id":"fa5caec06ed84470a3797f18af6cde3a",
 "type":"variable"
 },
 {
@@ -15422,7 +15575,7 @@
 "type":"code"
 },
 {
-"id":"a5aea35d34d74689b025122b40dc23b4",
+"id":"fa5caec06ed84470a3797f18af6cde3a",
 "type":"variable"
 },
 {
@@ -15430,7 +15583,7 @@
 "type":"code"
 },
 {
-"id":"a5aea35d34d74689b025122b40dc23b4",
+"id":"fa5caec06ed84470a3797f18af6cde3a",
 "type":"variable"
 },
 {
@@ -15438,7 +15591,7 @@
 "type":"code"
 },
 {
-"id":"a5aea35d34d74689b025122b40dc23b4",
+"id":"fa5caec06ed84470a3797f18af6cde3a",
 "type":"variable"
 },
 {
@@ -17445,6 +17598,7 @@
 },
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
+"0397a216ff674867aa422a0778df2f44":"transaction",
 "03cf450743e9447da0a9becadacd7dda":"active_editor",
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
@@ -17548,7 +17702,7 @@
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a4ee3530a5f140f5bc70b87fca825372":"_update_paragraph_gui",
-"a5aea35d34d74689b025122b40dc23b4":"modify_fn",
+"a5aea35d34d74689b025122b40dc23b4":"modify",
 "a5bace68289b40e78df93409e362a63b":"from_file",
 "a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
 "a886e97ceb3d427c8190487d23d12bc1":"Column",
@@ -17625,6 +17779,7 @@
 "f7276b0256114e3999f63bdc6d7ec078":"StyledText",
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
 "f9605031f42b4c37a170779d7ee7fe6e":"UpdateTokens",
+"fa5caec06ed84470a3797f18af6cde3a":"modify_fn",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
 "fdd751029b984545a69a3570683a2b4a":"break_at_word",
 "fe5fe3f1bdad48b0841dbdc9aa677bf9":"flicker_free_drawing",
