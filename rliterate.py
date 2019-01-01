@@ -1434,10 +1434,9 @@ class CodeParagraph(Paragraph):
         return entry
     @text_version.setter
     def text_version(self, value):
-        with self.multi_update():
-            self.update({
-                "fragments": self._parse(value)
-            })
+        self.update({
+            "fragments": self._parse(value)
+        })
 
     def _parse(self, value):
         self._parsed_fragments = []

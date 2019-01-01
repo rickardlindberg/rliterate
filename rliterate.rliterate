@@ -2777,7 +2777,7 @@
 ],
 "fragments":[
 {
-"text":"@text_version.setter\ndef text_version(self, value):\n    with self.multi_update():\n        self.update({\n            \"",
+"text":"@text_version.setter\ndef text_version(self, value):\n    self.update({\n        \"",
 "type":"code"
 },
 {
@@ -2785,7 +2785,7 @@
 "type":"variable"
 },
 {
-"text":"\": self._parse(value)\n        })\n\ndef _parse(self, value):\n    self._parsed_fragments = []\n    self._parse_buffer = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            self._parse_clear()\n            body_match = re.match(r\"^(.*?)(, blank_lines_before=(\\d+))?$\", match.group(2))\n            if body_match.group(2):\n                blank_lines_before = int(body_match.group(3))\n            else:\n                blank_lines_before = 0\n            self._parsed_fragments.append({\n                \"type\": \"chunk\",\n                \"path\": body_match.group(1).split(\"/\"),\n                \"prefix\": match.group(1),\n                \"blank_lines_before\": blank_lines_before,\n            })\n        else:\n            while line:\n                variable_match = re.match(self._variable_fragment_re(), line)\n                tabstop_match = re.match(self._tabstop_fragment_re(), line)\n                if variable_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"variable\",\n                        \"id\": self._get_variable_id(variable_match.group(1))\n                    })\n                    line = line[len(variable_match.group(0)):]\n                elif tabstop_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"tabstop\",\n                        \"index\": int(tabstop_match.group(1))\n                    })\n                    line = line[len(tabstop_match.group(0)):]\n                else:\n                    self._parse_buffer += line[0]\n                    line = line[1:]\n            self._parse_buffer += \"\\n\"\n    self._parse_clear()\n    return self._parsed_fragments\n\ndef _get_variable_id(self, identifier):\n    if identifier in self._variable_map:\n        return self._variable_map[identifier]\n    elif self.",
+"text":"\": self._parse(value)\n    })\n\ndef _parse(self, value):\n    self._parsed_fragments = []\n    self._parse_buffer = \"\"\n    for line in value.splitlines():\n        match = re.match(self._chunk_fragment_re(), line)\n        if match:\n            self._parse_clear()\n            body_match = re.match(r\"^(.*?)(, blank_lines_before=(\\d+))?$\", match.group(2))\n            if body_match.group(2):\n                blank_lines_before = int(body_match.group(3))\n            else:\n                blank_lines_before = 0\n            self._parsed_fragments.append({\n                \"type\": \"chunk\",\n                \"path\": body_match.group(1).split(\"/\"),\n                \"prefix\": match.group(1),\n                \"blank_lines_before\": blank_lines_before,\n            })\n        else:\n            while line:\n                variable_match = re.match(self._variable_fragment_re(), line)\n                tabstop_match = re.match(self._tabstop_fragment_re(), line)\n                if variable_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"variable\",\n                        \"id\": self._get_variable_id(variable_match.group(1))\n                    })\n                    line = line[len(variable_match.group(0)):]\n                elif tabstop_match:\n                    self._parse_clear()\n                    self._parsed_fragments.append({\n                        \"type\": \"tabstop\",\n                        \"index\": int(tabstop_match.group(1))\n                    })\n                    line = line[len(tabstop_match.group(0)):]\n                else:\n                    self._parse_buffer += line[0]\n                    line = line[1:]\n            self._parse_buffer += \"\\n\"\n    self._parse_clear()\n    return self._parsed_fragments\n\ndef _get_variable_id(self, identifier):\n    if identifier in self._variable_map:\n        return self._variable_map[identifier]\n    elif self.",
 "type":"code"
 },
 {
@@ -3291,7 +3291,15 @@
 "type":"variable"
 },
 {
-"text":"[\"type\"]\n\n    @contextlib.contextmanager\n    def multi_update(self):\n        with self.",
+"text":"[\"type\"]\n\n    @contextlib.contextmanager\n    def ",
+"type":"code"
+},
+{
+"id":"e6cb5d6d0639494ebace6dcdef664d49",
+"type":"variable"
+},
+{
+"text":"(self):\n        with self.",
 "type":"code"
 },
 {
@@ -11478,11 +11486,20 @@
 ],
 "fragments":[
 {
-"text":"def Save(self):\n    with self.paragraph.multi_update():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n",
+"text":"def Save(self):\n    with self.paragraph.",
+"type":"code"
+},
+{
+"id":"e6cb5d6d0639494ebace6dcdef664d49",
+"type":"variable"
+},
+{
+"text":"():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n",
 "type":"code"
 }
 ],
 "id":"ae6a7f5f8561427f97117eceeff352b7",
+"language":"",
 "type":"code"
 }
 ],
@@ -17766,6 +17783,7 @@
 "e3f662313fd1489c9fc8347b0d24ca9d":"SimpleContextMenu",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
 "e4f044d70bf7427a8ddc1884b24fdf1f":"_calculate_lines",
+"e6cb5d6d0639494ebace6dcdef664d49":"multi_update",
 "e7f258e2b4ca4680b295e1daf618e0b4":"GlobalSettings",
 "eabcfbe8e6c349d497353e55ad0b3685":"Selection",
 "ebae45a29f8649beb10a7e3cab576552":"\", \"",
