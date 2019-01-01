@@ -17486,16 +17486,6 @@
 "type":"text"
 }
 ]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"First paragraph is not removed upon re-render",
-"type":"text"
-}
-]
 }
 ],
 "id":"334a278ca527447482c3059353cfed4f",
