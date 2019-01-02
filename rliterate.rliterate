@@ -1939,7 +1939,15 @@
 "type":"variable"
 },
 {
-"text":"(self, paragraph_dict, before_paragraph_id):\n    def insert(paragraphs):\n        if before_paragraph_id is None:\n            return paragraphs+[paragraph_dict]\n        else:\n            index = index_with_id(paragraphs, before_paragraph_id)\n            return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n    self.",
+"text":"(self, paragraph_dict, before_paragraph_id):\n    def insert(paragraphs):\n        if before_paragraph_id is None:\n            return paragraphs+[paragraph_dict]\n        else:\n            index = ",
+"type":"code"
+},
+{
+"id":"6e076e2955c4476fbe194f0a38a97cee",
+"type":"variable"
+},
+{
+"text":"(paragraphs, before_paragraph_id)\n            return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n    self.",
 "type":"code"
 },
 {
@@ -2392,7 +2400,15 @@
 "type":"variable"
 },
 {
-"text":"(parent_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if before_page_id == self.id:\n        return\n    # Do the move\n    def insert(items, item):\n        if before_page_id is None:\n            return items+[item]\n        else:\n            index = index_with_id(items, before_page_id)\n            return items[:index]+[item]+items[index:]\n    def remove(items, index):\n        return items[:index]+items[index+1:]\n    def do_move(document_dict):\n        changes = []\n        if parent_page.id == self.parent.id:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: insert(remove(x, self._index), self._fragment)\n            ))\n        else:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: remove(x, self._index)\n            ))\n            changes.append((\n                parent_page._path+[\"children\"],\n                lambda x: insert(x, self._fragment)\n            ))\n        if len(parent_page._path) > len(self.parent._path):\n            changes = reversed(changes)\n        for path, new_value in changes:\n            document_dict = ",
+"text":"(parent_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if before_page_id == self.id:\n        return\n    # Do the move\n    def insert(items, item):\n        if before_page_id is None:\n            return items+[item]\n        else:\n            index = ",
+"type":"code"
+},
+{
+"id":"6e076e2955c4476fbe194f0a38a97cee",
+"type":"variable"
+},
+{
+"text":"(items, before_page_id)\n            return items[:index]+[item]+items[index:]\n    def remove(items, index):\n        return items[:index]+items[index+1:]\n    def do_move(document_dict):\n        changes = []\n        if parent_page.id == self.parent.id:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: insert(remove(x, self._index), self._fragment)\n            ))\n        else:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: remove(x, self._index)\n            ))\n            changes.append((\n                parent_page._path+[\"children\"],\n                lambda x: insert(x, self._fragment)\n            ))\n        if len(parent_page._path) > len(self.parent._path):\n            changes = reversed(changes)\n        for path, new_value in changes:\n            document_dict = ",
 "type":"code"
 },
 {
