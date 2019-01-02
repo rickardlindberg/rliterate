@@ -753,7 +753,7 @@ class Document(Observable):
     def _load(self, document_dict):
         self._history = History(
             self._convert_to_latest(
-                self._empty_page()
+                new_document_dict()
                 if document_dict is None else
                 document_dict
             ),
@@ -791,16 +791,10 @@ class Document(Observable):
                 self._history.forward()
         if self._history.can_forward():
             return (self._history.forward_name(), redo)
-    def add_page(self, title="New page", parent_id=None):
-        self.get_page(parent_id).add_child(self._empty_page())
-
-    def _empty_page(self):
-        return {
-            "id": genid(),
-            "title": "New page...",
-            "children": [],
-            "paragraphs": [],
-        }
+    def get_page(self, page_id):
+        for page in self.iter_pages():
+            if page.id == page_id:
+                return page
 
     def iter_pages(self):
         def iter_pages(page):
@@ -808,11 +802,9 @@ class Document(Observable):
             for child in page.children:
                 for sub_page in iter_pages(child):
                     yield sub_page
-        return iter_pages(self.get_page())
-    def get_page(self, page_id=None):
-        return self._find_page(self._root_page(), page_id)
+        return iter_pages(self.get_root_page())
 
-    def _root_page(self):
+    def get_root_page(self):
         return Page(
             self,
             ["root_page"],
@@ -820,15 +812,6 @@ class Document(Observable):
             None,
             None
         )
-
-    def _find_page(self, page, page_id):
-        if page_id is None or page.id == page_id:
-            return page
-        for child in page.children:
-            match = self._find_page(child, page_id)
-            if match is not None:
-                return match
-        return None
     def add_paragraph(self, page_id, before_id=None, paragraph_dict={"type": "factory"}):
         self.get_page(page_id).insert_paragraph_before(
             dict(paragraph_dict, id=genid()),
@@ -1035,17 +1018,14 @@ class Page(DocumentFragment):
             in enumerate(self._fragment["children"])
         ]
 
-    def add_child(self, page_dict, index=None):
-        def insert(items, item, index):
-            if index is None:
-                return items+[item]
-            else:
-                return items[:index]+[item]+items[index+1:]
+    def add_child(self, page_dict=None):
+        if page_dict is None:
+            page_dict = new_page_dict()
         self._document.modify("Add page", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["children"],
-                lambda children: insert(children, page_dict, index)
+                lambda children: children+[page_dict]
             )
         )
 
@@ -2220,6 +2200,9 @@ class Project(Observable):
     def get_page(self, *args, **kwargs):
         return self.document.get_page(*args, **kwargs)
 
+    def get_root_page(self, *args, **kwargs):
+        return self.document.get_root_page(*args, **kwargs)
+
     def iter_pages(self, *args, **kwargs):
         return self.document.iter_pages(*args, **kwargs)
 
@@ -2775,7 +2758,7 @@ class TableOfContents(VerticalBasePanel):
         self.row_index = 0
         self.drop_points = []
         if self._get_hoisted_page() is None:
-            self._flatten_page(self.values["project"].get_page())
+            self._flatten_page(self.values["project"].get_root_page())
         else:
             self._flatten_page(self._get_hoisted_page())
         while self.row_index < len(self.row_widgets):
@@ -3004,7 +2987,7 @@ class PageContextMenu(wx.Menu):
         self.AppendSeparator()
         self.Bind(
             wx.EVT_MENU,
-            lambda event: self.project.add_page(parent_id=self.page.id),
+            lambda event: self.project.get_page(self.page.id).add_child(),
             self.Append(wx.NewId(), "Add child")
         )
         self.AppendSeparator()
@@ -3021,7 +3004,7 @@ class PageContextMenu(wx.Menu):
         )
         self.AppendSeparator()
         delete_item = self.Append(wx.NewId(), "Delete")
-        delete_item.Enable(self.page.id != self.project.get_page().id)
+        delete_item.Enable(self.page.id != self.project.get_root_page().id)
         self.Bind(
             wx.EVT_MENU,
             lambda event: self.page.delete(),
@@ -3056,7 +3039,7 @@ class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
         while len(self.columns) > len(self.project.columns):
             self.columns.pop(-1).Destroy()
             self.column_count_changed = True
-        if self.column_count_changed or self.columns[index].did_change("page_ids"):
+        if self.project.columns and (self.column_count_changed or self.columns[index].did_change("page_ids")):
             wx.CallAfter(self.ScrollToEnd)
 
     def _add_column(self, page_ids, index):
@@ -4443,7 +4426,7 @@ class CodeExpander(object):
         self.document = document
         self._parts = defaultdict(list)
         self._ids = {}
-        self._collect_parts(self.document.get_page())
+        self._collect_parts(self.document.get_root_page())
 
     def _collect_parts(self, page):
         for paragraph in page.paragraphs:
@@ -4529,7 +4512,7 @@ class HTMLBuilder(object):
         self.toc_max_depth = options.get("toc_max_depth", 3)
 
     def build(self):
-        self.page(self.document.get_page())
+        self.page(self.document.get_root_page())
         return "".join(self.parts)
 
     def toc(self, root_page, levels_left):
@@ -4700,7 +4683,7 @@ class DiffBuilder(object):
 
     def _foo(self):
         self.pages = []
-        self._collect_pages(self.document.get_page())
+        self._collect_pages(self.document.get_root_page())
         self._render_pages()
 
     def _collect_pages(self, page):
@@ -4812,6 +4795,18 @@ class History(object):
     def forward(self):
         if self.can_forward():
             self._history_index += 1
+def new_document_dict():
+    return {
+        "root_page": new_page_dict(),
+        "variables": {},
+    }
+def new_page_dict():
+    return {
+        "id": genid(),
+        "title": "New page...",
+        "children": [],
+        "paragraphs": [],
+    }
 def fragments_to_text(fragments):
     text_version = TextVersion()
     for fragment in fragments:
