@@ -1931,7 +1931,15 @@
 "type":"variable"
 },
 {
-"text":"+[\"paragraphs\"],\n            lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n        )\n    )\n\ndef insert_paragraph_before(self, paragraph_dict, before_paragraph_id):\n    def insert(paragraphs):\n        if before_paragraph_id is None:\n            return paragraphs+[paragraph_dict]\n        else:\n            index = index_with_id(paragraphs, before_paragraph_id)\n            return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n    self.",
+"text":"+[\"paragraphs\"],\n            lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n        )\n    )\n\ndef ",
+"type":"code"
+},
+{
+"id":"985e71100d1344daba62a309a21872aa",
+"type":"variable"
+},
+{
+"text":"(self, paragraph_dict, before_paragraph_id):\n    def insert(paragraphs):\n        if before_paragraph_id is None:\n            return paragraphs+[paragraph_dict]\n        else:\n            index = index_with_id(paragraphs, before_paragraph_id)\n            return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n    self.",
 "type":"code"
 },
 {
@@ -3758,7 +3766,15 @@
 "type":"variable"
 },
 {
-"text":"(page_id).insert_paragraph_before(\n        dict(paragraph_dict, id=genid()),\n        before_id\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.",
+"text":"(page_id).",
+"type":"code"
+},
+{
+"id":"985e71100d1344daba62a309a21872aa",
+"type":"variable"
+},
+{
+"text":"(\n        dict(paragraph_dict, id=genid()),\n        before_id\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.",
 "type":"code"
 },
 {
@@ -3895,7 +3911,15 @@
 "type":"variable"
 },
 {
-"text":"(\"Move paragraph\"):\n            self._page.delete_paragraph_at_index(self._index)\n            x.insert_paragraph_before(self._fragment, before_paragraph)\n\n    def duplicate(self):\n        with self.",
+"text":"(\"Move paragraph\"):\n            self._page.delete_paragraph_at_index(self._index)\n            x.",
+"type":"code"
+},
+{
+"id":"985e71100d1344daba62a309a21872aa",
+"type":"variable"
+},
+{
+"text":"(self._fragment, before_paragraph)\n\n    def duplicate(self):\n        with self.",
 "type":"code"
 },
 {
@@ -3911,7 +3935,15 @@
 "type":"variable"
 },
 {
-"text":"(\"Duplicate paragraph\"):\n            self._page.insert_paragraph_before(\n                dict(copy.deepcopy(self.",
+"text":"(\"Duplicate paragraph\"):\n            self._page.",
+"type":"code"
+},
+{
+"id":"985e71100d1344daba62a309a21872aa",
+"type":"variable"
+},
+{
+"text":"(\n                dict(copy.deepcopy(self.",
 "type":"code"
 },
 {
@@ -18049,6 +18081,7 @@
 "90d6de1e6f714f1497872ca757b501b6":"value",
 "94ebdf2d279b424580629906ad32a461":"characters",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
+"985e71100d1344daba62a309a21872aa":"insert_paragraph_before",
 "99872a7e246e4fc38f9e0029f076e120":"Character",
 "9afba42827fd435dab58673210d03785":"AppendChild",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
