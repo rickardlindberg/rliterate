@@ -961,87 +961,9 @@ class Page(DocumentFragment):
         self._document.modify("Change title", lambda document_dict:
             im_replace(document_dict, self._path+["title"], title)
         )
-
-    @property
-    def paragraphs(self):
-        return [
-            Paragraph.create(
-                self._document,
-                self._path+["paragraphs", index],
-                paragraph_dict,
-                index,
-                self,
-                next_paragraph_dict["id"] if next_paragraph_dict is not None else None
-            )
-            for (index, (paragraph_dict, next_paragraph_dict))
-            in enumerate(zip(
-                self._fragment["paragraphs"],
-                self._fragment["paragraphs"][1:]+[None]
-            ))
-        ]
-
-    def delete_paragraph_at_index(self, index):
-        self._document.modify("Delete paragraph", lambda document_dict:
-            im_replace(
-                document_dict,
-                self._path+["paragraphs"],
-                lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
-            )
-        )
-
-    def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):
-        def insert(paragraphs):
-            if before_paragraph_id is None:
-                return paragraphs+[paragraph_dict]
-            else:
-                index = index_with_id(paragraphs, before_paragraph_id)
-                return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
-        self._document.modify("Insert paragraph", lambda document_dict:
-            im_replace(
-                document_dict,
-                self._path+["paragraphs"],
-                insert
-            )
-        )
-
-    @property
-    def children(self):
-        return [
-            Page(
-                self._document,
-                self._path+["children", index],
-                child_dict,
-                self,
-                index
-            )
-            for index, child_dict
-            in enumerate(self._fragment["children"])
-        ]
-
-    def add_child(self, page_dict=None):
-        if page_dict is None:
-            page_dict = new_page_dict()
-        self._document.modify("Add page", lambda document_dict:
-            im_replace(
-                document_dict,
-                self._path+["children"],
-                lambda children: children+[page_dict]
-            )
-        )
-
     def delete(self):
         if self.parent is not None:
             self.parent.delete_child_at_index(self._index)
-
-    def delete_child_at_index(self, index):
-        self._document.modify("Delete page", lambda document_dict:
-            im_replace(
-                document_dict,
-                self._path+["children"],
-                lambda children: children[:index]+children[index]["children"]+children[index+1:]
-            )
-        )
-
     def move(self, parent_page_id, before_page_id):
         parent_page = self._document.get_page(parent_page_id)
         # Abort if invalid move
@@ -1084,6 +1006,78 @@ class Page(DocumentFragment):
                 document_dict = im_replace(document_dict, path, new_value)
             return document_dict
         self._document.modify("Move page", do_move)
+    @property
+    def paragraphs(self):
+        return [
+            Paragraph.create(
+                self._document,
+                self._path+["paragraphs", index],
+                paragraph_dict,
+                index,
+                self,
+                next_paragraph_dict["id"] if next_paragraph_dict is not None else None
+            )
+            for (index, (paragraph_dict, next_paragraph_dict))
+            in enumerate(zip(
+                self._fragment["paragraphs"],
+                self._fragment["paragraphs"][1:]+[None]
+            ))
+        ]
+
+    def delete_paragraph_at_index(self, index):
+        self._document.modify("Delete paragraph", lambda document_dict:
+            im_replace(
+                document_dict,
+                self._path+["paragraphs"],
+                lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
+            )
+        )
+
+    def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):
+        def insert(paragraphs):
+            if before_paragraph_id is None:
+                return paragraphs+[paragraph_dict]
+            else:
+                index = index_with_id(paragraphs, before_paragraph_id)
+                return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
+        self._document.modify("Insert paragraph", lambda document_dict:
+            im_replace(
+                document_dict,
+                self._path+["paragraphs"],
+                insert
+            )
+        )
+    @property
+    def children(self):
+        return [
+            Page(
+                self._document,
+                self._path+["children", index],
+                child_dict,
+                self,
+                index
+            )
+            for index, child_dict
+            in enumerate(self._fragment["children"])
+        ]
+    def add_child(self, page_dict=None):
+        if page_dict is None:
+            page_dict = new_page_dict()
+        self._document.modify("Add page", lambda document_dict:
+            im_replace(
+                document_dict,
+                self._path+["children"],
+                lambda children: children+[page_dict]
+            )
+        )
+    def delete_child_at_index(self, index):
+        self._document.modify("Delete page", lambda document_dict:
+            im_replace(
+                document_dict,
+                self._path+["children"],
+                lambda children: children[:index]+children[index]["children"]+children[index+1:]
+            )
+        )
 class Paragraph(DocumentFragment):
 
     @staticmethod

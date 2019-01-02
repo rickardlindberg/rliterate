@@ -1852,7 +1852,286 @@
 "title":"Modifying"
 },
 {
+"children":[
+{
 "children":[],
+"id":"500570e279bc417fa8cdf1fd43c41d76",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef paragraphs(self):\n    return [\n        Paragraph.create(\n            self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":",\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"paragraphs\", index],\n            paragraph_dict,\n            index,\n            self,\n            next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n        )\n        for (index, (paragraph_dict, next_paragraph_dict))\n        in enumerate(zip(\n            self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"paragraphs\"],\n            self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef delete_paragraph_at_index(self, index):\n    self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Delete paragraph\", lambda document_dict:\n        ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n            document_dict,\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"paragraphs\"],\n            lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n        )\n    )\n\ndef insert_paragraph_before(self, paragraph_dict, before_paragraph_id):\n    def insert(paragraphs):\n        if before_paragraph_id is None:\n            return paragraphs+[paragraph_dict]\n        else:\n            index = index_with_id(paragraphs, before_paragraph_id)\n            return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n    self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Insert paragraph\", lambda document_dict:\n        ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n            document_dict,\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"paragraphs\"],\n            insert\n        )\n    )\n",
+"type":"code"
+}
+],
+"id":"52d1dd5e3872441199da5c5f5c105437",
+"language":"",
+"type":"code"
+}
+],
+"title":"Paragraphs"
+},
+{
+"children":[],
+"id":"fa85c66230034bf3a2913c79b8b7b2b3",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef children(self):\n    return [\n        Page(\n            self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":",\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"children\", index],\n            child_dict,\n            self,\n            index\n        )\n        for index, child_dict\n        in enumerate(self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"children\"])\n    ]\n",
+"type":"code"
+}
+],
+"id":"6141fb366eec486d94aa9b15796c2ad5",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def add_child(self, page_dict=None):\n    if page_dict is None:\n        page_dict = ",
+"type":"code"
+},
+{
+"id":"1cb3a1fa40584378a449abf60a9e3e6c",
+"type":"variable"
+},
+{
+"text":"()\n    self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Add page\", lambda document_dict:\n        ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n            document_dict,\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"children\"],\n            lambda children: children+[page_dict]\n        )\n    )\n",
+"type":"code"
+}
+],
+"id":"b48e2c01fd4a4f37a34dd2020f3fadef",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def delete_child_at_index(self, index):\n    self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"a5aea35d34d74689b025122b40dc23b4",
+"type":"variable"
+},
+{
+"text":"(\"Delete page\", lambda document_dict:\n        ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n            document_dict,\n            self.",
+"type":"code"
+},
+{
+"id":"bd4d6a828d4642078b99cb92a72839c9",
+"type":"variable"
+},
+{
+"text":"+[\"children\"],\n            lambda children: children[:index]+children[index][\"children\"]+children[index+1:]\n        )\n    )\n",
+"type":"code"
+}
+],
+"id":"c608075ec9474e4aa7b818ae324a6040",
+"language":"",
+"type":"code"
+}
+],
+"title":"Children"
+}
+],
 "id":"95df0269255943f297d3ffc6de48874f",
 "paragraphs":[
 {
@@ -1955,7 +2234,33 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, document, path, fragment)\n        self._parent = parent\n        self._index = index\n\n    @property\n    def parent(self):\n        return self._parent\n\n    @property\n    def ",
+"text":".__init__(self, document, path, fragment)\n        self._parent = parent\n        self._index = index\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"Page"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"c73c7dd5a2804934a4786c1dd2a0b0d8",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef parent(self):\n    return self._parent\n\n@property\ndef ",
 "type":"code"
 },
 {
@@ -1963,7 +2268,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return \" / \".join(page.title for page in self.",
+"text":"(self):\n    return \" / \".join(page.title for page in self.",
 "type":"code"
 },
 {
@@ -1971,7 +2276,7 @@
 "type":"variable"
 },
 {
-"text":")\n\n    @property\n    def ",
+"text":")\n\n@property\ndef ",
 "type":"code"
 },
 {
@@ -1979,7 +2284,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        result = []\n        page = self\n        while page is not None:\n            result.insert(0, page)\n            page = page.parent\n        return result\n\n    def iter_code_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_code_fragments():\n                yield fragment\n\n    def iter_text_fragments(self):\n        for paragraph in self.paragraphs:\n            for fragment in paragraph.iter_text_fragments():\n                yield fragment\n\n    @property\n    def id(self):\n        return self.",
+"text":"(self):\n    result = []\n    page = self\n    while page is not None:\n        result.insert(0, page)\n        page = page.parent\n    return result\n\ndef iter_code_fragments(self):\n    for paragraph in self.paragraphs:\n        for fragment in paragraph.iter_code_fragments():\n            yield fragment\n\ndef iter_text_fragments(self):\n    for paragraph in self.paragraphs:\n        for fragment in paragraph.iter_text_fragments():\n            yield fragment\n\n@property\ndef id(self):\n    return self.",
 "type":"code"
 },
 {
@@ -1987,7 +2292,7 @@
 "type":"variable"
 },
 {
-"text":"[\"id\"]\n\n    @property\n    def title(self):\n        return self.",
+"text":"[\"id\"]\n\n@property\ndef title(self):\n    return self.",
 "type":"code"
 },
 {
@@ -1995,7 +2300,7 @@
 "type":"variable"
 },
 {
-"text":"[\"title\"]\n\n    def set_title(self, title):\n        self.",
+"text":"[\"title\"]\n\ndef set_title(self, title):\n    self.",
 "type":"code"
 },
 {
@@ -2011,7 +2316,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Change title\", lambda document_dict:\n            ",
+"text":"(\"Change title\", lambda document_dict:\n        ",
 "type":"code"
 },
 {
@@ -2027,199 +2332,43 @@
 "type":"variable"
 },
 {
-"text":"+[\"title\"], title)\n        )\n\n    @property\n    def paragraphs(self):\n        return [\n            Paragraph.create(\n                self.",
+"text":"+[\"title\"], title)\n    )\n",
+"type":"code"
+}
+],
+"id":"dc15868e6e26468fbae7cc2e3ff4f4a0",
+"language":"",
 "type":"code"
 },
 {
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
 {
-"text":",\n                self.",
+"text":"def delete(self):\n    if self.parent is not None:\n        self.parent.delete_child_at_index(self._index)\n",
+"type":"code"
+}
+],
+"id":"acf13f483b2e4b799b528db477cbe96b",
+"language":"",
 "type":"code"
 },
 {
-"id":"bd4d6a828d4642078b99cb92a72839c9",
-"type":"variable"
-},
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
 {
-"text":"+[\"paragraphs\", index],\n                paragraph_dict,\n                index,\n                self,\n                next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n            )\n            for (index, (paragraph_dict, next_paragraph_dict))\n            in enumerate(zip(\n                self.",
-"type":"code"
-},
-{
-"id":"75d0d294fd5a4cc5beaf14009875e662",
-"type":"variable"
-},
-{
-"text":"[\"paragraphs\"],\n                self.",
-"type":"code"
-},
-{
-"id":"75d0d294fd5a4cc5beaf14009875e662",
-"type":"variable"
-},
-{
-"text":"[\"paragraphs\"][1:]+[None]\n            ))\n        ]\n\n    def delete_paragraph_at_index(self, index):\n        self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"(\"Delete paragraph\", lambda document_dict:\n            ",
-"type":"code"
-},
-{
-"id":"51708e28ba3245859e0554a504cc015c",
-"type":"variable"
-},
-{
-"text":"(\n                document_dict,\n                self.",
-"type":"code"
-},
-{
-"id":"bd4d6a828d4642078b99cb92a72839c9",
-"type":"variable"
-},
-{
-"text":"+[\"paragraphs\"],\n                lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n            )\n        )\n\n    def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):\n        def insert(paragraphs):\n            if before_paragraph_id is None:\n                return paragraphs+[paragraph_dict]\n            else:\n                index = index_with_id(paragraphs, before_paragraph_id)\n                return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n        self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"(\"Insert paragraph\", lambda document_dict:\n            ",
-"type":"code"
-},
-{
-"id":"51708e28ba3245859e0554a504cc015c",
-"type":"variable"
-},
-{
-"text":"(\n                document_dict,\n                self.",
-"type":"code"
-},
-{
-"id":"bd4d6a828d4642078b99cb92a72839c9",
-"type":"variable"
-},
-{
-"text":"+[\"paragraphs\"],\n                insert\n            )\n        )\n\n    @property\n    def children(self):\n        return [\n            Page(\n                self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":",\n                self.",
-"type":"code"
-},
-{
-"id":"bd4d6a828d4642078b99cb92a72839c9",
-"type":"variable"
-},
-{
-"text":"+[\"children\", index],\n                child_dict,\n                self,\n                index\n            )\n            for index, child_dict\n            in enumerate(self.",
-"type":"code"
-},
-{
-"id":"75d0d294fd5a4cc5beaf14009875e662",
-"type":"variable"
-},
-{
-"text":"[\"children\"])\n        ]\n\n    def add_child(self, page_dict=None):\n        if page_dict is None:\n            page_dict = ",
-"type":"code"
-},
-{
-"id":"1cb3a1fa40584378a449abf60a9e3e6c",
-"type":"variable"
-},
-{
-"text":"()\n        self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"(\"Add page\", lambda document_dict:\n            ",
-"type":"code"
-},
-{
-"id":"51708e28ba3245859e0554a504cc015c",
-"type":"variable"
-},
-{
-"text":"(\n                document_dict,\n                self.",
-"type":"code"
-},
-{
-"id":"bd4d6a828d4642078b99cb92a72839c9",
-"type":"variable"
-},
-{
-"text":"+[\"children\"],\n                lambda children: children+[page_dict]\n            )\n        )\n\n    def delete(self):\n        if self.parent is not None:\n            self.parent.delete_child_at_index(self._index)\n\n    def delete_child_at_index(self, index):\n        self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"(\"Delete page\", lambda document_dict:\n            ",
-"type":"code"
-},
-{
-"id":"51708e28ba3245859e0554a504cc015c",
-"type":"variable"
-},
-{
-"text":"(\n                document_dict,\n                self.",
-"type":"code"
-},
-{
-"id":"bd4d6a828d4642078b99cb92a72839c9",
-"type":"variable"
-},
-{
-"text":"+[\"children\"],\n                lambda children: children[:index]+children[index][\"children\"]+children[index+1:]\n            )\n        )\n\n    def move(self, parent_page_id, before_page_id):\n        parent_page = self.",
+"text":"def move(self, parent_page_id, before_page_id):\n    parent_page = self.",
 "type":"code"
 },
 {
@@ -2235,7 +2384,7 @@
 "type":"variable"
 },
 {
-"text":"(parent_page_id)\n        # Abort if invalid move\n        page = parent_page\n        while page is not None:\n            if page.id == self.id:\n                return\n            page = page.parent\n        # Abort if no-op mode\n        if before_page_id == self.id:\n            return\n        # Do the move\n        def insert(items, item):\n            if before_page_id is None:\n                return items+[item]\n            else:\n                index = index_with_id(items, before_page_id)\n                return items[:index]+[item]+items[index:]\n        def remove(items, index):\n            return items[:index]+items[index+1:]\n        def do_move(document_dict):\n            changes = []\n            if parent_page.id == self.parent.id:\n                changes.append((\n                    self.parent._path+[\"children\"],\n                    lambda x: insert(remove(x, self._index), self._fragment)\n                ))\n            else:\n                changes.append((\n                    self.parent._path+[\"children\"],\n                    lambda x: remove(x, self._index)\n                ))\n                changes.append((\n                    parent_page._path+[\"children\"],\n                    lambda x: insert(x, self._fragment)\n                ))\n            if len(parent_page._path) > len(self.parent._path):\n                changes = reversed(changes)\n            for path, new_value in changes:\n                document_dict = ",
+"text":"(parent_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if before_page_id == self.id:\n        return\n    # Do the move\n    def insert(items, item):\n        if before_page_id is None:\n            return items+[item]\n        else:\n            index = index_with_id(items, before_page_id)\n            return items[:index]+[item]+items[index:]\n    def remove(items, index):\n        return items[:index]+items[index+1:]\n    def do_move(document_dict):\n        changes = []\n        if parent_page.id == self.parent.id:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: insert(remove(x, self._index), self._fragment)\n            ))\n        else:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: remove(x, self._index)\n            ))\n            changes.append((\n                parent_page._path+[\"children\"],\n                lambda x: insert(x, self._fragment)\n            ))\n        if len(parent_page._path) > len(self.parent._path):\n            changes = reversed(changes)\n        for path, new_value in changes:\n            document_dict = ",
 "type":"code"
 },
 {
@@ -2243,7 +2392,7 @@
 "type":"variable"
 },
 {
-"text":"(document_dict, path, new_value)\n            return document_dict\n        self.",
+"text":"(document_dict, path, new_value)\n        return document_dict\n    self.",
 "type":"code"
 },
 {
@@ -2263,7 +2412,7 @@
 "type":"code"
 }
 ],
-"id":"c73c7dd5a2804934a4786c1dd2a0b0d8",
+"id":"36b836060b9048ac8a3c9627232bd58a",
 "language":"",
 "type":"code"
 }
