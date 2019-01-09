@@ -819,9 +819,7 @@ class Document(Observable):
         )
 
     def get_paragraph(self, page_id, paragraph_id):
-        for paragraph in self.get_page(page_id).paragraphs:
-            if paragraph.id == paragraph_id:
-                return paragraph
+        return self.get_page(page_id).get_paragraph(paragraph_id)
     def rename_path(self, path, name):
         with self.transaction("Rename path"):
             for p in self._code_paragraph_iterator():

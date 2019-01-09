@@ -3798,7 +3798,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        dict(paragraph_dict, id=genid()),\n        before_id\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    for paragraph in self.",
+"text":"(\n        dict(paragraph_dict, id=genid()),\n        before_id\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    return self.",
 "type":"code"
 },
 {
@@ -3806,7 +3806,7 @@
 "type":"variable"
 },
 {
-"text":"(page_id).paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
+"text":"(page_id).get_paragraph(paragraph_id)\n",
 "type":"code"
 }
 ],
