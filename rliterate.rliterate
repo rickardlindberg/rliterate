@@ -3919,7 +3919,7 @@
 "type":"variable"
 },
 {
-"text":"(target_page)\n        if target_page.id == self._page.id and before_paragraph == self.id:\n            return\n        with self.",
+"text":"(target_page)\n        target_index = target_page.get_paragraph_index(before_paragraph)\n        if target_page.id == self._page.id and target_index in [self._index, self._index+1]:\n            return\n        with self.",
 "type":"code"
 },
 {
@@ -3935,7 +3935,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Move paragraph\"):\n            target_index = target_page.get_paragraph_index(before_paragraph)\n            if target_index > self._index:\n                target_page.",
+"text":"(\"Move paragraph\"):\n            if target_index > self._index:\n                target_page.",
 "type":"code"
 },
 {

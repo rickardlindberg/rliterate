@@ -1143,10 +1143,10 @@ class Paragraph(DocumentFragment):
 
     def move(self, target_page, before_paragraph):
         target_page = self._document.get_page(target_page)
-        if target_page.id == self._page.id and before_paragraph == self.id:
+        target_index = target_page.get_paragraph_index(before_paragraph)
+        if target_page.id == self._page.id and target_index in [self._index, self._index+1]:
             return
         with self._document.transaction("Move paragraph"):
-            target_index = target_page.get_paragraph_index(before_paragraph)
             if target_index > self._index:
                 target_page.insert_paragraph_at_index(self._fragment, target_index)
                 self._page.delete_paragraph_at_index(self._index)
