@@ -1167,9 +1167,6 @@ class Paragraph(DocumentFragment):
 
     def iter_text_fragments(self):
         return iter([])
-
-    def insert_paragraph_before(self, paragraph_dict):
-        self._page.insert_paragraph_at_index(paragraph_dict, self._index)
 class TextParagraph(Paragraph):
 
     @property

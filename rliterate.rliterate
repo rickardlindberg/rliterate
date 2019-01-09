@@ -3983,7 +3983,7 @@
 "type":"variable"
 },
 {
-"text":"), id=genid()),\n                self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n\n    def insert_paragraph_before(self, paragraph_dict):\n        self._page.insert_paragraph_at_index(paragraph_dict, self._index)\n",
+"text":"), id=genid()),\n                self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
 "type":"code"
 }
 ],
