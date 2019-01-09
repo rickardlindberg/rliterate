@@ -1029,6 +1029,13 @@ class Page(DocumentFragment):
             if paragraph.id == paragraph_id:
                 return paragraph
 
+    def get_paragraph_index(self, paragraph_id):
+        index = -1
+        for index, paragraph in enumerate(self.paragraphs):
+            if paragraph.id == paragraph_id:
+                return index
+        return index + 1
+
     def delete_paragraph_at_index(self, index):
         self._document.modify("Delete paragraph", lambda document_dict:
             im_replace(
@@ -1135,12 +1142,17 @@ class Paragraph(DocumentFragment):
         self._page.delete_paragraph_at_index(self._index)
 
     def move(self, target_page, before_paragraph):
-        x = self._document.get_page(target_page)
-        if x.id == self._page.id and before_paragraph == self.id:
+        target_page = self._document.get_page(target_page)
+        if target_page.id == self._page.id and before_paragraph == self.id:
             return
         with self._document.transaction("Move paragraph"):
-            self._page.delete_paragraph_at_index(self._index)
-            x.insert_paragraph_before(self._fragment, before_paragraph)
+            target_index = target_page.get_paragraph_index(before_paragraph)
+            if target_index > self._index:
+                target_page.insert_paragraph_at_index(self._fragment, target_index)
+                self._page.delete_paragraph_at_index(self._index)
+            else:
+                self._page.delete_paragraph_at_index(self._index)
+                target_page.insert_paragraph_at_index(self._fragment, target_index)
 
     def duplicate(self):
         with self._document.transaction("Duplicate paragraph"):
