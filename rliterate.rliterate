@@ -1939,7 +1939,7 @@
 "type":"variable"
 },
 {
-"text":"(self, paragraph_dict, before_paragraph_id):\n    if before_paragraph_id is None:\n        self.",
+"text":"(self, paragraph_dict, before_paragraph_id):\n    self.",
 "type":"code"
 },
 {
@@ -1947,7 +1947,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            paragraph_dict,\n            len(self._fragment[\"paragraphs\"])\n        )\n    else:\n        self.get_paragraph(before_paragraph_id).insert_paragraph_before(paragraph_dict)\n\ndef ",
+"text":"(\n        paragraph_dict,\n        self.get_paragraph_index(before_paragraph_id)\n    )\n\ndef ",
 "type":"code"
 },
 {

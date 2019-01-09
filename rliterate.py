@@ -1046,13 +1046,10 @@ class Page(DocumentFragment):
         )
 
     def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):
-        if before_paragraph_id is None:
-            self.insert_paragraph_at_index(
-                paragraph_dict,
-                len(self._fragment["paragraphs"])
-            )
-        else:
-            self.get_paragraph(before_paragraph_id).insert_paragraph_before(paragraph_dict)
+        self.insert_paragraph_at_index(
+            paragraph_dict,
+            self.get_paragraph_index(before_paragraph_id)
+        )
 
     def insert_paragraph_at_index(self, paragraph_dict, index):
         self._document.modify("Insert paragraph", lambda document_dict:
