@@ -1153,9 +1153,9 @@ class Paragraph(DocumentFragment):
 
     def duplicate(self):
         with self._document.transaction("Duplicate paragraph"):
-            self._page.insert_paragraph_before(
+            self._page.insert_paragraph_at_index(
                 dict(copy.deepcopy(self._fragment), id=genid()),
-                self.next_id
+                self._index+1
             )
 
     @property

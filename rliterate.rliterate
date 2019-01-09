@@ -3971,7 +3971,7 @@
 "type":"code"
 },
 {
-"id":"985e71100d1344daba62a309a21872aa",
+"id":"061fd7e397724d08a484b175178cea10",
 "type":"variable"
 },
 {
@@ -3983,7 +3983,7 @@
 "type":"variable"
 },
 {
-"text":"), id=genid()),\n                self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
+"text":"), id=genid()),\n                self._index+1\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
 "type":"code"
 }
 ],
