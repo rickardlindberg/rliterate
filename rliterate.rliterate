@@ -1899,7 +1899,7 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef delete_paragraph_at_index(self, index):\n    self.",
+"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef get_paragraph(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef delete_paragraph_at_index(self, index):\n    self.",
 "type":"code"
 },
 {
@@ -1939,15 +1939,23 @@
 "type":"variable"
 },
 {
-"text":"(self, paragraph_dict, before_paragraph_id):\n    def insert(paragraphs):\n        if before_paragraph_id is None:\n            return paragraphs+[paragraph_dict]\n        else:\n            index = ",
+"text":"(self, paragraph_dict, before_paragraph_id):\n    if before_paragraph_id is None:\n        self.",
 "type":"code"
 },
 {
-"id":"6e076e2955c4476fbe194f0a38a97cee",
+"id":"061fd7e397724d08a484b175178cea10",
 "type":"variable"
 },
 {
-"text":"(paragraphs, before_paragraph_id)\n            return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n    self.",
+"text":"(\n            paragraph_dict,\n            len(self._fragment[\"paragraphs\"])\n        )\n    else:\n        self.get_paragraph(before_paragraph_id).insert_paragraph_before(paragraph_dict)\n\ndef ",
+"type":"code"
+},
+{
+"id":"061fd7e397724d08a484b175178cea10",
+"type":"variable"
+},
+{
+"text":"(self, paragraph_dict, index):\n    self.",
 "type":"code"
 },
 {
@@ -1979,7 +1987,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"paragraphs\"],\n            insert\n        )\n    )\n",
+"text":"+[\"paragraphs\"],\n            lambda paragraphs: paragraphs[:index]+[paragraph_dict]+paragraphs[index:]\n        )\n    )\n",
 "type":"code"
 }
 ],
@@ -3967,7 +3975,7 @@
 "type":"variable"
 },
 {
-"text":"), id=genid()),\n                self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
+"text":"), id=genid()),\n                self.next_id\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n\n    def insert_paragraph_before(self, paragraph_dict):\n        self._page.insert_paragraph_at_index(paragraph_dict, self._index)\n",
 "type":"code"
 }
 ],
@@ -17998,6 +18006,7 @@
 "0397a216ff674867aa422a0778df2f44":"transaction",
 "03cf450743e9447da0a9becadacd7dda":"active_editor",
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
+"061fd7e397724d08a484b175178cea10":"insert_paragraph_at_index",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
 "10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",

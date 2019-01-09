@@ -1024,6 +1024,11 @@ class Page(DocumentFragment):
             ))
         ]
 
+    def get_paragraph(self, paragraph_id):
+        for paragraph in self.paragraphs:
+            if paragraph.id == paragraph_id:
+                return paragraph
+
     def delete_paragraph_at_index(self, index):
         self._document.modify("Delete paragraph", lambda document_dict:
             im_replace(
@@ -1034,17 +1039,20 @@ class Page(DocumentFragment):
         )
 
     def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):
-        def insert(paragraphs):
-            if before_paragraph_id is None:
-                return paragraphs+[paragraph_dict]
-            else:
-                index = index_with_id(paragraphs, before_paragraph_id)
-                return paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
+        if before_paragraph_id is None:
+            self.insert_paragraph_at_index(
+                paragraph_dict,
+                len(self._fragment["paragraphs"])
+            )
+        else:
+            self.get_paragraph(before_paragraph_id).insert_paragraph_before(paragraph_dict)
+
+    def insert_paragraph_at_index(self, paragraph_dict, index):
         self._document.modify("Insert paragraph", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["paragraphs"],
-                insert
+                lambda paragraphs: paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
             )
         )
     @property
@@ -1150,6 +1158,9 @@ class Paragraph(DocumentFragment):
 
     def iter_text_fragments(self):
         return iter([])
+
+    def insert_paragraph_before(self, paragraph_dict):
+        self._page.insert_paragraph_at_index(paragraph_dict, self._index)
 class TextParagraph(Paragraph):
 
     @property
