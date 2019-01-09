@@ -965,6 +965,7 @@ class Page(DocumentFragment):
             self.parent.delete_child_at_index(self._index)
     def move(self, parent_page_id, before_page_id):
         parent_page = self._document.get_page(parent_page_id)
+        target_index = parent_page.get_child_index(before_page_id)
         # Abort if invalid move
         page = parent_page
         while page is not None:
@@ -972,7 +973,7 @@ class Page(DocumentFragment):
                 return
             page = page.parent
         # Abort if no-op mode
-        if before_page_id == self.id:
+        if parent_page.id == self.parent.id and target_index in [self._index, self._index+1]:
             return
         # Do the move
         def insert(items, item):
@@ -1065,6 +1066,12 @@ class Page(DocumentFragment):
             for index, child_dict
             in enumerate(self._fragment["children"])
         ]
+    def get_child_index(self, child_id):
+        index = -1
+        for index, child in enumerate(self.children):
+            if child.id == child_id:
+                return index
+        return index + 1
     def add_child(self, page_dict=None):
         if page_dict is None:
             page_dict = new_page_dict()
