@@ -813,9 +813,10 @@ class Document(Observable):
             None
         )
     def add_paragraph(self, page_id, before_id=None, paragraph_dict={"type": "factory"}):
-        self.get_page(page_id).insert_paragraph_before(
+        page = self.get_page(page_id)
+        page.insert_paragraph_at_index(
             dict(paragraph_dict, id=genid()),
-            before_id
+            page.get_paragraph_index(before_id)
         )
 
     def get_paragraph(self, page_id, paragraph_id):
@@ -1041,12 +1042,6 @@ class Page(DocumentFragment):
                 self._path+["paragraphs"],
                 lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
             )
-        )
-
-    def insert_paragraph_before(self, paragraph_dict, before_paragraph_id):
-        self.insert_paragraph_at_index(
-            paragraph_dict,
-            self.get_paragraph_index(before_paragraph_id)
         )
 
     def insert_paragraph_at_index(self, paragraph_dict, index):

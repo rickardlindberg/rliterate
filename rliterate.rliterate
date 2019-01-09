@@ -1935,22 +1935,6 @@
 "type":"code"
 },
 {
-"id":"985e71100d1344daba62a309a21872aa",
-"type":"variable"
-},
-{
-"text":"(self, paragraph_dict, before_paragraph_id):\n    self.",
-"type":"code"
-},
-{
-"id":"061fd7e397724d08a484b175178cea10",
-"type":"variable"
-},
-{
-"text":"(\n        paragraph_dict,\n        self.get_paragraph_index(before_paragraph_id)\n    )\n\ndef ",
-"type":"code"
-},
-{
 "id":"061fd7e397724d08a484b175178cea10",
 "type":"variable"
 },
@@ -3782,7 +3766,7 @@
 ],
 "fragments":[
 {
-"text":"def add_paragraph(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    self.",
+"text":"def add_paragraph(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    page = self.",
 "type":"code"
 },
 {
@@ -3790,15 +3774,15 @@
 "type":"variable"
 },
 {
-"text":"(page_id).",
+"text":"(page_id)\n    page.",
 "type":"code"
 },
 {
-"id":"985e71100d1344daba62a309a21872aa",
+"id":"061fd7e397724d08a484b175178cea10",
 "type":"variable"
 },
 {
-"text":"(\n        dict(paragraph_dict, id=genid()),\n        before_id\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    return self.",
+"text":"(\n        dict(paragraph_dict, id=genid()),\n        page.get_paragraph_index(before_id)\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    return self.",
 "type":"code"
 },
 {
