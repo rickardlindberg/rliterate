@@ -1019,7 +1019,7 @@ class Page(DocumentFragment):
 
     def delete_paragraph_at_index(self, index):
         self._document.modify("Delete paragraph", lambda document_dict:
-            im_replace(
+            im_modify(
                 document_dict,
                 self._path+["paragraphs"],
                 lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
@@ -1028,7 +1028,7 @@ class Page(DocumentFragment):
 
     def insert_paragraph_at_index(self, paragraph_dict, index):
         self._document.modify("Insert paragraph", lambda document_dict:
-            im_replace(
+            im_modify(
                 document_dict,
                 self._path+["paragraphs"],
                 lambda paragraphs: paragraphs[:index]+[paragraph_dict]+paragraphs[index:]
@@ -1057,7 +1057,7 @@ class Page(DocumentFragment):
         self.insert_child_at_index(new_page_dict(), len(self._fragment["children"]))
     def insert_child_at_index(self, page_dict, index):
         self._document.modify("Insert page", lambda document_dict:
-            im_replace(
+            im_modify(
                 document_dict,
                 self._path+["children"],
                 lambda children: children[:index]+[page_dict]+children[index:]
@@ -1065,7 +1065,7 @@ class Page(DocumentFragment):
         )
     def replace_child_at_index(self, index, page_dicts):
         self._document.modify("Replace page", lambda document_dict:
-            im_replace(
+            im_modify(
                 document_dict,
                 self._path+["children"],
                 lambda children: children[:index]+page_dicts+children[index+1:]
@@ -1109,7 +1109,7 @@ class Paragraph(DocumentFragment):
 
     def update(self, data):
         self._document.modify("Edit paragraph", lambda document_dict:
-            im_replace(
+            im_modify(
                 document_dict,
                 self._path,
                 lambda paragraph: dict(paragraph, **data)
@@ -4809,19 +4809,18 @@ def fragments_to_text(fragments):
 def text_to_fragments(text):
     return TextParser().parse(text)
 def im_replace(obj, path, new_value):
+    return im_modify(obj, path, lambda x: new_value)
+def im_modify(obj, path, modify_fn):
     if path:
         if isinstance(obj, list):
-            new_obj = obj[:]
+            new_obj = list(obj)
         elif isinstance(obj, dict):
             new_obj = dict(obj)
         else:
             raise ValueError("unknown type")
-        new_obj[path[0]] = im_replace(new_obj[path[0]], path[1:], new_value)
+        new_obj[path[0]] = im_modify(new_obj[path[0]], path[1:], modify_fn)
         return new_obj
-    elif callable(new_value):
-        return new_value(obj)
-    else:
-        return new_value
+    return modify_fn(obj)
 def split_legacy_path(path):
     filepath = []
     chunkpath = []

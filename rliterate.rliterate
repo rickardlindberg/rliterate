@@ -1919,7 +1919,7 @@
 "type":"code"
 },
 {
-"id":"51708e28ba3245859e0554a504cc015c",
+"id":"4b9ee6bd24a74475a73197299f60dd85",
 "type":"variable"
 },
 {
@@ -1959,7 +1959,7 @@
 "type":"code"
 },
 {
-"id":"51708e28ba3245859e0554a504cc015c",
+"id":"4b9ee6bd24a74475a73197299f60dd85",
 "type":"variable"
 },
 {
@@ -2126,7 +2126,7 @@
 "type":"code"
 },
 {
-"id":"51708e28ba3245859e0554a504cc015c",
+"id":"4b9ee6bd24a74475a73197299f60dd85",
 "type":"variable"
 },
 {
@@ -2184,7 +2184,7 @@
 "type":"code"
 },
 {
-"id":"51708e28ba3245859e0554a504cc015c",
+"id":"4b9ee6bd24a74475a73197299f60dd85",
 "type":"variable"
 },
 {
@@ -3975,7 +3975,7 @@
 "type":"code"
 },
 {
-"id":"51708e28ba3245859e0554a504cc015c",
+"id":"4b9ee6bd24a74475a73197299f60dd85",
 "type":"variable"
 },
 {
@@ -4361,7 +4361,15 @@
 "type":"variable"
 },
 {
-"text":"(\"New variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\"],\n            dict(document_dict[\"variables\"], **{variable_id: name})\n        )\n    )\n    return variable_id\n\ndef rename_variable(self, variable_id, name):\n    self.",
+"text":"(\"New variable\", lambda document_dict:\n        ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n            document_dict,\n            [\"variables\"],\n            dict(document_dict[\"variables\"], **{variable_id: name})\n        )\n    )\n    return variable_id\n\ndef rename_variable(self, variable_id, name):\n    self.",
 "type":"code"
 },
 {
@@ -4369,7 +4377,15 @@
 "type":"variable"
 },
 {
-"text":"(\"Rename variable\", lambda document_dict:\n        im_replace(\n            document_dict,\n            [\"variables\", variable_id],\n            name\n        )\n    )\n\ndef lookup_variable(self, variable_id):\n    return self.",
+"text":"(\"Rename variable\", lambda document_dict:\n        ",
+"type":"code"
+},
+{
+"id":"51708e28ba3245859e0554a504cc015c",
+"type":"variable"
+},
+{
+"text":"(\n            document_dict,\n            [\"variables\", variable_id],\n            name\n        )\n    )\n\ndef lookup_variable(self, variable_id):\n    return self.",
 "type":"code"
 },
 {
@@ -4382,6 +4398,7 @@
 }
 ],
 "id":"6d90ee0fa2f043d7a3ce3f14fb3e3eb2",
+"language":"",
 "type":"code"
 }
 ],
@@ -4464,19 +4481,52 @@
 "type":"variable"
 },
 {
-"text":"(obj, path, new_value):\n    if path:\n        if isinstance(obj, list):\n            new_obj = obj[:]\n        elif isinstance(obj, dict):\n            new_obj = dict(obj)\n        else:\n            raise ValueError(\"unknown type\")\n        new_obj[path[0]] = ",
+"text":"(obj, path, new_value):\n    return ",
 "type":"code"
 },
 {
-"id":"51708e28ba3245859e0554a504cc015c",
+"id":"4b9ee6bd24a74475a73197299f60dd85",
 "type":"variable"
 },
 {
-"text":"(new_obj[path[0]], path[1:], new_value)\n        return new_obj\n    elif callable(new_value):\n        return new_value(obj)\n    else:\n        return new_value\n",
+"text":"(obj, path, lambda x: new_value)\n",
 "type":"code"
 }
 ],
 "id":"a98a71cabc4942b885af73a3d49172ae",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"4b9ee6bd24a74475a73197299f60dd85",
+"type":"variable"
+},
+{
+"text":"(obj, path, modify_fn):\n    if path:\n        if isinstance(obj, list):\n            new_obj = list(obj)\n        elif isinstance(obj, dict):\n            new_obj = dict(obj)\n        else:\n            raise ValueError(\"unknown type\")\n        new_obj[path[0]] = ",
+"type":"code"
+},
+{
+"id":"4b9ee6bd24a74475a73197299f60dd85",
+"type":"variable"
+},
+{
+"text":"(new_obj[path[0]], path[1:], modify_fn)\n        return new_obj\n    return modify_fn(obj)\n",
+"type":"code"
+}
+],
+"id":"f71a055bf4a74fa4a34ffa3c01aba0dd",
 "language":"",
 "type":"code"
 }
@@ -18130,6 +18180,7 @@
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
 "49916c3d2ee1468e9cbcb40d6b37bed6":"did_change",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
+"4b9ee6bd24a74475a73197299f60dd85":"im_modify",
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
 "51198e87cf1944e49dea6e2a48938b8f":"chunk_delimiters",
