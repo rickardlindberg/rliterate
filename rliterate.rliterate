@@ -11460,7 +11460,7 @@
 "type":"variable"
 },
 {
-"text":")\n\n    def _get_characters(self):\n        characters = []\n        for index, character in list(enumerate(self.page.title))+[(len(self.page.title), \" \")]:\n            characters.append(",
+"text":")\n\n    def _get_characters(self):\n        characters = []\n        for index, character in list(enumerate(self.page.title)):\n            marker = None\n            if self.selection.present:\n                if self.selection.value == index:\n                    if index == 0:\n                        marker = \"beam_start\"\n                    else:\n                        marker = \"beam_middle\"\n                elif self.selection.value == index+1 and index+1 == len(self.page.title):\n                    marker = \"beam_end\"\n            characters.append(",
 "type":"code"
 },
 {
@@ -11476,7 +11476,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker=\"beam\" if self.selection.present and self.selection.value == index else None,\n                extra=index\n            ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character = self.text.",
+"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker,\n                extra=index\n            ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character = self.text.",
 "type":"code"
 },
 {
@@ -11509,7 +11509,7 @@
 ],
 "fragments":[
 {
-"text":"def edit_plain_text(text, selection, event):\n    if event.GetUnicodeKey() >= 32:\n        return (\n            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],\n            selection+1\n        )\n    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:\n        return (\n            text[:selection-1]+text[selection:],\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):\n        return (\n            text[:selection]+text[selection+1:],\n            selection\n        )\n",
+"text":"def edit_plain_text(text, selection, event):\n    if event.GetUnicodeKey() >= 32:\n        return (\n            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],\n            selection+1\n        )\n    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:\n        return (\n            text[:selection-1]+text[selection:],\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):\n        return (\n            text[:selection]+text[selection+1:],\n            selection\n        )\n    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:\n        return (\n            text,\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):\n        return (\n            text,\n            selection+1\n        )\n",
 "type":"code"
 }
 ],
@@ -14549,7 +14549,7 @@
 "type":"variable"
 },
 {
-"text":"[character.style].append(box)\n        if character.marker == \"beam\":\n            self.",
+"text":"[character.style].append(box)\n        if character.marker is not None:\n            self.",
 "type":"code"
 },
 {
@@ -14895,7 +14895,7 @@
 "type":"variable"
 },
 {
-"text":":\n            dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)\n",
+"text":":\n            if box.char.marker == \"beam_start\":\n                dc.DrawLinePoint(box.rect.TopLeft+(0, 1), box.rect.TopLeft+(3, 1))\n                dc.DrawLinePoint(box.rect.TopLeft+(1, 0), box.rect.BottomLeft+(1, 0))\n                dc.DrawLinePoint(box.rect.BottomLeft, box.rect.BottomLeft+(3, 0))\n            elif box.char.marker == \"beam_middle\":\n                dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)\n            elif box.char.marker == \"beam_end\":\n                dc.DrawLinePoint(box.rect.TopRight+(0, 1), box.rect.TopRight+(-3, 1))\n                dc.DrawLinePoint(box.rect.TopRight, box.rect.BottomRight)\n                dc.DrawLinePoint(box.rect.BottomRight, box.rect.BottomRight-(3, 0))\n",
 "type":"code"
 }
 ],
@@ -18971,7 +18971,7 @@
 "d6cbae294f8e4eec91f8a110b0d29761":"_convert_to_latest",
 "d805e4e8e283472b8748f331df6df7bc":"full_title",
 "da4a7d55fc3e4f2981c61dad8a455bfd":"fragments",
-"dadd60f63fbf40638d412cd98a36846a":"_beams",
+"dadd60f63fbf40638d412cd98a36846a":"_markers",
 "db171bdccb8c4a6bab83044b8d52fe83":"find_first",
 "dc235530a21f4f61bc79a447761fb07b":"_mark_for_saving",
 "dd8b5ece7fb24a94bc8e9adcb87c66ce":"_boxes",

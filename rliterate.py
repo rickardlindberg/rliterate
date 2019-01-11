@@ -406,7 +406,7 @@ class TextProjection(GuiUpdatePanel):
         if self.has_changes:
             self._show_beams = True
             self._layout()
-            if self._beams:
+            if self._markers:
                 self.timer.Start(400)
             else:
                 self.timer.Stop()
@@ -426,13 +426,13 @@ class TextProjection(GuiUpdatePanel):
     def _partition_characters(self):
         self._boxes = []
         self._boxes_by_style = defaultdict(list)
-        self._beams = []
+        self._markers = []
         for character in self.values["characters"]:
             box = Box(character)
             self._boxes.append(box)
             self._boxes_by_style[character.style].append(box)
-            if character.marker == "beam":
-                self._beams.append(box)
+            if character.marker is not None:
+                self._markers.append(box)
 
     def _measure_character_size(self):
         dc = wx.MemoryDC()
@@ -510,8 +510,17 @@ class TextProjection(GuiUpdatePanel):
             dc.DrawTextList(*strings_positions)
         if self._show_beams:
             dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))
-            for box in self._beams:
-                dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)
+            for box in self._markers:
+                if box.char.marker == "beam_start":
+                    dc.DrawLinePoint(box.rect.TopLeft+(0, 1), box.rect.TopLeft+(3, 1))
+                    dc.DrawLinePoint(box.rect.TopLeft+(1, 0), box.rect.BottomLeft+(1, 0))
+                    dc.DrawLinePoint(box.rect.BottomLeft, box.rect.BottomLeft+(3, 0))
+                elif box.char.marker == "beam_middle":
+                    dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)
+                elif box.char.marker == "beam_end":
+                    dc.DrawLinePoint(box.rect.TopRight+(0, 1), box.rect.TopRight+(-3, 1))
+                    dc.DrawLinePoint(box.rect.TopRight, box.rect.BottomRight)
+                    dc.DrawLinePoint(box.rect.BottomRight, box.rect.BottomRight-(3, 0))
 
     def GetCharacterAt(self, position):
         for box in self._boxes:
@@ -3443,11 +3452,20 @@ class Title(HorizontalBasePanel):
 
     def _get_characters(self):
         characters = []
-        for index, character in list(enumerate(self.page.title))+[(len(self.page.title), " ")]:
+        for index, character in list(enumerate(self.page.title)):
+            marker = None
+            if self.selection.present:
+                if self.selection.value == index:
+                    if index == 0:
+                        marker = "beam_start"
+                    else:
+                        marker = "beam_middle"
+                elif self.selection.value == index+1 and index+1 == len(self.page.title):
+                    marker = "beam_end"
             characters.append(Character.create(
                 character,
                 self.project.get_style(TokenType.RLiterate),
-                marker="beam" if self.selection.present and self.selection.value == index else None,
+                marker,
                 extra=index
             ))
         return characters
@@ -4854,6 +4872,16 @@ def edit_plain_text(text, selection, event):
         return (
             text[:selection]+text[selection+1:],
             selection
+        )
+    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:
+        return (
+            text,
+            selection-1
+        )
+    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):
+        return (
+            text,
+            selection+1
         )
 def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
