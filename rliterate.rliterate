@@ -4097,7 +4097,15 @@
 "type":"variable"
 },
 {
-"text":"(self._index)\n\n    def move(self, target_page, before_paragraph):\n        target_page = self.",
+"text":"(self._index)\n\n    def move(self, target_page, ",
+"type":"code"
+},
+{
+"id":"0a759aaf75be46af916c3fa05f8393da",
+"type":"variable"
+},
+{
+"text":"):\n        target_page = self.",
 "type":"code"
 },
 {
@@ -4121,7 +4129,15 @@
 "type":"variable"
 },
 {
-"text":"(before_paragraph)\n        if target_page.id == self._page.id and target_index in [self._index, self._index+1]:\n            return\n        with self.",
+"text":"(",
+"type":"code"
+},
+{
+"id":"0a759aaf75be46af916c3fa05f8393da",
+"type":"variable"
+},
+{
+"text":")\n        if target_page.id == self._page.id and target_index in [self._index, self._index+1]:\n            return\n        with self.",
 "type":"code"
 },
 {
@@ -9629,7 +9645,15 @@
 "type":"variable"
 },
 {
-"text":"(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
+"text":"(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            ",
+"type":"code"
+},
+{
+"id":"0a759aaf75be46af916c3fa05f8393da",
+"type":"variable"
+},
+{
+"text":"=drop_point.next_paragraph_id\n        )\n",
 "type":"code"
 }
 ],
@@ -18424,6 +18448,7 @@
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
 "061fd7e397724d08a484b175178cea10":"insert_paragraph_at_index",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
+"0a759aaf75be46af916c3fa05f8393da":"before_paragraph",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
 "10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
