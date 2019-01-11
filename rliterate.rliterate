@@ -4479,30 +4479,6 @@
 "id":"a98a71cabc4942b885af73a3d49172ae",
 "language":"",
 "type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"6e076e2955c4476fbe194f0a38a97cee",
-"type":"variable"
-},
-{
-"text":"(items, item_id):\n    for index, item in enumerate(items):\n        if item[\"id\"] == item_id:\n            return index\n",
-"type":"code"
-}
-],
-"id":"fc0b2a5550bb4e95b5e7543818159b98",
-"type":"code"
 }
 ],
 "title":"Immutable helpers"

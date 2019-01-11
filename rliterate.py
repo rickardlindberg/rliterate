@@ -4822,10 +4822,6 @@ def im_replace(obj, path, new_value):
         return new_value(obj)
     else:
         return new_value
-def index_with_id(items, item_id):
-    for index, item in enumerate(items):
-        if item["id"] == item_id:
-            return index
 def split_legacy_path(path):
     filepath = []
     chunkpath = []
