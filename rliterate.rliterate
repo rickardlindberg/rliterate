@@ -2458,7 +2458,15 @@
 ],
 "fragments":[
 {
-"text":"def move(self, parent_page_id, ",
+"text":"def move(self, ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -2466,23 +2474,23 @@
 "type":"variable"
 },
 {
-"text":"):\n    parent_page = self.",
+"text":"):\n    # Abort if invalid move\n    page = ",
 "type":"code"
 },
 {
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
 "type":"variable"
 },
 {
-"text":".",
+"text":"\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if ",
 "type":"code"
 },
 {
-"id":"6f6cdf188e064952ba144f0cd1048562",
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
 "type":"variable"
 },
 {
-"text":"(parent_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if parent_page.id == self.parent.id and ",
+"text":".id == self.parent.id and ",
 "type":"code"
 },
 {
@@ -2506,7 +2514,15 @@
 "type":"variable"
 },
 {
-"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = ",
+"text":"(\"Move page\"):\n        if ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":".id == self.parent.id:\n            insert_first = ",
 "type":"code"
 },
 {
@@ -2514,7 +2530,23 @@
 "type":"variable"
 },
 {
-"text":" > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.",
+"text":" > self._index\n        else:\n            insert_first = len(",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":"._path) > len(self.parent._path)\n        if insert_first:\n            ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -2546,7 +2578,15 @@
 "type":"variable"
 },
 {
-"text":"(self._index, [])\n            parent_page.",
+"text":"(self._index, [])\n            ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -8234,7 +8274,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        ",
+"text":"(\n        divider=divider,\n        indentation=indentation+1,\n        ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":"=page,\n        ",
 "type":"code"
 },
 {
@@ -8258,7 +8306,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                ",
+"text":"(\n                divider=divider,\n                indentation=indentation+1,\n                ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":"=page,\n                ",
 "type":"code"
 },
 {
@@ -8389,7 +8445,15 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, divider, indentation, parent_page_id, ",
+"text":"(object):\n\n    def __init__(self, divider, indentation, ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -8397,7 +8461,23 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.divider = divider\n        self.indentation = indentation\n        self.parent_page_id = parent_page_id\n        self.",
+"text":"):\n        self.divider = divider\n        self.indentation = indentation\n        self.",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":" = ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":"\n        self.",
 "type":"code"
 },
 {
@@ -8538,7 +8618,23 @@
 "type":"variable"
 },
 {
-"text":"(dropped_page[\"page_id\"]).move(\n            parent_page_id=drop_point.parent_page_id,\n            ",
+"text":"(dropped_page[\"page_id\"]).move(\n            ",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":"=drop_point.",
+"type":"code"
+},
+{
+"id":"ac2deb4a85bb452cb8f558cc5b8d8f9a",
+"type":"variable"
+},
+{
+"text":",\n            ",
 "type":"code"
 },
 {
@@ -18451,6 +18547,7 @@
 "aa80683234dc421f81d21fbda0b91758":"code_font",
 "aa88810b795e4483b57bbdf05e8127d6":"workspace_background",
 "ab468260e8344173a06b482194c9a6a4":"_boxes",
+"ac2deb4a85bb452cb8f558cc5b8d8f9a":"target_page",
 "ad7a061336df4d5da6e9e18d957c9726":"_measure_character_size",
 "ade5b9257f8c4cb5aabd19de472e2e5e":"pygments_lexer",
 "ae234077465241e39337f68165ffb11e":"create",
