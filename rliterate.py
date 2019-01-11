@@ -3450,6 +3450,15 @@ class PageDropPoint(object):
         self.divider.Hide()
 class Title(HorizontalBasePanel):
 
+    @property
+    def project(self):
+        return self.values["project"]
+    @property
+    def page(self):
+        return self.values["page"]
+    @property
+    def selection(self):
+        return self.values["selection"]
     def _create_gui(self):
         self.Font = create_font(**self.project.theme.title_font)
         self.text = self.AppendChild(TextProjection(
@@ -3466,7 +3475,6 @@ class Title(HorizontalBasePanel):
                 SimpleContextMenu.ShowRecursive(self)
         )
         self.text.Bind(wx.EVT_CHAR, self._on_char)
-
     def _update_gui(self):
         self.text.UpdateGui(
             characters=self._get_characters(),
@@ -3478,7 +3486,6 @@ class Title(HorizontalBasePanel):
         else:
             self.text.DONT_RESET_FOCUS = False
         self.text.SetToolTipString(self.page.full_title)
-
     def _get_characters(self):
         characters = []
         for index, character in list(enumerate(self.page.title)):
@@ -3497,7 +3504,7 @@ class Title(HorizontalBasePanel):
                 marker,
                 extra=index
             ))
-        if not characters:
+        if not characters and self.selection.present:
             for index, character in enumerate("Enter title..."):
                 characters.append(Character.create(
                     character,
@@ -3506,7 +3513,6 @@ class Title(HorizontalBasePanel):
                     extra=0
                 ))
         return characters
-
     @rltime("on title char")
     def _on_char(self, event):
         if self.selection.present:
@@ -3515,7 +3521,6 @@ class Title(HorizontalBasePanel):
                 with self.project.notify():
                     self.page.set_title(result[0])
                     self.project.selection = self.selection.create(result[1])
-
     def _select(self, pos):
         character, side = self.text.GetClosestCharacterWithSide(pos)
         if character is None:
@@ -3524,18 +3529,6 @@ class Title(HorizontalBasePanel):
             self.project.selection = self.selection.create(character.extra)
         else:
             self.project.selection = self.selection.create(character.extra+1)
-
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def page(self):
-        return self.values["page"]
-
-    @property
-    def selection(self):
-        return self.values["selection"]
 class Text(ParagraphBase):
 
     def CreateView(self):

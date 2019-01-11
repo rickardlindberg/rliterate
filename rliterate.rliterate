@@ -11316,7 +11316,111 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def ",
+"text":"):\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"Title"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"24ce3a2a4785432ea263e18f55bfa106",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef project(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"project\"]\n",
+"type":"code"
+}
+],
+"id":"1671d0e270f44fe9af352284c518b3eb",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef page(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"page\"]\n",
+"type":"code"
+}
+],
+"id":"c8f2458c61ec433a95dae00c03546a04",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@property\ndef selection(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"]\n",
+"type":"code"
+}
+],
+"id":"9f83ca13b2c8412a99522db68f5a48c4",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
 "type":"code"
 },
 {
@@ -11324,7 +11428,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self.Font = ",
+"text":"(self):\n    self.Font = ",
 "type":"code"
 },
 {
@@ -11348,7 +11452,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.text = self.",
+"text":")\n    self.text = self.",
 "type":"code"
 },
 {
@@ -11364,7 +11468,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self,\n            ",
+"text":"(\n        self,\n        ",
 "type":"code"
 },
 {
@@ -11372,7 +11476,7 @@
 "type":"variable"
 },
 {
-"text":"=self._get_characters(),\n            ",
+"text":"=self._get_characters(),\n        ",
 "type":"code"
 },
 {
@@ -11396,7 +11500,7 @@
 "type":"variable"
 },
 {
-"text":"\n        ), flag=wx.EXPAND, proportion=1)\n        MouseEventHelper.bind(\n            [self.text],\n            double_click=lambda event:\n                self._select(event.Position)\n            ,\n            right_click=lambda event:\n                ",
+"text":"\n    ), flag=wx.EXPAND, proportion=1)\n    MouseEventHelper.bind(\n        [self.text],\n        double_click=lambda event:\n            self._select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
 "type":"code"
 },
 {
@@ -11412,7 +11516,25 @@
 "type":"variable"
 },
 {
-"text":"(self)\n        )\n        self.text.Bind(wx.EVT_CHAR, self._on_char)\n\n    def ",
+"text":"(self)\n    )\n    self.text.Bind(wx.EVT_CHAR, self._on_char)\n",
+"type":"code"
+}
+],
+"id":"7d34c5f3f5bd4b8eb2aa029c597b3eca",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
 "type":"code"
 },
 {
@@ -11420,7 +11542,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self.text.",
+"text":"(self):\n    self.text.",
 "type":"code"
 },
 {
@@ -11428,7 +11550,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            ",
+"text":"(\n        ",
 "type":"code"
 },
 {
@@ -11436,7 +11558,7 @@
 "type":"variable"
 },
 {
-"text":"=self._get_characters(),\n            ",
+"text":"=self._get_characters(),\n        ",
 "type":"code"
 },
 {
@@ -11460,7 +11582,7 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n        if self.selection.present:\n            self.text.SetFocus()\n            self.text.DONT_RESET_FOCUS = True\n        else:\n            self.text.DONT_RESET_FOCUS = False\n        self.text.SetToolTipString(self.page.",
+"text":"\n    )\n    if self.selection.present:\n        self.text.SetFocus()\n        self.text.DONT_RESET_FOCUS = True\n    else:\n        self.text.DONT_RESET_FOCUS = False\n    self.text.SetToolTipString(self.page.",
 "type":"code"
 },
 {
@@ -11468,7 +11590,25 @@
 "type":"variable"
 },
 {
-"text":")\n\n    def _get_characters(self):\n        characters = []\n        for index, character in list(enumerate(self.page.title)):\n            marker = None\n            if self.selection.present:\n                if self.selection.value == index:\n                    if index == 0:\n                        marker = \"beam_start\"\n                    else:\n                        marker = \"beam_middle\"\n                elif self.selection.value == index+1 and index+1 == len(self.page.title):\n                    marker = \"beam_end\"\n            characters.append(",
+"text":")\n",
+"type":"code"
+}
+],
+"id":"4cfd4b3cdb9545988005ed98bf3146b2",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_characters(self):\n    characters = []\n    for index, character in list(enumerate(self.page.title)):\n        marker = None\n        if self.selection.present:\n            if self.selection.value == index:\n                if index == 0:\n                    marker = \"beam_start\"\n                else:\n                    marker = \"beam_middle\"\n            elif self.selection.value == index+1 and index+1 == len(self.page.title):\n                marker = \"beam_end\"\n        characters.append(",
 "type":"code"
 },
 {
@@ -11484,7 +11624,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker,\n                extra=index\n            ))\n        if not characters:\n            for index, character in enumerate(\"Enter title...\"):\n                characters.append(",
+"text":"(\n            character,\n            self.project.get_style(TokenType.RLiterate),\n            marker,\n            extra=index\n        ))\n    if not characters and self.selection.present:\n        for index, character in enumerate(\"Enter title...\"):\n            characters.append(",
 "type":"code"
 },
 {
@@ -11500,7 +11640,43 @@
 "type":"variable"
 },
 {
-"text":"(\n                    character,\n                    self.project.get_style(TokenType.RLiterate.Empty),\n                    \"beam_start\" if index == 0 else None,\n                    extra=0\n                ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character, side = self.text.",
+"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate.Empty),\n                \"beam_start\" if index == 0 else None,\n                extra=0\n            ))\n    return characters\n",
+"type":"code"
+}
+],
+"id":"0338dc6a39a243b194d97439bda905a5",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@rltime(\"on title char\")\ndef _on_char(self, event):\n    if self.selection.present:\n        result = edit_plain_text(self.page.title, self.selection.value, event)\n        if result:\n            with self.project.notify():\n                self.page.set_title(result[0])\n                self.project.selection = self.selection.create(result[1])\n",
+"type":"code"
+}
+],
+"id":"ae52de5dd3b64b69b62331cec27136c2",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Title"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _select(self, pos):\n    character, side = self.text.",
 "type":"code"
 },
 {
@@ -11508,19 +11684,11 @@
 "type":"variable"
 },
 {
-"text":"(pos)\n        if character is None:\n            self.project.selection = self.selection.create(0)\n        elif side == wx.LEFT:\n            self.project.selection = self.selection.create(character.extra)\n        else:\n            self.project.selection = self.selection.create(character.extra+1)\n\n",
+"text":"(pos)\n    if character is None:\n        self.project.selection = self.selection.create(0)\n    elif side == wx.LEFT:\n        self.project.selection = self.selection.create(character.extra)\n    else:\n        self.project.selection = self.selection.create(character.extra+1)\n",
 "type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"Title"
-],
-"prefix":"    ",
-"type":"chunk"
 }
 ],
-"id":"24ce3a2a4785432ea263e18f55bfa106",
+"id":"4eeb6d828c67411586ce9164feb032da",
 "language":"",
 "type":"code"
 },
@@ -11538,48 +11706,6 @@
 }
 ],
 "id":"88b2995fd24f41d3a94822d9b8051e1f",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef project(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"]\n\n@property\ndef page(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"]\n\n@property\ndef selection(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"]\n",
-"type":"code"
-}
-],
-"id":"1671d0e270f44fe9af352284c518b3eb",
 "language":"",
 "type":"code"
 }
