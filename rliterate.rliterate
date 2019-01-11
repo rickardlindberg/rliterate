@@ -2132,7 +2132,15 @@
 ],
 "fragments":[
 {
-"text":"def replace_child_at_index(self, index, page_dicts):\n    self.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"60c633345528443da9cc98eedc41685e",
+"type":"variable"
+},
+{
+"text":"(self, index, page_dicts):\n    self.",
 "type":"code"
 },
 {
@@ -2394,7 +2402,15 @@
 ],
 "fragments":[
 {
-"text":"def delete(self):\n    if self.parent is not None:\n        self.parent.replace_child_at_index(self._index, self._fragment[\"children\"])\n",
+"text":"def delete(self):\n    if self.parent is not None:\n        self.parent.",
+"type":"code"
+},
+{
+"id":"60c633345528443da9cc98eedc41685e",
+"type":"variable"
+},
+{
+"text":"(self._index, self._fragment[\"children\"])\n",
 "type":"code"
 }
 ],
@@ -2444,7 +2460,23 @@
 "type":"variable"
 },
 {
-"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = target_index > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.insert_page_at_index(self._fragment, target_index)\n            self.parent.replace_child_at_index(self._index, [])\n        else:\n            self.parent.replace_child_at_index(self._index, [])\n            parent_page.insert_page_at_index(self._fragment, target_index)\n",
+"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = target_index > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.insert_page_at_index(self._fragment, target_index)\n            self.parent.",
+"type":"code"
+},
+{
+"id":"60c633345528443da9cc98eedc41685e",
+"type":"variable"
+},
+{
+"text":"(self._index, [])\n        else:\n            self.parent.",
+"type":"code"
+},
+{
+"id":"60c633345528443da9cc98eedc41685e",
+"type":"variable"
+},
+{
+"text":"(self._index, [])\n            parent_page.insert_page_at_index(self._fragment, target_index)\n",
 "type":"code"
 }
 ],
@@ -18087,6 +18119,7 @@
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "5e10aeda67184296b8d29d6d4d54c2cb":"TableOfContentsRow",
 "5e725316bce6426b88d46fe528e812ff":"_partition_characters",
+"60c633345528443da9cc98eedc41685e":"replace_child_at_index",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
 "67ebf8be121a46768936eec41e336f11":"language",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
