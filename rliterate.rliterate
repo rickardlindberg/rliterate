@@ -1899,7 +1899,15 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef get_paragraph(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef ",
+"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef ",
+"type":"code"
+},
+{
+"id":"81e263c387054c5b926af1ca2dda72d2",
+"type":"variable"
+},
+{
+"text":"(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef ",
 "type":"code"
 },
 {
@@ -3914,7 +3922,15 @@
 "type":"variable"
 },
 {
-"text":"(before_id)\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    return self.",
+"text":"(before_id)\n    )\n\ndef ",
+"type":"code"
+},
+{
+"id":"81e263c387054c5b926af1ca2dda72d2",
+"type":"variable"
+},
+{
+"text":"(self, page_id, paragraph_id):\n    return self.",
 "type":"code"
 },
 {
@@ -3922,7 +3938,15 @@
 "type":"variable"
 },
 {
-"text":"(page_id).get_paragraph(paragraph_id)\n",
+"text":"(page_id).",
+"type":"code"
+},
+{
+"id":"81e263c387054c5b926af1ca2dda72d2",
+"type":"variable"
+},
+{
+"text":"(paragraph_id)\n",
 "type":"code"
 }
 ],
@@ -6056,11 +6080,28 @@
 "type":"variable"
 },
 {
-"text":"(*args, **kwargs)\n\ndef iter_pages(self, *args, **kwargs):\n    return self.document.iter_pages(*args, **kwargs)\n\ndef get_paragraph(self, *args, **kwargs):\n    return self.document.get_paragraph(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
+"text":"(*args, **kwargs)\n\ndef iter_pages(self, *args, **kwargs):\n    return self.document.iter_pages(*args, **kwargs)\n\ndef ",
+"type":"code"
+},
+{
+"id":"81e263c387054c5b926af1ca2dda72d2",
+"type":"variable"
+},
+{
+"text":"(self, *args, **kwargs):\n    return self.document.",
+"type":"code"
+},
+{
+"id":"81e263c387054c5b926af1ca2dda72d2",
+"type":"variable"
+},
+{
+"text":"(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
 "type":"code"
 }
 ],
 "id":"d782b500e984468489cd876d5b92529d",
+"language":"",
 "type":"code"
 },
 {
@@ -9405,11 +9446,20 @@
 "type":"variable"
 },
 {
-"text":"(self, dropped_paragraph, drop_point):\n        self.project.get_paragraph(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
+"text":"(self, dropped_paragraph, drop_point):\n        self.project.",
+"type":"code"
+},
+{
+"id":"81e263c387054c5b926af1ca2dda72d2",
+"type":"variable"
+},
+{
+"text":"(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            before_paragraph=drop_point.next_paragraph_id\n        )\n",
 "type":"code"
 }
 ],
 "id":"79f48335418c42c1a622c691514415ab",
+"language":"",
 "type":"code"
 },
 {
@@ -18286,6 +18336,7 @@
 "7a9fc5b110114e64b871a0f672c764c2":"_max_width",
 "7de0449a51914343bdefb494a4287c6b":"_5e725316bce6426b88d46fe528e812ff",
 "80c88031ba2244b4b116f5b597e585d8":"CharChain",
+"81e263c387054c5b926af1ca2dda72d2":"get_paragraph",
 "82902f4f6d91479f88d33e04619a3915":"chain",
 "879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",
 "883ac73a999c403e8274442301acdbb3":"UpdateGui",
