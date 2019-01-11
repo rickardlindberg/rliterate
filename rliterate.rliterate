@@ -2056,7 +2056,15 @@
 ],
 "fragments":[
 {
-"text":"def add_child(self):\n    self.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"71666f5a2b04456783d9174a5e4c5128",
+"type":"variable"
+},
+{
+"text":"(self):\n    self.",
 "type":"code"
 },
 {
@@ -8904,7 +8912,15 @@
 "type":"variable"
 },
 {
-"text":"(self.page.id).add_child(),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: setattr(self.project, \"hoisted_page\", self.page.id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: set_clipboard_text(self.page.id),\n            self.Append(wx.NewId(), \"Copy id\")\n        )\n        self.AppendSeparator()\n        delete_item = self.Append(wx.NewId(), \"Delete\")\n        delete_item.Enable(self.page.id != self.project.",
+"text":"(self.page.id).",
+"type":"code"
+},
+{
+"id":"71666f5a2b04456783d9174a5e4c5128",
+"type":"variable"
+},
+{
+"text":"(),\n            self.Append(wx.NewId(), \"Add child\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: setattr(self.project, \"hoisted_page\", self.page.id),\n            self.Append(wx.NewId(), \"Hoist\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: set_clipboard_text(self.page.id),\n            self.Append(wx.NewId(), \"Copy id\")\n        )\n        self.AppendSeparator()\n        delete_item = self.Append(wx.NewId(), \"Delete\")\n        delete_item.Enable(self.page.id != self.project.",
 "type":"code"
 },
 {
@@ -8917,6 +8933,7 @@
 }
 ],
 "id":"8ca885b27025476996cabd09eedae341",
+"language":"",
 "type":"code"
 },
 {
@@ -18159,6 +18176,7 @@
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
 "6f6cdf188e064952ba144f0cd1048562":"get_page",
+"71666f5a2b04456783d9174a5e4c5128":"add_child",
 "72f25430d25e4a469bfa5e017370e0f2":"Document",
 "740055857bb244038c203cea23c1af69":"CreateView",
 "74949da897df45e6862e45ffe667fc6e":"text_to_fragments",
