@@ -528,6 +528,22 @@ class TextProjection(GuiUpdatePanel):
                 return box.char
 
     def GetClosestCharacter(self, position):
+        box = self._get_closest_box(position)
+        if box is None:
+            return None
+        else:
+            return box.char
+
+    def GetClosestCharacterWithSide(self, position):
+        box = self._get_closest_box(position)
+        if box is None:
+            return (None, None)
+        elif position.x < (box.rect.X + box.rect.Width/2):
+            return (box.char, wx.LEFT)
+        else:
+            return (box.char, wx.RIGHT)
+
+    def _get_closest_box(self, position):
         if len(self._boxes) == 0:
             return None
         characters_by_y_distance = defaultdict(list)
@@ -541,7 +557,7 @@ class TextProjection(GuiUpdatePanel):
         return min(
             characters_by_y_distance[min(characters_by_y_distance.keys())],
             key=lambda box: abs(box.rect.X + int(box.rect.Width / 2) - position.x)
-        ).char
+        )
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -3480,11 +3496,13 @@ class Title(HorizontalBasePanel):
                     self.project.selection = self.selection.create(result[1])
 
     def _select(self, pos):
-        character = self.text.GetClosestCharacter(pos)
+        character, side = self.text.GetClosestCharacterWithSide(pos)
         if character is None:
             self.project.selection = self.selection.create(0)
-        else:
+        elif side == wx.LEFT:
             self.project.selection = self.selection.create(character.extra)
+        else:
+            self.project.selection = self.selection.create(character.extra+1)
 
     @property
     def project(self):

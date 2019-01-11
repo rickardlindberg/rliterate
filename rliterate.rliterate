@@ -11476,15 +11476,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker,\n                extra=index\n            ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character = self.text.",
+"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker,\n                extra=index\n            ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character, side = self.text.",
 "type":"code"
 },
 {
-"id":"26a20a9b510d411fa6dd5834c9f1634b",
+"id":"f4302d47ac784f8bbdbe3bc46c9316c6",
 "type":"variable"
 },
 {
-"text":"(pos)\n        if character is None:\n            self.project.selection = self.selection.create(0)\n        else:\n            self.project.selection = self.selection.create(character.extra)\n\n",
+"text":"(pos)\n        if character is None:\n            self.project.selection = self.selection.create(0)\n        elif side == wx.LEFT:\n            self.project.selection = self.selection.create(character.extra)\n        else:\n            self.project.selection = self.selection.create(character.extra+1)\n\n",
 "type":"code"
 },
 {
@@ -14955,7 +14955,51 @@
 "type":"variable"
 },
 {
-"text":"(self, position):\n    if len(self.",
+"text":"(self, position):\n    box = self._get_closest_box(position)\n    if box is None:\n        return None\n    else:\n        return box.char\n",
+"type":"code"
+}
+],
+"id":"48f77f6fe78b480593bdd29a5fcb89d7",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"f4302d47ac784f8bbdbe3bc46c9316c6",
+"type":"variable"
+},
+{
+"text":"(self, position):\n    box = self._get_closest_box(position)\n    if box is None:\n        return (None, None)\n    elif position.x < (box.rect.X + box.rect.Width/2):\n        return (box.char, wx.LEFT)\n    else:\n        return (box.char, wx.RIGHT)\n",
+"type":"code"
+}
+],
+"id":"dd66faa72d254eb5b979edb480e2ba00",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_closest_box(self, position):\n    if len(self.",
 "type":"code"
 },
 {
@@ -14971,11 +15015,11 @@
 "type":"variable"
 },
 {
-"text":":\n        if box.rect.Contains(position):\n            characters_by_y_distance[0] = [box]\n            break\n        characters_by_y_distance[\n            abs(box.rect.Y + int(box.rect.Height / 2) - position.y)\n        ].append(box)\n    return min(\n        characters_by_y_distance[min(characters_by_y_distance.keys())],\n        key=lambda box: abs(box.rect.X + int(box.rect.Width / 2) - position.x)\n    ).char\n",
+"text":":\n        if box.rect.Contains(position):\n            characters_by_y_distance[0] = [box]\n            break\n        characters_by_y_distance[\n            abs(box.rect.Y + int(box.rect.Height / 2) - position.y)\n        ].append(box)\n    return min(\n        characters_by_y_distance[min(characters_by_y_distance.keys())],\n        key=lambda box: abs(box.rect.X + int(box.rect.Width / 2) - position.x)\n    )\n",
 "type":"code"
 }
 ],
-"id":"48f77f6fe78b480593bdd29a5fcb89d7",
+"id":"d09fb863401d4c5e82d5f20292fa0179",
 "language":"",
 "type":"code"
 }
@@ -18997,6 +19041,7 @@
 "efd50cfe632b44e6a6620c3fbf66a664":"_update_children",
 "f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
 "f1921d7ea3ca45398940ad6977a30819":"insert_paragraph_after",
+"f4302d47ac784f8bbdbe3bc46c9316c6":"GetClosestCharacterWithSide",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f61c72938beb4f2680305027e6da9fa8":"TableOfContentsDropPoint",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
