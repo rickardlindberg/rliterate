@@ -2669,7 +2669,10 @@ class Tool(object):
             return self.enabled_fn()
 
     def accelerator_entries(self):
-        return [wx.AcceleratorEntry(a, b, self.id) for (a, b) in self.shortcuts]
+        if self._is_enabled():
+            return [wx.AcceleratorEntry(a, b, self.id) for (a, b) in self.shortcuts]
+        else:
+            return []
 
     def populate(self, toolbar):
         toolbar.AddSimpleTool(
