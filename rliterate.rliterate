@@ -2114,7 +2114,7 @@
 ],
 "fragments":[
 {
-"text":"def delete_child_at_index(self, index):\n    self.",
+"text":"def replace_child_at_index(self, index, page_dicts):\n    self.",
 "type":"code"
 },
 {
@@ -2130,7 +2130,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Delete page\", lambda document_dict:\n        ",
+"text":"(\"Replace page\", lambda document_dict:\n        ",
 "type":"code"
 },
 {
@@ -2146,11 +2146,11 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\"],\n            lambda children: children[:index]+children[index][\"children\"]+children[index+1:]\n        )\n    )\n",
+"text":"+[\"children\"],\n            lambda children: children[:index]+page_dicts+children[index+1:]\n        )\n    )\n",
 "type":"code"
 }
 ],
-"id":"c608075ec9474e4aa7b818ae324a6040",
+"id":"92ad2a77c0f84de8b4f163ef6a0b72be",
 "language":"",
 "type":"code"
 }
@@ -2376,7 +2376,7 @@
 ],
 "fragments":[
 {
-"text":"def delete(self):\n    if self.parent is not None:\n        self.parent.delete_child_at_index(self._index)\n",
+"text":"def delete(self):\n    if self.parent is not None:\n        self.parent.replace_child_at_index(self._index, self._fragment[\"children\"])\n",
 "type":"code"
 }
 ],

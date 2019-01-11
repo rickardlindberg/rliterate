@@ -962,7 +962,7 @@ class Page(DocumentFragment):
         )
     def delete(self):
         if self.parent is not None:
-            self.parent.delete_child_at_index(self._index)
+            self.parent.replace_child_at_index(self._index, self._fragment["children"])
     def move(self, parent_page_id, before_page_id):
         parent_page = self._document.get_page(parent_page_id)
         target_index = parent_page.get_child_index(before_page_id)
@@ -1083,12 +1083,12 @@ class Page(DocumentFragment):
                 lambda children: children+[page_dict]
             )
         )
-    def delete_child_at_index(self, index):
-        self._document.modify("Delete page", lambda document_dict:
+    def replace_child_at_index(self, index, page_dicts):
+        self._document.modify("Replace page", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["children"],
-                lambda children: children[:index]+children[index]["children"]+children[index+1:]
+                lambda children: children[:index]+page_dicts+children[index+1:]
             )
         )
 class Paragraph(DocumentFragment):
