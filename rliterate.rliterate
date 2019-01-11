@@ -5604,7 +5604,15 @@
 ],
 "fragments":[
 {
-"text":"def write_read_document(path, document):\n    write_json_to_file(path, document)\n    doc = Document.",
+"text":"def write_read_document(path, document):\n    write_json_to_file(path, document)\n    doc = ",
+"type":"code"
+},
+{
+"id":"72f25430d25e4a469bfa5e017370e0f2",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -5625,6 +5633,7 @@
 }
 ],
 "id":"5280d5f5e03548cebc807af49f6363f3",
+"language":"",
 "type":"code"
 }
 ],
@@ -6011,7 +6020,15 @@
 "type":"chunk"
 },
 {
-"text":"        self.title=\"{} ({})\".format(\n            os.path.basename(filepath),\n            os.path.dirname(os.path.abspath(filepath))\n        )\n        self.document = Document.",
+"text":"        self.title=\"{} ({})\".format(\n            os.path.basename(filepath),\n            os.path.dirname(os.path.abspath(filepath))\n        )\n        self.document = ",
+"type":"code"
+},
+{
+"id":"72f25430d25e4a469bfa5e017370e0f2",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -16746,7 +16763,15 @@
 ],
 "fragments":[
 {
-"text":"if sys.argv[2:] == [\"--html\"]:\n    sys.stdout.write(HTMLBuilder(Document.",
+"text":"if sys.argv[2:] == [\"--html\"]:\n    sys.stdout.write(HTMLBuilder(",
+"type":"code"
+},
+{
+"id":"72f25430d25e4a469bfa5e017370e0f2",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -16754,7 +16779,15 @@
 "type":"variable"
 },
 {
-"text":"(sys.argv[1])).build())\nelif sys.argv[2:] == [\"--diff\"]:\n    sys.stdout.write(DiffBuilder(Document.",
+"text":"(sys.argv[1])).build())\nelif sys.argv[2:] == [\"--diff\"]:\n    sys.stdout.write(DiffBuilder(",
+"type":"code"
+},
+{
+"id":"72f25430d25e4a469bfa5e017370e0f2",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -16775,6 +16808,7 @@
 }
 ],
 "id":"aab597ceb638456eb6eee134fc19af87",
+"language":"",
 "type":"code"
 }
 ],
