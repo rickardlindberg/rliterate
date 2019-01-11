@@ -1403,11 +1403,52 @@
 "type":"variable"
 },
 {
-"text":"(cls, path):\n    if os.path.exists(path):\n        return cls(path, load_json_from_file(path))\n    else:\n        return cls(path)\n",
+"text":"(cls, path):\n    if os.path.exists(path):\n        return cls(path, load_json_from_file(path))\n    else:\n        return cls(path, ",
+"type":"code"
+},
+{
+"id":"8ba2bd8df56e45ccb2c3dcd2b8ac6e83",
+"type":"variable"
+},
+{
+"text":"())\n",
 "type":"code"
 }
 ],
 "id":"53de8670b4164bc7a0ab502d2960da63",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"8ba2bd8df56e45ccb2c3dcd2b8ac6e83",
+"type":"variable"
+},
+{
+"text":"():\n    return {\n        \"root_page\": ",
+"type":"code"
+},
+{
+"id":"1cb3a1fa40584378a449abf60a9e3e6c",
+"type":"variable"
+},
+{
+"text":"(),\n        \"variables\": {},\n    }\n",
+"type":"code"
+}
+],
+"id":"5f11314616ed423cab0cfe140eacb3b4",
 "language":"",
 "type":"code"
 },
@@ -1428,7 +1469,7 @@
 "type":"variable"
 },
 {
-"text":"(Observable):\n\n    def __init__(self, path, document_dict=None):\n        Observable.__init__(self)\n        self.path = path\n        self.",
+"text":"(Observable):\n\n    def __init__(self, path, document_dict):\n        Observable.__init__(self)\n        self.path = path\n        self.",
 "type":"code"
 },
 {
@@ -1486,15 +1527,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            ",
-"type":"code"
-},
-{
-"id":"8ba2bd8df56e45ccb2c3dcd2b8ac6e83",
-"type":"variable"
-},
-{
-"text":"()\n            if document_dict is None else\n            document_dict\n        ),\n        size=",
+"text":"(document_dict),\n        size=",
 "type":"code"
 },
 {
@@ -1507,32 +1540,6 @@
 }
 ],
 "id":"4b50dfd6dcd64c59b9d3a53346944a5d",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Document"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def save(self):\n    write_json_to_file(\n        self.path,\n        self.",
-"type":"code"
-},
-{
-"id":"b7da0c1f7b7845c8a2c816963948740d",
-"type":"variable"
-},
-{
-"text":"\n    )\n",
-"type":"code"
-}
-],
-"id":"df447b3de296466db8d8beccaf20270c",
 "language":"",
 "type":"code"
 },
@@ -1593,34 +1600,27 @@
 },
 {
 "chunkpath":[
-"functions"
+"classes",
+"Document"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"def ",
+"text":"def save(self):\n    write_json_to_file(\n        self.path,\n        self.",
 "type":"code"
 },
 {
-"id":"8ba2bd8df56e45ccb2c3dcd2b8ac6e83",
+"id":"b7da0c1f7b7845c8a2c816963948740d",
 "type":"variable"
 },
 {
-"text":"():\n    return {\n        \"root_page\": ",
-"type":"code"
-},
-{
-"id":"1cb3a1fa40584378a449abf60a9e3e6c",
-"type":"variable"
-},
-{
-"text":"(),\n        \"variables\": {},\n    }\n",
+"text":"\n    )\n",
 "type":"code"
 }
 ],
-"id":"5f11314616ed423cab0cfe140eacb3b4",
+"id":"df447b3de296466db8d8beccaf20270c",
 "language":"",
 "type":"code"
 }

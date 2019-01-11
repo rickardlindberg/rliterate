@@ -733,7 +733,7 @@ class JsonSettings(Observable):
         )
 class Document(Observable):
 
-    def __init__(self, path, document_dict=None):
+    def __init__(self, path, document_dict):
         Observable.__init__(self)
         self.path = path
         self._load(document_dict)
@@ -743,24 +743,20 @@ class Document(Observable):
         if os.path.exists(path):
             return cls(path, load_json_from_file(path))
         else:
-            return cls(path)
+            return cls(path, new_document_dict())
     def _load(self, document_dict):
         self._history = History(
-            self._convert_to_latest(
-                new_document_dict()
-                if document_dict is None else
-                document_dict
-            ),
+            self._convert_to_latest(document_dict),
             size=UNDO_BUFFER_SIZE
         )
+    @property
+    def document_dict(self):
+        return self._history.value
     def save(self):
         write_json_to_file(
             self.path,
             self.document_dict
         )
-    @property
-    def document_dict(self):
-        return self._history.value
     @contextlib.contextmanager
     def transaction(self, name):
         with self.notify():
