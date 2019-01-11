@@ -3944,7 +3944,15 @@
 ],
 "fragments":[
 {
-"text":"def add_paragraph(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    page = self.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"type":"variable"
+},
+{
+"text":"(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    page = self.",
 "type":"code"
 },
 {
@@ -6174,7 +6182,23 @@
 "type":"variable"
 },
 {
-"text":"(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef add_paragraph(self, *args, **kwargs):\n    return self.document.add_paragraph(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
+"text":"(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef ",
+"type":"code"
+},
+{
+"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"type":"variable"
+},
+{
+"text":"(self, *args, **kwargs):\n    return self.document.",
+"type":"code"
+},
+{
+"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"type":"variable"
+},
+{
+"text":"(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
 "type":"code"
 }
 ],
@@ -10703,7 +10727,15 @@
 "type":"variable"
 },
 {
-"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.add_paragraph(self.page_id)\n\ndef ",
+"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.",
+"type":"code"
+},
+{
+"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"type":"variable"
+},
+{
+"text":"(self.page_id)\n\ndef ",
 "type":"code"
 },
 {
@@ -12419,7 +12451,15 @@
 "type":"variable"
 },
 {
-"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.project.add_paragraph(\n                self.page_id,\n                before_id=self.paragraph.next_id,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    def ",
+"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.project.",
+"type":"code"
+},
+{
+"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"type":"variable"
+},
+{
+"text":"(\n                self.page_id,\n                before_id=self.paragraph.next_id,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    def ",
 "type":"code"
 },
 {
@@ -12440,6 +12480,7 @@
 }
 ],
 "id":"1e77735cb0fe409683695b5339204a23",
+"language":"",
 "type":"code"
 }
 ],
@@ -13125,7 +13166,23 @@
 "type":"variable"
 },
 {
-"text":"(\"Paragraph\")\n    menu.AppendItem(\n        \"New paragraph before\",\n        lambda: self.project.add_paragraph(\n            self.page_id,\n            before_id=self.paragraph.id\n        )\n    )\n    menu.AppendItem(\n        \"New paragraph after\",\n        lambda: self.project.add_paragraph(\n            self.page_id,\n            before_id=self.paragraph.next_id\n        )\n    )\n    menu.AppendItem(\n        \"Duplicate\",\n        lambda: self.paragraph.duplicate()\n    )\n    if hasattr(self.paragraph, \"text_version\"):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: setattr(\n                self.paragraph,\n                \"text_version\",\n                ",
+"text":"(\"Paragraph\")\n    menu.AppendItem(\n        \"New paragraph before\",\n        lambda: self.project.",
+"type":"code"
+},
+{
+"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"type":"variable"
+},
+{
+"text":"(\n            self.page_id,\n            before_id=self.paragraph.id\n        )\n    )\n    menu.AppendItem(\n        \"New paragraph after\",\n        lambda: self.project.",
+"type":"code"
+},
+{
+"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"type":"variable"
+},
+{
+"text":"(\n            self.page_id,\n            before_id=self.paragraph.next_id\n        )\n    )\n    menu.AppendItem(\n        \"Duplicate\",\n        lambda: self.paragraph.duplicate()\n    )\n    if hasattr(self.paragraph, \"text_version\"):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: setattr(\n                self.paragraph,\n                \"text_version\",\n                ",
 "type":"code"
 },
 {
@@ -18628,6 +18685,7 @@
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a4ee3530a5f140f5bc70b87fca825372":"_update_paragraph_gui",
+"a5a0f92d74364068a5a5ab9e9140a00f":"add_paragraph",
 "a5aea35d34d74689b025122b40dc23b4":"modify",
 "a5bace68289b40e78df93409e362a63b":"from_file",
 "a6d32657c47b44f59594cd7d8030b0d6":"base64_to_bitmap",
