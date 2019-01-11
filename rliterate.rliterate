@@ -2056,7 +2056,7 @@
 ],
 "fragments":[
 {
-"text":"def add_child(self, page_dict=None):\n    if page_dict is None:\n        page_dict = ",
+"text":"def add_child(self):\n    self.insert_page_at_index(",
 "type":"code"
 },
 {
@@ -2064,7 +2064,25 @@
 "type":"variable"
 },
 {
-"text":"()\n    self.",
+"text":"(), len(self._fragment[\"children\"]))\n",
+"type":"code"
+}
+],
+"id":"b48e2c01fd4a4f37a34dd2020f3fadef",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def insert_page_at_index(self, page_dict, index):\n    self.",
 "type":"code"
 },
 {
@@ -2080,7 +2098,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Add page\", lambda document_dict:\n        ",
+"text":"(\"Insert page\", lambda document_dict:\n        ",
 "type":"code"
 },
 {
@@ -2096,11 +2114,11 @@
 "type":"variable"
 },
 {
-"text":"+[\"children\"],\n            lambda children: children+[page_dict]\n        )\n    )\n",
+"text":"+[\"children\"],\n            lambda children: children[:index]+[page_dict]+children[index:]\n        )\n    )\n",
 "type":"code"
 }
 ],
-"id":"b48e2c01fd4a4f37a34dd2020f3fadef",
+"id":"401ddbcc832042c7a57a825fed67fdfc",
 "language":"",
 "type":"code"
 },

@@ -1073,14 +1073,14 @@ class Page(DocumentFragment):
             if child.id == child_id:
                 return index
         return index + 1
-    def add_child(self, page_dict=None):
-        if page_dict is None:
-            page_dict = new_page_dict()
-        self._document.modify("Add page", lambda document_dict:
+    def add_child(self):
+        self.insert_page_at_index(new_page_dict(), len(self._fragment["children"]))
+    def insert_page_at_index(self, page_dict, index):
+        self._document.modify("Insert page", lambda document_dict:
             im_replace(
                 document_dict,
                 self._path+["children"],
-                lambda children: children+[page_dict]
+                lambda children: children[:index]+[page_dict]+children[index:]
             )
         )
     def replace_child_at_index(self, index, page_dicts):
