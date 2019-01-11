@@ -14887,7 +14887,7 @@
 "type":"variable"
 },
 {
-"text":":\n        dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))\n        for box in self.",
+"text":":\n        THICKNESS = 2\n        CURVE_SIZE = 3\n        dc.SetPen(wx.Pen(wx.Colour(255, 50, 0, 180), width=THICKNESS, style=wx.PENSTYLE_SOLID))\n        for box in self.",
 "type":"code"
 },
 {
@@ -14895,7 +14895,7 @@
 "type":"variable"
 },
 {
-"text":":\n            if box.char.marker == \"beam_start\":\n                dc.DrawLinePoint(box.rect.TopLeft+(0, 1), box.rect.TopLeft+(3, 1))\n                dc.DrawLinePoint(box.rect.TopLeft+(1, 0), box.rect.BottomLeft+(1, 0))\n                dc.DrawLinePoint(box.rect.BottomLeft, box.rect.BottomLeft+(3, 0))\n            elif box.char.marker == \"beam_middle\":\n                dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)\n            elif box.char.marker == \"beam_end\":\n                dc.DrawLinePoint(box.rect.TopRight+(0, 1), box.rect.TopRight+(-3, 1))\n                dc.DrawLinePoint(box.rect.TopRight, box.rect.BottomRight)\n                dc.DrawLinePoint(box.rect.BottomRight, box.rect.BottomRight-(3, 0))\n",
+"text":":\n            if box.char.marker == \"beam_start\":\n                dc.DrawLines([\n                    box.rect.TopLeft    + (THICKNESS/2+CURVE_SIZE, 1  ),\n                    box.rect.TopLeft    + (THICKNESS/2+0, 1+CURVE_SIZE),\n                    box.rect.BottomLeft + (THICKNESS/2+0,  -CURVE_SIZE),\n                    box.rect.BottomLeft + (THICKNESS/2+CURVE_SIZE, 0),\n                ])\n            elif box.char.marker == \"beam_middle\":\n                dc.DrawLines([\n                    box.rect.TopLeft,\n                    box.rect.BottomLeft,\n                ])\n            elif box.char.marker == \"beam_end\":\n                dc.DrawLines([\n                    box.rect.TopRight    + (-THICKNESS/2-CURVE_SIZE, 1  ),\n                    box.rect.TopRight    + (-THICKNESS/2+0, 1+CURVE_SIZE),\n                    box.rect.BottomRight + (-THICKNESS/2+0,  -CURVE_SIZE),\n                    box.rect.BottomRight + (-THICKNESS/2-CURVE_SIZE, 0),\n                ])\n",
 "type":"code"
 }
 ],

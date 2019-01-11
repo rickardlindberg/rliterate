@@ -509,18 +509,29 @@ class TextProjection(GuiUpdatePanel):
             style.apply_to_wx_dc(dc, self.GetFont())
             dc.DrawTextList(*strings_positions)
         if self._show_beams:
-            dc.SetPen(wx.Pen(wx.RED, width=2, style=wx.PENSTYLE_SOLID))
+            THICKNESS = 2
+            CURVE_SIZE = 3
+            dc.SetPen(wx.Pen(wx.Colour(255, 50, 0, 180), width=THICKNESS, style=wx.PENSTYLE_SOLID))
             for box in self._markers:
                 if box.char.marker == "beam_start":
-                    dc.DrawLinePoint(box.rect.TopLeft+(0, 1), box.rect.TopLeft+(3, 1))
-                    dc.DrawLinePoint(box.rect.TopLeft+(1, 0), box.rect.BottomLeft+(1, 0))
-                    dc.DrawLinePoint(box.rect.BottomLeft, box.rect.BottomLeft+(3, 0))
+                    dc.DrawLines([
+                        box.rect.TopLeft    + (THICKNESS/2+CURVE_SIZE, 1  ),
+                        box.rect.TopLeft    + (THICKNESS/2+0, 1+CURVE_SIZE),
+                        box.rect.BottomLeft + (THICKNESS/2+0,  -CURVE_SIZE),
+                        box.rect.BottomLeft + (THICKNESS/2+CURVE_SIZE, 0),
+                    ])
                 elif box.char.marker == "beam_middle":
-                    dc.DrawLinePoint(box.rect.TopLeft, box.rect.BottomLeft)
+                    dc.DrawLines([
+                        box.rect.TopLeft,
+                        box.rect.BottomLeft,
+                    ])
                 elif box.char.marker == "beam_end":
-                    dc.DrawLinePoint(box.rect.TopRight+(0, 1), box.rect.TopRight+(-3, 1))
-                    dc.DrawLinePoint(box.rect.TopRight, box.rect.BottomRight)
-                    dc.DrawLinePoint(box.rect.BottomRight, box.rect.BottomRight-(3, 0))
+                    dc.DrawLines([
+                        box.rect.TopRight    + (-THICKNESS/2-CURVE_SIZE, 1  ),
+                        box.rect.TopRight    + (-THICKNESS/2+0, 1+CURVE_SIZE),
+                        box.rect.BottomRight + (-THICKNESS/2+0,  -CURVE_SIZE),
+                        box.rect.BottomRight + (-THICKNESS/2-CURVE_SIZE, 0),
+                    ])
 
     def GetCharacterAt(self, position):
         for box in self._boxes:
