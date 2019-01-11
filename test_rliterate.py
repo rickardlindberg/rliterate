@@ -178,8 +178,7 @@ def test_converts_legacy_root_document(tmpfile):
 def write_read_document(path, document):
     write_json_to_file(path, document)
     doc = Document.from_file(path)
-    with doc.notify():
-        pass
+    write_json_to_file(path, doc.document_dict)
     return load_json_from_file(path)
 def test_reads_legacy_scratch_pages(tmpfile):
     write_json_to_file(tmpfile, {

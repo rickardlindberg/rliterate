@@ -5620,15 +5620,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n    with doc.",
-"type":"code"
-},
-{
-"id":"1c7f69114ac14c80b2fb421ea7eda3a2",
-"type":"variable"
-},
-{
-"text":"():\n        pass\n    return load_json_from_file(path)\n",
+"text":"(path)\n    write_json_to_file(path, doc.document_dict)\n    return load_json_from_file(path)\n",
 "type":"code"
 }
 ],
