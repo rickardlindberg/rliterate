@@ -982,11 +982,11 @@ class Page(DocumentFragment):
             else:
                 insert_first = len(parent_page._path) > len(self.parent._path)
             if insert_first:
-                parent_page.insert_page_at_index(self._fragment, target_index)
+                parent_page.insert_child_at_index(self._fragment, target_index)
                 self.parent.replace_child_at_index(self._index, [])
             else:
                 self.parent.replace_child_at_index(self._index, [])
-                parent_page.insert_page_at_index(self._fragment, target_index)
+                parent_page.insert_child_at_index(self._fragment, target_index)
     @property
     def paragraphs(self):
         return [
@@ -1054,8 +1054,8 @@ class Page(DocumentFragment):
                 return index
         return index + 1
     def add_child(self):
-        self.insert_page_at_index(new_page_dict(), len(self._fragment["children"]))
-    def insert_page_at_index(self, page_dict, index):
+        self.insert_child_at_index(new_page_dict(), len(self._fragment["children"]))
+    def insert_child_at_index(self, page_dict, index):
         self._document.modify("Insert page", lambda document_dict:
             im_replace(
                 document_dict,

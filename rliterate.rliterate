@@ -2056,7 +2056,15 @@
 ],
 "fragments":[
 {
-"text":"def add_child(self):\n    self.insert_page_at_index(",
+"text":"def add_child(self):\n    self.",
+"type":"code"
+},
+{
+"id":"f88683cb708944e3bf47d9f8077840b0",
+"type":"variable"
+},
+{
+"text":"(",
 "type":"code"
 },
 {
@@ -2082,7 +2090,15 @@
 ],
 "fragments":[
 {
-"text":"def insert_page_at_index(self, page_dict, index):\n    self.",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"f88683cb708944e3bf47d9f8077840b0",
+"type":"variable"
+},
+{
+"text":"(self, page_dict, index):\n    self.",
 "type":"code"
 },
 {
@@ -2460,7 +2476,15 @@
 "type":"variable"
 },
 {
-"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = target_index > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.insert_page_at_index(self._fragment, target_index)\n            self.parent.",
+"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = target_index > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.",
+"type":"code"
+},
+{
+"id":"f88683cb708944e3bf47d9f8077840b0",
+"type":"variable"
+},
+{
+"text":"(self._fragment, target_index)\n            self.parent.",
 "type":"code"
 },
 {
@@ -2476,7 +2500,15 @@
 "type":"variable"
 },
 {
-"text":"(self._index, [])\n            parent_page.insert_page_at_index(self._fragment, target_index)\n",
+"text":"(self._index, [])\n            parent_page.",
+"type":"code"
+},
+{
+"id":"f88683cb708944e3bf47d9f8077840b0",
+"type":"variable"
+},
+{
+"text":"(self._fragment, target_index)\n",
 "type":"code"
 }
 ],
@@ -18237,6 +18269,7 @@
 "f6b2d4f94b72424a88a47d636753a2b9":"min_or_none",
 "f7276b0256114e3999f63bdc6d7ec078":"StyledText",
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
+"f88683cb708944e3bf47d9f8077840b0":"insert_child_at_index",
 "f9605031f42b4c37a170779d7ee7fe6e":"UpdateTokens",
 "fa5caec06ed84470a3797f18af6cde3a":"modify_fn",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
