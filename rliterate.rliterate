@@ -7218,7 +7218,7 @@
 ],
 "fragments":[
 {
-"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n\n    styles = {\n        TokenType:                     ",
+"text":"class SolarizedTheme(BaseTheme):\n\n    base03  = \"#002b36\"\n    base02  = \"#073642\"\n    base01  = \"#586e75\"\n    base00  = \"#657b83\"\n    base0   = \"#839496\"\n    base1   = \"#93a1a1\"\n    base2   = \"#eee8d5\"\n    base3   = \"#fdf6e3\"\n    yellow  = \"#b58900\"\n    orange  = \"#cb4b16\"\n    red     = \"#dc322f\"\n    magenta = \"#d33682\"\n    violet  = \"#6c71c4\"\n    blue    = \"#268bd2\"\n    cyan    = \"#2aa198\"\n    green   = \"#859900\"\n\n    text    = \"#2e3436\"\n    empty   = \"#cccccc\"\n\n    styles = {\n        TokenType:                     ",
 "type":"code"
 },
 {
@@ -7362,7 +7362,15 @@
 "type":"variable"
 },
 {
-"text":".create(foreground=text),\n        TokenType.RLiterate.Emphasis:  ",
+"text":".create(foreground=text),\n        TokenType.RLiterate.Empty:     ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=empty),\n        TokenType.RLiterate.Emphasis:  ",
 "type":"code"
 },
 {
@@ -11476,7 +11484,23 @@
 "type":"variable"
 },
 {
-"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker,\n                extra=index\n            ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character, side = self.text.",
+"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker,\n                extra=index\n            ))\n        if not characters:\n            for index, character in enumerate(\"Enter title...\"):\n                characters.append(",
+"type":"code"
+},
+{
+"id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"ae234077465241e39337f68165ffb11e",
+"type":"variable"
+},
+{
+"text":"(\n                    character,\n                    self.project.get_style(TokenType.RLiterate.Empty),\n                    \"beam_start\" if index == 0 else None,\n                    extra=0\n                ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character, side = self.text.",
 "type":"code"
 },
 {

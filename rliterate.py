@@ -2448,6 +2448,7 @@ class SolarizedTheme(BaseTheme):
     green   = "#859900"
 
     text    = "#2e3436"
+    empty   = "#cccccc"
 
     styles = {
         TokenType:                     Style.create(foreground=base00),
@@ -2468,6 +2469,7 @@ class SolarizedTheme(BaseTheme):
         TokenType.Comment:             Style.create(foreground=base1),
         TokenType.Comment.Preproc:     Style.create(foreground=magenta, bold=True),
         TokenType.RLiterate:           Style.create(foreground=text),
+        TokenType.RLiterate.Empty:     Style.create(foreground=empty),
         TokenType.RLiterate.Emphasis:  Style.create(foreground=text, italic=True),
         TokenType.RLiterate.Strong:    Style.create(foreground=text, bold=True),
         TokenType.RLiterate.Code:      Style.create(foreground=text, monospace=True),
@@ -3495,6 +3497,14 @@ class Title(HorizontalBasePanel):
                 marker,
                 extra=index
             ))
+        if not characters:
+            for index, character in enumerate("Enter title..."):
+                characters.append(Character.create(
+                    character,
+                    self.project.get_style(TokenType.RLiterate.Empty),
+                    "beam_start" if index == 0 else None,
+                    extra=0
+                ))
         return characters
 
     @rltime("on title char")
