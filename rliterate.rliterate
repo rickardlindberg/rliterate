@@ -4265,7 +4265,23 @@
 "type":"variable"
 },
 {
-"text":"), id=genid()),\n                self._index+1\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n",
+"text":"), id=genid()),\n                self._index+1\n            )\n\n    @property\n    def filename(self):\n        return \"paragraph.txt\"\n\n    def iter_code_fragments(self):\n        return iter([])\n\n    def iter_text_fragments(self):\n        return iter([])\n\n    def ",
+"type":"code"
+},
+{
+"id":"7682e2b75c064afd96c7dde2a6830749",
+"type":"variable"
+},
+{
+"text":"(self, **kwargs):\n        self._document.add_paragraph(\n            self._page.id,\n            target_index=self._index,\n            **kwargs\n        )\n\n    def ",
+"type":"code"
+},
+{
+"id":"f1921d7ea3ca45398940ad6977a30819",
+"type":"variable"
+},
+{
+"text":"(self, **kwargs):\n        self._document.add_paragraph(\n            self._page.id,\n            target_index=self._index+1,\n            **kwargs\n        )\n",
 "type":"code"
 }
 ],
@@ -12550,23 +12566,15 @@
 "type":"variable"
 },
 {
-"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.project.",
+"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.paragraph.",
 "type":"code"
 },
 {
-"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"id":"f1921d7ea3ca45398940ad6977a30819",
 "type":"variable"
 },
 {
-"text":"(\n                self.page_id,\n                ",
-"type":"code"
-},
-{
-"id":"ca88dc4d189c4ce1b5237450bd76bad6",
-"type":"variable"
-},
-{
-"text":"=self.paragraph._index+1,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    def ",
+"text":"(\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    def ",
 "type":"code"
 },
 {
@@ -13273,39 +13281,23 @@
 "type":"variable"
 },
 {
-"text":"(\"Paragraph\")\n    menu.AppendItem(\n        \"New paragraph before\",\n        lambda: self.project.",
+"text":"(\"Paragraph\")\n    menu.AppendItem(\n        \"New paragraph before\",\n        lambda: self.paragraph.",
 "type":"code"
 },
 {
-"id":"a5a0f92d74364068a5a5ab9e9140a00f",
+"id":"7682e2b75c064afd96c7dde2a6830749",
 "type":"variable"
 },
 {
-"text":"(\n            self.page_id,\n            ",
+"text":"()\n    )\n    menu.AppendItem(\n        \"New paragraph after\",\n        lambda: self.paragraph.",
 "type":"code"
 },
 {
-"id":"ca88dc4d189c4ce1b5237450bd76bad6",
+"id":"f1921d7ea3ca45398940ad6977a30819",
 "type":"variable"
 },
 {
-"text":"=self.paragraph._index\n        )\n    )\n    menu.AppendItem(\n        \"New paragraph after\",\n        lambda: self.project.",
-"type":"code"
-},
-{
-"id":"a5a0f92d74364068a5a5ab9e9140a00f",
-"type":"variable"
-},
-{
-"text":"(\n            self.page_id,\n            ",
-"type":"code"
-},
-{
-"id":"ca88dc4d189c4ce1b5237450bd76bad6",
-"type":"variable"
-},
-{
-"text":"=self.paragraph._index+1\n        )\n    )\n    menu.AppendItem(\n        \"Duplicate\",\n        lambda: self.paragraph.duplicate()\n    )\n    if hasattr(self.paragraph, \"text_version\"):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: setattr(\n                self.paragraph,\n                \"text_version\",\n                ",
+"text":"()\n    )\n    menu.AppendItem(\n        \"Duplicate\",\n        lambda: self.paragraph.duplicate()\n    )\n    if hasattr(self.paragraph, \"text_version\"):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: setattr(\n                self.paragraph,\n                \"text_version\",\n                ",
 "type":"code"
 },
 {
@@ -18779,6 +18771,7 @@
 "740055857bb244038c203cea23c1af69":"CreateView",
 "74949da897df45e6862e45ffe667fc6e":"text_to_fragments",
 "75d0d294fd5a4cc5beaf14009875e662":"_fragment",
+"7682e2b75c064afd96c7dde2a6830749":"insert_paragraph_before",
 "76b9d362e0714c1da27953dd46e8ef0b":"page_padding",
 "777225827647402d975279d0fa55c788":"next_paragraph_id",
 "7a9fc5b110114e64b871a0f672c764c2":"_max_width",
@@ -18887,6 +18880,7 @@
 "efa648b2a8514099b295d2313e89768a":"has_changes",
 "efd50cfe632b44e6a6620c3fbf66a664":"_update_children",
 "f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
+"f1921d7ea3ca45398940ad6977a30819":"insert_paragraph_after",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
 "f61c72938beb4f2680305027e6da9fa8":"TableOfContentsDropPoint",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",

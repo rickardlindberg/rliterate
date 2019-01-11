@@ -317,17 +317,11 @@ class ParagraphBase(Editable):
         menu = SimpleContextMenu("Paragraph")
         menu.AppendItem(
             "New paragraph before",
-            lambda: self.project.add_paragraph(
-                self.page_id,
-                target_index=self.paragraph._index
-            )
+            lambda: self.paragraph.insert_paragraph_before()
         )
         menu.AppendItem(
             "New paragraph after",
-            lambda: self.project.add_paragraph(
-                self.page_id,
-                target_index=self.paragraph._index+1
-            )
+            lambda: self.paragraph.insert_paragraph_after()
         )
         menu.AppendItem(
             "Duplicate",
@@ -1124,6 +1118,20 @@ class Paragraph(DocumentFragment):
 
     def iter_text_fragments(self):
         return iter([])
+
+    def insert_paragraph_before(self, **kwargs):
+        self._document.add_paragraph(
+            self._page.id,
+            target_index=self._index,
+            **kwargs
+        )
+
+    def insert_paragraph_after(self, **kwargs):
+        self._document.add_paragraph(
+            self._page.id,
+            target_index=self._index+1,
+            **kwargs
+        )
 class TextParagraph(Paragraph):
 
     @property
@@ -3671,9 +3679,7 @@ class Code(ParagraphBase):
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
             "Create expanded view",
-            lambda: self.project.add_paragraph(
-                self.page_id,
-                target_index=self.paragraph._index+1,
+            lambda: self.paragraph.insert_paragraph_after(
                 paragraph_dict={
                     "type": "expanded_code",
                     "code_id": self.paragraph.id,
