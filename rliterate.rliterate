@@ -1911,14 +1911,6 @@
 "type":"code"
 },
 {
-"id":"29853bcfd5b84d949d4d17454f7a50de",
-"type":"variable"
-},
-{
-"text":"(self, paragraph_id):\n    index = -1\n    for index, paragraph in enumerate(self.paragraphs):\n        if paragraph.id == paragraph_id:\n            return index\n    return index + 1\n\ndef ",
-"type":"code"
-},
-{
 "id":"8a58e93e7e394df4a9836df125d49378",
 "type":"variable"
 },

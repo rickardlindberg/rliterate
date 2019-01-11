@@ -1010,13 +1010,6 @@ class Page(DocumentFragment):
             if paragraph.id == paragraph_id:
                 return paragraph
 
-    def get_paragraph_index(self, paragraph_id):
-        index = -1
-        for index, paragraph in enumerate(self.paragraphs):
-            if paragraph.id == paragraph_id:
-                return index
-        return index + 1
-
     def delete_paragraph_at_index(self, index):
         self._document.modify("Delete paragraph", lambda document_dict:
             im_modify(
