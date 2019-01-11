@@ -976,37 +976,17 @@ class Page(DocumentFragment):
         if parent_page.id == self.parent.id and target_index in [self._index, self._index+1]:
             return
         # Do the move
-        def insert(items, item):
-            if before_page_id is None:
-                return items+[item]
-            else:
-                index = index_with_id(items, before_page_id)
-                return items[:index]+[item]+items[index:]
-        def remove(items, index):
-            return items[:index]+items[index+1:]
-        def do_move(document_dict):
-            changes = []
-            if parent_page.id == self.parent.id:
-                changes.append((
-                    self.parent._path+["children"],
-                    lambda x: insert(remove(x, self._index), self._fragment)
-                ))
-            else:
-                changes.append((
-                    self.parent._path+["children"],
-                    lambda x: remove(x, self._index)
-                ))
-                changes.append((
-                    parent_page._path+["children"],
-                    lambda x: insert(x, self._fragment)
-                ))
-            if len(parent_page._path) > len(self.parent._path):
-                changes = reversed(changes)
-            for path, new_value in changes:
-                document_dict = im_replace(document_dict, path, new_value)
-            return document_dict
         with self._document.transaction("Move page"):
-            self._document.modify("", do_move)
+            if parent_page.id == self.parent.id:
+                insert_first = target_index > self._index
+            else:
+                insert_first = len(parent_page._path) > len(self.parent._path)
+            if insert_first:
+                parent_page.insert_page_at_index(self._fragment, target_index)
+                self.parent.replace_child_at_index(self._index, [])
+            else:
+                self.parent.replace_child_at_index(self._index, [])
+                parent_page.insert_page_at_index(self._fragment, target_index)
     @property
     def paragraphs(self):
         return [

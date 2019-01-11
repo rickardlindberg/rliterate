@@ -2428,23 +2428,7 @@
 "type":"variable"
 },
 {
-"text":"(parent_page_id)\n    target_index = parent_page.get_child_index(before_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if parent_page.id == self.parent.id and target_index in [self._index, self._index+1]:\n        return\n    # Do the move\n    def insert(items, item):\n        if before_page_id is None:\n            return items+[item]\n        else:\n            index = ",
-"type":"code"
-},
-{
-"id":"6e076e2955c4476fbe194f0a38a97cee",
-"type":"variable"
-},
-{
-"text":"(items, before_page_id)\n            return items[:index]+[item]+items[index:]\n    def remove(items, index):\n        return items[:index]+items[index+1:]\n    def do_move(document_dict):\n        changes = []\n        if parent_page.id == self.parent.id:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: insert(remove(x, self._index), self._fragment)\n            ))\n        else:\n            changes.append((\n                self.parent._path+[\"children\"],\n                lambda x: remove(x, self._index)\n            ))\n            changes.append((\n                parent_page._path+[\"children\"],\n                lambda x: insert(x, self._fragment)\n            ))\n        if len(parent_page._path) > len(self.parent._path):\n            changes = reversed(changes)\n        for path, new_value in changes:\n            document_dict = ",
-"type":"code"
-},
-{
-"id":"51708e28ba3245859e0554a504cc015c",
-"type":"variable"
-},
-{
-"text":"(document_dict, path, new_value)\n        return document_dict\n    with self.",
+"text":"(parent_page_id)\n    target_index = parent_page.get_child_index(before_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if parent_page.id == self.parent.id and target_index in [self._index, self._index+1]:\n        return\n    # Do the move\n    with self.",
 "type":"code"
 },
 {
@@ -2460,23 +2444,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Move page\"):\n        self.",
-"type":"code"
-},
-{
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"a5aea35d34d74689b025122b40dc23b4",
-"type":"variable"
-},
-{
-"text":"(\"\", do_move)\n",
+"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = target_index > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.insert_page_at_index(self._fragment, target_index)\n            self.parent.replace_child_at_index(self._index, [])\n        else:\n            self.parent.replace_child_at_index(self._index, [])\n            parent_page.insert_page_at_index(self._fragment, target_index)\n",
 "type":"code"
 }
 ],
