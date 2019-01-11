@@ -1883,7 +1883,7 @@
 "type":"variable"
 },
 {
-"text":"+[\"paragraphs\", index],\n            paragraph_dict,\n            index,\n            self,\n            next_paragraph_dict[\"id\"] if next_paragraph_dict is not None else None\n        )\n        for (index, (paragraph_dict, next_paragraph_dict))\n        in enumerate(zip(\n            self.",
+"text":"+[\"paragraphs\", index],\n            paragraph_dict,\n            index,\n            self\n        )\n        for index, paragraph_dict\n        in enumerate(self.",
 "type":"code"
 },
 {
@@ -1891,15 +1891,7 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"],\n            self.",
-"type":"code"
-},
-{
-"id":"75d0d294fd5a4cc5beaf14009875e662",
-"type":"variable"
-},
-{
-"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef ",
+"text":"[\"paragraphs\"])\n    ]\n\ndef ",
 "type":"code"
 },
 {
@@ -4041,7 +4033,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    @staticmethod\n    def create(document, path, paragraph_dict, index, page, next_id):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n            \"expanded_code\": ExpandedCodeParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, path, paragraph_dict, index, page, next_id)\n\n    def __init__(self, document, path, paragraph_dict, index, page, next_id):\n        ",
+"text":"):\n\n    @staticmethod\n    def create(document, path, paragraph_dict, index, page):\n        return {\n            \"text\": TextParagraph,\n            \"quote\": QuoteParagraph,\n            \"list\": ListParagraph,\n            \"code\": CodeParagraph,\n            \"image\": ImageParagraph,\n            \"expanded_code\": ExpandedCodeParagraph,\n        }.get(paragraph_dict[\"type\"], Paragraph)(document, path, paragraph_dict, index, page)\n\n    def __init__(self, document, path, paragraph_dict, index, page):\n        ",
 "type":"code"
 },
 {
@@ -4049,7 +4041,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, document, path, paragraph_dict)\n        self._index = index\n        self._page = page\n        self._next_id = next_id\n\n    @property\n    def id(self):\n        return self.",
+"text":".__init__(self, document, path, paragraph_dict)\n        self._index = index\n        self._page = page\n\n    @property\n    def id(self):\n        return self.",
 "type":"code"
 },
 {
@@ -4057,7 +4049,7 @@
 "type":"variable"
 },
 {
-"text":"[\"id\"]\n\n    @property\n    def next_id(self):\n        return self._next_id\n\n    @property\n    def type(self):\n        return self.",
+"text":"[\"id\"]\n\n    @property\n    def type(self):\n        return self.",
 "type":"code"
 },
 {

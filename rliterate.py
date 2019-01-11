@@ -995,14 +995,10 @@ class Page(DocumentFragment):
                 self._path+["paragraphs", index],
                 paragraph_dict,
                 index,
-                self,
-                next_paragraph_dict["id"] if next_paragraph_dict is not None else None
+                self
             )
-            for (index, (paragraph_dict, next_paragraph_dict))
-            in enumerate(zip(
-                self._fragment["paragraphs"],
-                self._fragment["paragraphs"][1:]+[None]
-            ))
+            for index, paragraph_dict
+            in enumerate(self._fragment["paragraphs"])
         ]
 
     def get_paragraph(self, paragraph_id):
@@ -1061,7 +1057,7 @@ class Page(DocumentFragment):
 class Paragraph(DocumentFragment):
 
     @staticmethod
-    def create(document, path, paragraph_dict, index, page, next_id):
+    def create(document, path, paragraph_dict, index, page):
         return {
             "text": TextParagraph,
             "quote": QuoteParagraph,
@@ -1069,21 +1065,16 @@ class Paragraph(DocumentFragment):
             "code": CodeParagraph,
             "image": ImageParagraph,
             "expanded_code": ExpandedCodeParagraph,
-        }.get(paragraph_dict["type"], Paragraph)(document, path, paragraph_dict, index, page, next_id)
+        }.get(paragraph_dict["type"], Paragraph)(document, path, paragraph_dict, index, page)
 
-    def __init__(self, document, path, paragraph_dict, index, page, next_id):
+    def __init__(self, document, path, paragraph_dict, index, page):
         DocumentFragment.__init__(self, document, path, paragraph_dict)
         self._index = index
         self._page = page
-        self._next_id = next_id
 
     @property
     def id(self):
         return self._fragment["id"]
-
-    @property
-    def next_id(self):
-        return self._next_id
 
     @property
     def type(self):
