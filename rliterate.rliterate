@@ -3952,7 +3952,15 @@
 "type":"variable"
 },
 {
-"text":"(self, page_id, before_id=None, paragraph_dict={\"type\": \"factory\"}):\n    page = self.",
+"text":"(self, page_id, ",
+"type":"code"
+},
+{
+"id":"ca88dc4d189c4ce1b5237450bd76bad6",
+"type":"variable"
+},
+{
+"text":"=None, paragraph_dict={\"type\": \"factory\"}):\n    page = self.",
 "type":"code"
 },
 {
@@ -3960,7 +3968,23 @@
 "type":"variable"
 },
 {
-"text":"(page_id)\n    page.",
+"text":"(page_id)\n    if ",
+"type":"code"
+},
+{
+"id":"ca88dc4d189c4ce1b5237450bd76bad6",
+"type":"variable"
+},
+{
+"text":" is None:\n        ",
+"type":"code"
+},
+{
+"id":"ca88dc4d189c4ce1b5237450bd76bad6",
+"type":"variable"
+},
+{
+"text":" = len(page.paragraphs)\n    page.",
 "type":"code"
 },
 {
@@ -3968,15 +3992,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        dict(paragraph_dict, id=genid()),\n        page.",
+"text":"(\n        dict(paragraph_dict, id=genid()),\n        ",
 "type":"code"
 },
 {
-"id":"29853bcfd5b84d949d4d17454f7a50de",
+"id":"ca88dc4d189c4ce1b5237450bd76bad6",
 "type":"variable"
 },
 {
-"text":"(before_id)\n    )\n\ndef ",
+"text":"\n    )\n\ndef ",
 "type":"code"
 },
 {
@@ -12459,7 +12483,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                self.page_id,\n                before_id=self.paragraph.next_id,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    def ",
+"text":"(\n                self.page_id,\n                ",
+"type":"code"
+},
+{
+"id":"ca88dc4d189c4ce1b5237450bd76bad6",
+"type":"variable"
+},
+{
+"text":"=self.paragraph._index+1,\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    def ",
 "type":"code"
 },
 {
@@ -13174,7 +13206,15 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.page_id,\n            before_id=self.paragraph.id\n        )\n    )\n    menu.AppendItem(\n        \"New paragraph after\",\n        lambda: self.project.",
+"text":"(\n            self.page_id,\n            ",
+"type":"code"
+},
+{
+"id":"ca88dc4d189c4ce1b5237450bd76bad6",
+"type":"variable"
+},
+{
+"text":"=self.paragraph._index\n        )\n    )\n    menu.AppendItem(\n        \"New paragraph after\",\n        lambda: self.project.",
 "type":"code"
 },
 {
@@ -13182,7 +13222,15 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.page_id,\n            before_id=self.paragraph.next_id\n        )\n    )\n    menu.AppendItem(\n        \"Duplicate\",\n        lambda: self.paragraph.duplicate()\n    )\n    if hasattr(self.paragraph, \"text_version\"):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: setattr(\n                self.paragraph,\n                \"text_version\",\n                ",
+"text":"(\n            self.page_id,\n            ",
+"type":"code"
+},
+{
+"id":"ca88dc4d189c4ce1b5237450bd76bad6",
+"type":"variable"
+},
+{
+"text":"=self.paragraph._index+1\n        )\n    )\n    menu.AppendItem(\n        \"Duplicate\",\n        lambda: self.paragraph.duplicate()\n    )\n    if hasattr(self.paragraph, \"text_version\"):\n        menu.AppendItem(\n            \"Edit in gvim\",\n            lambda: setattr(\n                self.paragraph,\n                \"text_version\",\n                ",
 "type":"code"
 },
 {
@@ -18725,6 +18773,7 @@
 "c65bff398b4a49af945b1c154a660687":"active_editor",
 "c76c30d4944341fca0c9c8411f5aaee6":"GuiUpdateMixin",
 "c814a047b6df48d3a18de974afe8505b":"Box",
+"ca88dc4d189c4ce1b5237450bd76bad6":"target_index",
 "ccd9655841fb4311bad581f979730e47":"needs_saving",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d126e525b923499f9c0176206b3e886c":"ReRender",

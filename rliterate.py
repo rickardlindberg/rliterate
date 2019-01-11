@@ -319,14 +319,14 @@ class ParagraphBase(Editable):
             "New paragraph before",
             lambda: self.project.add_paragraph(
                 self.page_id,
-                before_id=self.paragraph.id
+                target_index=self.paragraph._index
             )
         )
         menu.AppendItem(
             "New paragraph after",
             lambda: self.project.add_paragraph(
                 self.page_id,
-                before_id=self.paragraph.next_id
+                target_index=self.paragraph._index+1
             )
         )
         menu.AppendItem(
@@ -812,11 +812,13 @@ class Document(Observable):
             None,
             None
         )
-    def add_paragraph(self, page_id, before_id=None, paragraph_dict={"type": "factory"}):
+    def add_paragraph(self, page_id, target_index=None, paragraph_dict={"type": "factory"}):
         page = self.get_page(page_id)
+        if target_index is None:
+            target_index = len(page.paragraphs)
         page.insert_paragraph_at_index(
             dict(paragraph_dict, id=genid()),
-            page.get_paragraph_index(before_id)
+            target_index
         )
 
     def get_paragraph(self, page_id, paragraph_id):
@@ -3687,7 +3689,7 @@ class Code(ParagraphBase):
             "Create expanded view",
             lambda: self.project.add_paragraph(
                 self.page_id,
-                before_id=self.paragraph.next_id,
+                target_index=self.paragraph._index+1,
                 paragraph_dict={
                     "type": "expanded_code",
                     "code_id": self.paragraph.id,
