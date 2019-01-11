@@ -11476,7 +11476,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker=\"beam\" if self.selection.present and self.selection.value == index else None,\n                extra=index\n            ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            character = event.GetUnicodeKey()\n            if character >= 32:\n                text = unichr(character)\n                with self.project.notify():\n                    self.page.set_title(self.page.title[:self.selection.value]+text+self.page.title[self.selection.value:])\n                    self.project.selection = self.selection.create(self.selection.value+1)\n            elif event.GetKeyCode() == wx.WXK_BACK:\n                with self.project.notify():\n                    self.page.set_title(self.page.title[:self.selection.value-1]+self.page.title[self.selection.value:])\n                    self.project.selection = self.selection.create(self.selection.value-1)\n\n    def _select(self, pos):\n        character = self.text.",
+"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate),\n                marker=\"beam\" if self.selection.present and self.selection.value == index else None,\n                extra=index\n            ))\n        return characters\n\n    @rltime(\"on title char\")\n    def _on_char(self, event):\n        if self.selection.present:\n            result = edit_plain_text(self.page.title, self.selection.value, event)\n            if result:\n                with self.project.notify():\n                    self.page.set_title(result[0])\n                    self.project.selection = self.selection.create(result[1])\n\n    def _select(self, pos):\n        character = self.text.",
 "type":"code"
 },
 {
@@ -11497,6 +11497,23 @@
 }
 ],
 "id":"24ce3a2a4785432ea263e18f55bfa106",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def edit_plain_text(text, selection, event):\n    if event.GetUnicodeKey() >= 32:\n        return (\n            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],\n            selection+1\n        )\n    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:\n        return (\n            text[:selection-1]+text[selection:],\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):\n        return (\n            text[:selection]+text[selection+1:],\n            selection\n        )\n",
+"type":"code"
+}
+],
+"id":"88b2995fd24f41d3a94822d9b8051e1f",
 "language":"",
 "type":"code"
 },

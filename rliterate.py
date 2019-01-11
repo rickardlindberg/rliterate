@@ -3455,16 +3455,11 @@ class Title(HorizontalBasePanel):
     @rltime("on title char")
     def _on_char(self, event):
         if self.selection.present:
-            character = event.GetUnicodeKey()
-            if character >= 32:
-                text = unichr(character)
+            result = edit_plain_text(self.page.title, self.selection.value, event)
+            if result:
                 with self.project.notify():
-                    self.page.set_title(self.page.title[:self.selection.value]+text+self.page.title[self.selection.value:])
-                    self.project.selection = self.selection.create(self.selection.value+1)
-            elif event.GetKeyCode() == wx.WXK_BACK:
-                with self.project.notify():
-                    self.page.set_title(self.page.title[:self.selection.value-1]+self.page.title[self.selection.value:])
-                    self.project.selection = self.selection.create(self.selection.value-1)
+                    self.page.set_title(result[0])
+                    self.project.selection = self.selection.create(result[1])
 
     def _select(self, pos):
         character = self.text.GetClosestCharacter(pos)
@@ -4844,6 +4839,22 @@ def min_or_none(items, key):
     if not items:
         return None
     return min(items, key=key)
+def edit_plain_text(text, selection, event):
+    if event.GetUnicodeKey() >= 32:
+        return (
+            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],
+            selection+1
+        )
+    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:
+        return (
+            text[:selection-1]+text[selection:],
+            selection-1
+        )
+    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):
+        return (
+            text[:selection]+text[selection+1:],
+            selection
+        )
 def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):
