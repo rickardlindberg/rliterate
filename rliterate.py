@@ -3259,34 +3259,34 @@ class PagePanel(VerticalBasePanel):
     def selection(self):
         return self.values["selection"]
     def _create_gui(self):
+        self._create_dynamic_container()
         self._create_title()
         self._create_top_divider()
-        self._create_paragraph_container()
         self._create_add_button()
         MouseEventHelper.bind([self], right_click=lambda event:
             SimpleContextMenu.ShowRecursive(self)
         )
 
+    def _create_dynamic_container(self):
+        self.dynamic_container = self.AppendChild(
+            VerticalPanel(self),
+            flag=wx.EXPAND
+        )
+        self.paragraph_rows = []
+
     def _create_title(self):
-        self.title = self.AppendChild(Title(
-            self,
+        self.title = self.dynamic_container.AppendChild(Title(
+            self.dynamic_container,
             project=self.project,
             page=self.page,
             selection=self.selection.get("title")
         ), flag=wx.EXPAND)
 
     def _create_top_divider(self):
-        self.top_divider = self.AppendChild(
-            self._create_divider(self),
+        self.top_divider = self.dynamic_container.AppendChild(
+            self._create_divider(self.dynamic_container),
             flag=wx.EXPAND
         )
-
-    def _create_paragraph_container(self):
-        self.paragraph_container = self.AppendChild(
-            VerticalPanel(self),
-            flag=wx.EXPAND
-        )
-        self.paragraph_rows = []
 
     def _create_add_button(self):
         add_button = self.AppendChild(
@@ -3365,15 +3365,15 @@ class PagePanel(VerticalBasePanel):
             )
             return divider
         else:
-            widget = self.paragraph_container.AppendChild(widget_class(
-                self.paragraph_container,
+            widget = self.dynamic_container.AppendChild(widget_class(
+                self.dynamic_container,
                 project=self.project,
                 page_id=self.page.id,
                 paragraph=paragraph,
                 selection=self.selection.get("paragraph").get(paragraph.id)
             ), flag=wx.EXPAND)
-            divider = self.paragraph_container.AppendChild(
-                self._create_divider(self.paragraph_container),
+            divider = self.dynamic_container.AppendChild(
+                self._create_divider(self.dynamic_container),
                 flag=wx.EXPAND
             )
             self.paragraph_rows.append((widget, divider))

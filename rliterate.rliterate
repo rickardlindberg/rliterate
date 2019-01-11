@@ -10767,6 +10767,16 @@
 "type":"list"
 },
 {
+"fragments":[
+{
+"text":"All dividers must be in a container that starts at Y=0, otherwise its Position will not be correct relative to the parent.",
+"type":"text"
+}
+],
+"id":"d11f78f3d0434d988d0518f2a6c9fff6",
+"type":"text"
+},
+{
 "chunkpath":[
 "classes",
 "PagePanel"
@@ -10784,7 +10794,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self._create_title()\n    self._create_top_divider()\n    self._create_paragraph_container()\n    self._create_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
+"text":"(self):\n    self._create_dynamic_container()\n    self._create_title()\n    self._create_top_divider()\n    self._create_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
 "type":"code"
 },
 {
@@ -10800,31 +10810,7 @@
 "type":"variable"
 },
 {
-"text":"(self)\n    )\n\ndef _create_title(self):\n    self.title = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"12f482d927e54efa94ec8c3165307f41",
-"type":"variable"
-},
-{
-"text":"(\n        self,\n        project=self.project,\n        page=self.page,\n        selection=self.selection.get(\"title\")\n    ), flag=wx.EXPAND)\n\ndef _create_top_divider(self):\n    self.top_divider = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        self._create_divider(self),\n        flag=wx.EXPAND\n    )\n\ndef _create_paragraph_container(self):\n    self.paragraph_container = self.",
+"text":"(self)\n    )\n\ndef _create_dynamic_container(self):\n    self.dynamic_container = self.",
 "type":"code"
 },
 {
@@ -10840,7 +10826,31 @@
 "type":"variable"
 },
 {
-"text":"(self),\n        flag=wx.EXPAND\n    )\n    self.paragraph_rows = []\n\ndef _create_add_button(self):\n    add_button = self.",
+"text":"(self),\n        flag=wx.EXPAND\n    )\n    self.paragraph_rows = []\n\ndef _create_title(self):\n    self.title = self.dynamic_container.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"12f482d927e54efa94ec8c3165307f41",
+"type":"variable"
+},
+{
+"text":"(\n        self.dynamic_container,\n        project=self.project,\n        page=self.page,\n        selection=self.selection.get(\"title\")\n    ), flag=wx.EXPAND)\n\ndef _create_top_divider(self):\n    self.top_divider = self.dynamic_container.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        self._create_divider(self.dynamic_container),\n        flag=wx.EXPAND\n    )\n\ndef _create_add_button(self):\n    add_button = self.",
 "type":"code"
 },
 {
@@ -10960,7 +10970,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        )\n        return divider\n    else:\n        widget = self.paragraph_container.",
+"text":"(\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        )\n        return divider\n    else:\n        widget = self.dynamic_container.",
 "type":"code"
 },
 {
@@ -10968,7 +10978,7 @@
 "type":"variable"
 },
 {
-"text":"(widget_class(\n            self.paragraph_container,\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        ), flag=wx.EXPAND)\n        divider = self.paragraph_container.",
+"text":"(widget_class(\n            self.dynamic_container,\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        ), flag=wx.EXPAND)\n        divider = self.dynamic_container.",
 "type":"code"
 },
 {
@@ -10976,7 +10986,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self._create_divider(self.paragraph_container),\n            flag=wx.EXPAND\n        )\n        self.paragraph_rows.append((widget, divider))\n        return divider\n\ndef _create_divider(self, parent):\n    return Divider(\n        parent,\n        padding=(self.project.",
+"text":"(\n            self._create_divider(self.dynamic_container),\n            flag=wx.EXPAND\n        )\n        self.paragraph_rows.append((widget, divider))\n        return divider\n\ndef _create_divider(self, parent):\n    return Divider(\n        parent,\n        padding=(self.project.",
 "type":"code"
 },
 {
@@ -11121,6 +11131,7 @@
 }
 ],
 "id":"92c41fd20a1d4511ad864bbfd315aa88",
+"language":"",
 "type":"code"
 },
 {
