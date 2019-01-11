@@ -1899,7 +1899,15 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef get_paragraph(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef get_paragraph_index(self, paragraph_id):\n    index = -1\n    for index, paragraph in enumerate(self.paragraphs):\n        if paragraph.id == paragraph_id:\n            return index\n    return index + 1\n\ndef delete_paragraph_at_index(self, index):\n    self.",
+"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef get_paragraph(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef get_paragraph_index(self, paragraph_id):\n    index = -1\n    for index, paragraph in enumerate(self.paragraphs):\n        if paragraph.id == paragraph_id:\n            return index\n    return index + 1\n\ndef ",
+"type":"code"
+},
+{
+"id":"8a58e93e7e394df4a9836df125d49378",
+"type":"variable"
+},
+{
+"text":"(self, index):\n    self.",
 "type":"code"
 },
 {
@@ -3995,7 +4003,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                document_dict,\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        self._page.delete_paragraph_at_index(self._index)\n\n    def move(self, target_page, before_paragraph):\n        target_page = self.",
+"text":"(\n                document_dict,\n                self._path,\n                lambda paragraph: dict(paragraph, **data)\n            )\n        )\n\n    def delete(self):\n        self._page.",
+"type":"code"
+},
+{
+"id":"8a58e93e7e394df4a9836df125d49378",
+"type":"variable"
+},
+{
+"text":"(self._index)\n\n    def move(self, target_page, before_paragraph):\n        target_page = self.",
 "type":"code"
 },
 {
@@ -4035,7 +4051,23 @@
 "type":"variable"
 },
 {
-"text":"(self._fragment, target_index)\n                self._page.delete_paragraph_at_index(self._index)\n            else:\n                self._page.delete_paragraph_at_index(self._index)\n                target_page.",
+"text":"(self._fragment, target_index)\n                self._page.",
+"type":"code"
+},
+{
+"id":"8a58e93e7e394df4a9836df125d49378",
+"type":"variable"
+},
+{
+"text":"(self._index)\n            else:\n                self._page.",
+"type":"code"
+},
+{
+"id":"8a58e93e7e394df4a9836df125d49378",
+"type":"variable"
+},
+{
+"text":"(self._index)\n                target_page.",
 "type":"code"
 },
 {
@@ -18236,6 +18268,7 @@
 "887acc7e530b4d98933d11e223d58c42":"_create_gui",
 "8970b68862714f158948f8ec1c68acb1":"toc_font",
 "898556fcc0094d959568f97b261a5f5c":"RemoveChildren",
+"8a58e93e7e394df4a9836df125d49378":"delete_paragraph_at_index",
 "8b6dd5393fca465cbd6f0d076c41d742":"_document",
 "8ba2bd8df56e45ccb2c3dcd2b8ac6e83":"new_document_dict",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
