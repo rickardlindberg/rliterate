@@ -1899,7 +1899,15 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef get_paragraph(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef get_paragraph_index(self, paragraph_id):\n    index = -1\n    for index, paragraph in enumerate(self.paragraphs):\n        if paragraph.id == paragraph_id:\n            return index\n    return index + 1\n\ndef ",
+"text":"[\"paragraphs\"][1:]+[None]\n        ))\n    ]\n\ndef get_paragraph(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef ",
+"type":"code"
+},
+{
+"id":"29853bcfd5b84d949d4d17454f7a50de",
+"type":"variable"
+},
+{
+"text":"(self, paragraph_id):\n    index = -1\n    for index, paragraph in enumerate(self.paragraphs):\n        if paragraph.id == paragraph_id:\n            return index\n    return index + 1\n\ndef ",
 "type":"code"
 },
 {
@@ -3898,7 +3906,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        dict(paragraph_dict, id=genid()),\n        page.get_paragraph_index(before_id)\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    return self.",
+"text":"(\n        dict(paragraph_dict, id=genid()),\n        page.",
+"type":"code"
+},
+{
+"id":"29853bcfd5b84d949d4d17454f7a50de",
+"type":"variable"
+},
+{
+"text":"(before_id)\n    )\n\ndef get_paragraph(self, page_id, paragraph_id):\n    return self.",
 "type":"code"
 },
 {
@@ -4027,7 +4043,15 @@
 "type":"variable"
 },
 {
-"text":"(target_page)\n        target_index = target_page.get_paragraph_index(before_paragraph)\n        if target_page.id == self._page.id and target_index in [self._index, self._index+1]:\n            return\n        with self.",
+"text":"(target_page)\n        target_index = target_page.",
+"type":"code"
+},
+{
+"id":"29853bcfd5b84d949d4d17454f7a50de",
+"type":"variable"
+},
+{
+"text":"(before_paragraph)\n        if target_page.id == self._page.id and target_index in [self._index, self._index+1]:\n            return\n        with self.",
 "type":"code"
 },
 {
@@ -18197,6 +18221,7 @@
 "25dfed2d02124924b27ccee34278dc26":"_setup_beams",
 "2653b138268045ab8bf58b30b10cd954":"_strings_by_style",
 "26a20a9b510d411fa6dd5834c9f1634b":"GetClosestCharacter",
+"29853bcfd5b84d949d4d17454f7a50de":"get_paragraph_index",
 "2c55e85463a84b59bd905c4737f29867":"CodeExpander",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
