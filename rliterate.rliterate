@@ -10022,7 +10022,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page_ids\"]):\n        if self.project.",
+"text":"[\"page_ids\"]):\n        page = self.project.",
 "type":"code"
 },
 {
@@ -10030,7 +10030,7 @@
 "type":"variable"
 },
 {
-"text":"(page_id) is not None:\n            if index >= len(self._containers):\n                self._containers.append(\n                    self.",
+"text":"(page_id)\n        if page is not None:\n            if index >= len(self._containers):\n                self._containers.append(\n                    self.",
 "type":"code"
 },
 {
@@ -10038,7 +10038,15 @@
 "type":"variable"
 },
 {
-"text":"(\n                        PageContainer(\n                            self,\n                            project=self.project,\n                            page_id=page_id,\n                            selection=self.",
+"text":"(\n                        ",
+"type":"code"
+},
+{
+"id":"33a426d54550425b9af7aa62911343b8",
+"type":"variable"
+},
+{
+"text":"(\n                            self,\n                            project=self.project,\n                            page=page,\n                            selection=self.",
 "type":"code"
 },
 {
@@ -10046,7 +10054,7 @@
 "type":"variable"
 },
 {
-"text":"[\"selection\"].get(index)\n                        ),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
+"text":"[\"selection\"].get(index).get(page_id)\n                        ),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
 "type":"code"
 },
 {
@@ -10070,7 +10078,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                    project=self.project,\n                    page_id=page_id,\n                    selection=self.",
+"text":"(\n                    project=self.project,\n                    page=page,\n                    selection=self.",
 "type":"code"
 },
 {
@@ -10078,7 +10086,7 @@
 "type":"variable"
 },
 {
-"text":"[\"selection\"].get(index)\n                )\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n\n@property\ndef project(self):\n    return self.",
+"text":"[\"selection\"].get(index).get(page_id)\n                )\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n\n@property\ndef project(self):\n    return self.",
 "type":"code"
 },
 {
@@ -10099,6 +10107,7 @@
 }
 ],
 "id":"43932453f289428abb21fbd2032fa567",
+"language":"",
 "type":"code"
 }
 ],
@@ -10329,7 +10338,7 @@
 "type":"variable"
 },
 {
-"text":"(first_row),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n    self.page, self.page_sizer = self.inner_container.",
+"text":"(first_row),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n    self.page_panel, self.page_sizer = self.inner_container.",
 "type":"code"
 },
 {
@@ -10337,7 +10346,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        PagePanel(\n            self.inner_container,\n            project=self.project,\n            page_id=self.page_id,\n            selection=self.selection.get(self.page_id)\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.right = first_row.",
+"text":"(\n        PagePanel(\n            self.inner_container,\n            project=self.project,\n            page=self.page,\n            selection=self.selection\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.right = first_row.",
 "type":"code"
 },
 {
@@ -10387,7 +10396,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.page.",
+"text":"(self):\n    self.page_panel.",
 "type":"code"
 },
 {
@@ -10395,7 +10404,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        project=self.project,\n        page_id=self.page_id,\n        selection=self.selection.get(self.page_id)\n    )\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
+"text":"(\n        project=self.project,\n        page=self.page,\n        selection=self.selection\n    )\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
 "type":"code"
 }
 ],
@@ -10460,7 +10469,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen_pos):\n    return self.page.",
+"text":"(self, screen_pos):\n    return self.page_panel.",
 "type":"code"
 },
 {
@@ -10473,6 +10482,7 @@
 }
 ],
 "id":"1f9b7900690743bbbcb9f50a5587e3aa",
+"language":"",
 "type":"code"
 }
 ],
@@ -10508,7 +10518,15 @@
 ],
 "fragments":[
 {
-"text":"class PageContainer(",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"33a426d54550425b9af7aa62911343b8",
+"type":"variable"
+},
+{
+"text":"(",
 "type":"code"
 },
 {
@@ -10550,7 +10568,7 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"]\n\n@property\ndef page_id(self):\n    return self.",
+"text":"[\"project\"]\n\n@property\ndef page(self):\n    return self.",
 "type":"code"
 },
 {
@@ -10558,7 +10576,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page_id\"]\n\n@property\ndef selection(self):\n    return self.",
+"text":"[\"page\"]\n\n@property\ndef selection(self):\n    return self.",
 "type":"code"
 },
 {
@@ -10767,7 +10785,7 @@
 "type":"variable"
 },
 {
-"text":"(self.page_id)\n\ndef ",
+"text":"(self.page.id)\n\ndef ",
 "type":"code"
 },
 {
@@ -10855,7 +10873,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            project=self.project,\n            page_id=self.page_id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        )\n        return divider\n    else:\n        widget = self.paragraph_container.",
+"text":"(\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        )\n        return divider\n    else:\n        widget = self.paragraph_container.",
 "type":"code"
 },
 {
@@ -10863,7 +10881,7 @@
 "type":"variable"
 },
 {
-"text":"(widget_class(\n            self.paragraph_container,\n            project=self.project,\n            page_id=self.page_id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        ), flag=wx.EXPAND)\n        divider = self.paragraph_container.",
+"text":"(widget_class(\n            self.paragraph_container,\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        ), flag=wx.EXPAND)\n        divider = self.paragraph_container.",
 "type":"code"
 },
 {
@@ -11117,7 +11135,7 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"]\n\n@property\ndef page_id(self):\n    return self.",
+"text":"[\"project\"]\n\n@property\ndef page(self):\n    return self.",
 "type":"code"
 },
 {
@@ -11125,7 +11143,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page_id\"]\n\n@property\ndef page(self):\n    return self.project.get_page(self.page_id)\n\n@property\ndef selection(self):\n    return self.",
+"text":"[\"page\"]\n\n@property\ndef selection(self):\n    return self.",
 "type":"code"
 },
 {
@@ -18712,6 +18730,7 @@
 "3176adb411db4129b06e7acb1b615384":"get_root_page",
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
 "3208a1df72ac489b8ec6d2200e211220":"_boxes_by_style",
+"33a426d54550425b9af7aa62911343b8":"PageContainer",
 "3457c112c47c41a293d77cc79f99badf":"VerticalScrolledWindow",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "359755e756af4e708b237cd9753ae046":"AppendChild",

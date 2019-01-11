@@ -3085,15 +3085,16 @@ class Column(VerticalScrolledWindow, GuiUpdateMixin):
     def _adjust_containers(self):
         num_added = 0
         for index, page_id in enumerate(self.values["page_ids"]):
-            if self.project.get_page(page_id) is not None:
+            page = self.project.get_page(page_id)
+            if page is not None:
                 if index >= len(self._containers):
                     self._containers.append(
                         self.AppendChild(
                             PageContainer(
                                 self,
                                 project=self.project,
-                                page_id=page_id,
-                                selection=self.values["selection"].get(index)
+                                page=page,
+                                selection=self.values["selection"].get(index).get(page_id)
                             ),
                             flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
                             border=self.project.theme.page_padding
@@ -3102,8 +3103,8 @@ class Column(VerticalScrolledWindow, GuiUpdateMixin):
                 else:
                     self._containers[index].UpdateGui(
                         project=self.project,
-                        page_id=page_id,
-                        selection=self.values["selection"].get(index)
+                        page=page,
+                        selection=self.values["selection"].get(index).get(page_id)
                     )
                 num_added += 1
         while len(self._containers) > num_added:
@@ -3150,8 +3151,8 @@ class PageContainer(VerticalBasePanel):
         return self.values["project"]
 
     @property
-    def page_id(self):
-        return self.values["page_id"]
+    def page(self):
+        return self.values["page"]
 
     @property
     def selection(self):
@@ -3182,12 +3183,12 @@ class PageContainer(VerticalBasePanel):
             flag=wx.EXPAND,
             proportion=1
         )
-        self.page, self.page_sizer = self.inner_container.AppendChildWithSizer(
+        self.page_panel, self.page_sizer = self.inner_container.AppendChildWithSizer(
             PagePanel(
                 self.inner_container,
                 project=self.project,
-                page_id=self.page_id,
-                selection=self.selection.get(self.page_id)
+                page=self.page,
+                selection=self.selection
             ),
             flag=wx.ALL|wx.EXPAND,
             proportion=1
@@ -3215,10 +3216,10 @@ class PageContainer(VerticalBasePanel):
             proportion=1
         )
     def _update_gui(self):
-        self.page.UpdateGui(
+        self.page_panel.UpdateGui(
             project=self.project,
-            page_id=self.page_id,
-            selection=self.selection.get(self.page_id)
+            page=self.page,
+            selection=self.selection
         )
         self.inner_container.SetBackgroundColour((255, 255, 255))
         self.right_border.SetBackgroundColour((150, 150, 150))
@@ -3238,7 +3239,7 @@ class PageContainer(VerticalBasePanel):
         )
         return menu
     def FindClosestDropPoint(self, screen_pos):
-        return self.page.FindClosestDropPoint(screen_pos)
+        return self.page_panel.FindClosestDropPoint(screen_pos)
 class PagePanel(VerticalBasePanel):
 
     @property
@@ -3246,12 +3247,8 @@ class PagePanel(VerticalBasePanel):
         return self.values["project"]
 
     @property
-    def page_id(self):
-        return self.values["page_id"]
-
-    @property
     def page(self):
-        return self.project.get_page(self.page_id)
+        return self.values["page"]
 
     @property
     def selection(self):
@@ -3303,7 +3300,7 @@ class PagePanel(VerticalBasePanel):
         add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
 
     def _on_add_button(self, event):
-        self.project.add_paragraph(self.page_id)
+        self.project.add_paragraph(self.page.id)
 
     def _update_gui(self):
         self._update_title()
@@ -3357,7 +3354,7 @@ class PagePanel(VerticalBasePanel):
             widget, divider = self.paragraph_rows[index]
             widget.UpdateGui(
                 project=self.project,
-                page_id=self.page_id,
+                page_id=self.page.id,
                 paragraph=paragraph,
                 selection=self.selection.get("paragraph").get(paragraph.id)
             )
@@ -3366,7 +3363,7 @@ class PagePanel(VerticalBasePanel):
             widget = self.paragraph_container.AppendChild(widget_class(
                 self.paragraph_container,
                 project=self.project,
-                page_id=self.page_id,
+                page_id=self.page.id,
                 paragraph=paragraph,
                 selection=self.selection.get("paragraph").get(paragraph.id)
             ), flag=wx.EXPAND)
