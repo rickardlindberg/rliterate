@@ -2426,7 +2426,23 @@
 "type":"variable"
 },
 {
-"text":"(document_dict, path, new_value)\n        return document_dict\n    self.",
+"text":"(document_dict, path, new_value)\n        return document_dict\n    with self.",
+"type":"code"
+},
+{
+"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"0397a216ff674867aa422a0778df2f44",
+"type":"variable"
+},
+{
+"text":"(\"Move page\"):\n        self.",
 "type":"code"
 },
 {
@@ -2442,7 +2458,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Move page\", do_move)\n",
+"text":"(\"\", do_move)\n",
 "type":"code"
 }
 ],

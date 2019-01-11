@@ -1005,7 +1005,8 @@ class Page(DocumentFragment):
             for path, new_value in changes:
                 document_dict = im_replace(document_dict, path, new_value)
             return document_dict
-        self._document.modify("Move page", do_move)
+        with self._document.transaction("Move page"):
+            self._document.modify("", do_move)
     @property
     def paragraphs(self):
         return [
