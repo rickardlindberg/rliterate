@@ -2484,7 +2484,15 @@
 ],
 "fragments":[
 {
-"text":"def move(self, parent_page_id, before_page_id):\n    parent_page = self.",
+"text":"def move(self, parent_page_id, ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"):\n    parent_page = self.",
 "type":"code"
 },
 {
@@ -2508,7 +2516,15 @@
 "type":"variable"
 },
 {
-"text":"(before_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if parent_page.id == self.parent.id and target_index in [self._index, self._index+1]:\n        return\n    # Do the move\n    with self.",
+"text":"(",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":")\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if parent_page.id == self.parent.id and target_index in [self._index, self._index+1]:\n        return\n    # Do the move\n    with self.",
 "type":"code"
 },
 {
@@ -8204,7 +8220,47 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"].is_collapsed(page.id)\n    divider = self._get_or_create_row(page, indentation)\n    if is_collapsed or len(page.children) == 0:\n        before_page_id = None\n    else:\n        before_page_id = page.children[0].id\n    self.drop_points.append(TableOfContentsDropPoint(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        before_page_id=before_page_id\n    ))\n    if not is_collapsed:\n        for child, next_child in ",
+"text":"[\"project\"].is_collapsed(page.id)\n    divider = self._get_or_create_row(page, indentation)\n    if is_collapsed or len(page.children) == 0:\n        ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":" = None\n    else:\n        ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":" = page.children[0].id\n    self.drop_points.append(",
+"type":"code"
+},
+{
+"id":"f61c72938beb4f2680305027e6da9fa8",
+"type":"variable"
+},
+{
+"text":"(\n        divider=divider,\n        indentation=indentation+1,\n        parent_page_id=page.id,\n        ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"=",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"\n    ))\n    if not is_collapsed:\n        for child, next_child in ",
 "type":"code"
 },
 {
@@ -8212,7 +8268,23 @@
 "type":"variable"
 },
 {
-"text":"(page.children):\n            divider = self._flatten_page(child, indentation+1)\n            self.drop_points.append(TableOfContentsDropPoint(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                before_page_id=None if next_child is None else next_child.id\n            ))\n    return divider\n\ndef _get_or_create_row(self, page, indentation):\n    if self.row_index < len(self.row_widgets):\n        row, divider = self.row_widgets[self.row_index]\n        row.",
+"text":"(page.children):\n            divider = self._flatten_page(child, indentation+1)\n            self.drop_points.append(",
+"type":"code"
+},
+{
+"id":"f61c72938beb4f2680305027e6da9fa8",
+"type":"variable"
+},
+{
+"text":"(\n                divider=divider,\n                indentation=indentation+1,\n                parent_page_id=page.id,\n                ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"=None if next_child is None else next_child.id\n            ))\n    return divider\n\ndef _get_or_create_row(self, page, indentation):\n    if self.row_index < len(self.row_widgets):\n        row, divider = self.row_widgets[self.row_index]\n        row.",
 "type":"code"
 },
 {
@@ -8351,7 +8423,39 @@
 ],
 "fragments":[
 {
-"text":"class TableOfContentsDropPoint(object):\n\n    def __init__(self, divider, indentation, parent_page_id, before_page_id):\n        self.divider = divider\n        self.indentation = indentation\n        self.parent_page_id = parent_page_id\n        self.before_page_id = before_page_id\n\n    def x_distance_to(self, x):\n        left_padding = ",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"f61c72938beb4f2680305027e6da9fa8",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, divider, indentation, parent_page_id, ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"):\n        self.divider = divider\n        self.indentation = indentation\n        self.parent_page_id = parent_page_id\n        self.",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":" = ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"\n\n    def x_distance_to(self, x):\n        left_padding = ",
 "type":"code"
 },
 {
@@ -8476,11 +8580,28 @@
 "type":"variable"
 },
 {
-"text":"(dropped_page[\"page_id\"]).move(\n            parent_page_id=drop_point.parent_page_id,\n            before_page_id=drop_point.before_page_id\n        )\n",
+"text":"(dropped_page[\"page_id\"]).move(\n            parent_page_id=drop_point.parent_page_id,\n            ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"=drop_point.",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":"\n        )\n",
 "type":"code"
 }
 ],
 "id":"0985fad6f1be429096835a728941d44f",
+"language":"",
 "type":"code"
 },
 {
@@ -18298,6 +18419,7 @@
 "3d6ead2c4a274ae78afa33875235e150":"_apply_style",
 "3f3b43d27029407baea6e0281eaa456d":"_paragraph_dict",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
+"404fcbff6a3d40fdab8f41fdaf8841d9":"before_page_id",
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "457a1dbf134c431881e590e7b7db9907":"_break_at_word",
@@ -18436,6 +18558,7 @@
 "efd50cfe632b44e6a6620c3fbf66a664":"_update_children",
 "f0c23b7747d64c099e653337bb185c00":"UNDO_BUFFER_SIZE",
 "f4daeaff58a34b459a28c0bc7c51a8cd":"highlights",
+"f61c72938beb4f2680305027e6da9fa8":"TableOfContentsDropPoint",
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
 "f6b2d4f94b72424a88a47d636753a2b9":"min_or_none",
 "f7276b0256114e3999f63bdc6d7ec078":"StyledText",
