@@ -9653,7 +9653,15 @@
 "type":"variable"
 },
 {
-"text":"=drop_point.next_paragraph_id\n        )\n",
+"text":"=drop_point.",
+"type":"code"
+},
+{
+"id":"777225827647402d975279d0fa55c788",
+"type":"variable"
+},
+{
+"text":"\n        )\n",
 "type":"code"
 }
 ],
@@ -10727,7 +10735,23 @@
 "type":"variable"
 },
 {
-"text":"(self.page_id).paragraphs):\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            next_paragraph_id=paragraph.id\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        next_paragraph_id=None\n    ))\n    while index < len(self.paragraph_rows) - 1:\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
+"text":"(self.page_id).paragraphs):\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            ",
+"type":"code"
+},
+{
+"id":"777225827647402d975279d0fa55c788",
+"type":"variable"
+},
+{
+"text":"=paragraph.id\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        ",
+"type":"code"
+},
+{
+"id":"777225827647402d975279d0fa55c788",
+"type":"variable"
+},
+{
+"text":"=None\n    ))\n    while index < len(self.paragraph_rows) - 1:\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
 "type":"code"
 },
 {
@@ -10794,7 +10818,31 @@
 ],
 "fragments":[
 {
-"text":"class PageDropPoint(object):\n\n    def __init__(self, divider, page_id, next_paragraph_id):\n        self.divider = divider\n        self.page_id = page_id\n        self.next_paragraph_id = next_paragraph_id\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show()\n\n    def Hide(self):\n        self.divider.Hide()\n",
+"text":"class PageDropPoint(object):\n\n    def __init__(self, divider, page_id, ",
+"type":"code"
+},
+{
+"id":"777225827647402d975279d0fa55c788",
+"type":"variable"
+},
+{
+"text":"):\n        self.divider = divider\n        self.page_id = page_id\n        self.",
+"type":"code"
+},
+{
+"id":"777225827647402d975279d0fa55c788",
+"type":"variable"
+},
+{
+"text":" = ",
+"type":"code"
+},
+{
+"id":"777225827647402d975279d0fa55c788",
+"type":"variable"
+},
+{
+"text":"\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show()\n\n    def Hide(self):\n        self.divider.Hide()\n",
 "type":"code"
 }
 ],
@@ -18534,6 +18582,7 @@
 "74949da897df45e6862e45ffe667fc6e":"text_to_fragments",
 "75d0d294fd5a4cc5beaf14009875e662":"_fragment",
 "76b9d362e0714c1da27953dd46e8ef0b":"page_padding",
+"777225827647402d975279d0fa55c788":"next_paragraph_id",
 "7a9fc5b110114e64b871a0f672c764c2":"_max_width",
 "7de0449a51914343bdefb494a4287c6b":"_5e725316bce6426b88d46fe528e812ff",
 "80c88031ba2244b4b116f5b597e585d8":"CharChain",
