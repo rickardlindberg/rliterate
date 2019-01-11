@@ -3504,12 +3504,19 @@ class Title(HorizontalBasePanel):
                 marker,
                 extra=index
             ))
-        if not characters and self.selection.present:
-            for index, character in enumerate("Enter title..."):
+        if not characters:
+            missing_text = "Enter title..."
+            for index, character in enumerate(missing_text):
+                if self.selection.present and index == 0:
+                    marker = "beam_start"
+                elif self.selection.present and index == len(missing_text)-1:
+                    marker = "beam_end"
+                else:
+                    marker = None
                 characters.append(Character.create(
                     character,
                     self.project.get_style(TokenType.RLiterate.Empty),
-                    "beam_start" if index == 0 else None,
+                    marker,
                     extra=0
                 ))
         return characters

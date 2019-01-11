@@ -11624,7 +11624,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            character,\n            self.project.get_style(TokenType.RLiterate),\n            marker,\n            extra=index\n        ))\n    if not characters and self.selection.present:\n        for index, character in enumerate(\"Enter title...\"):\n            characters.append(",
+"text":"(\n            character,\n            self.project.get_style(TokenType.RLiterate),\n            marker,\n            extra=index\n        ))\n    if not characters:\n        missing_text = \"Enter title...\"\n        for index, character in enumerate(missing_text):\n            if self.selection.present and index == 0:\n                marker = \"beam_start\"\n            elif self.selection.present and index == len(missing_text)-1:\n                marker = \"beam_end\"\n            else:\n                marker = None\n            characters.append(",
 "type":"code"
 },
 {
@@ -11640,7 +11640,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate.Empty),\n                \"beam_start\" if index == 0 else None,\n                extra=0\n            ))\n    return characters\n",
+"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate.Empty),\n                marker,\n                extra=0\n            ))\n    return characters\n",
 "type":"code"
 }
 ],
