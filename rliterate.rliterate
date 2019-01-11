@@ -4113,7 +4113,15 @@
 "type":"variable"
 },
 {
-"text":"(self._index)\n\n    def move(self, target_page, ",
+"text":"(self._index)\n\n    def move(self, ",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -4121,23 +4129,15 @@
 "type":"variable"
 },
 {
-"text":"):\n        target_page = self.",
+"text":"):\n        if ",
 "type":"code"
 },
 {
-"id":"8b6dd5393fca465cbd6f0d076c41d742",
+"id":"a4a6044855cf4256b657dc1d493346e9",
 "type":"variable"
 },
 {
-"text":".",
-"type":"code"
-},
-{
-"id":"6f6cdf188e064952ba144f0cd1048562",
-"type":"variable"
-},
-{
-"text":"(target_page)\n        if target_page.id == self._page.id and ",
+"text":".id == self._page.id and ",
 "type":"code"
 },
 {
@@ -4169,7 +4169,15 @@
 "type":"variable"
 },
 {
-"text":" > self._index:\n                target_page.",
+"text":" > self._index:\n                ",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -4201,7 +4209,15 @@
 "type":"variable"
 },
 {
-"text":"(self._index)\n                target_page.",
+"text":"(self._index)\n                ",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":".",
 "type":"code"
 },
 {
@@ -9693,7 +9709,23 @@
 "type":"variable"
 },
 {
-"text":"(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            target_page=drop_point.page_id,\n            ",
+"text":"(\n            dropped_paragraph[\"page_id\"],\n            dropped_paragraph[\"paragraph_id\"]\n        ).move(\n            ",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":"=drop_point.",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":",\n            ",
 "type":"code"
 },
 {
@@ -10679,15 +10711,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self,\n        project=self.project,\n        page=self.project.",
-"type":"code"
-},
-{
-"id":"6f6cdf188e064952ba144f0cd1048562",
-"type":"variable"
-},
-{
-"text":"(self.page_id),\n        selection=self.selection.get(\"title\")\n    ), flag=wx.EXPAND)\n\ndef _create_top_divider(self):\n    self.top_divider = self.",
+"text":"(\n        self,\n        project=self.project,\n        page=self.page,\n        selection=self.selection.get(\"title\")\n    ), flag=wx.EXPAND)\n\ndef _create_top_divider(self):\n    self.top_divider = self.",
 "type":"code"
 },
 {
@@ -10775,23 +10799,23 @@
 "type":"variable"
 },
 {
-"text":"(\n        project=self.project,\n        page=self.project.",
+"text":"(\n        project=self.project,\n        page=self.page,\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.drop_points = []\n    divider = self.top_divider\n    index = -1\n    for index, paragraph in enumerate(self.page.paragraphs):\n        self.drop_points.append(",
 "type":"code"
 },
 {
-"id":"6f6cdf188e064952ba144f0cd1048562",
+"id":"0ab7b7119c7f4be5b67d6455e64455b7",
 "type":"variable"
 },
 {
-"text":"(self.page_id),\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.drop_points = []\n    divider = self.top_divider\n    index = -1\n    for index, paragraph in enumerate(self.project.",
+"text":"(\n            divider=divider,\n            ",
 "type":"code"
 },
 {
-"id":"6f6cdf188e064952ba144f0cd1048562",
+"id":"a4a6044855cf4256b657dc1d493346e9",
 "type":"variable"
 },
 {
-"text":"(self.page_id).paragraphs):\n        self.drop_points.append(PageDropPoint(\n            divider=divider,\n            page_id=self.page_id,\n            ",
+"text":"=self.page,\n            ",
 "type":"code"
 },
 {
@@ -10799,7 +10823,23 @@
 "type":"variable"
 },
 {
-"text":"=index\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        ",
+"text":"=index\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(",
+"type":"code"
+},
+{
+"id":"0ab7b7119c7f4be5b67d6455e64455b7",
+"type":"variable"
+},
+{
+"text":"(\n        divider=divider,\n        ",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":"=self.page,\n        ",
 "type":"code"
 },
 {
@@ -10874,7 +10914,23 @@
 ],
 "fragments":[
 {
-"text":"class PageDropPoint(object):\n\n    def __init__(self, divider, page_id, ",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"0ab7b7119c7f4be5b67d6455e64455b7",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, divider, ",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -10882,7 +10938,23 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.divider = divider\n        self.page_id = page_id\n        self.",
+"text":"):\n        self.divider = divider\n        self.",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":" = ",
+"type":"code"
+},
+{
+"id":"a4a6044855cf4256b657dc1d493346e9",
+"type":"variable"
+},
+{
+"text":"\n        self.",
 "type":"code"
 },
 {
@@ -10903,6 +10975,7 @@
 }
 ],
 "id":"ceac79cd0d6f400ba9d4be19e8e79672",
+"language":"",
 "type":"code"
 }
 ],
@@ -11052,7 +11125,7 @@
 "type":"variable"
 },
 {
-"text":"[\"page_id\"]\n\n@property\ndef selection(self):\n    return self.",
+"text":"[\"page_id\"]\n\n@property\ndef page(self):\n    return self.project.get_page(self.page_id)\n\n@property\ndef selection(self):\n    return self.",
 "type":"code"
 },
 {
@@ -18602,6 +18675,7 @@
 "061fd7e397724d08a484b175178cea10":"insert_paragraph_at_index",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "0a759aaf75be46af916c3fa05f8393da":"target_index",
+"0ab7b7119c7f4be5b67d6455e64455b7":"PageDropPoint",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
 "10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
@@ -18716,6 +18790,7 @@
 "9e987210a686490c823a44d09e783833":"_load",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
+"a4a6044855cf4256b657dc1d493346e9":"target_page",
 "a4ee3530a5f140f5bc70b87fca825372":"_update_paragraph_gui",
 "a5a0f92d74364068a5a5ab9e9140a00f":"add_paragraph",
 "a5aea35d34d74689b025122b40dc23b4":"modify",

@@ -1098,7 +1098,6 @@ class Paragraph(DocumentFragment):
         self._page.delete_paragraph_at_index(self._index)
 
     def move(self, target_page, target_index):
-        target_page = self._document.get_page(target_page)
         if target_page.id == self._page.id and target_index in [self._index, self._index+1]:
             return
         with self._document.transaction("Move paragraph"):
@@ -3048,7 +3047,7 @@ class WorkspaceDropTarget(DropPointDropTarget):
             dropped_paragraph["page_id"],
             dropped_paragraph["paragraph_id"]
         ).move(
-            target_page=drop_point.page_id,
+            target_page=drop_point.target_page,
             target_index=drop_point.target_index
         )
 class Column(VerticalScrolledWindow, GuiUpdateMixin):
@@ -3251,6 +3250,10 @@ class PagePanel(VerticalBasePanel):
         return self.values["page_id"]
 
     @property
+    def page(self):
+        return self.project.get_page(self.page_id)
+
+    @property
     def selection(self):
         return self.values["selection"]
     def _create_gui(self):
@@ -3266,7 +3269,7 @@ class PagePanel(VerticalBasePanel):
         self.title = self.AppendChild(Title(
             self,
             project=self.project,
-            page=self.project.get_page(self.page_id),
+            page=self.page,
             selection=self.selection.get("title")
         ), flag=wx.EXPAND)
 
@@ -3313,7 +3316,7 @@ class PagePanel(VerticalBasePanel):
     def _update_title(self):
         self.title.UpdateGui(
             project=self.project,
-            page=self.project.get_page(self.page_id),
+            page=self.page,
             selection=self.selection.get("title")
         )
 
@@ -3321,16 +3324,16 @@ class PagePanel(VerticalBasePanel):
         self.drop_points = []
         divider = self.top_divider
         index = -1
-        for index, paragraph in enumerate(self.project.get_page(self.page_id).paragraphs):
+        for index, paragraph in enumerate(self.page.paragraphs):
             self.drop_points.append(PageDropPoint(
                 divider=divider,
-                page_id=self.page_id,
+                target_page=self.page,
                 target_index=index
             ))
             divider = self._render_paragraph(index, paragraph)
         self.drop_points.append(PageDropPoint(
             divider=divider,
-            page_id=self.page_id,
+            target_page=self.page,
             target_index=index+1
         ))
         while index < len(self.paragraph_rows) - 1:
@@ -3389,9 +3392,9 @@ class PagePanel(VerticalBasePanel):
             )
 class PageDropPoint(object):
 
-    def __init__(self, divider, page_id, target_index):
+    def __init__(self, divider, target_page, target_index):
         self.divider = divider
-        self.page_id = page_id
+        self.target_page = target_page
         self.target_index = target_index
 
     def y_distance_to(self, y):
