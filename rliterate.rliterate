@@ -4121,15 +4121,7 @@
 "type":"variable"
 },
 {
-"text":"(target_page)\n        target_index = target_page.",
-"type":"code"
-},
-{
-"id":"29853bcfd5b84d949d4d17454f7a50de",
-"type":"variable"
-},
-{
-"text":"(",
+"text":"(target_page)\n        if target_page.id == self._page.id and ",
 "type":"code"
 },
 {
@@ -4137,7 +4129,7 @@
 "type":"variable"
 },
 {
-"text":")\n        if target_page.id == self._page.id and target_index in [self._index, self._index+1]:\n            return\n        with self.",
+"text":" in [self._index, self._index+1]:\n            return\n        with self.",
 "type":"code"
 },
 {
@@ -4153,7 +4145,15 @@
 "type":"variable"
 },
 {
-"text":"(\"Move paragraph\"):\n            if target_index > self._index:\n                target_page.",
+"text":"(\"Move paragraph\"):\n            if ",
+"type":"code"
+},
+{
+"id":"0a759aaf75be46af916c3fa05f8393da",
+"type":"variable"
+},
+{
+"text":" > self._index:\n                target_page.",
 "type":"code"
 },
 {
@@ -4161,7 +4161,15 @@
 "type":"variable"
 },
 {
-"text":"(self._fragment, target_index)\n                self._page.",
+"text":"(self._fragment, ",
+"type":"code"
+},
+{
+"id":"0a759aaf75be46af916c3fa05f8393da",
+"type":"variable"
+},
+{
+"text":")\n                self._page.",
 "type":"code"
 },
 {
@@ -4185,7 +4193,15 @@
 "type":"variable"
 },
 {
-"text":"(self._fragment, target_index)\n\n    def duplicate(self):\n        with self.",
+"text":"(self._fragment, ",
+"type":"code"
+},
+{
+"id":"0a759aaf75be46af916c3fa05f8393da",
+"type":"variable"
+},
+{
+"text":")\n\n    def duplicate(self):\n        with self.",
 "type":"code"
 },
 {
@@ -9657,7 +9673,7 @@
 "type":"code"
 },
 {
-"id":"777225827647402d975279d0fa55c788",
+"id":"0a759aaf75be46af916c3fa05f8393da",
 "type":"variable"
 },
 {
@@ -10739,19 +10755,19 @@
 "type":"code"
 },
 {
-"id":"777225827647402d975279d0fa55c788",
+"id":"0a759aaf75be46af916c3fa05f8393da",
 "type":"variable"
 },
 {
-"text":"=paragraph.id\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        ",
+"text":"=index\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(PageDropPoint(\n        divider=divider,\n        page_id=self.page_id,\n        ",
 "type":"code"
 },
 {
-"id":"777225827647402d975279d0fa55c788",
+"id":"0a759aaf75be46af916c3fa05f8393da",
 "type":"variable"
 },
 {
-"text":"=None\n    ))\n    while index < len(self.paragraph_rows) - 1:\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
+"text":"=index+1\n    ))\n    while index < len(self.paragraph_rows) - 1:\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
 "type":"code"
 },
 {
@@ -10822,7 +10838,7 @@
 "type":"code"
 },
 {
-"id":"777225827647402d975279d0fa55c788",
+"id":"0a759aaf75be46af916c3fa05f8393da",
 "type":"variable"
 },
 {
@@ -10830,7 +10846,7 @@
 "type":"code"
 },
 {
-"id":"777225827647402d975279d0fa55c788",
+"id":"0a759aaf75be46af916c3fa05f8393da",
 "type":"variable"
 },
 {
@@ -10838,7 +10854,7 @@
 "type":"code"
 },
 {
-"id":"777225827647402d975279d0fa55c788",
+"id":"0a759aaf75be46af916c3fa05f8393da",
 "type":"variable"
 },
 {
@@ -18496,7 +18512,7 @@
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",
 "061fd7e397724d08a484b175178cea10":"insert_paragraph_at_index",
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
-"0a759aaf75be46af916c3fa05f8393da":"before_paragraph",
+"0a759aaf75be46af916c3fa05f8393da":"target_index",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
 "10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
