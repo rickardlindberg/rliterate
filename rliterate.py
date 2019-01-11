@@ -994,12 +994,10 @@ class Page(DocumentFragment):
             for index, paragraph_dict
             in enumerate(self._fragment["paragraphs"])
         ]
-
     def get_paragraph(self, paragraph_id):
         for paragraph in self.paragraphs:
             if paragraph.id == paragraph_id:
                 return paragraph
-
     def delete_paragraph_at_index(self, index):
         self._document.modify("Delete paragraph", lambda document_dict:
             im_modify(
@@ -1008,7 +1006,6 @@ class Page(DocumentFragment):
                 lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]
             )
         )
-
     def insert_paragraph_at_index(self, paragraph_dict, index):
         self._document.modify("Insert paragraph", lambda document_dict:
             im_modify(

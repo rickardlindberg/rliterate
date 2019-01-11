@@ -1891,7 +1891,25 @@
 "type":"variable"
 },
 {
-"text":"[\"paragraphs\"])\n    ]\n\ndef ",
+"text":"[\"paragraphs\"])\n    ]\n",
+"type":"code"
+}
+],
+"id":"52d1dd5e3872441199da5c5f5c105437",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
 "type":"code"
 },
 {
@@ -1899,7 +1917,25 @@
 "type":"variable"
 },
 {
-"text":"(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n\ndef ",
+"text":"(self, paragraph_id):\n    for paragraph in self.paragraphs:\n        if paragraph.id == paragraph_id:\n            return paragraph\n",
+"type":"code"
+}
+],
+"id":"4b5a9cca381f443c8dd6791bd225499b",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
 "type":"code"
 },
 {
@@ -1939,7 +1975,25 @@
 "type":"variable"
 },
 {
-"text":"+[\"paragraphs\"],\n            lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n        )\n    )\n\ndef ",
+"text":"+[\"paragraphs\"],\n            lambda paragraphs: paragraphs[:index]+paragraphs[index+1:]\n        )\n    )\n",
+"type":"code"
+}
+],
+"id":"7a382154bfcb4733ab2441195e774cd7",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Page"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
 "type":"code"
 },
 {
@@ -1983,7 +2037,7 @@
 "type":"code"
 }
 ],
-"id":"52d1dd5e3872441199da5c5f5c105437",
+"id":"b23328c9a8cb4b2493e4e60face33389",
 "language":"",
 "type":"code"
 }
