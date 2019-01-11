@@ -963,9 +963,8 @@ class Page(DocumentFragment):
     def delete(self):
         if self.parent is not None:
             self.parent.replace_child_at_index(self._index, self._fragment["children"])
-    def move(self, parent_page_id, before_page_id):
+    def move(self, parent_page_id, target_index):
         parent_page = self._document.get_page(parent_page_id)
-        target_index = parent_page.get_child_index(before_page_id)
         # Abort if invalid move
         page = parent_page
         while page is not None:
@@ -1047,12 +1046,6 @@ class Page(DocumentFragment):
             for index, child_dict
             in enumerate(self._fragment["children"])
         ]
-    def get_child_index(self, child_id):
-        index = -1
-        for index, child in enumerate(self.children):
-            if child.id == child_id:
-                return index
-        return index + 1
     def add_child(self):
         self.insert_child_at_index(new_page_dict(), len(self._fragment["children"]))
     def insert_child_at_index(self, page_dict, index):
@@ -2761,23 +2754,23 @@ class TableOfContents(VerticalBasePanel):
         is_collapsed = self.values["project"].is_collapsed(page.id)
         divider = self._get_or_create_row(page, indentation)
         if is_collapsed or len(page.children) == 0:
-            before_page_id = None
+            target_index = len(page.children)
         else:
-            before_page_id = page.children[0].id
+            target_index = 0
         self.drop_points.append(TableOfContentsDropPoint(
             divider=divider,
             indentation=indentation+1,
             parent_page_id=page.id,
-            before_page_id=before_page_id
+            target_index=target_index
         ))
         if not is_collapsed:
-            for child, next_child in pairs(page.children):
+            for index, child in enumerate(page.children):
                 divider = self._flatten_page(child, indentation+1)
                 self.drop_points.append(TableOfContentsDropPoint(
                     divider=divider,
                     indentation=indentation+1,
                     parent_page_id=page.id,
-                    before_page_id=None if next_child is None else next_child.id
+                    target_index=index+1
                 ))
         return divider
 
@@ -2815,11 +2808,11 @@ class TableOfContents(VerticalBasePanel):
                 )
 class TableOfContentsDropPoint(object):
 
-    def __init__(self, divider, indentation, parent_page_id, before_page_id):
+    def __init__(self, divider, indentation, parent_page_id, target_index):
         self.divider = divider
         self.indentation = indentation
         self.parent_page_id = parent_page_id
-        self.before_page_id = before_page_id
+        self.target_index = target_index
 
     def x_distance_to(self, x):
         left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
@@ -2848,7 +2841,7 @@ class TableOfContentsDropTarget(DropPointDropTarget):
     def OnDataDropped(self, dropped_page, drop_point):
         self.project.get_page(dropped_page["page_id"]).move(
             parent_page_id=drop_point.parent_page_id,
-            before_page_id=drop_point.before_page_id
+            target_index=drop_point.target_index
         )
 class TableOfContentsRow(HorizontalBasePanel):
 
@@ -4851,8 +4844,6 @@ def legacy_code_text_to_fragments(text):
     return fragments
 def genid():
     return uuid.uuid4().hex
-def pairs(items):
-    return zip(items, items[1:]+[None])
 def set_clipboard_text(text):
     if wx.TheClipboard.Open():
         try:

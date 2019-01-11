@@ -2066,32 +2066,6 @@
 "type":"code"
 },
 {
-"id":"12c0e05b4e4d4219b9685b4d44bb7b25",
-"type":"variable"
-},
-{
-"text":"(self, child_id):\n    index = -1\n    for index, child in enumerate(self.children):\n        if child.id == child_id:\n            return index\n    return index + 1\n",
-"type":"code"
-}
-],
-"id":"ee0c9e29ceea402fbb2baddcd3dae19c",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Page"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
 "id":"71666f5a2b04456783d9174a5e4c5128",
 "type":"variable"
 },
@@ -2508,15 +2482,7 @@
 "type":"variable"
 },
 {
-"text":"(parent_page_id)\n    target_index = parent_page.",
-"type":"code"
-},
-{
-"id":"12c0e05b4e4d4219b9685b4d44bb7b25",
-"type":"variable"
-},
-{
-"text":"(",
+"text":"(parent_page_id)\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if parent_page.id == self.parent.id and ",
 "type":"code"
 },
 {
@@ -2524,7 +2490,7 @@
 "type":"variable"
 },
 {
-"text":")\n    # Abort if invalid move\n    page = parent_page\n    while page is not None:\n        if page.id == self.id:\n            return\n        page = page.parent\n    # Abort if no-op mode\n    if parent_page.id == self.parent.id and target_index in [self._index, self._index+1]:\n        return\n    # Do the move\n    with self.",
+"text":" in [self._index, self._index+1]:\n        return\n    # Do the move\n    with self.",
 "type":"code"
 },
 {
@@ -2540,7 +2506,15 @@
 "type":"variable"
 },
 {
-"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = target_index > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.",
+"text":"(\"Move page\"):\n        if parent_page.id == self.parent.id:\n            insert_first = ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":" > self._index\n        else:\n            insert_first = len(parent_page._path) > len(self.parent._path)\n        if insert_first:\n            parent_page.",
 "type":"code"
 },
 {
@@ -2548,7 +2522,15 @@
 "type":"variable"
 },
 {
-"text":"(self._fragment, target_index)\n            self.parent.",
+"text":"(self._fragment, ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":")\n            self.parent.",
 "type":"code"
 },
 {
@@ -2572,7 +2554,15 @@
 "type":"variable"
 },
 {
-"text":"(self._fragment, target_index)\n",
+"text":"(self._fragment, ",
+"type":"code"
+},
+{
+"id":"404fcbff6a3d40fdab8f41fdaf8841d9",
+"type":"variable"
+},
+{
+"text":")\n",
 "type":"code"
 }
 ],
@@ -8228,7 +8218,7 @@
 "type":"variable"
 },
 {
-"text":" = None\n    else:\n        ",
+"text":" = len(page.children)\n    else:\n        ",
 "type":"code"
 },
 {
@@ -8236,7 +8226,7 @@
 "type":"variable"
 },
 {
-"text":" = page.children[0].id\n    self.drop_points.append(",
+"text":" = 0\n    self.drop_points.append(",
 "type":"code"
 },
 {
@@ -8260,15 +8250,7 @@
 "type":"variable"
 },
 {
-"text":"\n    ))\n    if not is_collapsed:\n        for child, next_child in ",
-"type":"code"
-},
-{
-"id":"2cce98597c264b5597564c1f9e51cb5f",
-"type":"variable"
-},
-{
-"text":"(page.children):\n            divider = self._flatten_page(child, indentation+1)\n            self.drop_points.append(",
+"text":"\n    ))\n    if not is_collapsed:\n        for index, child in enumerate(page.children):\n            divider = self._flatten_page(child, indentation+1)\n            self.drop_points.append(",
 "type":"code"
 },
 {
@@ -8284,7 +8266,7 @@
 "type":"variable"
 },
 {
-"text":"=None if next_child is None else next_child.id\n            ))\n    return divider\n\ndef _get_or_create_row(self, page, indentation):\n    if self.row_index < len(self.row_widgets):\n        row, divider = self.row_widgets[self.row_index]\n        row.",
+"text":"=index+1\n            ))\n    return divider\n\ndef _get_or_create_row(self, page, indentation):\n    if self.row_index < len(self.row_widgets):\n        row, divider = self.row_widgets[self.row_index]\n        row.",
 "type":"code"
 },
 {
@@ -8388,30 +8370,6 @@
 ],
 "id":"f661782a1f32478fb6e54b69772adfad",
 "language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"2cce98597c264b5597564c1f9e51cb5f",
-"type":"variable"
-},
-{
-"text":"(items):\n    return zip(items, items[1:]+[None])\n",
-"type":"code"
-}
-],
-"id":"d96081eefe194e4ba90f376b8414ff7f",
 "type":"code"
 },
 {
@@ -18419,7 +18377,7 @@
 "3d6ead2c4a274ae78afa33875235e150":"_apply_style",
 "3f3b43d27029407baea6e0281eaa456d":"_paragraph_dict",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
-"404fcbff6a3d40fdab8f41fdaf8841d9":"before_page_id",
+"404fcbff6a3d40fdab8f41fdaf8841d9":"target_index",
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "457a1dbf134c431881e590e7b7db9907":"_break_at_word",
