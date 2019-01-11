@@ -934,6 +934,10 @@ class Page(DocumentFragment):
             page = page.parent
         return result
 
+    @property
+    def depth(self):
+        return len(self.chain)
+
     def iter_code_fragments(self):
         for paragraph in self.paragraphs:
             for fragment in paragraph.iter_code_fragments():
@@ -974,7 +978,7 @@ class Page(DocumentFragment):
             if target_page.id == self.parent.id:
                 insert_first = target_index > self._index
             else:
-                insert_first = len(target_page._path) > len(self.parent._path)
+                insert_first = target_page.depth > self.parent.depth
             if insert_first:
                 target_page.insert_child_at_index(self._fragment, target_index)
                 self.parent.replace_child_at_index(self._index, [])

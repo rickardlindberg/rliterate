@@ -2350,7 +2350,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    result = []\n    page = self\n    while page is not None:\n        result.insert(0, page)\n        page = page.parent\n    return result\n\ndef iter_code_fragments(self):\n    for paragraph in self.paragraphs:\n        for fragment in paragraph.iter_code_fragments():\n            yield fragment\n\ndef iter_text_fragments(self):\n    for paragraph in self.paragraphs:\n        for fragment in paragraph.iter_text_fragments():\n            yield fragment\n\n@property\ndef id(self):\n    return self.",
+"text":"(self):\n    result = []\n    page = self\n    while page is not None:\n        result.insert(0, page)\n        page = page.parent\n    return result\n\n@property\ndef depth(self):\n    return len(self.",
+"type":"code"
+},
+{
+"id":"82902f4f6d91479f88d33e04619a3915",
+"type":"variable"
+},
+{
+"text":")\n\ndef iter_code_fragments(self):\n    for paragraph in self.paragraphs:\n        for fragment in paragraph.iter_code_fragments():\n            yield fragment\n\ndef iter_text_fragments(self):\n    for paragraph in self.paragraphs:\n        for fragment in paragraph.iter_text_fragments():\n            yield fragment\n\n@property\ndef id(self):\n    return self.",
 "type":"code"
 },
 {
@@ -2514,7 +2522,7 @@
 "type":"variable"
 },
 {
-"text":" > self._index\n        else:\n            insert_first = len(",
+"text":" > self._index\n        else:\n            insert_first = ",
 "type":"code"
 },
 {
@@ -2522,7 +2530,7 @@
 "type":"variable"
 },
 {
-"text":"._path) > len(self.parent._path)\n        if insert_first:\n            ",
+"text":".depth > self.parent.depth\n        if insert_first:\n            ",
 "type":"code"
 },
 {
