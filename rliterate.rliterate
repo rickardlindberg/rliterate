@@ -7553,7 +7553,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            TableOfContents(panel, project=self.project),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        self.workspace = panel.",
+"text":"(\n            TableOfContents(\n                panel,\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"toc\")\n            ),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        self.workspace = panel.",
 "type":"code"
 },
 {
@@ -7561,7 +7561,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            Workspace(panel, project=self.project),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.project.listen(self.",
+"text":"(\n            Workspace(\n                panel,\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"workspace\")\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self._focus_panel.SetFocus()\n        self.project.listen(self.",
 "type":"code"
 },
 {
@@ -7585,7 +7585,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n            self.toolbar.UpdateGui()\n            self.toc.",
+"text":"(self):\n            self._focus_panel.SetFocus()\n            self.toolbar.UpdateGui()\n            self.toc.",
 "type":"code"
 },
 {
@@ -7593,7 +7593,7 @@
 "type":"variable"
 },
 {
-"text":"(project=self.project)\n            self.workspace.",
+"text":"(\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"toc\")\n            )\n            self.workspace.",
 "type":"code"
 },
 {
@@ -7601,7 +7601,7 @@
 "type":"variable"
 },
 {
-"text":"(project=self.project)\n            self.ChildReRendered()\n\n",
+"text":"(\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"workspace\")\n            )\n            self.ChildReRendered()\n\n",
 "type":"code"
 },
 {
@@ -7637,7 +7637,7 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    if self.project.active_editor is None:\n        focused_widget = wx.Window.FindFocus()\n        if not focused_widget or not hasattr(focused_widget, \"DONT_RESET_FOCUS\"):\n            self._focus_panel.SetFocus()\n    self.Layout()\n    self.Update()\n",
+"text":"def ChildReRendered(self):\n    self.Layout()\n    self.Update()\n",
 "type":"code"
 }
 ],
@@ -9604,6 +9604,32 @@
 ],
 "fragments":[
 {
+"text":"@property\ndef selection(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"]\n",
+"type":"code"
+}
+],
+"id":"06e8bef362c84b26b833c5fa4af23e25",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Workspace"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
 "text":"def _update_space(self):\n    self.space.SetSize(self.project.",
 "type":"code"
 },
@@ -9653,7 +9679,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            project=self.project,\n            index=index,\n            page_ids=page_ids,\n            selection=self.project.selection.get(index)\n        )\n    else:\n        self.columns.append(self.",
+"text":"(\n            project=self.project,\n            index=index,\n            page_ids=page_ids,\n            selection=self.selection.get(index)\n        )\n    else:\n        self.columns.append(self.",
 "type":"code"
 },
 {
@@ -9669,7 +9695,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                self,\n                project=self.project,\n                index=index,\n                page_ids=page_ids,\n                selection=self.project.selection.get(index)\n            ),\n            flag=wx.EXPAND\n        ))\n        self.column_count_changed = True\n    return self.columns[index]\n",
+"text":"(\n                self,\n                project=self.project,\n                index=index,\n                page_ids=page_ids,\n                selection=self.selection.get(index)\n            ),\n            flag=wx.EXPAND\n        ))\n        self.column_count_changed = True\n    return self.columns[index]\n",
 "type":"code"
 }
 ],
@@ -11622,7 +11648,7 @@
 "type":"variable"
 },
 {
-"text":")\n    )\n    if self.selection.present:\n        self.text.SetFocus()\n        self.text.DONT_RESET_FOCUS = True\n    else:\n        self.text.DONT_RESET_FOCUS = False\n    self.text.SetToolTipString(self.page.",
+"text":")\n    )\n    if self.selection.present:\n        self.text.SetFocus()\n    self.text.SetToolTipString(self.page.",
 "type":"code"
 },
 {

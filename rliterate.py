@@ -2509,31 +2509,43 @@ class MainFrame(wx.Frame, BoxSizerMixin):
             wx.Panel(self)
         )
         self.toc = panel.AppendChild(
-            TableOfContents(panel, project=self.project),
+            TableOfContents(
+                panel,
+                project=self.project,
+                selection=self.project.selection.get("main_frame").get("toc")
+            ),
             flag=wx.EXPAND,
             proportion=0
         )
         self.workspace = panel.AppendChild(
-            Workspace(panel, project=self.project),
+            Workspace(
+                panel,
+                project=self.project,
+                selection=self.project.selection.get("main_frame").get("workspace")
+            ),
             flag=wx.EXPAND,
             proportion=1
         )
+        self._focus_panel.SetFocus()
         self.project.listen(self.UpdateGui)
         return panel
 
     @rltime("update main frame")
     def UpdateGui(self):
         with flicker_free_drawing(self):
+            self._focus_panel.SetFocus()
             self.toolbar.UpdateGui()
-            self.toc.UpdateGui(project=self.project)
-            self.workspace.UpdateGui(project=self.project)
+            self.toc.UpdateGui(
+                project=self.project,
+                selection=self.project.selection.get("main_frame").get("toc")
+            )
+            self.workspace.UpdateGui(
+                project=self.project,
+                selection=self.project.selection.get("main_frame").get("workspace")
+            )
             self.ChildReRendered()
 
     def ChildReRendered(self):
-        if self.project.active_editor is None:
-            focused_widget = wx.Window.FindFocus()
-            if not focused_widget or not hasattr(focused_widget, "DONT_RESET_FOCUS"):
-                self._focus_panel.SetFocus()
         self.Layout()
         self.Update()
 class ToolBar(wx.ToolBar):
@@ -3052,6 +3064,9 @@ class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
     @property
     def project(self):
         return self.values["project"]
+    @property
+    def selection(self):
+        return self.values["selection"]
     def _update_space(self):
         self.space.SetSize(self.project.theme.page_padding)
     def _update_columns(self):
@@ -3070,7 +3085,7 @@ class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
                 project=self.project,
                 index=index,
                 page_ids=page_ids,
-                selection=self.project.selection.get(index)
+                selection=self.selection.get(index)
             )
         else:
             self.columns.append(self.AppendChild(
@@ -3079,7 +3094,7 @@ class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
                     project=self.project,
                     index=index,
                     page_ids=page_ids,
-                    selection=self.project.selection.get(index)
+                    selection=self.selection.get(index)
                 ),
                 flag=wx.EXPAND
             ))
@@ -3491,9 +3506,6 @@ class Title(HorizontalBasePanel):
         )
         if self.selection.present:
             self.text.SetFocus()
-            self.text.DONT_RESET_FOCUS = True
-        else:
-            self.text.DONT_RESET_FOCUS = False
         self.text.SetToolTipString(self.page.full_title)
     def _get_characters(self):
         characters = []
