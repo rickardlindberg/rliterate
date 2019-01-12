@@ -577,6 +577,30 @@ class TextProjection(GuiUpdatePanel):
             characters_by_y_distance[min(characters_by_y_distance.keys())],
             key=lambda box: abs(box.rect.X + int(box.rect.Width / 2) - position.x)
         )
+class TextProjectionEditor(TextProjection):
+
+    def _create_gui(self):
+        TextProjection._create_gui(self)
+        self.Bind(wx.EVT_CHAR, self._on_char)
+
+    def _update_gui(self):
+        TextProjection._update_gui(self)
+        if self.values["selection"].present:
+            self.SetFocus()
+
+    @rltime("on char")
+    def _on_char(self, event):
+        if self.values["selection"].present:
+            self.values.get("handle_key", lambda event: None)(event)
+
+    def Select(self, pos):
+        character, side = self.GetClosestCharacterWithSide(pos)
+        if character is None:
+            pass
+        elif side == wx.LEFT:
+            self.values["project"].selection = self.values["selection"].create(character.extra[0])
+        else:
+            self.values["project"].selection = self.values["selection"].create(character.extra[1])
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -3483,8 +3507,11 @@ class Title(HorizontalBasePanel):
     def selection(self):
         return self.values["selection"]
     def _create_gui(self):
-        self.text = self.AppendChild(TextProjection(
+        self.text = self.AppendChild(TextProjectionEditor(
             self,
+            handle_key=self._handle_key,
+            project=self.project,
+            selection=self.selection,
             characters=self._get_characters(),
             max_width=self.project.theme.page_body_width,
             font=create_font(**self.project.theme.title_font)
@@ -3492,71 +3519,41 @@ class Title(HorizontalBasePanel):
         MouseEventHelper.bind(
             [self.text],
             double_click=lambda event:
-                self._select(event.Position)
+                self.text.Select(event.Position)
             ,
             right_click=lambda event:
                 SimpleContextMenu.ShowRecursive(self)
         )
-        self.text.Bind(wx.EVT_CHAR, self._on_char)
     def _update_gui(self):
         self.text.UpdateGui(
+            project=self.project,
+            selection=self.selection,
             characters=self._get_characters(),
             max_width=self.project.theme.page_body_width,
             font=create_font(**self.project.theme.title_font)
         )
-        if self.selection.present:
-            self.text.SetFocus()
         self.text.SetToolTipString(self.page.full_title)
     def _get_characters(self):
-        characters = []
-        for index, character in list(enumerate(self.page.title)):
-            marker = None
-            if self.selection.present:
-                if self.selection.value == index:
-                    if index == 0:
-                        marker = "beam_start"
-                    else:
-                        marker = "beam_middle"
-                elif self.selection.value == index+1 and index+1 == len(self.page.title):
-                    marker = "beam_end"
-            characters.append(Character.create(
-                character,
+        if self.page.title:
+            return create_characters(
+                self.page.title,
                 self.project.get_style(TokenType.RLiterate),
-                marker,
-                extra=index
-            ))
-        if not characters:
-            missing_text = "Enter title..."
-            for index, character in enumerate(missing_text):
-                if self.selection.present and index == 0:
-                    marker = "beam_start"
-                elif self.selection.present and index == len(missing_text)-1:
-                    marker = "beam_end"
-                else:
-                    marker = None
-                characters.append(Character.create(
-                    character,
-                    self.project.get_style(TokenType.RLiterate.Empty),
-                    marker,
-                    extra=0
-                ))
-        return characters
-    @rltime("on title char")
-    def _on_char(self, event):
-        if self.selection.present:
-            result = edit_plain_text(self.page.title, self.selection.value, event)
-            if result:
-                with self.project.notify():
-                    self.page.set_title(result[0])
-                    self.project.selection = self.selection.create(result[1])
-    def _select(self, pos):
-        character, side = self.text.GetClosestCharacterWithSide(pos)
-        if character is None:
-            self.project.selection = self.selection.create(0)
-        elif side == wx.LEFT:
-            self.project.selection = self.selection.create(character.extra)
+                selections=[self.selection.value] if self.selection.present else []
+            )
         else:
-            self.project.selection = self.selection.create(character.extra+1)
+            text = "Enter title..."
+            return create_characters(
+                text,
+                self.project.get_style(TokenType.RLiterate.Empty),
+                selections=[0, len(text)] if self.selection.present else [],
+                extra_fn=lambda index: (0, 0)
+            )
+    def _handle_key(self, event):
+        result = edit_plain_text(self.page.title, self.selection.value, event)
+        if result:
+            with self.project.notify():
+                self.page.set_title(result[0])
+                self.project.selection = self.selection.create(result[1])
 class Text(ParagraphBase):
 
     def CreateView(self):
@@ -4917,32 +4914,6 @@ def min_or_none(items, key):
     if not items:
         return None
     return min(items, key=key)
-def edit_plain_text(text, selection, event):
-    if event.GetUnicodeKey() >= 32:
-        return (
-            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],
-            selection+1
-        )
-    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:
-        return (
-            text[:selection-1]+text[selection:],
-            selection-1
-        )
-    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):
-        return (
-            text[:selection]+text[selection+1:],
-            selection
-        )
-    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:
-        return (
-            text,
-            selection-1
-        )
-    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):
-        return (
-            text,
-            selection+1
-        )
 def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):
@@ -5005,6 +4976,66 @@ def show_edit_in_progress_error(window):
     )
     dialog.ShowModal()
     dialog.Destroy()
+def _get_characters(self):
+    if self.page.title:
+        return create_characters(
+            self.page.title,
+            self.project.get_style(TokenType.RLiterate),
+            selections=[self.selection.value] if self.selection.present else []
+        )
+    else:
+        text = "Enter title..."
+        return create_characters(
+            text,
+            self.project.get_style(TokenType.RLiterate.Empty),
+            selections=[0, len(text)] if self.selection.present else [],
+            extra_fn=lambda index: (0, 0)
+        )
+def create_characters(text, style, selections=None, extra_fn=lambda index: (index, index+1)):
+    characters = []
+    last_index = len(text) - 1
+    for index, character in enumerate(text):
+        if index == 0 and index in selections:
+            marker = "beam_start"
+        elif index == last_index and (last_index+1) in selections:
+            marker = "beam_end"
+        elif index in selections:
+            marker = "beam_middle"
+        else:
+            marker = None
+        characters.append(Character.create(
+            character,
+            style,
+            marker,
+            extra=extra_fn(index)
+        ))
+    return characters
+def edit_plain_text(text, selection, event):
+    if event.GetUnicodeKey() >= 32:
+        return (
+            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],
+            selection+1
+        )
+    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:
+        return (
+            text[:selection-1]+text[selection:],
+            selection-1
+        )
+    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):
+        return (
+            text[:selection]+text[selection+1:],
+            selection
+        )
+    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:
+        return (
+            text,
+            selection-1
+        )
+    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):
+        return (
+            text,
+            selection+1
+        )
 @contextlib.contextmanager
 def flicker_free_drawing(widget):
     if "wxMSW" in wx.PlatformInfo:

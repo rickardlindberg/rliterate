@@ -11466,11 +11466,11 @@
 "type":"code"
 },
 {
-"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"id":"8cc78ba335d744e7aaefde463d19c0b2",
 "type":"variable"
 },
 {
-"text":"(\n        self,\n        ",
+"text":"(\n        self,\n        handle_key=self._handle_key,\n        project=self.project,\n        selection=self.selection,\n        ",
 "type":"code"
 },
 {
@@ -11534,7 +11534,7 @@
 "type":"variable"
 },
 {
-"text":")\n    ), flag=wx.EXPAND, proportion=1)\n    MouseEventHelper.bind(\n        [self.text],\n        double_click=lambda event:\n            self._select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
+"text":")\n    ), flag=wx.EXPAND, proportion=1)\n    MouseEventHelper.bind(\n        [self.text],\n        double_click=lambda event:\n            self.text.Select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
 "type":"code"
 },
 {
@@ -11550,7 +11550,7 @@
 "type":"variable"
 },
 {
-"text":"(self)\n    )\n    self.text.Bind(wx.EVT_CHAR, self._on_char)\n",
+"text":"(self)\n    )\n",
 "type":"code"
 }
 ],
@@ -11584,7 +11584,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        ",
+"text":"(\n        project=self.project,\n        selection=self.selection,\n        ",
 "type":"code"
 },
 {
@@ -11648,7 +11648,7 @@
 "type":"variable"
 },
 {
-"text":")\n    )\n    if self.selection.present:\n        self.text.SetFocus()\n    self.text.SetToolTipString(self.page.",
+"text":")\n    )\n    self.text.SetToolTipString(self.page.",
 "type":"code"
 },
 {
@@ -11674,39 +11674,7 @@
 ],
 "fragments":[
 {
-"text":"def _get_characters(self):\n    characters = []\n    for index, character in list(enumerate(self.page.title)):\n        marker = None\n        if self.selection.present:\n            if self.selection.value == index:\n                if index == 0:\n                    marker = \"beam_start\"\n                else:\n                    marker = \"beam_middle\"\n            elif self.selection.value == index+1 and index+1 == len(self.page.title):\n                marker = \"beam_end\"\n        characters.append(",
-"type":"code"
-},
-{
-"id":"99872a7e246e4fc38f9e0029f076e120",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"ae234077465241e39337f68165ffb11e",
-"type":"variable"
-},
-{
-"text":"(\n            character,\n            self.project.get_style(TokenType.RLiterate),\n            marker,\n            extra=index\n        ))\n    if not characters:\n        missing_text = \"Enter title...\"\n        for index, character in enumerate(missing_text):\n            if self.selection.present and index == 0:\n                marker = \"beam_start\"\n            elif self.selection.present and index == len(missing_text)-1:\n                marker = \"beam_end\"\n            else:\n                marker = None\n            characters.append(",
-"type":"code"
-},
-{
-"id":"99872a7e246e4fc38f9e0029f076e120",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"ae234077465241e39337f68165ffb11e",
-"type":"variable"
-},
-{
-"text":"(\n                character,\n                self.project.get_style(TokenType.RLiterate.Empty),\n                marker,\n                extra=0\n            ))\n    return characters\n",
+"text":"def _get_characters(self):\n    if self.page.title:\n        return create_characters(\n            self.page.title,\n            self.project.get_style(TokenType.RLiterate),\n            selections=[self.selection.value] if self.selection.present else []\n        )\n    else:\n        text = \"Enter title...\"\n        return create_characters(\n            text,\n            self.project.get_style(TokenType.RLiterate.Empty),\n            selections=[0, len(text)] if self.selection.present else [],\n            extra_fn=lambda index: (0, 0)\n        )\n",
 "type":"code"
 }
 ],
@@ -11724,54 +11692,11 @@
 ],
 "fragments":[
 {
-"text":"@rltime(\"on title char\")\ndef _on_char(self, event):\n    if self.selection.present:\n        result = edit_plain_text(self.page.title, self.selection.value, event)\n        if result:\n            with self.project.notify():\n                self.page.set_title(result[0])\n                self.project.selection = self.selection.create(result[1])\n",
+"text":"def _handle_key(self, event):\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            self.page.set_title(result[0])\n            self.project.selection = self.selection.create(result[1])\n",
 "type":"code"
 }
 ],
 "id":"ae52de5dd3b64b69b62331cec27136c2",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _select(self, pos):\n    character, side = self.text.",
-"type":"code"
-},
-{
-"id":"f4302d47ac784f8bbdbe3bc46c9316c6",
-"type":"variable"
-},
-{
-"text":"(pos)\n    if character is None:\n        self.project.selection = self.selection.create(0)\n    elif side == wx.LEFT:\n        self.project.selection = self.selection.create(character.extra)\n    else:\n        self.project.selection = self.selection.create(character.extra+1)\n",
-"type":"code"
-}
-],
-"id":"4eeb6d828c67411586ce9164feb032da",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def edit_plain_text(text, selection, event):\n    if event.GetUnicodeKey() >= 32:\n        return (\n            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],\n            selection+1\n        )\n    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:\n        return (\n            text[:selection-1]+text[selection:],\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):\n        return (\n            text[:selection]+text[selection+1:],\n            selection\n        )\n    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:\n        return (\n            text,\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):\n        return (\n            text,\n            selection+1\n        )\n",
-"type":"code"
-}
-],
-"id":"88b2995fd24f41d3a94822d9b8051e1f",
 "language":"",
 "type":"code"
 }
@@ -15291,6 +15216,249 @@
 }
 ],
 "title":"Text projection"
+},
+{
+"children":[],
+"id":"e244a58e153b4d7b804f99476e950768",
+"paragraphs":[
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"8cc78ba335d744e7aaefde463d19c0b2",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":"):\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":1,
+"path":[
+"TextProjectionEditor"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"c4c248293d754f63a4f4893bbc0032f3",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n    ",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self)\n    self.Bind(wx.EVT_CHAR, self._on_char)\n",
+"type":"code"
+}
+],
+"id":"f700fe7d8a144a1d899fa007d49b30e2",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n    ",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self)\n    if self.values[\"selection\"].present:\n        self.SetFocus()\n",
+"type":"code"
+}
+],
+"id":"2fb8cb9063a94313a82e249aeb35da05",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@rltime(\"on char\")\ndef _on_char(self, event):\n    if self.values[\"selection\"].present:\n        self.values.get(\"handle_key\", lambda event: None)(event)\n",
+"type":"code"
+}
+],
+"id":"409c492834ef4352bdf3876aa856948f",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def Select(self, pos):\n    character, side = self.",
+"type":"code"
+},
+{
+"id":"f4302d47ac784f8bbdbe3bc46c9316c6",
+"type":"variable"
+},
+{
+"text":"(pos)\n    if character is None:\n        pass\n    elif side == wx.LEFT:\n        self.values[\"project\"].selection = self.values[\"selection\"].create(character.extra[0])\n    else:\n        self.values[\"project\"].selection = self.values[\"selection\"].create(character.extra[1])\n",
+"type":"code"
+}
+],
+"id":"4eeb6d828c67411586ce9164feb032da",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_characters(self):\n    if self.page.title:\n        return create_characters(\n            self.page.title,\n            self.project.get_style(TokenType.RLiterate),\n            selections=[self.selection.value] if self.selection.present else []\n        )\n    else:\n        text = \"Enter title...\"\n        return create_characters(\n            text,\n            self.project.get_style(TokenType.RLiterate.Empty),\n            selections=[0, len(text)] if self.selection.present else [],\n            extra_fn=lambda index: (0, 0)\n        )\n",
+"type":"code"
+}
+],
+"id":"dbf7f51af34245fbb55655ce5b874107",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def create_characters(text, style, selections=None, extra_fn=lambda index: (index, index+1)):\n    characters = []\n    last_index = len(text) - 1\n    for index, character in enumerate(text):\n        if index == 0 and index in selections:\n            marker = \"beam_start\"\n        elif index == last_index and (last_index+1) in selections:\n            marker = \"beam_end\"\n        elif index in selections:\n            marker = \"beam_middle\"\n        else:\n            marker = None\n        characters.append(",
+"type":"code"
+},
+{
+"id":"99872a7e246e4fc38f9e0029f076e120",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"ae234077465241e39337f68165ffb11e",
+"type":"variable"
+},
+{
+"text":"(\n            character,\n            style,\n            marker,\n            extra=extra_fn(index)\n        ))\n    return characters\n",
+"type":"code"
+}
+],
+"id":"9b28bb859fb14d77a3e5f0dc1214dec3",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def edit_plain_text(text, selection, event):\n    if event.GetUnicodeKey() >= 32:\n        return (\n            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],\n            selection+1\n        )\n    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:\n        return (\n            text[:selection-1]+text[selection:],\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):\n        return (\n            text[:selection]+text[selection+1:],\n            selection\n        )\n    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:\n        return (\n            text,\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):\n        return (\n            text,\n            selection+1\n        )\n",
+"type":"code"
+}
+],
+"id":"88b2995fd24f41d3a94822d9b8051e1f",
+"language":"",
+"type":"code"
+}
+],
+"title":"Text projection editor"
 },
 {
 "children":[],
@@ -19215,6 +19383,7 @@
 "8b6dd5393fca465cbd6f0d076c41d742":"_document",
 "8ba2bd8df56e45ccb2c3dcd2b8ac6e83":"new_document_dict",
 "8ba62478399c42fc960555b7ed9c8fce":"title",
+"8cc78ba335d744e7aaefde463d19c0b2":"TextProjectionEditor",
 "8d2b6dc31cdb4b2dba29488fa3263c53":"HorizontalScrolledWindow",
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "8db58d842ac34e0aa51ea908cd841520":"theme",
