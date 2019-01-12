@@ -11428,31 +11428,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.Font = ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
-"type":"variable"
-},
-{
-"text":")\n    self.text = self.",
+"text":"(self):\n    self.text = self.",
 "type":"code"
 },
 {
@@ -11500,7 +11476,39 @@
 "type":"variable"
 },
 {
-"text":"\n    ), flag=wx.EXPAND, proportion=1)\n    MouseEventHelper.bind(\n        [self.text],\n        double_click=lambda event:\n            self._select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
+"text":",\n        ",
+"type":"code"
+},
+{
+"id":"af34f0dcb0904a3facd4324400f5aea8",
+"type":"variable"
+},
+{
+"text":"=",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
+"type":"variable"
+},
+{
+"text":")\n    ), flag=wx.EXPAND, proportion=1)\n    MouseEventHelper.bind(\n        [self.text],\n        double_click=lambda event:\n            self._select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
 "type":"code"
 },
 {
@@ -11582,7 +11590,39 @@
 "type":"variable"
 },
 {
-"text":"\n    )\n    if self.selection.present:\n        self.text.SetFocus()\n        self.text.DONT_RESET_FOCUS = True\n    else:\n        self.text.DONT_RESET_FOCUS = False\n    self.text.SetToolTipString(self.page.",
+"text":",\n        ",
+"type":"code"
+},
+{
+"id":"af34f0dcb0904a3facd4324400f5aea8",
+"type":"variable"
+},
+{
+"text":"=",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
+"type":"variable"
+},
+{
+"text":")\n    )\n    if self.selection.present:\n        self.text.SetFocus()\n        self.text.DONT_RESET_FOCUS = True\n    else:\n        self.text.DONT_RESET_FOCUS = False\n    self.text.SetToolTipString(self.page.",
 "type":"code"
 },
 {
@@ -14443,7 +14483,15 @@
 "type":"variable"
 },
 {
-"text":"\": True,\n    }\n\n",
+"text":"\": True,\n        \"",
+"type":"code"
+},
+{
+"id":"af34f0dcb0904a3facd4324400f5aea8",
+"type":"variable"
+},
+{
+"text":"\": None,\n    }\n\n",
 "type":"code"
 },
 {
@@ -15110,6 +15158,48 @@
 }
 ],
 "id":"48f77f6fe78b480593bdd29a5fcb89d7",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def GetFont(self):\n    font = self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"",
+"type":"code"
+},
+{
+"id":"af34f0dcb0904a3facd4324400f5aea8",
+"type":"variable"
+},
+{
+"text":"\"]\n    if font is None:\n        return ",
+"type":"code"
+},
+{
+"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"type":"variable"
+},
+{
+"text":".GetFont(self)\n    else:\n        return font\n",
+"type":"code"
+}
+],
+"id":"3d9238a7e454426a9fb09128ef64d22e",
 "language":"",
 "type":"code"
 },
@@ -19121,6 +19211,7 @@
 "a886e97ceb3d427c8190487d23d12bc1":"Column",
 "a8b94133f9bf4cf9bf9e3cb6c4e2095d":"_project",
 "a8caeb6d2819489f994f081b84182472":"_partition_characters",
+"aa2f4533d8e844608d77edd01257a2de":"GetFont",
 "aa80683234dc421f81d21fbda0b91758":"code_font",
 "aa88810b795e4483b57bbdf05e8127d6":"workspace_background",
 "ab468260e8344173a06b482194c9a6a4":"_boxes",
@@ -19131,6 +19222,7 @@
 "ae8e603135854b1787ca652bf6304e9e":"theme",
 "aed0c1af151440d889b3890fa971fb59":"save",
 "aefd69dc8f8e491499de72f6a1898ef9":"_text_fragment_dict",
+"af34f0dcb0904a3facd4324400f5aea8":"font",
 "b0201e824c464356aa706a0440192e5c":"ShowRecursive",
 "b088ae244bc14a1abd35258193a12469":"values",
 "b389117f3e4740ad83a6da246473fb19":"DocumentFragment",

@@ -394,6 +394,7 @@ class TextProjection(GuiUpdatePanel):
         "line_height": 1,
         "max_width": None,
         "break_at_word": True,
+        "font": None,
     }
 
     def _create_gui(self):
@@ -544,6 +545,13 @@ class TextProjection(GuiUpdatePanel):
             return None
         else:
             return box.char
+
+    def GetFont(self):
+        font = self.values["font"]
+        if font is None:
+            return GuiUpdatePanel.GetFont(self)
+        else:
+            return font
 
     def GetClosestCharacterWithSide(self, position):
         box = self._get_closest_box(position)
@@ -3460,11 +3468,11 @@ class Title(HorizontalBasePanel):
     def selection(self):
         return self.values["selection"]
     def _create_gui(self):
-        self.Font = create_font(**self.project.theme.title_font)
         self.text = self.AppendChild(TextProjection(
             self,
             characters=self._get_characters(),
-            max_width=self.project.theme.page_body_width
+            max_width=self.project.theme.page_body_width,
+            font=create_font(**self.project.theme.title_font)
         ), flag=wx.EXPAND, proportion=1)
         MouseEventHelper.bind(
             [self.text],
@@ -3478,7 +3486,8 @@ class Title(HorizontalBasePanel):
     def _update_gui(self):
         self.text.UpdateGui(
             characters=self._get_characters(),
-            max_width=self.project.theme.page_body_width
+            max_width=self.project.theme.page_body_width,
+            font=create_font(**self.project.theme.title_font)
         )
         if self.selection.present:
             self.text.SetFocus()
