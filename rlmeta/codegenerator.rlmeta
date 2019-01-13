@@ -1,0 +1,33 @@
+CodeGenerator {
+  ast =
+    | ["Grammar" .:x ast*:ys]   -> { "class " x "(_Grammar):\n" > ys <                   }
+    | ["Rule" .:x ast:y]        -> { "\ndef _rule_" x "(self):\n" > "return " y "()\n" < }
+    | ["MatchAny"]              -> { "self._match_any"                                   }
+    | ["String" .:x]            -> { repr(x)                                             }
+    | ["List" astList:x]        -> { x                                                   }
+    | ["Builder" astItems:x]    -> { "_Builder.create([" x "])"                          }
+    | ["IndentBuilder"]         -> { "_IndentBuilder()"                                  }
+    | ["DedentBuilder"]         -> { "_DedentBuilder()"                                  }
+    | ["FnCall" .:x astItems:y] -> { x "(" y ")"                                         }
+    | ["VarLookup" .:x]         -> { "_vars.lookup(" repr(x) ").eval()"                  }
+    | astFnBody:x               -> { "(lambda:\n" > x < "\n)" }
+  astFnBody =
+    | ["Or" astItems:x]         -> { "self._or([" x "])"                                 }
+    | ["Scope" ast:x]           -> { "(lambda _vars:\n" > x < "()\n)(_Vars())"           }
+    | ["And" astItems:x]        -> { "self._and([" x "])"                                }
+    | ["Bind" .:x ast:y]        -> { "_vars.bind(" repr(x) ", " y "())"                  }
+    | ["Star" ast:x]            -> { "self._star(" x ")"                                 }
+    | ["Not" ast:x]             -> { "self._not(" x ")"                                  }
+    | ["SemanticAction" ast:x]  -> { "_SemanticAction(lambda: " x ")"                    }
+    | ["MatchRule" .:x]         -> { "self._match_rule(" repr(x) ")"                     }
+    | ["MatchRange" .:x .:y]    -> { "self._match_range(" repr(x) ", " repr(y) ")"       }
+    | ["MatchString" .:x]       -> { "self._match_string(" repr(x) ")"                   }
+    | ["MatchCharseq" .:x]      -> { "self._match_charseq(" repr(x) ")"                  }
+    | ["MatchList" ast:x]       -> { "self._match_list(" x ")"                           }
+  astItems = astItem*:xs        -> { "\n" > xs <                                         }
+  astItem  = ast:x              -> { x ",\n"                                             }
+  astList  = astListItem*:xs    -> { "(" xs "[])"                                        }
+  astListItem =
+    | ["ListItemSplice" ast:x]  -> {     x  "+"                                          }
+    | ast:x                     -> { "[" x "]+"                                          }
+}

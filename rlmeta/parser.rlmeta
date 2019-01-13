@@ -1,0 +1,51 @@
+Parser {
+  grammar =
+    | name:x space '{' rule*:ys space '}'      -> ["Grammar" x ~ys]
+  rule =
+    | name:x space '=' choice:y                -> ["Rule" x y]
+  choice =
+    | (space '|')?
+      sequence:x (space '|' sequence)*:xs      -> ["Or" x ~xs]
+  sequence =
+    | expr:x expr*:xs                          -> ["Scope" ["And" x ~xs]]
+  expr =
+    | expr1:x space ':' name:y                 -> ["Bind" y x]
+    | expr1
+  expr1 =
+    | expr2:x space '*'                        -> ["Star" x]
+    | expr2:x space '?'                        -> ["Or" x ["And"]]
+    | space '!' expr2:x                        -> ["Not" x]
+    | expr2
+  expr2 =
+    | space '->' hostExpr:x                    -> ["SemanticAction" x]
+    | name:x !(space '=')                      -> ["MatchRule" x]
+    | space char:x '-' char:y                  -> ["MatchRange" x y]
+    | space string:x                           -> ["MatchString" x]
+    | space charseq:x                          -> ["MatchCharseq" x]
+    | space '.'                                -> ["MatchAny"]
+    | space '(' choice:x space ')'             -> x
+    | space '[' expr*:xs space ']'             -> ["MatchList" ["And" ~xs]]
+  hostExpr =
+    | space string:x                           -> ["String" x]
+    | space '[' hostExprListItem*:xs space ']' -> ["List" ~xs]
+    | space '{' buildExpr*:xs space '}'        -> ["Builder" ~xs]
+    | name:x space '(' hostExpr*:ys space ')'  -> ["FnCall" x ~ys]
+    | name:x                                   -> ["VarLookup" x]
+  hostExprListItem =
+    | space '~' hostExpr:x                     -> ["ListItemSplice" x]
+    | hostExpr
+  buildExpr =
+    | space '>'                                -> ["IndentBuilder"]
+    | space '<'                                -> ["DedentBuilder"]
+    | hostExpr
+  string    = '"'  (!'"'  innerChar)*:xs '"'   -> join(xs)
+  charseq   = '\'' (!'\'' innerChar)*:xs '\''  -> join(xs)
+  char      = '\''  !'\'' innerChar  :x  '\''  -> x
+  innerChar = '\\' escape | .
+  escape    = '\\' -> "\\" | '\'' -> "'"
+            | '"'  -> "\"" | 'n'  -> "\n"
+  name      = space nameStart:x nameChar*:xs   -> join([x ~xs])
+  nameStart = 'a'-'z' | 'A'-'Z'
+  nameChar  = 'a'-'z' | 'A'-'Z' | '0'-'9'
+  space     = (' ' | '\n')*
+}
