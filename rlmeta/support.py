@@ -136,15 +136,35 @@ class _Builder(object):
 
 class _Output(object):
 
-    def __init__(self):
-        self.value = ""
-        self.indentation = 0
+    def __init__(self, parent=None, indentation=0):
+        self.parts = []
+        self.forks = {}
+        self.parent = parent
+        self.indentation = indentation
+
+    @property
+    def value(self):
+        return "".join(str(x) for x in self.parts)
+
+    def __str__(self):
+        return self.value
+
+    def fork(self, name):
+        output = _Output(self, self.indentation)
+        self.forks[name] = output
+        self.parts.append(output)
+
+    def get(self, name):
+        if name in self.forks:
+            return self.forks[name]
+        else:
+            self.parent.get(name)
 
     def write(self, value):
         for ch in value:
-            if self.value and ch != "\n" and self.value[-1] == "\n":
-                self.value += "    "*self.indentation
-            self.value += ch
+            if (not self.parts or self.parts[-1] == "\n" or isinstance(self.parts[-1], _Output)) and ch != "\n":
+                self.parts.append("    "*self.indentation)
+            self.parts.append(ch)
 
 class _ListBuilder(_Builder):
 
@@ -162,6 +182,23 @@ class _AtomBuilder(_Builder):
 
     def write(self, output):
         output.write(str(self.atom))
+
+class _ForkBuilder(_Builder):
+
+    def __init__(self, name):
+        self.name = name
+
+    def write(self, output):
+        output.fork(self.name)
+
+class _AtBuilder(_Builder):
+
+    def __init__(self, name, builder):
+        self.name = name
+        self.builder = builder
+
+    def write(self, output):
+        self.builder.write(output.get(self.name))
 
 class _IndentBuilder(_Builder):
 

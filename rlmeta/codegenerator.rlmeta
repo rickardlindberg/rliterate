@@ -6,6 +6,8 @@ CodeGenerator {
     | ["String" .:x]            -> { repr(x)                                             }
     | ["List" astList:x]        -> { x                                                   }
     | ["Builder" astItems:x]    -> { "_Builder.create([" x "])"                          }
+    | ["At" .:x astItems:y]     -> { "_AtBuilder(" repr(x) ", _Builder.create([" y "]))" }
+    | ["Fork" .:x]              -> { "_ForkBuilder(" repr(x) ")"                         }
     | ["IndentBuilder"]         -> { "_IndentBuilder()"                                  }
     | ["DedentBuilder"]         -> { "_DedentBuilder()"                                  }
     | ["FnCall" .:x astItems:y] -> { x "(" y ")"                                         }

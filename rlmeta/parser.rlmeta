@@ -35,6 +35,8 @@ Parser {
     | space '~' hostExpr:x                     -> ["ListItemSplice" x]
     | hostExpr
   buildExpr =
+    | space '#' name:x                         -> ["Fork" x]
+    | space '@' name:x space '{' buildExpr*:xs space '}'     -> ["At" x ~xs]
     | space '>'                                -> ["IndentBuilder"]
     | space '<'                                -> ["DedentBuilder"]
     | hostExpr
