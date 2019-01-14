@@ -120,6 +120,16 @@ class _SemanticAction(object):
 
 class _Builder(object):
 
+    def __init__(self):
+        self.parent = None
+        self.labels = {}
+
+    def lookup(self, name):
+        if name in self.labels:
+            return self.labels[name]
+        else:
+            return self.parent.lookup(name)
+
     def build_string(self):
         output = _Output()
         self.write(output)
@@ -137,10 +147,19 @@ class _Builder(object):
 class _Output(object):
 
     def __init__(self, parent=None, indentation=0):
+        self.label_counter = 0
         self.parts = []
         self.forks = {}
         self.parent = parent
         self.indentation = indentation
+
+    def new_label(self):
+        if self.parent is None:
+            label = "_label{}".format(self.label_counter)
+            self.label_counter += 1
+            return label
+        else:
+            return self.parent.new_label()
 
     @property
     def value(self):
@@ -169,7 +188,10 @@ class _Output(object):
 class _ListBuilder(_Builder):
 
     def __init__(self, builders):
+        _Builder.__init__(self)
         self.builders = builders
+        for builder in self.builders:
+            builder.parent = self
 
     def write(self, output):
         for builder in self.builders:
@@ -178,14 +200,34 @@ class _ListBuilder(_Builder):
 class _AtomBuilder(_Builder):
 
     def __init__(self, atom):
+        _Builder.__init__(self)
         self.atom = atom
 
     def write(self, output):
         output.write(str(self.atom))
 
+class _CreateLabel(_Builder):
+
+    def __init__(self, name):
+        _Builder.__init__(self)
+        self.name = name
+
+    def write(self, output):
+        self.parent.labels[self.name] = output.new_label()
+
+class _UseLabel(_Builder):
+
+    def __init__(self, name):
+        _Builder.__init__(self)
+        self.name = name
+
+    def write(self, output):
+        output.write(self.lookup(self.name))
+
 class _ForkBuilder(_Builder):
 
     def __init__(self, name):
+        _Builder.__init__(self)
         self.name = name
 
     def write(self, output):
@@ -194,8 +236,10 @@ class _ForkBuilder(_Builder):
 class _AtBuilder(_Builder):
 
     def __init__(self, name, builder):
+        _Builder.__init__(self)
         self.name = name
         self.builder = builder
+        self.builder.parent = self
 
     def write(self, output):
         self.builder.write(output.get(self.name))

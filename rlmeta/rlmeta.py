@@ -1,6 +1,6 @@
 import sys
 
-SUPPORT = 'class _Grammar(object):\n\n    def _or(self, matchers):\n        original_stream = self._stream\n        for matcher in matchers:\n            try:\n                return matcher()\n            except _MatchError:\n                self._stream = original_stream\n        original_stream.fail("no choice matched")\n\n    def _and(self, matchers):\n        result = None\n        for matcher in matchers:\n            result = matcher()\n        return result\n\n    def _star(self, matcher):\n        result = []\n        while True:\n            original_stream = self._stream\n            try:\n                result.append(matcher())\n            except _MatchError:\n                self._stream = original_stream\n                return _SemanticAction(lambda: [x.eval() for x in result])\n\n    def _not(self, matcher):\n        original_stream = self._stream\n        try:\n            matcher()\n        except _MatchError:\n            return _SemanticAction(lambda: None)\n        else:\n            original_stream.fail("match found")\n        finally:\n            self._stream = original_stream\n\n    def _match_rule(self, rule_name):\n        key = (rule_name, self._stream.position())\n        if key in self._memo:\n            result, _, self._stream = self._memo[key]\n        else:\n            start = self._stream\n            result = getattr(self, "_rule_{}".format(rule_name))()\n            end = self._stream\n            self._memo[key] = (result, start, end)\n        return result\n\n    def _match_range(self, start, end):\n        original_stream = self._stream\n        next_objext, self._stream = self._stream.next()\n        if next_objext >= start and next_objext <= end:\n            return _SemanticAction(lambda: next_objext)\n        else:\n            original_stream.fail(\n                "expected range {!r}-{!r} but found {!r}".format(start, end, next_objext)\n            )\n\n    def _match_string(self, string):\n        original_stream = self._stream\n        next_object, self._stream = self._stream.next()\n        if next_object == string:\n            return _SemanticAction(lambda: string)\n        else:\n            original_stream.fail(\n                "expected {!r} but found {!r}".format(string, next_object)\n            )\n\n    def _match_charseq(self, charseq):\n        for char in charseq:\n            original_stream = self._stream\n            next_object, self._stream = self._stream.next()\n            if next_object != char:\n                original_stream.fail(\n                    "expected {!r} but found {!r}".format(char, next_object)\n                )\n        return _SemanticAction(lambda: charseq)\n\n    def _match_any(self):\n        next_object, self._stream = self._stream.next()\n        return _SemanticAction(lambda: next_object)\n\n    def _match_list(self, matcher):\n        original_stream = self._stream\n        next_object, next_stream = self._stream.next()\n        if isinstance(next_object, list):\n            self._stream = self._stream.nested(next_object)\n            matcher()\n            if self._stream.is_at_end():\n                self._stream = next_stream\n                return _SemanticAction(lambda: next_object)\n        original_stream.fail("list match failed")\n\n    def run(self, rule_name, input_object):\n        self._memo = _Memo()\n        self._stream = _Stream.from_object(self._memo, input_object)\n        result = self._match_rule(rule_name).eval()\n        if isinstance(result, _Builder):\n            return result.build_string()\n        else:\n            return result\n\nclass _Vars(dict):\n\n    def bind(self, name, value):\n        self[name] = value\n        return value\n\n    def lookup(self, name):\n        return self[name]\n\nclass _SemanticAction(object):\n\n    def __init__(self, fn):\n        self.fn = fn\n\n    def eval(self):\n        return self.fn()\n\nclass _Builder(object):\n\n    def build_string(self):\n        output = _Output()\n        self.write(output)\n        return output.value\n\n    @classmethod\n    def create(self, item):\n        if isinstance(item, _Builder):\n            return item\n        elif isinstance(item, list):\n            return _ListBuilder([_Builder.create(x) for x in item])\n        else:\n            return _AtomBuilder(item)\n\nclass _Output(object):\n\n    def __init__(self, parent=None, indentation=0):\n        self.parts = []\n        self.forks = {}\n        self.parent = parent\n        self.indentation = indentation\n\n    @property\n    def value(self):\n        return "".join(str(x) for x in self.parts)\n\n    def __str__(self):\n        return self.value\n\n    def fork(self, name):\n        output = _Output(self, self.indentation)\n        self.forks[name] = output\n        self.parts.append(output)\n\n    def get(self, name):\n        if name in self.forks:\n            return self.forks[name]\n        else:\n            self.parent.get(name)\n\n    def write(self, value):\n        for ch in value:\n            if (not self.parts or self.parts[-1] == "\\n" or isinstance(self.parts[-1], _Output)) and ch != "\\n":\n                self.parts.append("    "*self.indentation)\n            self.parts.append(ch)\n\nclass _ListBuilder(_Builder):\n\n    def __init__(self, builders):\n        self.builders = builders\n\n    def write(self, output):\n        for builder in self.builders:\n            builder.write(output)\n\nclass _AtomBuilder(_Builder):\n\n    def __init__(self, atom):\n        self.atom = atom\n\n    def write(self, output):\n        output.write(str(self.atom))\n\nclass _ForkBuilder(_Builder):\n\n    def __init__(self, name):\n        self.name = name\n\n    def write(self, output):\n        output.fork(self.name)\n\nclass _AtBuilder(_Builder):\n\n    def __init__(self, name, builder):\n        self.name = name\n        self.builder = builder\n\n    def write(self, output):\n        self.builder.write(output.get(self.name))\n\nclass _IndentBuilder(_Builder):\n\n    def write(self, output):\n        output.indentation += 1\n\nclass _DedentBuilder(_Builder):\n\n    def write(self, output):\n        output.indentation -= 1\n\nclass _Memo(dict):\n\n    def __init__(self):\n        dict.__init__(self)\n        self._latest_stream = _ObjectStream(self, [], position=-1)\n        self._latest_message = ""\n\n    def describe(self):\n        items = []\n        for (rule_name, _), (_, start, end) in self.items():\n            if end > start:\n                items.append((rule_name, start, end))\n        items.sort(key=lambda item: (item[2].position(), item[1].position()))\n        message = []\n        for item in items:\n            message.append("matched {: <20} {} -> {}\\n".format(*item))\n        message.append("\\n")\n        message.append("ERROR: {}: {}\\n".format(\n            self._latest_stream,\n            self._latest_message\n        ))\n        return "".join(message)\n\n    def fail(self, stream, message):\n        if stream.position() >= self._latest_stream.position():\n            self._latest_stream = stream\n            self._latest_message = message\n        raise _MatchError(self)\n\nclass _MatchError(Exception):\n\n    def __init__(self, memo):\n        Exception.__init__(self)\n        self._memo = memo\n\n    def describe(self):\n        return self._memo.describe()\n\nclass _Stream(object):\n\n    @classmethod\n    def from_object(cls, memo, input_object):\n        if isinstance(input_object, basestring):\n            return _CharStream(memo, list(input_object))\n        else:\n            return _ObjectStream(memo, [input_object])\n\n    def __init__(self, memo, objects):\n        self._memo = memo\n        self._objects = objects\n\n    def fail(self, message):\n        self._memo.fail(self, message)\n\n    def next(self):\n        if self.is_at_end():\n            self.fail("not eof")\n        next_object = self._objects[0]\n        return (\n            next_object,\n            self._advance(next_object, self._objects[1:]),\n        )\n\n    def is_at_end(self):\n        return len(self._objects) == 0\n\nclass _CharStream(_Stream):\n\n    def __init__(self, memo, objects, line=1, column=1):\n        _Stream.__init__(self, memo, objects)\n        self._line = line\n        self._column = column\n\n    def position(self):\n        return (self._line, self._column)\n\n    def _advance(self, next_object, objects):\n        if next_object == "\\n":\n            return _CharStream(self._memo, objects, self._line+1, 1)\n        else:\n            return _CharStream(self._memo, objects, self._line, self._column+1)\n\n    def __str__(self):\n        return "L{:03d}:C{:03d}".format(self._line, self._column)\n\nclass _ObjectStream(_Stream):\n\n    def __init__(self, memo, objects, parent=(), position=0):\n        _Stream.__init__(self, memo, objects)\n        self._parent = parent\n        self._position = position\n\n    def position(self):\n        return self._parent + (self._position,)\n\n    def nested(self, input_object):\n        return _ObjectStream(self._memo, input_object, self._parent+(self._position,))\n\n    def _advance(self, next_object, objects):\n        return _ObjectStream(self._memo, objects, self._parent, self._position+1)\n\n    def __str__(self):\n        return "[{}]".format(", ".join(str(x) for x in self.position()))\n'
+SUPPORT = 'class _Grammar(object):\n\n    def _or(self, matchers):\n        original_stream = self._stream\n        for matcher in matchers:\n            try:\n                return matcher()\n            except _MatchError:\n                self._stream = original_stream\n        original_stream.fail("no choice matched")\n\n    def _and(self, matchers):\n        result = None\n        for matcher in matchers:\n            result = matcher()\n        return result\n\n    def _star(self, matcher):\n        result = []\n        while True:\n            original_stream = self._stream\n            try:\n                result.append(matcher())\n            except _MatchError:\n                self._stream = original_stream\n                return _SemanticAction(lambda: [x.eval() for x in result])\n\n    def _not(self, matcher):\n        original_stream = self._stream\n        try:\n            matcher()\n        except _MatchError:\n            return _SemanticAction(lambda: None)\n        else:\n            original_stream.fail("match found")\n        finally:\n            self._stream = original_stream\n\n    def _match_rule(self, rule_name):\n        key = (rule_name, self._stream.position())\n        if key in self._memo:\n            result, _, self._stream = self._memo[key]\n        else:\n            start = self._stream\n            result = getattr(self, "_rule_{}".format(rule_name))()\n            end = self._stream\n            self._memo[key] = (result, start, end)\n        return result\n\n    def _match_range(self, start, end):\n        original_stream = self._stream\n        next_objext, self._stream = self._stream.next()\n        if next_objext >= start and next_objext <= end:\n            return _SemanticAction(lambda: next_objext)\n        else:\n            original_stream.fail(\n                "expected range {!r}-{!r} but found {!r}".format(start, end, next_objext)\n            )\n\n    def _match_string(self, string):\n        original_stream = self._stream\n        next_object, self._stream = self._stream.next()\n        if next_object == string:\n            return _SemanticAction(lambda: string)\n        else:\n            original_stream.fail(\n                "expected {!r} but found {!r}".format(string, next_object)\n            )\n\n    def _match_charseq(self, charseq):\n        for char in charseq:\n            original_stream = self._stream\n            next_object, self._stream = self._stream.next()\n            if next_object != char:\n                original_stream.fail(\n                    "expected {!r} but found {!r}".format(char, next_object)\n                )\n        return _SemanticAction(lambda: charseq)\n\n    def _match_any(self):\n        next_object, self._stream = self._stream.next()\n        return _SemanticAction(lambda: next_object)\n\n    def _match_list(self, matcher):\n        original_stream = self._stream\n        next_object, next_stream = self._stream.next()\n        if isinstance(next_object, list):\n            self._stream = self._stream.nested(next_object)\n            matcher()\n            if self._stream.is_at_end():\n                self._stream = next_stream\n                return _SemanticAction(lambda: next_object)\n        original_stream.fail("list match failed")\n\n    def run(self, rule_name, input_object):\n        self._memo = _Memo()\n        self._stream = _Stream.from_object(self._memo, input_object)\n        result = self._match_rule(rule_name).eval()\n        if isinstance(result, _Builder):\n            return result.build_string()\n        else:\n            return result\n\nclass _Vars(dict):\n\n    def bind(self, name, value):\n        self[name] = value\n        return value\n\n    def lookup(self, name):\n        return self[name]\n\nclass _SemanticAction(object):\n\n    def __init__(self, fn):\n        self.fn = fn\n\n    def eval(self):\n        return self.fn()\n\nclass _Builder(object):\n\n    def __init__(self):\n        self.parent = None\n        self.labels = {}\n\n    def lookup(self, name):\n        if name in self.labels:\n            return self.labels[name]\n        else:\n            return self.parent.lookup(name)\n\n    def build_string(self):\n        output = _Output()\n        self.write(output)\n        return output.value\n\n    @classmethod\n    def create(self, item):\n        if isinstance(item, _Builder):\n            return item\n        elif isinstance(item, list):\n            return _ListBuilder([_Builder.create(x) for x in item])\n        else:\n            return _AtomBuilder(item)\n\nclass _Output(object):\n\n    def __init__(self, parent=None, indentation=0):\n        self.label_counter = 0\n        self.parts = []\n        self.forks = {}\n        self.parent = parent\n        self.indentation = indentation\n\n    def new_label(self):\n        if self.parent is None:\n            label = "_label{}".format(self.label_counter)\n            self.label_counter += 1\n            return label\n        else:\n            return self.parent.new_label()\n\n    @property\n    def value(self):\n        return "".join(str(x) for x in self.parts)\n\n    def __str__(self):\n        return self.value\n\n    def fork(self, name):\n        output = _Output(self, self.indentation)\n        self.forks[name] = output\n        self.parts.append(output)\n\n    def get(self, name):\n        if name in self.forks:\n            return self.forks[name]\n        else:\n            self.parent.get(name)\n\n    def write(self, value):\n        for ch in value:\n            if (not self.parts or self.parts[-1] == "\\n" or isinstance(self.parts[-1], _Output)) and ch != "\\n":\n                self.parts.append("    "*self.indentation)\n            self.parts.append(ch)\n\nclass _ListBuilder(_Builder):\n\n    def __init__(self, builders):\n        _Builder.__init__(self)\n        self.builders = builders\n        for builder in self.builders:\n            builder.parent = self\n\n    def write(self, output):\n        for builder in self.builders:\n            builder.write(output)\n\nclass _AtomBuilder(_Builder):\n\n    def __init__(self, atom):\n        _Builder.__init__(self)\n        self.atom = atom\n\n    def write(self, output):\n        output.write(str(self.atom))\n\nclass _CreateLabel(_Builder):\n\n    def __init__(self, name):\n        _Builder.__init__(self)\n        self.name = name\n\n    def write(self, output):\n        self.parent.labels[self.name] = output.new_label()\n\nclass _UseLabel(_Builder):\n\n    def __init__(self, name):\n        _Builder.__init__(self)\n        self.name = name\n\n    def write(self, output):\n        output.write(self.lookup(self.name))\n\nclass _ForkBuilder(_Builder):\n\n    def __init__(self, name):\n        _Builder.__init__(self)\n        self.name = name\n\n    def write(self, output):\n        output.fork(self.name)\n\nclass _AtBuilder(_Builder):\n\n    def __init__(self, name, builder):\n        _Builder.__init__(self)\n        self.name = name\n        self.builder = builder\n        self.builder.parent = self\n\n    def write(self, output):\n        self.builder.write(output.get(self.name))\n\nclass _IndentBuilder(_Builder):\n\n    def write(self, output):\n        output.indentation += 1\n\nclass _DedentBuilder(_Builder):\n\n    def write(self, output):\n        output.indentation -= 1\n\nclass _Memo(dict):\n\n    def __init__(self):\n        dict.__init__(self)\n        self._latest_stream = _ObjectStream(self, [], position=-1)\n        self._latest_message = ""\n\n    def describe(self):\n        items = []\n        for (rule_name, _), (_, start, end) in self.items():\n            if end > start:\n                items.append((rule_name, start, end))\n        items.sort(key=lambda item: (item[2].position(), item[1].position()))\n        message = []\n        for item in items:\n            message.append("matched {: <20} {} -> {}\\n".format(*item))\n        message.append("\\n")\n        message.append("ERROR: {}: {}\\n".format(\n            self._latest_stream,\n            self._latest_message\n        ))\n        return "".join(message)\n\n    def fail(self, stream, message):\n        if stream.position() >= self._latest_stream.position():\n            self._latest_stream = stream\n            self._latest_message = message\n        raise _MatchError(self)\n\nclass _MatchError(Exception):\n\n    def __init__(self, memo):\n        Exception.__init__(self)\n        self._memo = memo\n\n    def describe(self):\n        return self._memo.describe()\n\nclass _Stream(object):\n\n    @classmethod\n    def from_object(cls, memo, input_object):\n        if isinstance(input_object, basestring):\n            return _CharStream(memo, list(input_object))\n        else:\n            return _ObjectStream(memo, [input_object])\n\n    def __init__(self, memo, objects):\n        self._memo = memo\n        self._objects = objects\n\n    def fail(self, message):\n        self._memo.fail(self, message)\n\n    def next(self):\n        if self.is_at_end():\n            self.fail("not eof")\n        next_object = self._objects[0]\n        return (\n            next_object,\n            self._advance(next_object, self._objects[1:]),\n        )\n\n    def is_at_end(self):\n        return len(self._objects) == 0\n\nclass _CharStream(_Stream):\n\n    def __init__(self, memo, objects, line=1, column=1):\n        _Stream.__init__(self, memo, objects)\n        self._line = line\n        self._column = column\n\n    def position(self):\n        return (self._line, self._column)\n\n    def _advance(self, next_object, objects):\n        if next_object == "\\n":\n            return _CharStream(self._memo, objects, self._line+1, 1)\n        else:\n            return _CharStream(self._memo, objects, self._line, self._column+1)\n\n    def __str__(self):\n        return "L{:03d}:C{:03d}".format(self._line, self._column)\n\nclass _ObjectStream(_Stream):\n\n    def __init__(self, memo, objects, parent=(), position=0):\n        _Stream.__init__(self, memo, objects)\n        self._parent = parent\n        self._position = position\n\n    def position(self):\n        return self._parent + (self._position,)\n\n    def nested(self, input_object):\n        return _ObjectStream(self._memo, input_object, self._parent+(self._position,))\n\n    def _advance(self, next_object, objects):\n        return _ObjectStream(self._memo, objects, self._parent, self._position+1)\n\n    def __str__(self):\n        return "[{}]".format(", ".join(str(x) for x in self.position()))\n'
 
 class _Grammar(object):
 
@@ -124,6 +124,16 @@ class _SemanticAction(object):
 
 class _Builder(object):
 
+    def __init__(self):
+        self.parent = None
+        self.labels = {}
+
+    def lookup(self, name):
+        if name in self.labels:
+            return self.labels[name]
+        else:
+            return self.parent.lookup(name)
+
     def build_string(self):
         output = _Output()
         self.write(output)
@@ -141,10 +151,19 @@ class _Builder(object):
 class _Output(object):
 
     def __init__(self, parent=None, indentation=0):
+        self.label_counter = 0
         self.parts = []
         self.forks = {}
         self.parent = parent
         self.indentation = indentation
+
+    def new_label(self):
+        if self.parent is None:
+            label = "_label{}".format(self.label_counter)
+            self.label_counter += 1
+            return label
+        else:
+            return self.parent.new_label()
 
     @property
     def value(self):
@@ -173,7 +192,10 @@ class _Output(object):
 class _ListBuilder(_Builder):
 
     def __init__(self, builders):
+        _Builder.__init__(self)
         self.builders = builders
+        for builder in self.builders:
+            builder.parent = self
 
     def write(self, output):
         for builder in self.builders:
@@ -182,14 +204,34 @@ class _ListBuilder(_Builder):
 class _AtomBuilder(_Builder):
 
     def __init__(self, atom):
+        _Builder.__init__(self)
         self.atom = atom
 
     def write(self, output):
         output.write(str(self.atom))
 
+class _CreateLabel(_Builder):
+
+    def __init__(self, name):
+        _Builder.__init__(self)
+        self.name = name
+
+    def write(self, output):
+        self.parent.labels[self.name] = output.new_label()
+
+class _UseLabel(_Builder):
+
+    def __init__(self, name):
+        _Builder.__init__(self)
+        self.name = name
+
+    def write(self, output):
+        output.write(self.lookup(self.name))
+
 class _ForkBuilder(_Builder):
 
     def __init__(self, name):
+        _Builder.__init__(self)
         self.name = name
 
     def write(self, output):
@@ -198,8 +240,10 @@ class _ForkBuilder(_Builder):
 class _AtBuilder(_Builder):
 
     def __init__(self, name, builder):
+        _Builder.__init__(self)
         self.name = name
         self.builder = builder
+        self.builder.parent = self
 
     def write(self, output):
         self.builder.write(output.get(self.name))
@@ -1035,6 +1079,50 @@ class Parser(_Grammar):
                                     self._match_rule('space')
                                 ),
                                 (lambda:
+                                    self._match_charseq('%%')
+                                ),
+                                (lambda:
+                                    _vars.bind('x', (lambda:
+                                        self._match_rule('name')
+                                    )())
+                                ),
+                                (lambda:
+                                    _SemanticAction(lambda: (['CreateLabel']+[_vars.lookup('x').eval()]+[]))
+                                ),
+                            ])
+                        )()
+                    )(_Vars())
+                ),
+                (lambda:
+                    (lambda _vars:
+                        (lambda:
+                            self._and([
+                                (lambda:
+                                    self._match_rule('space')
+                                ),
+                                (lambda:
+                                    self._match_charseq('%')
+                                ),
+                                (lambda:
+                                    _vars.bind('x', (lambda:
+                                        self._match_rule('name')
+                                    )())
+                                ),
+                                (lambda:
+                                    _SemanticAction(lambda: (['UseLabel']+[_vars.lookup('x').eval()]+[]))
+                                ),
+                            ])
+                        )()
+                    )(_Vars())
+                ),
+                (lambda:
+                    (lambda _vars:
+                        (lambda:
+                            self._and([
+                                (lambda:
+                                    self._match_rule('space')
+                                ),
+                                (lambda:
                                     self._match_charseq('@')
                                 ),
                                 (lambda:
@@ -1720,6 +1808,64 @@ class CodeGenerator(_Grammar):
                                 (lambda:
                                     _SemanticAction(lambda: _Builder.create([
                                         '_ForkBuilder(',
+                                        repr(
+                                            _vars.lookup('x').eval(),
+                                        ),
+                                        ')',
+                                    ]))
+                                ),
+                            ])
+                        )()
+                    )(_Vars())
+                ),
+                (lambda:
+                    (lambda _vars:
+                        (lambda:
+                            self._and([
+                                (lambda:
+                                    self._match_list((lambda:
+                                        self._and([
+                                            (lambda:
+                                                self._match_string('CreateLabel')
+                                            ),
+                                            (lambda:
+                                                _vars.bind('x', self._match_any())
+                                            ),
+                                        ])
+                                    ))
+                                ),
+                                (lambda:
+                                    _SemanticAction(lambda: _Builder.create([
+                                        '_CreateLabel(',
+                                        repr(
+                                            _vars.lookup('x').eval(),
+                                        ),
+                                        ')',
+                                    ]))
+                                ),
+                            ])
+                        )()
+                    )(_Vars())
+                ),
+                (lambda:
+                    (lambda _vars:
+                        (lambda:
+                            self._and([
+                                (lambda:
+                                    self._match_list((lambda:
+                                        self._and([
+                                            (lambda:
+                                                self._match_string('UseLabel')
+                                            ),
+                                            (lambda:
+                                                _vars.bind('x', self._match_any())
+                                            ),
+                                        ])
+                                    ))
+                                ),
+                                (lambda:
+                                    _SemanticAction(lambda: _Builder.create([
+                                        '_UseLabel(',
                                         repr(
                                             _vars.lookup('x').eval(),
                                         ),

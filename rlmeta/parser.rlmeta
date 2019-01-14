@@ -36,6 +36,8 @@ Parser {
     | hostExpr
   buildExpr =
     | space '#' name:x                         -> ["Fork" x]
+    | space '%%' name:x                        -> ["CreateLabel" x]
+    | space '%' name:x                         -> ["UseLabel" x]
     | space '@' name:x space '{' buildExpr*:xs space '}'     -> ["At" x ~xs]
     | space '>'                                -> ["IndentBuilder"]
     | space '<'                                -> ["DedentBuilder"]
