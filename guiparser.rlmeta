@@ -1,0 +1,25 @@
+GuiParser {
+  file        = widget*:xs ws !. -> xs
+  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> ["panel" x y]
+  body        = variable*:xs box:y -> ["body" xs y]
+  variable    = ws '#' name
+  box         = ws 'HBox' ws '{' component*:xs ws '}' -> ["hbox" ~xs]
+  component   =
+    | box
+    | name:x ws '(' parameter*:xs ws ')' -> ["component" x ~xs]
+  parameter   = name:x ws '=' expr:y -> ["parameter" x y]
+  expr        =
+    | expr1:x (ws '.' expr1)*:xs -> ["get" x ~xs]
+  expr1       =
+    | expr2:x ws '(' expr*:xs ws ')' -> ["call" x ~xs]
+    | expr2
+  expr2       =
+    | ws '$' name:x -> ["member" x]
+    | name:x -> ["name" x]
+  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])
+  nameStart   = alpha | '_'
+  nameChar    = alphanum | '_'
+  alpha       = 'a'-'z' | 'A'-'Z'
+  alphanum    = alpha | '0'-'9'
+  ws          = (' ' | '\n')*
+}

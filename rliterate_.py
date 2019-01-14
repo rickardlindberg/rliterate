@@ -186,25 +186,7 @@ class GuiFrameworkBase(object):
         if self.did_change("tooltip"):
             self.SetTooltip(self.values.get("tooltip", None))
 
-class TitleGui(wx.Panel, GuiFrameworkBase):
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
-        GuiFrameworkBase.__init__(self, **kwargs)
-    def _create_gui(self):
-        self._label0 = wx.BoxSizer(wx.HORIZONTAL)
-        self._label1 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
-        self._label0.Add(self._label1)
-    def _update_gui(self):
-        self._label1.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
-    @property
-    def project(self):
-        return self.values["project"]
-    @property
-    def page(self):
-        return self.values["page"]
-    @property
-    def selection(self):
-        return self.values["selection"]
+### INSERT GENERATED GUI CLASSES HERE ###
 class Editable(VerticalBasePanel):
 
     @property

@@ -1,0 +1,16 @@
+panel TitleGui {
+    #project
+    #page
+    #selection
+    HBox {
+        TextProjectionEditor(
+            handle_key = $_handle_key
+            project    = $project
+            selection  = $selection
+            characters = $_get_characters()
+            max_width  = $project.theme.page_body_width
+            font       = $_create_font()
+            tooltip    = $page.full_title
+        )
+    }
+}

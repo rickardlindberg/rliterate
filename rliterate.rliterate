@@ -1222,7 +1222,7 @@
 {
 "chunkpath":[],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1391,7 +1391,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1424,7 +1424,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1457,7 +1457,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1499,7 +1499,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1548,7 +1548,7 @@
 "constants"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1570,7 +1570,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1604,7 +1604,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1692,7 +1692,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1863,7 +1863,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1905,7 +1905,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1931,7 +1931,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -1989,7 +1989,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2054,7 +2054,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2096,7 +2096,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2138,7 +2138,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2196,7 +2196,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2259,7 +2259,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2285,7 +2285,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2334,7 +2334,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2376,7 +2376,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2474,7 +2474,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2500,7 +2500,7 @@
 "Page"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2670,7 +2670,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2767,7 +2767,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2815,7 +2815,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2886,7 +2886,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2909,7 +2909,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -2958,7 +2958,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3089,7 +3089,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3122,7 +3122,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3138,7 +3138,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3155,7 +3155,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3236,7 +3236,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3276,7 +3276,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3307,7 +3307,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3330,7 +3330,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3361,7 +3361,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3442,7 +3442,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3486,7 +3486,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3521,7 +3521,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3594,7 +3594,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3635,7 +3635,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3668,7 +3668,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3725,7 +3725,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3750,7 +3750,7 @@
 "CodeParagraph"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3780,7 +3780,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3810,7 +3810,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3930,7 +3930,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -3986,7 +3986,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4083,7 +4083,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4365,7 +4365,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4388,7 +4388,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4411,7 +4411,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4434,7 +4434,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4474,7 +4474,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4538,7 +4538,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4568,7 +4568,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4633,7 +4633,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4697,7 +4697,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4753,7 +4753,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -4786,7 +4786,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5104,7 +5104,7 @@
 "legacy handlers"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5121,7 +5121,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5153,7 +5153,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5217,7 +5217,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5370,7 +5370,7 @@
 "legacy handlers"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5387,7 +5387,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5437,7 +5437,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5479,7 +5479,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5596,7 +5596,7 @@
 "legacy handlers"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5613,7 +5613,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5704,7 +5704,7 @@
 "Document"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5756,7 +5756,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5797,7 +5797,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5891,7 +5891,7 @@
 "__init__"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5917,7 +5917,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5951,7 +5951,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -5984,7 +5984,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6049,7 +6049,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6144,7 +6144,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6180,7 +6180,7 @@
 "__init__"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6206,7 +6206,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6241,7 +6241,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6333,7 +6333,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6360,7 +6360,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6404,7 +6404,7 @@
 "__init__"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6421,7 +6421,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6471,7 +6471,7 @@
 "__init__"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6496,7 +6496,7 @@
 "Project"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6560,7 +6560,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6583,7 +6583,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6670,7 +6670,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6867,7 +6867,7 @@
 "handle legacy settings dict"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6899,7 +6899,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -6985,7 +6985,7 @@
 "Layout"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7028,7 +7028,7 @@
 "Layout"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7064,7 +7064,7 @@
 "__init__"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7081,7 +7081,7 @@
 "Layout"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7122,7 +7122,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7154,7 +7154,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7214,7 +7214,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7517,7 +7517,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7633,7 +7633,7 @@
 "MainFrame"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7661,7 +7661,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7688,7 +7688,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7722,7 +7722,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7758,7 +7758,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7794,7 +7794,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7835,7 +7835,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7871,7 +7871,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7899,7 +7899,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7924,7 +7924,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7960,7 +7960,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -7988,7 +7988,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8013,7 +8013,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8040,7 +8040,7 @@
 "init tools"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8107,7 +8107,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8151,7 +8151,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8190,7 +8190,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8220,7 +8220,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8301,7 +8301,7 @@
 "TableOfContents"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8347,7 +8347,7 @@
 "TableOfContents"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8381,7 +8381,7 @@
 "TableOfContents"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8559,7 +8559,7 @@
 "TableOfContents"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8608,7 +8608,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8748,7 +8748,7 @@
 "_create_gui"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8773,7 +8773,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8874,7 +8874,7 @@
 "TableOfContents"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8904,7 +8904,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8954,7 +8954,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -8996,7 +8996,7 @@
 "TableOfContentsRow"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9070,7 +9070,7 @@
 "TableOfContentsRow"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9127,7 +9127,7 @@
 "TableOfContentsRow"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9249,7 +9249,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9291,7 +9291,7 @@
 "TableOfContentsButton"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9349,7 +9349,7 @@
 "TableOfContentsButton"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9389,7 +9389,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9430,7 +9430,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9502,7 +9502,7 @@
 "Workspace"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9548,7 +9548,7 @@
 "Workspace"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9574,7 +9574,7 @@
 "Workspace"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9600,7 +9600,7 @@
 "Workspace"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9626,7 +9626,7 @@
 "Workspace"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9659,7 +9659,7 @@
 "Workspace"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9793,7 +9793,7 @@
 "_create_gui"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9810,7 +9810,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9886,7 +9886,7 @@
 "Workspace"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -9942,7 +9942,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10009,7 +10009,7 @@
 "Column"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10043,7 +10043,7 @@
 "Column"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10244,7 +10244,7 @@
 "Column"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10268,7 +10268,7 @@
 "Column"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10332,7 +10332,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10407,7 +10407,7 @@
 "PageContainer"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10505,7 +10505,7 @@
 "PageContainer"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10546,7 +10546,7 @@
 "PageContainer"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10578,7 +10578,7 @@
 "PageContainer"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10635,7 +10635,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10677,7 +10677,7 @@
 "PageContainer"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -10816,7 +10816,7 @@
 "PagePanel"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11059,7 +11059,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11140,7 +11140,7 @@
 "PagePanel"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11173,7 +11173,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11221,7 +11221,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11255,7 +11255,7 @@
 "PagePanel"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11318,11 +11318,26 @@
 "type":"text"
 },
 {
+"chunkpath":[],
+"filepath":[
+"widgets.gui"
+],
+"fragments":[
+{
+"text":"panel TitleGui {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor(\n            handle_key = $_handle_key\n            project    = $project\n            selection  = $selection\n            characters = $_get_characters()\n            max_width  = $project.theme.page_body_width\n            font       = $_create_font()\n            tooltip    = $page.full_title\n        )\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"b069cd5fab6541a0a3c5b95fe1ec4b09",
+"language":"",
+"type":"code"
+},
+{
 "chunkpath":[
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11364,7 +11379,7 @@
 "Title"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11390,7 +11405,7 @@
 "Title"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11416,7 +11431,7 @@
 "Title"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11442,7 +11457,7 @@
 "Title"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11564,7 +11579,7 @@
 "Title"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11670,7 +11685,7 @@
 "Title"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11688,7 +11703,7 @@
 "Title"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11733,7 +11748,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11800,7 +11815,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11872,7 +11887,7 @@
 "constants"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11888,7 +11903,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11904,7 +11919,7 @@
 "constants"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11920,7 +11935,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -11946,7 +11961,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12003,7 +12018,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12077,7 +12092,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12174,7 +12189,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12208,7 +12223,7 @@
 "CodeView"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12308,7 +12323,7 @@
 "CodeView"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12367,7 +12382,7 @@
 "CodeView"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12444,7 +12459,7 @@
 "CodeView"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12587,7 +12602,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12637,7 +12652,7 @@
 "CodeEditor"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12720,7 +12735,7 @@
 "CodeEditor"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12747,7 +12762,7 @@
 "CodeEditor"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12778,7 +12793,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12869,7 +12884,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -12957,7 +12972,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13101,7 +13116,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13125,7 +13140,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13141,7 +13156,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13164,7 +13179,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13277,7 +13292,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13452,7 +13467,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13493,7 +13508,7 @@
 "ParagraphBase"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13558,7 +13573,7 @@
 "constants"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13574,7 +13589,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13682,7 +13697,7 @@
 "base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13868,7 +13883,7 @@
 "Editable"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13892,7 +13907,7 @@
 "constants"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13908,7 +13923,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13931,7 +13946,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -13978,7 +13993,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14035,7 +14050,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14076,7 +14091,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14141,7 +14156,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14242,7 +14257,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14258,7 +14273,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14283,7 +14298,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14316,7 +14331,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14357,7 +14372,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14382,7 +14397,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14464,7 +14479,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14538,7 +14553,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14572,7 +14587,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14638,7 +14653,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14720,7 +14735,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14786,7 +14801,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14916,7 +14931,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -14966,7 +14981,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15008,7 +15023,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15058,7 +15073,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15092,7 +15107,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15118,7 +15133,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15160,7 +15175,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15186,7 +15201,7 @@
 "TextProjection"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15226,7 +15241,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15268,7 +15283,7 @@
 "TextProjectionEditor"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15310,7 +15325,7 @@
 "TextProjectionEditor"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15352,7 +15367,7 @@
 "TextProjectionEditor"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15370,7 +15385,7 @@
 "TextProjectionEditor"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15395,7 +15410,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15412,7 +15427,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15445,7 +15460,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15479,7 +15494,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15695,7 +15710,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15722,7 +15737,7 @@
 "TokenView"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15748,7 +15763,7 @@
 "TokenView"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15784,7 +15799,7 @@
 "__init__"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15801,7 +15816,7 @@
 "TokenView"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15843,7 +15858,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15887,7 +15902,7 @@
 "CompactScrolledWindow"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15903,7 +15918,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15927,7 +15942,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -15958,7 +15973,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16029,7 +16044,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16075,7 +16090,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16098,7 +16113,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16130,7 +16145,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16193,7 +16208,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16378,7 +16393,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16442,7 +16457,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16515,7 +16530,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16540,7 +16555,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16557,7 +16572,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16606,7 +16621,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16655,7 +16670,7 @@
 "base base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16679,7 +16694,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16708,6 +16723,331 @@
 }
 ],
 "title":"Menu helpers"
+},
+{
+"children":[],
+"id":"4a5f39dbce724c2ba0f7f2ca4f298659",
+"paragraphs":[
+{
+"chunkpath":[],
+"filepath":[
+"guiparser.rlmeta"
+],
+"fragments":[
+{
+"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y -> [\"body\" xs y]\n  variable    = ws '#' name\n  box         = ws 'HBox' ws '{' component*:xs ws '}' -> [\"hbox\" ~xs]\n  component   =\n    | box\n    | name:x ws '(' parameter*:xs ws ')' -> [\"component\" x ~xs]\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | ws '$' name:x -> [\"member\" x]\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"type":"code"
+}
+],
+"id":"ddb2d0857afd4298ba3d55bfecdc5790",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[],
+"filepath":[
+"wxguicodegenerator.rlmeta"
+],
+"fragments":[
+{
+"text":"WxGuiCodeGenerator {\n  file = [ast*:xs] -> { xs }\n  ast =\n    | [\"panel\" .:name ast:x] -> {\n      \"class \" name \"(wx.Panel, ",
+"type":"code"
+},
+{
+"id":"3c5ca1194b034e9b9131fe6267a5e657",
+"type":"variable"
+},
+{
+"text":"):\\n\" >\n        \"def __init__(self, parent, **kwargs):\\n\" >\n          \"wx.Panel.__init__(self, parent)\\n\"\n          \"",
+"type":"code"
+},
+{
+"id":"3c5ca1194b034e9b9131fe6267a5e657",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          #create\n        <\n        \"def _update_gui(self):\\n\" >\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [name*:xs] ast:y] -> { xs y }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create { \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\" }\n      xs\n    }\n    | [\"component\" .:x astList:y] -> {\n      %%component\n      @create {\n        \"self.\" %component \" = \" x \"(self, \" y \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %component \")\\n\"\n      }\n      @update {\n        \"self.\" %component \".UpdateGui(\" y \")\\n\"\n      }\n    }\n    | [\"parameter\" .:x ast:y] -> { x \"=\" y }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"member\" .:x] -> { \"self.\" x }\n    | [\"name\" .:x] -> { x }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  name = .:x -> {\n    \"@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n}\n",
+"type":"code"
+}
+],
+"id":"e91ab38b002a413b9fef73440e3177ee",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"3c5ca1194b034e9b9131fe6267a5e657",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    DEFAULTS = {}\n\n    def __init__(self, **kwargs):\n        self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":" = {}\n        self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":".update(self.DEFAULTS)\n        self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":".update(kwargs)\n        self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":" = None\n        self.",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"()\n        self._update_builtin()\n\n    @property\n    def ",
+"type":"code"
+},
+{
+"id":"efa648b2a8514099b295d2313e89768a",
+"type":"variable"
+},
+{
+"text":"(self):\n        return self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":" is None or len(self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":") > 0\n\n    def ",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(self, **kwargs):\n        self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":" = []\n        for key, value in kwargs.items():\n            if key not in self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":" or self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[key] != value:\n                self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[key] = value\n                self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":".append(key)\n        self.",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"()\n        if self.",
+"type":"code"
+},
+{
+"id":"efa648b2a8514099b295d2313e89768a",
+"type":"variable"
+},
+{
+"text":":\n            self._update_builtin()\n\n    def ",
+"type":"code"
+},
+{
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
+"type":"variable"
+},
+{
+"text":"(self, name):\n        return self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":" is None or name in self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":"\n\n    def ",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self):\n        pass\n\n    def ",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self):\n        pass\n\n    def _update_builtin(self):\n        if self.",
+"type":"code"
+},
+{
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
+"type":"variable"
+},
+{
+"text":"(\"tooltip\"):\n            self.SetTooltip(self.values.get(\"tooltip\", None))\n\n",
+"type":"code"
+},
+{
+"id":"e0909ed28a5c4099952ff992a821d163",
+"type":"variable"
+},
+{
+"text":"\n",
+"type":"code"
+}
+],
+"id":"f45e69b9f48840a4af35c1a9b4ca5599",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[],
+"filepath":[
+"make_guicompiler.sh"
+],
+"fragments":[
+{
+"text":"#!/bin/bash\n\nset -e\n\ncd \"$(dirname \"$0\")\"\n\nsupport_py=$(python rlmeta/rlmeta.py --support)\nparser_py=$(python rlmeta/rlmeta.py < guiparser.rlmeta)\nwxcodegenerator_py=$(python rlmeta/rlmeta.py < wxguicodegenerator.rlmeta)\n\ncat <<EOF\nimport sys\n\n$support_py\n\n$parser_py\n\n$wxcodegenerator_py\n\njoin = \"\".join\n\nif __name__ == \"__main__\":\n    parser = GuiParser()\n    wxcodegenerator = WxGuiCodeGenerator()\n    try:\n        ast = parser.run(\"file\", sys.stdin.read())\n        code = wxcodegenerator.run(\"file\", ast)\n        sys.stdout.write(code)\n    except _MatchError as e:\n        sys.stderr.write(e.describe())\n        sys.exit(1)\nEOF\n",
+"type":"code"
+}
+],
+"id":"c488f8ce4ecf468d8039d241103648ab",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"rules"
+],
+"filepath":[
+"Makefile"
+],
+"fragments":[
+{
+"text":"rliterate.py: rliterate_.py widgets.py\n\tpython splice.py rliterate_.py widgets.py > rliterate.py\n\nwidgets.py: guicompiler.py widgets.gui\n\tpython guicompiler.py < widgets.gui > widgets.py\n\nguicompiler.py: guiparser.rlmeta wxguicodegenerator.rlmeta\n\t./make_guicompiler.sh > guicompiler.py\n",
+"type":"code"
+}
+],
+"id":"9bb1b0a7bc8c41b4b9141e0f54c503cb",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[],
+"filepath":[
+"splice.py"
+],
+"fragments":[
+{
+"text":"import sys\ntemplate = open(sys.argv[1]).read()\nwidgets  = open(sys.argv[2]).read()\nsys.stdout.write(template.replace(\"\\n",
+"type":"code"
+},
+{
+"id":"e0909ed28a5c4099952ff992a821d163",
+"type":"variable"
+},
+{
+"text":"\\n\", \"\\n\"+widgets))\n",
+"type":"code"
+}
+],
+"id":"b8da4583c7c3412aa4778090b9eb11b7",
+"language":"",
+"type":"code"
+}
+],
+"title":"GUI language framework"
 }
 ],
 "id":"5c3647a616b8495f8bebd268be84377d",
@@ -16768,7 +17108,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16832,7 +17172,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16873,7 +17213,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -16911,7 +17251,7 @@
 "base base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17023,7 +17363,7 @@
 "base classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17055,7 +17395,7 @@
 "JsonSettings"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17080,7 +17420,7 @@
 "JsonSettings"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17105,7 +17445,7 @@
 "JsonSettings"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17128,7 +17468,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17144,7 +17484,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17170,7 +17510,7 @@
 "functions"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17227,7 +17567,7 @@
 "classes"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17282,7 +17622,7 @@
 "decorators"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17311,7 +17651,7 @@
 "entry point"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -17448,7 +17788,7 @@
 "imports"
 ],
 "filepath":[
-"rliterate.py"
+"rliterate_.py"
 ],
 "fragments":[
 {
@@ -19327,6 +19667,7 @@
 "39e45626d4804403be92d31444a1281c":"text_font",
 "39e82e917b36405caa218fe04a43d0ba":"create_list",
 "3acdc29e28484de3b989d6eb1b75a97e":"create_font",
+"3c5ca1194b034e9b9131fe6267a5e657":"GuiFrameworkBase",
 "3d6ead2c4a274ae78afa33875235e150":"_apply_style",
 "3f3b43d27029407baea6e0281eaa456d":"_paragraph_dict",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
@@ -19461,6 +19802,7 @@
 "deed113aeefa46e7a4ffdf2d0ceff136":"_iter_characters_with_style",
 "df94156ca33b47a1beb10346870806ec":"shadow_size",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
+"e0909ed28a5c4099952ff992a821d163":"### INSERT GENERATED GUI CLASSES HERE ###",
 "e1443402d3ec4bb4805c51cba497246d":"chunk_delimiters",
 "e2666ed6e8d5428e901fc58bfe11a45b":"values",
 "e2c3589873b445459e152e0472402dc2":"_partition_strings",
