@@ -144,8 +144,8 @@ class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
             first_sizer = self._label1
             self.Sizer = first_sizer
         self._label2 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
-        self._label1.Add(self._label2, proportion=1)
         self.text = self._label2
+        self._label1.Add(self._label2, proportion=1)
         self._label2.listen('double_click', lambda event: self.text.Select(event.Position))
         self._label0.listen('right_click', lambda event: SimpleContextMenu.ShowRecursive(self))
     def _update_gui(self):

@@ -3,17 +3,16 @@ GuiParser {
   widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> ["panel" x y]
   body        = variable*:xs box:y handler*:zs -> ["body" xs y zs]
   variable    = ws '#' name
-  box         = ws 'HBox' ws '{' component*:xs ws '}' -> ["hbox" ~xs]
-  component   =
+  box         = boxType:x ws '{' (child|box)*:xs ws '}' -> [x ~xs]
+  boxType     = ws 'HBox' -> "hbox"
+  child       =
     | box
-    | name:x options:z ws '(' parameter*:xs handler*:ys ws ')' -> ["component" x z xs ys]
+    | name:x binding:z ws '(' parameter*:xs handler*:ys ws ')' -> ["child" x z xs ys]
   parameter   = name:x ws '=' expr:y -> ["parameter" x y]
   handler     = ws '@' name:x ws '=' expr:y -> ["handler" x y]
-  options     =
-    | '[' option*:xs ']' -> xs
-    |                    -> []
-  option      =
-    | name:x -> ["option_name" x]
+  binding     =
+    | '[' name:x ']' -> ["binding" x]
+    |                -> []
   expr        =
     | expr1:x (ws '.' expr1)*:xs -> ["get" x ~xs]
   expr1       =
