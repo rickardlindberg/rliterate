@@ -3,14 +3,16 @@ panel TitleGui {
     #page
     #selection
     HBox {
-        TextProjectionEditor(
-            handle_key = $_handle_key
-            project    = $project
-            selection  = $selection
-            characters = $_get_characters()
-            max_width  = $project.theme.page_body_width
-            font       = $_create_font()
-            tooltip    = $page.full_title
+        TextProjectionEditor[text](
+            handle_key    = self._handle_key
+            project       = self.project
+            selection     = self.selection
+            characters    = self._get_characters()
+            max_width     = self.project.theme.page_body_width
+            font          = self._create_font()
+            tooltip       = self.page.full_title
+            @double_click = self.text.Select(event.Position)
         )
     }
+    @right_click = SimpleContextMenu.ShowRecursive(self)
 }

@@ -2,6 +2,7 @@ WxGuiCodeGenerator {
   file = [ast*:xs] -> { xs }
   ast =
     | ["panel" .:name ast:x] -> {
+      %%component
       "class " name "(wx.Panel, GuiFrameworkBaseMixin):\n" >
         "def __init__(self, parent, **kwargs):\n" >
           "wx.Panel.__init__(self, parent)\n"
@@ -9,6 +10,7 @@ WxGuiCodeGenerator {
         <
         "def _create_gui(self):\n" >
           "first_sizer = None\n"
+          "self." %component " = self\n"
           #create
         <
         "def _update_gui(self):\n" >
@@ -17,7 +19,7 @@ WxGuiCodeGenerator {
         x
       <
     }
-    | ["body" [name*:xs] ast:y] -> { xs y }
+    | ["body" [name*:xs] ast:y [ast*:zs]] -> { xs y zs }
     | ["hbox" ast*:xs] -> {
       %%sizer
       @create {
@@ -29,7 +31,7 @@ WxGuiCodeGenerator {
       }
       xs
     }
-    | ["component" .:x astList:y] -> {
+    | ["component" .:x [ast*:ks] [astList:y] [ast*:zs]] -> {
       %%component
       @create {
         "self." %component " = " x "(self, " y ")\n"
@@ -38,11 +40,18 @@ WxGuiCodeGenerator {
       @update {
         "self." %component ".UpdateGui(" y ")\n"
       }
+      ks
+      zs
     }
     | ["parameter" .:x ast:y] -> { x "=" y }
+    | ["handler" .:x ast:y] -> {
+      @create { "self." %component ".listen(" repr(x) ", lambda event: " y ")\n" }
+    }
+    | ["option_name" .:x] -> {
+      @create { "self." x " = self." %component "\n" }
+    }
     | ["get" astGetList:x] -> { x }
     | ["call" ast:x astList:y] -> { x "(" y ")" }
-    | ["member" .:x] -> { "self." x }
     | ["name" .:x] -> { x }
   astGetList =
     | ast:x astGetList:y -> { x "." y }

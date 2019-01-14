@@ -11332,7 +11332,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor(\n            handle_key = $_handle_key\n            project    = $project\n            selection  = $selection\n            characters = $_get_characters()\n            max_width  = $project.theme.page_body_width\n            font       = $_create_font()\n            tooltip    = $page.full_title\n        )\n    }\n}\n",
+"text":" {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor[text](\n            handle_key    = self._handle_key\n            project       = self.project\n            selection     = self.selection\n            characters    = self._get_characters()\n            max_width     = self.project.theme.page_body_width\n            font          = self._create_font()\n            tooltip       = self.page.full_title\n            @double_click = self.text.Select(event.Position)\n        )\n    }\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
@@ -11378,56 +11378,6 @@
 }
 ],
 "id":"24ce3a2a4785432ea263e18f55bfa106",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self):\n    TitleGui.",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self)\n    MouseEventHelper.bind(\n        [self._label1],\n        double_click=lambda event:\n            self._label1.Select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"b0201e824c464356aa706a0440192e5c",
-"type":"variable"
-},
-{
-"text":"(self)\n    )\n",
-"type":"code"
-}
-],
-"id":"7d34c5f3f5bd4b8eb2aa029c597b3eca",
 "language":"",
 "type":"code"
 },
@@ -16004,7 +15954,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y -> [\"body\" xs y]\n  variable    = ws '#' name\n  box         = ws 'HBox' ws '{' component*:xs ws '}' -> [\"hbox\" ~xs]\n  component   =\n    | box\n    | name:x ws '(' parameter*:xs ws ')' -> [\"component\" x ~xs]\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | ws '$' name:x -> [\"member\" x]\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y handler*:zs -> [\"body\" xs y zs]\n  variable    = ws '#' name\n  box         = ws 'HBox' ws '{' component*:xs ws '}' -> [\"hbox\" ~xs]\n  component   =\n    | box\n    | name:x options:z ws '(' parameter*:xs handler*:ys ws ')' -> [\"component\" x z xs ys]\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  options     =\n    | '[' option*:xs ']' -> xs\n    |                    -> []\n  option      =\n    | name:x -> [\"option_name\" x]\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
@@ -16019,7 +15969,7 @@
 ],
 "fragments":[
 {
-"text":"WxGuiCodeGenerator {\n  file = [ast*:xs] -> { xs }\n  ast =\n    | [\"panel\" .:name ast:x] -> {\n      \"class \" name \"(wx.Panel, ",
+"text":"WxGuiCodeGenerator {\n  file = [ast*:xs] -> { xs }\n  ast =\n    | [\"panel\" .:name ast:x] -> {\n      %%component\n      \"class \" name \"(wx.Panel, ",
 "type":"code"
 },
 {
@@ -16035,7 +15985,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          \"first_sizer = None\\n\"\n          #create\n        <\n        \"def _update_gui(self):\\n\" >\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [name*:xs] ast:y] -> { xs y }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create {\n        \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n        \"if first_sizer is None:\\n\" >\n          \"first_sizer = self.\" %sizer \"\\n\"\n          \"self.Sizer = first_sizer\\n\"\n        <\n      }\n      xs\n    }\n    | [\"component\" .:x astList:y] -> {\n      %%component\n      @create {\n        \"self.\" %component \" = \" x \"(self, \" y \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %component \", proportion=1)\\n\"\n      }\n      @update {\n        \"self.\" %component \".UpdateGui(\" y \")\\n\"\n      }\n    }\n    | [\"parameter\" .:x ast:y] -> { x \"=\" y }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"member\" .:x] -> { \"self.\" x }\n    | [\"name\" .:x] -> { x }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  name = .:x -> {\n    \"@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
+"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          \"first_sizer = None\\n\"\n          \"self.\" %component \" = self\\n\"\n          #create\n        <\n        \"def _update_gui(self):\\n\" >\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [name*:xs] ast:y [ast*:zs]] -> { xs y zs }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create {\n        \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n        \"if first_sizer is None:\\n\" >\n          \"first_sizer = self.\" %sizer \"\\n\"\n          \"self.Sizer = first_sizer\\n\"\n        <\n      }\n      xs\n    }\n    | [\"component\" .:x [ast*:ks] [astList:y] [ast*:zs]] -> {\n      %%component\n      @create {\n        \"self.\" %component \" = \" x \"(self, \" y \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %component \", proportion=1)\\n\"\n      }\n      @update {\n        \"self.\" %component \".UpdateGui(\" y \")\\n\"\n      }\n      ks\n      zs\n    }\n    | [\"parameter\" .:x ast:y] -> { x \"=\" y }\n    | [\"handler\" .:x ast:y] -> {\n      @create { \"self.\" %component \".listen(\" repr(x) \", lambda event: \" y \")\\n\" }\n    }\n    | [\"option_name\" .:x] -> {\n      @create { \"self.\" x \" = self.\" %component \"\\n\" }\n    }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"name\" .:x] -> { x }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  name = .:x -> {\n    \"@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
 "type":"code"
 },
 {
@@ -16100,7 +16050,7 @@
 "type":"variable"
 },
 {
-"text":" = None\n        self.",
+"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.",
 "type":"code"
 },
 {
@@ -16116,7 +16066,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._update_builtin()\n\n    @property\n    def ",
+"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -16244,7 +16194,15 @@
 "type":"variable"
 },
 {
-"text":"(\"tooltip\"):\n            value = self.values.get(\"tooltip\", None)\n            if value is None:\n                self.UnsetToolTip()\n            else:\n                self.SetToolTipString(value)\n\n",
+"text":"(\"tooltip\"):\n            value = self.values.get(\"tooltip\", None)\n            if value is None:\n                self.UnsetToolTip()\n            else:\n                self.SetToolTipString(value)\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            self._call_handler(\"click\", event)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event)\n\n    def _call_handler(self, name, event):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif isinstance(self.Parent, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n            self.Parent._call_handler(name, event)\n\n",
 "type":"code"
 },
 {
@@ -19280,6 +19238,7 @@
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
 "49916c3d2ee1468e9cbcb40d6b37bed6":"did_change",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
+"4a627e93978545b1895fedf553faa161":"TextProjectionEditorGui",
 "4b9ee6bd24a74475a73197299f60dd85":"im_modify",
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
@@ -19414,6 +19373,7 @@
 "e48f335915b94544a04357b0e4fcea31":"_history",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
 "e4f044d70bf7427a8ddc1884b24fdf1f":"_calculate_lines",
+"e5e85527ddd849b293456d25540e6163":"8cc78ba335d744e7aaefde463d19c0b2Gui",
 "e6cb5d6d0639494ebace6dcdef664d49":"multi_update",
 "e7f258e2b4ca4680b295e1daf618e0b4":"GlobalSettings",
 "eabcfbe8e6c349d497353e55ad0b3685":"Selection",

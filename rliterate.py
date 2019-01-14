@@ -50,9 +50,21 @@ class GuiFrameworkBaseMixin(object):
         self.values.update(self.DEFAULTS)
         self.values.update(kwargs)
         self.changed = None
+        self._handlers = {}
+        self.down_pos = None
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        self.Bind(wx.EVT_MOTION, self._on_motion)
+        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
+        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
         self._create_gui()
         self._update_gui()
         self._update_builtin()
+
+    def listen(self, event, handler):
+        if event in self._handlers:
+            raise Exception("only one handler per event allowed")
+        self._handlers[event] = handler
 
     @property
     def has_changes(self):
@@ -84,20 +96,60 @@ class GuiFrameworkBaseMixin(object):
             else:
                 self.SetToolTipString(value)
 
+    def _on_left_down(self, event):
+        self.down_pos = event.Position
+
+    def _on_motion(self, event):
+        if self.down_pos is None:
+            self._call_handler("mouse_move", event)
+        if self._should_drag(event.Position):
+            self.down_pos = None
+            self._call_handler("drag", event)
+
+    def _should_drag(self, pos):
+        if self.down_pos is not None:
+            diff = self.down_pos - pos
+            if abs(diff.x) > 2:
+                return True
+            if abs(diff.y) > 2:
+                return True
+        return False
+
+    def _on_left_up(self, event):
+        if self.down_pos is not None:
+            self._call_handler("click", event)
+        self.down_pos = None
+
+    def _on_left_dclick(self, event):
+        self._call_handler("double_click", event)
+
+    def _on_right_up(self, event):
+        self._call_handler("right_click", event)
+
+    def _call_handler(self, name, event):
+        if name in self._handlers:
+            self._handlers[name](event)
+        elif isinstance(self.Parent, GuiFrameworkBaseMixin):
+            self.Parent._call_handler(name, event)
+
 class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
     def _create_gui(self):
         first_sizer = None
-        self._label0 = wx.BoxSizer(wx.HORIZONTAL)
+        self._label0 = self
+        self._label1 = wx.BoxSizer(wx.HORIZONTAL)
         if first_sizer is None:
-            first_sizer = self._label0
+            first_sizer = self._label1
             self.Sizer = first_sizer
-        self._label1 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
-        self._label0.Add(self._label1, proportion=1)
+        self._label2 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
+        self._label1.Add(self._label2, proportion=1)
+        self.text = self._label2
+        self._label2.listen('double_click', lambda event: self.text.Select(event.Position))
+        self._label0.listen('right_click', lambda event: SimpleContextMenu.ShowRecursive(self))
     def _update_gui(self):
-        self._label1.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
+        self._label2.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
     @property
     def project(self):
         return self.values["project"]
@@ -3531,16 +3583,6 @@ class PageDropPoint(object):
         self.divider.Hide()
 class Title(TitleGui):
 
-    def _create_gui(self):
-        TitleGui._create_gui(self)
-        MouseEventHelper.bind(
-            [self._label1],
-            double_click=lambda event:
-                self._label1.Select(event.Position)
-            ,
-            right_click=lambda event:
-                SimpleContextMenu.ShowRecursive(self)
-        )
     def _handle_key(self, event):
         result = edit_plain_text(self.page.title, self.selection.value, event)
         if result:
