@@ -14981,6 +14981,37 @@
 "id":"e244a58e153b4d7b804f99476e950768",
 "paragraphs":[
 {
+"chunkpath":[],
+"filepath":[
+"widgets.gui"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"ccfadc7f9fb14a8e8fd927e994ecf8e1",
+"type":"variable"
+},
+{
+"text":" {\n    #project\n    #selection\n    #handle_key\n    #characters\n    #line_height\n    #max_width\n    #break_at_word\n    #font\n    #tooltip\n    HBox {\n        ",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":"[text](\n            characters    = self.characters\n            line_height   = self.line_height\n            max_width     = self.max_width\n            break_at_word = self.break_at_word\n            font          = self.font\n            tooltip       = self.tooltip\n            focus         = self.selection.present\n            @char         = self._on_char(event)\n        )\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"aa2a6b337b6c450b862599d32845e124",
+"language":"",
+"type":"code"
+},
+{
 "chunkpath":[
 "base classes"
 ],
@@ -15001,11 +15032,11 @@
 "type":"code"
 },
 {
-"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"id":"ccfadc7f9fb14a8e8fd927e994ecf8e1",
 "type":"variable"
 },
 {
-"text":"):\n\n",
+"text":"):\n\n    DEFAULTS = {\n        \"characters\": [],\n        \"line_height\": 1,\n        \"max_width\": None,\n        \"break_at_word\": True,\n        \"font\": None,\n    }\n\n",
 "type":"code"
 },
 {
@@ -15031,91 +15062,7 @@
 ],
 "fragments":[
 {
-"text":"def ",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self):\n    ",
-"type":"code"
-},
-{
-"id":"ec33a5e51ade4f3283c735e5afaf45d8",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self)\n    self.Bind(wx.EVT_CHAR, self._on_char)\n",
-"type":"code"
-}
-],
-"id":"f700fe7d8a144a1d899fa007d49b30e2",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes",
-"TextProjectionEditor"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n    ",
-"type":"code"
-},
-{
-"id":"ec33a5e51ade4f3283c735e5afaf45d8",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self)\n    if self.values[\"selection\"].present:\n        self.SetFocus()\n",
-"type":"code"
-}
-],
-"id":"2fb8cb9063a94313a82e249aeb35da05",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes",
-"TextProjectionEditor"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"@rltime(\"on char\")\ndef _on_char(self, event):\n    if self.values[\"selection\"].present:\n        self.values.get(\"handle_key\", lambda event: None)(event)\n",
+"text":"@rltime(\"on char\")\ndef _on_char(self, event):\n    if self.selection.present:\n        self.handle_key(event)\n",
 "type":"code"
 }
 ],
@@ -15133,7 +15080,7 @@
 ],
 "fragments":[
 {
-"text":"def Select(self, pos):\n    character, side = self.",
+"text":"def Select(self, pos):\n    character, side = self.text.",
 "type":"code"
 },
 {
@@ -15141,28 +15088,11 @@
 "type":"variable"
 },
 {
-"text":"(pos)\n    if character is None:\n        pass\n    elif side == wx.LEFT:\n        self.values[\"project\"].selection = self.values[\"selection\"].create(character.extra[0])\n    else:\n        self.values[\"project\"].selection = self.values[\"selection\"].create(character.extra[1])\n",
+"text":"(pos)\n    if character is None:\n        pass\n    elif side == wx.LEFT:\n        self.project.selection = self.selection.create(character.extra[0])\n    else:\n        self.project.selection = self.selection.create(character.extra[1])\n",
 "type":"code"
 }
 ],
 "id":"4eeb6d828c67411586ce9164feb032da",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"def _get_characters(self):\n    if self.page.title:\n        return create_characters(\n            self.page.title,\n            self.project.get_style(TokenType.RLiterate),\n            selections=[self.selection.value] if self.selection.present else []\n        )\n    else:\n        text = \"Enter title...\"\n        return create_characters(\n            text,\n            self.project.get_style(TokenType.RLiterate.Empty),\n            selections=[0, len(text)] if self.selection.present else [],\n            extra_fn=lambda index: (0, 0)\n        )\n",
-"type":"code"
-}
-],
-"id":"dbf7f51af34245fbb55655ce5b874107",
 "language":"",
 "type":"code"
 },
@@ -16050,7 +15980,7 @@
 "type":"variable"
 },
 {
-"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.",
+"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        self.",
 "type":"code"
 },
 {
@@ -16194,7 +16124,7 @@
 "type":"variable"
 },
 {
-"text":"(\"tooltip\"):\n            value = self.values.get(\"tooltip\", None)\n            if value is None:\n                self.UnsetToolTip()\n            else:\n                self.SetToolTipString(value)\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            self._call_handler(\"click\", event)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event)\n\n    def _call_handler(self, name, event):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif isinstance(self.Parent, ",
+"text":"(\"tooltip\"):\n            value = self.values.get(\"tooltip\", None)\n            if value is None:\n                self.UnsetToolTip()\n            else:\n                self.SetToolTipString(value)\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            self._call_handler(\"click\", event)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event)\n\n    def _call_handler(self, name, event):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif isinstance(self.Parent, ",
 "type":"code"
 },
 {
@@ -19346,6 +19276,7 @@
 "c814a047b6df48d3a18de974afe8505b":"Box",
 "ca88dc4d189c4ce1b5237450bd76bad6":"target_index",
 "ccd9655841fb4311bad581f979730e47":"needs_saving",
+"ccfadc7f9fb14a8e8fd927e994ecf8e1":"TextProjectionEditorGui",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d126e525b923499f9c0176206b3e886c":"ReRender",
 "d3e26230c2c34d0986f2bbae0bab25b4":"Container",

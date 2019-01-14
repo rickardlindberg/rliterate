@@ -57,6 +57,7 @@ class GuiFrameworkBaseMixin(object):
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
         self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
+        self.Bind(wx.EVT_CHAR, lambda event: self._call_handler("char", event))
         self._create_gui()
         self._update_gui()
         self._update_builtin()
@@ -95,6 +96,8 @@ class GuiFrameworkBaseMixin(object):
                 self.UnsetToolTip()
             else:
                 self.SetToolTipString(value)
+        if self.values.get("focus", False) and not self.HasFocus():
+            self.SetFocus()
 
     def _on_left_down(self, event):
         self.down_pos = event.Position
@@ -637,30 +640,29 @@ class TextProjection(GuiUpdatePanel):
             characters_by_y_distance[min(characters_by_y_distance.keys())],
             key=lambda box: abs(box.rect.X + int(box.rect.Width / 2) - position.x)
         )
-class TextProjectionEditor(TextProjection):
+class TextProjectionEditor(TextProjectionEditorGui):
 
-    def _create_gui(self):
-        TextProjection._create_gui(self)
-        self.Bind(wx.EVT_CHAR, self._on_char)
-
-    def _update_gui(self):
-        TextProjection._update_gui(self)
-        if self.values["selection"].present:
-            self.SetFocus()
+    DEFAULTS = {
+        "characters": [],
+        "line_height": 1,
+        "max_width": None,
+        "break_at_word": True,
+        "font": None,
+    }
 
     @rltime("on char")
     def _on_char(self, event):
-        if self.values["selection"].present:
-            self.values.get("handle_key", lambda event: None)(event)
+        if self.selection.present:
+            self.handle_key(event)
 
     def Select(self, pos):
-        character, side = self.GetClosestCharacterWithSide(pos)
+        character, side = self.text.GetClosestCharacterWithSide(pos)
         if character is None:
             pass
         elif side == wx.LEFT:
-            self.values["project"].selection = self.values["selection"].create(character.extra[0])
+            self.project.selection = self.selection.create(character.extra[0])
         else:
-            self.values["project"].selection = self.values["selection"].create(character.extra[1])
+            self.project.selection = self.selection.create(character.extra[1])
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -5002,21 +5004,6 @@ def show_edit_in_progress_error(window):
     )
     dialog.ShowModal()
     dialog.Destroy()
-def _get_characters(self):
-    if self.page.title:
-        return create_characters(
-            self.page.title,
-            self.project.get_style(TokenType.RLiterate),
-            selections=[self.selection.value] if self.selection.present else []
-        )
-    else:
-        text = "Enter title..."
-        return create_characters(
-            text,
-            self.project.get_style(TokenType.RLiterate.Empty),
-            selections=[0, len(text)] if self.selection.present else [],
-            extra_fn=lambda index: (0, 0)
-        )
 def create_characters(text, style, selections=None, extra_fn=lambda index: (index, index+1)):
     characters = []
     last_index = len(text) - 1

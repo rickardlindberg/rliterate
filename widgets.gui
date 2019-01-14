@@ -16,3 +16,26 @@ panel TitleGui {
     }
     @right_click = SimpleContextMenu.ShowRecursive(self)
 }
+panel TextProjectionEditorGui {
+    #project
+    #selection
+    #handle_key
+    #characters
+    #line_height
+    #max_width
+    #break_at_word
+    #font
+    #tooltip
+    HBox {
+        TextProjection[text](
+            characters    = self.characters
+            line_height   = self.line_height
+            max_width     = self.max_width
+            break_at_word = self.break_at_word
+            font          = self.font
+            tooltip       = self.tooltip
+            focus         = self.selection.present
+            @char         = self._on_char(event)
+        )
+    }
+}
