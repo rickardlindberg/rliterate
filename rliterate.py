@@ -41,7 +41,7 @@ def rltime(text):
         else:
             return fn
     return wrap
-class GuiUpdateMixin(object):
+class GuiFrameworkBaseMixin(object):
 
     DEFAULTS = {}
 
@@ -52,6 +52,7 @@ class GuiUpdateMixin(object):
         self.changed = None
         self._create_gui()
         self._update_gui()
+        self._update_builtin()
 
     @property
     def has_changes(self):
@@ -64,24 +65,48 @@ class GuiUpdateMixin(object):
                 self.values[key] = value
                 self.changed.append(key)
         self._update_gui()
+        self._update_builtin()
 
     def did_change(self, name):
-        return name in self.changed
+        return self.changed is None or name in self.changed
 
     def _create_gui(self):
         pass
 
     def _update_gui(self):
         pass
-class GuiUpdatePanel(wx.Panel, GuiUpdateMixin):
 
+    def _update_builtin(self):
+        if self.did_change("tooltip"):
+            value = self.values.get("tooltip", None)
+            if value is None:
+                self.UnsetToolTip()
+            else:
+                self.SetToolTipString(value)
+
+class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
-        self._init_mixins()
-        GuiUpdateMixin.__init__(self, **kwargs)
-
-    def _init_mixins(self):
-        pass
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+    def _create_gui(self):
+        first_sizer = None
+        self._label0 = wx.BoxSizer(wx.HORIZONTAL)
+        if first_sizer is None:
+            first_sizer = self._label0
+            self.Sizer = first_sizer
+        self._label1 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
+        self._label0.Add(self._label1, proportion=1)
+    def _update_gui(self):
+        self._label1.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
+    @property
+    def project(self):
+        return self.values["project"]
+    @property
+    def page(self):
+        return self.values["page"]
+    @property
+    def selection(self):
+        return self.values["selection"]
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -108,6 +133,15 @@ class BoxSizerMixin(object):
 
     def RemoveChildren(self):
         self.Sizer.Clear(True)
+class GuiUpdatePanel(wx.Panel, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent)
+        self._init_mixins()
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+
+    def _init_mixins(self):
+        pass
 class VerticalPanel(wx.Panel, BoxSizerMixin):
 
     def __init__(self, parent, **kwargs):
@@ -147,64 +181,6 @@ class SizeWrapper(object):
     def WithSize(self, size):
         self.SetSize(size)
         return self
-class GuiFrameworkBase(object):
-
-    DEFAULTS = {}
-
-    def __init__(self, **kwargs):
-        self.values = {}
-        self.values.update(self.DEFAULTS)
-        self.values.update(kwargs)
-        self.changed = None
-        self._create_gui()
-        self._update_builtin()
-
-    @property
-    def has_changes(self):
-        return self.changed is None or len(self.changed) > 0
-
-    def UpdateGui(self, **kwargs):
-        self.changed = []
-        for key, value in kwargs.items():
-            if key not in self.values or self.values[key] != value:
-                self.values[key] = value
-                self.changed.append(key)
-        self._update_gui()
-        if self.has_changes:
-            self._update_builtin()
-
-    def did_change(self, name):
-        return self.changed is None or name in self.changed
-
-    def _create_gui(self):
-        pass
-
-    def _update_gui(self):
-        pass
-
-    def _update_builtin(self):
-        if self.did_change("tooltip"):
-            self.SetTooltip(self.values.get("tooltip", None))
-
-class TitleGui(wx.Panel, GuiFrameworkBase):
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
-        GuiFrameworkBase.__init__(self, **kwargs)
-    def _create_gui(self):
-        self._label0 = wx.BoxSizer(wx.HORIZONTAL)
-        self._label1 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
-        self._label0.Add(self._label1)
-    def _update_gui(self):
-        self._label1.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
-    @property
-    def project(self):
-        return self.values["project"]
-    @property
-    def page(self):
-        return self.values["page"]
-    @property
-    def selection(self):
-        return self.values["selection"]
 class Editable(VerticalBasePanel):
 
     @property
@@ -3126,11 +3102,11 @@ class PageContextMenu(wx.Menu):
             lambda event: self.page.delete(),
             delete_item
         )
-class Workspace(HorizontalScrolledWindow, GuiUpdateMixin):
+class Workspace(HorizontalScrolledWindow, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, **kwargs):
         HorizontalScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
-        GuiUpdateMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
 
     def _create_gui(self):
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
@@ -3201,7 +3177,7 @@ class WorkspaceDropTarget(DropPointDropTarget):
             target_page=drop_point.target_page,
             target_index=drop_point.target_index
         )
-class Column(VerticalScrolledWindow, GuiUpdateMixin):
+class Column(VerticalScrolledWindow, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, **kwargs):
         VerticalScrolledWindow.__init__(
@@ -3209,7 +3185,7 @@ class Column(VerticalScrolledWindow, GuiUpdateMixin):
             parent,
             style=wx.VSCROLL
         )
-        GuiUpdateMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
 
     def _create_gui(self):
         self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
@@ -3553,44 +3529,24 @@ class PageDropPoint(object):
 
     def Hide(self):
         self.divider.Hide()
-class Title(HorizontalBasePanel):
+class Title(TitleGui):
 
-    @property
-    def project(self):
-        return self.values["project"]
-    @property
-    def page(self):
-        return self.values["page"]
-    @property
-    def selection(self):
-        return self.values["selection"]
     def _create_gui(self):
-        self.text = self.AppendChild(TextProjectionEditor(
-            self,
-            handle_key=self._handle_key,
-            project=self.project,
-            selection=self.selection,
-            characters=self._get_characters(),
-            max_width=self.project.theme.page_body_width,
-            font=create_font(**self.project.theme.title_font)
-        ), flag=wx.EXPAND, proportion=1)
+        TitleGui._create_gui(self)
         MouseEventHelper.bind(
-            [self.text],
+            [self._label1],
             double_click=lambda event:
-                self.text.Select(event.Position)
+                self._label1.Select(event.Position)
             ,
             right_click=lambda event:
                 SimpleContextMenu.ShowRecursive(self)
         )
-    def _update_gui(self):
-        self.text.UpdateGui(
-            project=self.project,
-            selection=self.selection,
-            characters=self._get_characters(),
-            max_width=self.project.theme.page_body_width,
-            font=create_font(**self.project.theme.title_font)
-        )
-        self.text.SetToolTipString(self.page.full_title)
+    def _handle_key(self, event):
+        result = edit_plain_text(self.page.title, self.selection.value, event)
+        if result:
+            with self.project.notify():
+                self.page.set_title(result[0])
+                self.project.selection = self.selection.create(result[1])
     def _get_characters(self):
         if self.page.title:
             return create_characters(
@@ -3606,12 +3562,8 @@ class Title(HorizontalBasePanel):
                 selections=[0, len(text)] if self.selection.present else [],
                 extra_fn=lambda index: (0, 0)
             )
-    def _handle_key(self, event):
-        result = edit_plain_text(self.page.title, self.selection.value, event)
-        if result:
-            with self.project.notify():
-                self.page.set_title(result[0])
-                self.project.selection = self.selection.create(result[1])
+    def _create_font(self):
+        return create_font(**self.project.theme.title_font)
 class Text(ParagraphBase):
 
     def CreateView(self):

@@ -2,12 +2,13 @@ WxGuiCodeGenerator {
   file = [ast*:xs] -> { xs }
   ast =
     | ["panel" .:name ast:x] -> {
-      "class " name "(wx.Panel, GuiFrameworkBase):\n" >
+      "class " name "(wx.Panel, GuiFrameworkBaseMixin):\n" >
         "def __init__(self, parent, **kwargs):\n" >
           "wx.Panel.__init__(self, parent)\n"
-          "GuiFrameworkBase.__init__(self, **kwargs)\n"
+          "GuiFrameworkBaseMixin.__init__(self, **kwargs)\n"
         <
         "def _create_gui(self):\n" >
+          "first_sizer = None\n"
           #create
         <
         "def _update_gui(self):\n" >
@@ -19,14 +20,20 @@ WxGuiCodeGenerator {
     | ["body" [name*:xs] ast:y] -> { xs y }
     | ["hbox" ast*:xs] -> {
       %%sizer
-      @create { "self." %sizer " = wx.BoxSizer(wx.HORIZONTAL)\n" }
+      @create {
+        "self." %sizer " = wx.BoxSizer(wx.HORIZONTAL)\n"
+        "if first_sizer is None:\n" >
+          "first_sizer = self." %sizer "\n"
+          "self.Sizer = first_sizer\n"
+        <
+      }
       xs
     }
     | ["component" .:x astList:y] -> {
       %%component
       @create {
         "self." %component " = " x "(self, " y ")\n"
-        "self." %sizer ".Add(self." %component ")\n"
+        "self." %sizer ".Add(self." %component ", proportion=1)\n"
       }
       @update {
         "self." %component ".UpdateGui(" y ")\n"

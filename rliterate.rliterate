@@ -11324,7 +11324,15 @@
 ],
 "fragments":[
 {
-"text":"panel TitleGui {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor(\n            handle_key = $_handle_key\n            project    = $project\n            selection  = $selection\n            characters = $_get_characters()\n            max_width  = $project.theme.page_body_width\n            font       = $_create_font()\n            tooltip    = $page.full_title\n        )\n    }\n}\n",
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"c663f4ff8deb49268b9f579a509474ae",
+"type":"variable"
+},
+{
+"text":" {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor(\n            handle_key = $_handle_key\n            project    = $project\n            selection  = $selection\n            characters = $_get_characters()\n            max_width  = $project.theme.page_body_width\n            font       = $_create_font()\n            tooltip    = $page.full_title\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -11353,7 +11361,7 @@
 "type":"code"
 },
 {
-"id":"36204f60f46444b6ae7da695dcd1a7c2",
+"id":"c663f4ff8deb49268b9f579a509474ae",
 "type":"variable"
 },
 {
@@ -11383,84 +11391,6 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef project(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"]\n",
-"type":"code"
-}
-],
-"id":"1671d0e270f44fe9af352284c518b3eb",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"@property\ndef page(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"]\n",
-"type":"code"
-}
-],
-"id":"c8f2458c61ec433a95dae00c03546a04",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"@property\ndef selection(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"]\n",
-"type":"code"
-}
-],
-"id":"9f83ca13b2c8412a99522db68f5a48c4",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
 "text":"def ",
 "type":"code"
 },
@@ -11469,87 +11399,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.text = self.",
+"text":"(self):\n    TitleGui.",
 "type":"code"
 },
 {
-"id":"359755e756af4e708b237cd9753ae046",
+"id":"887acc7e530b4d98933d11e223d58c42",
 "type":"variable"
 },
 {
-"text":"(",
-"type":"code"
-},
-{
-"id":"8cc78ba335d744e7aaefde463d19c0b2",
-"type":"variable"
-},
-{
-"text":"(\n        self,\n        handle_key=self._handle_key,\n        project=self.project,\n        selection=self.selection,\n        ",
-"type":"code"
-},
-{
-"id":"94ebdf2d279b424580629906ad32a461",
-"type":"variable"
-},
-{
-"text":"=self._get_characters(),\n        ",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":",\n        ",
-"type":"code"
-},
-{
-"id":"af34f0dcb0904a3facd4324400f5aea8",
-"type":"variable"
-},
-{
-"text":"=",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
-"type":"variable"
-},
-{
-"text":")\n    ), flag=wx.EXPAND, proportion=1)\n    MouseEventHelper.bind(\n        [self.text],\n        double_click=lambda event:\n            self.text.Select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
+"text":"(self)\n    MouseEventHelper.bind(\n        [self._label1],\n        double_click=lambda event:\n            self._label1.Select(event.Position)\n        ,\n        right_click=lambda event:\n            ",
 "type":"code"
 },
 {
@@ -11583,99 +11441,11 @@
 ],
 "fragments":[
 {
-"text":"def ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n    self.text.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n        project=self.project,\n        selection=self.selection,\n        ",
-"type":"code"
-},
-{
-"id":"94ebdf2d279b424580629906ad32a461",
-"type":"variable"
-},
-{
-"text":"=self._get_characters(),\n        ",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":",\n        ",
-"type":"code"
-},
-{
-"id":"af34f0dcb0904a3facd4324400f5aea8",
-"type":"variable"
-},
-{
-"text":"=",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
-"type":"variable"
-},
-{
-"text":")\n    )\n    self.text.SetToolTipString(self.page.",
-"type":"code"
-},
-{
-"id":"d805e4e8e283472b8748f331df6df7bc",
-"type":"variable"
-},
-{
-"text":")\n",
+"text":"def _handle_key(self, event):\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            self.page.set_title(result[0])\n            self.project.selection = self.selection.create(result[1])\n",
 "type":"code"
 }
 ],
-"id":"4cfd4b3cdb9545988005ed98bf3146b2",
+"id":"ae52de5dd3b64b69b62331cec27136c2",
 "language":"",
 "type":"code"
 },
@@ -11707,11 +11477,35 @@
 ],
 "fragments":[
 {
-"text":"def _handle_key(self, event):\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            self.page.set_title(result[0])\n            self.project.selection = self.selection.create(result[1])\n",
+"text":"def _create_font(self):\n    return ",
+"type":"code"
+},
+{
+"id":"b425fa2a021340e0be02f8c7a152ba19",
+"type":"variable"
+},
+{
+"text":"(**self.project.",
+"type":"code"
+},
+{
+"id":"ae8e603135854b1787ca652bf6304e9e",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"d4f8ea56ca9c4eb0a49487a85d4be2a9",
+"type":"variable"
+},
+{
+"text":")\n",
 "type":"code"
 }
 ],
-"id":"ae52de5dd3b64b69b62331cec27136c2",
+"id":"7fd262c1472f49698d6cc46ddd20e997",
 "language":"",
 "type":"code"
 }
@@ -16201,8 +15995,62 @@
 },
 {
 "children":[],
-"id":"d98509533b5344c080e48b8b2cb316f1",
+"id":"4a5f39dbce724c2ba0f7f2ca4f298659",
 "paragraphs":[
+{
+"chunkpath":[],
+"filepath":[
+"guiparser.rlmeta"
+],
+"fragments":[
+{
+"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y -> [\"body\" xs y]\n  variable    = ws '#' name\n  box         = ws 'HBox' ws '{' component*:xs ws '}' -> [\"hbox\" ~xs]\n  component   =\n    | box\n    | name:x ws '(' parameter*:xs ws ')' -> [\"component\" x ~xs]\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | ws '$' name:x -> [\"member\" x]\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"type":"code"
+}
+],
+"id":"ddb2d0857afd4298ba3d55bfecdc5790",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[],
+"filepath":[
+"wxguicodegenerator.rlmeta"
+],
+"fragments":[
+{
+"text":"WxGuiCodeGenerator {\n  file = [ast*:xs] -> { xs }\n  ast =\n    | [\"panel\" .:name ast:x] -> {\n      \"class \" name \"(wx.Panel, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\\n\" >\n        \"def __init__(self, parent, **kwargs):\\n\" >\n          \"wx.Panel.__init__(self, parent)\\n\"\n          \"",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          \"first_sizer = None\\n\"\n          #create\n        <\n        \"def _update_gui(self):\\n\" >\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [name*:xs] ast:y] -> { xs y }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create {\n        \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n        \"if first_sizer is None:\\n\" >\n          \"first_sizer = self.\" %sizer \"\\n\"\n          \"self.Sizer = first_sizer\\n\"\n        <\n      }\n      xs\n    }\n    | [\"component\" .:x astList:y] -> {\n      %%component\n      @create {\n        \"self.\" %component \" = \" x \"(self, \" y \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %component \", proportion=1)\\n\"\n      }\n      @update {\n        \"self.\" %component \".UpdateGui(\" y \")\\n\"\n      }\n    }\n    | [\"parameter\" .:x ast:y] -> { x \"=\" y }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"member\" .:x] -> { \"self.\" x }\n    | [\"name\" .:x] -> { x }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  name = .:x -> {\n    \"@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n}\n",
+"type":"code"
+}
+],
+"id":"e91ab38b002a413b9fef73440e3177ee",
+"language":"",
+"type":"code"
+},
 {
 "chunkpath":[
 "base base base classes"
@@ -16268,7 +16116,7 @@
 "type":"variable"
 },
 {
-"text":"()\n\n    @property\n    def ",
+"text":"()\n        self._update_builtin()\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -16348,7 +16196,7 @@
 "type":"variable"
 },
 {
-"text":"()\n\n    def ",
+"text":"()\n        self._update_builtin()\n\n    def ",
 "type":"code"
 },
 {
@@ -16356,7 +16204,15 @@
 "type":"variable"
 },
 {
-"text":"(self, name):\n        return name in self.",
+"text":"(self, name):\n        return self.",
+"type":"code"
+},
+{
+"id":"ff685beb0f9843aaa5d9362a7bb96989",
+"type":"variable"
+},
+{
+"text":" is None or name in self.",
 "type":"code"
 },
 {
@@ -16380,73 +16236,87 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        pass\n",
+"text":"(self):\n        pass\n\n    def _update_builtin(self):\n        if self.",
+"type":"code"
+},
+{
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
+"type":"variable"
+},
+{
+"text":"(\"tooltip\"):\n            value = self.values.get(\"tooltip\", None)\n            if value is None:\n                self.UnsetToolTip()\n            else:\n                self.SetToolTipString(value)\n\n",
+"type":"code"
+},
+{
+"id":"e0909ed28a5c4099952ff992a821d163",
+"type":"variable"
+},
+{
+"text":"\n",
 "type":"code"
 }
 ],
-"id":"0109b25ba5e047bda4a3a349c5804e31",
+"id":"f45e69b9f48840a4af35c1a9b4ca5599",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[],
+"filepath":[
+"make_guicompiler.sh"
+],
+"fragments":[
+{
+"text":"#!/bin/bash\n\nset -e\n\ncd \"$(dirname \"$0\")\"\n\nsupport_py=$(python rlmeta/rlmeta.py --support)\nparser_py=$(python rlmeta/rlmeta.py < guiparser.rlmeta)\nwxcodegenerator_py=$(python rlmeta/rlmeta.py < wxguicodegenerator.rlmeta)\n\ncat <<EOF\nimport sys\n\n$support_py\n\n$parser_py\n\n$wxcodegenerator_py\n\njoin = \"\".join\n\nif __name__ == \"__main__\":\n    parser = GuiParser()\n    wxcodegenerator = WxGuiCodeGenerator()\n    try:\n        ast = parser.run(\"file\", sys.stdin.read())\n        code = wxcodegenerator.run(\"file\", ast)\n        sys.stdout.write(code)\n    except _MatchError as e:\n        sys.stderr.write(e.describe())\n        sys.exit(1)\nEOF\n",
+"type":"code"
+}
+],
+"id":"c488f8ce4ecf468d8039d241103648ab",
 "language":"",
 "type":"code"
 },
 {
 "chunkpath":[
-"base base base classes"
+"rules"
 ],
 "filepath":[
-"rliterate_.py"
+"Makefile"
 ],
 "fragments":[
 {
-"text":"class ",
-"type":"code"
-},
-{
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
-"type":"variable"
-},
-{
-"text":"(wx.Panel, ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.",
-"type":"code"
-},
-{
-"id":"0e6dba8d1c3848478224db0b9019da60",
-"type":"variable"
-},
-{
-"text":"()\n        ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":".__init__(self, **kwargs)\n\n    def ",
-"type":"code"
-},
-{
-"id":"0e6dba8d1c3848478224db0b9019da60",
-"type":"variable"
-},
-{
-"text":"(self):\n        pass\n",
+"text":"rliterate.py: rliterate_.py widgets.py\n\tpython splice.py rliterate_.py widgets.py > rliterate.py\n\nwidgets.py: guicompiler.py widgets.gui\n\tpython guicompiler.py < widgets.gui > widgets.py\n\nguicompiler.py: guiparser.rlmeta wxguicodegenerator.rlmeta\n\t./make_guicompiler.sh > guicompiler.py\n",
 "type":"code"
 }
 ],
-"id":"89f9b24e3116491386dcd43fa78fbb07",
+"id":"9bb1b0a7bc8c41b4b9141e0f54c503cb",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[],
+"filepath":[
+"splice.py"
+],
+"fragments":[
+{
+"text":"import sys\ntemplate = open(sys.argv[1]).read()\nwidgets  = open(sys.argv[2]).read()\nsys.stdout.write(template.replace(\"\\n",
+"type":"code"
+},
+{
+"id":"e0909ed28a5c4099952ff992a821d163",
+"type":"variable"
+},
+{
+"text":"\\n\", \"\\n\"+widgets))\n",
+"type":"code"
+}
+],
+"id":"b8da4583c7c3412aa4778090b9eb11b7",
 "language":"",
 "type":"code"
 }
 ],
-"title":"Update GUI"
+"title":"GUI language framework"
 },
 {
 "children":[],
@@ -16522,6 +16392,63 @@
 }
 ],
 "id":"e607df295e134d2fbbd03923b5f8862f",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"type":"variable"
+},
+{
+"text":"(wx.Panel, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.",
+"type":"code"
+},
+{
+"id":"0e6dba8d1c3848478224db0b9019da60",
+"type":"variable"
+},
+{
+"text":"()\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n\n    def ",
+"type":"code"
+},
+{
+"id":"0e6dba8d1c3848478224db0b9019da60",
+"type":"variable"
+},
+{
+"text":"(self):\n        pass\n",
+"type":"code"
+}
+],
+"id":"89f9b24e3116491386dcd43fa78fbb07",
 "language":"",
 "type":"code"
 },
@@ -16723,331 +16650,6 @@
 }
 ],
 "title":"Menu helpers"
-},
-{
-"children":[],
-"id":"4a5f39dbce724c2ba0f7f2ca4f298659",
-"paragraphs":[
-{
-"chunkpath":[],
-"filepath":[
-"guiparser.rlmeta"
-],
-"fragments":[
-{
-"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y -> [\"body\" xs y]\n  variable    = ws '#' name\n  box         = ws 'HBox' ws '{' component*:xs ws '}' -> [\"hbox\" ~xs]\n  component   =\n    | box\n    | name:x ws '(' parameter*:xs ws ')' -> [\"component\" x ~xs]\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | ws '$' name:x -> [\"member\" x]\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
-"type":"code"
-}
-],
-"id":"ddb2d0857afd4298ba3d55bfecdc5790",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[],
-"filepath":[
-"wxguicodegenerator.rlmeta"
-],
-"fragments":[
-{
-"text":"WxGuiCodeGenerator {\n  file = [ast*:xs] -> { xs }\n  ast =\n    | [\"panel\" .:name ast:x] -> {\n      \"class \" name \"(wx.Panel, ",
-"type":"code"
-},
-{
-"id":"3c5ca1194b034e9b9131fe6267a5e657",
-"type":"variable"
-},
-{
-"text":"):\\n\" >\n        \"def __init__(self, parent, **kwargs):\\n\" >\n          \"wx.Panel.__init__(self, parent)\\n\"\n          \"",
-"type":"code"
-},
-{
-"id":"3c5ca1194b034e9b9131fe6267a5e657",
-"type":"variable"
-},
-{
-"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          #create\n        <\n        \"def _update_gui(self):\\n\" >\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [name*:xs] ast:y] -> { xs y }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create { \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\" }\n      xs\n    }\n    | [\"component\" .:x astList:y] -> {\n      %%component\n      @create {\n        \"self.\" %component \" = \" x \"(self, \" y \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %component \")\\n\"\n      }\n      @update {\n        \"self.\" %component \".UpdateGui(\" y \")\\n\"\n      }\n    }\n    | [\"parameter\" .:x ast:y] -> { x \"=\" y }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"member\" .:x] -> { \"self.\" x }\n    | [\"name\" .:x] -> { x }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  name = .:x -> {\n    \"@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n}\n",
-"type":"code"
-}
-],
-"id":"e91ab38b002a413b9fef73440e3177ee",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"3c5ca1194b034e9b9131fe6267a5e657",
-"type":"variable"
-},
-{
-"text":"(object):\n\n    DEFAULTS = {}\n\n    def __init__(self, **kwargs):\n        self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":" = {}\n        self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":".update(self.DEFAULTS)\n        self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":".update(kwargs)\n        self.",
-"type":"code"
-},
-{
-"id":"ff685beb0f9843aaa5d9362a7bb96989",
-"type":"variable"
-},
-{
-"text":" = None\n        self.",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"()\n        self._update_builtin()\n\n    @property\n    def ",
-"type":"code"
-},
-{
-"id":"efa648b2a8514099b295d2313e89768a",
-"type":"variable"
-},
-{
-"text":"(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"ff685beb0f9843aaa5d9362a7bb96989",
-"type":"variable"
-},
-{
-"text":" is None or len(self.",
-"type":"code"
-},
-{
-"id":"ff685beb0f9843aaa5d9362a7bb96989",
-"type":"variable"
-},
-{
-"text":") > 0\n\n    def ",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(self, **kwargs):\n        self.",
-"type":"code"
-},
-{
-"id":"ff685beb0f9843aaa5d9362a7bb96989",
-"type":"variable"
-},
-{
-"text":" = []\n        for key, value in kwargs.items():\n            if key not in self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":" or self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[key] != value:\n                self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[key] = value\n                self.",
-"type":"code"
-},
-{
-"id":"ff685beb0f9843aaa5d9362a7bb96989",
-"type":"variable"
-},
-{
-"text":".append(key)\n        self.",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"()\n        if self.",
-"type":"code"
-},
-{
-"id":"efa648b2a8514099b295d2313e89768a",
-"type":"variable"
-},
-{
-"text":":\n            self._update_builtin()\n\n    def ",
-"type":"code"
-},
-{
-"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
-"type":"variable"
-},
-{
-"text":"(self, name):\n        return self.",
-"type":"code"
-},
-{
-"id":"ff685beb0f9843aaa5d9362a7bb96989",
-"type":"variable"
-},
-{
-"text":" is None or name in self.",
-"type":"code"
-},
-{
-"id":"ff685beb0f9843aaa5d9362a7bb96989",
-"type":"variable"
-},
-{
-"text":"\n\n    def ",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self):\n        pass\n\n    def ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n        pass\n\n    def _update_builtin(self):\n        if self.",
-"type":"code"
-},
-{
-"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
-"type":"variable"
-},
-{
-"text":"(\"tooltip\"):\n            self.SetTooltip(self.values.get(\"tooltip\", None))\n\n",
-"type":"code"
-},
-{
-"id":"e0909ed28a5c4099952ff992a821d163",
-"type":"variable"
-},
-{
-"text":"\n",
-"type":"code"
-}
-],
-"id":"f45e69b9f48840a4af35c1a9b4ca5599",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[],
-"filepath":[
-"make_guicompiler.sh"
-],
-"fragments":[
-{
-"text":"#!/bin/bash\n\nset -e\n\ncd \"$(dirname \"$0\")\"\n\nsupport_py=$(python rlmeta/rlmeta.py --support)\nparser_py=$(python rlmeta/rlmeta.py < guiparser.rlmeta)\nwxcodegenerator_py=$(python rlmeta/rlmeta.py < wxguicodegenerator.rlmeta)\n\ncat <<EOF\nimport sys\n\n$support_py\n\n$parser_py\n\n$wxcodegenerator_py\n\njoin = \"\".join\n\nif __name__ == \"__main__\":\n    parser = GuiParser()\n    wxcodegenerator = WxGuiCodeGenerator()\n    try:\n        ast = parser.run(\"file\", sys.stdin.read())\n        code = wxcodegenerator.run(\"file\", ast)\n        sys.stdout.write(code)\n    except _MatchError as e:\n        sys.stderr.write(e.describe())\n        sys.exit(1)\nEOF\n",
-"type":"code"
-}
-],
-"id":"c488f8ce4ecf468d8039d241103648ab",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"rules"
-],
-"filepath":[
-"Makefile"
-],
-"fragments":[
-{
-"text":"rliterate.py: rliterate_.py widgets.py\n\tpython splice.py rliterate_.py widgets.py > rliterate.py\n\nwidgets.py: guicompiler.py widgets.gui\n\tpython guicompiler.py < widgets.gui > widgets.py\n\nguicompiler.py: guiparser.rlmeta wxguicodegenerator.rlmeta\n\t./make_guicompiler.sh > guicompiler.py\n",
-"type":"code"
-}
-],
-"id":"9bb1b0a7bc8c41b4b9141e0f54c503cb",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[],
-"filepath":[
-"splice.py"
-],
-"fragments":[
-{
-"text":"import sys\ntemplate = open(sys.argv[1]).read()\nwidgets  = open(sys.argv[2]).read()\nsys.stdout.write(template.replace(\"\\n",
-"type":"code"
-},
-{
-"id":"e0909ed28a5c4099952ff992a821d163",
-"type":"variable"
-},
-{
-"text":"\\n\", \"\\n\"+widgets))\n",
-"type":"code"
-}
-],
-"id":"b8da4583c7c3412aa4778090b9eb11b7",
-"language":"",
-"type":"code"
-}
-],
-"title":"GUI language framework"
 }
 ],
 "id":"5c3647a616b8495f8bebd268be84377d",
@@ -19780,7 +19382,8 @@
 "c55ce4bb53214f3d88571b8b8fd87f9e":"_lines",
 "c56b4a82a7d4441ab6ceb5610217a3c5":"editor_font",
 "c65bff398b4a49af945b1c154a660687":"active_editor",
-"c76c30d4944341fca0c9c8411f5aaee6":"GuiUpdateMixin",
+"c663f4ff8deb49268b9f579a509474ae":"TitleGui",
+"c76c30d4944341fca0c9c8411f5aaee6":"GuiFrameworkBaseMixin",
 "c814a047b6df48d3a18de974afe8505b":"Box",
 "ca88dc4d189c4ce1b5237450bd76bad6":"target_index",
 "ccd9655841fb4311bad581f979730e47":"needs_saving",
