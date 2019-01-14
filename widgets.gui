@@ -7,7 +7,7 @@ panel TitleGui {
             handle_key    = self._handle_key
             project       = self.project
             selection     = self.selection
-            characters    = self._get_characters()
+            get_characters= self._get_characters
             max_width     = self.project.theme.page_body_width
             font          = self._create_font()
             tooltip       = self.page.full_title
@@ -20,7 +20,7 @@ panel TextProjectionEditorGui {
     #project
     #selection
     #handle_key
-    #characters
+    #get_characters
     #line_height
     #max_width
     #break_at_word
@@ -28,7 +28,7 @@ panel TextProjectionEditorGui {
     #tooltip
     HBox {
         TextProjection[text](
-            characters    = self.characters
+            characters    = self.get_characters(self)
             line_height   = self.line_height
             max_width     = self.max_width
             break_at_word = self.break_at_word

@@ -663,6 +663,36 @@ class TextProjectionEditor(TextProjectionEditorGui):
             self.project.selection = self.selection.create(character.extra[0])
         else:
             self.project.selection = self.selection.create(character.extra[1])
+
+    def create_missing_characters(self, text, index):
+        return self.create_characters(
+            text,
+            self.project.get_style(TokenType.RLiterate.Empty),
+            selections=[0, len(text)],
+            extra_fn=lambda _: (index, index)
+        )
+
+    def create_characters(self, text, style, selections=None, extra_fn=lambda index: (index, index+1)):
+        if not self.selection.present:
+            selections = []
+        characters = []
+        last_index = len(text) - 1
+        for index, character in enumerate(text):
+            if index == 0 and index in selections:
+                marker = "beam_start"
+            elif index == last_index and (last_index+1) in selections:
+                marker = "beam_end"
+            elif index in selections:
+                marker = "beam_middle"
+            else:
+                marker = None
+            characters.append(Character.create(
+                character,
+                style,
+                marker,
+                extra=extra_fn(index)
+            ))
+        return characters
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -3565,21 +3595,15 @@ class Title(TitleGui):
             with self.project.notify():
                 self.page.set_title(result[0])
                 self.project.selection = self.selection.create(result[1])
-    def _get_characters(self):
+    def _get_characters(self, editor):
         if self.page.title:
-            return create_characters(
+            return editor.create_characters(
                 self.page.title,
                 self.project.get_style(TokenType.RLiterate),
-                selections=[self.selection.value] if self.selection.present else []
+                selections=[self.selection.value]
             )
         else:
-            text = "Enter title..."
-            return create_characters(
-                text,
-                self.project.get_style(TokenType.RLiterate.Empty),
-                selections=[0, len(text)] if self.selection.present else [],
-                extra_fn=lambda index: (0, 0)
-            )
+            return editor.create_missing_characters("Enter title...", 0)
     def _create_font(self):
         return create_font(**self.project.theme.title_font)
 class Text(ParagraphBase):
@@ -5004,25 +5028,6 @@ def show_edit_in_progress_error(window):
     )
     dialog.ShowModal()
     dialog.Destroy()
-def create_characters(text, style, selections=None, extra_fn=lambda index: (index, index+1)):
-    characters = []
-    last_index = len(text) - 1
-    for index, character in enumerate(text):
-        if index == 0 and index in selections:
-            marker = "beam_start"
-        elif index == last_index and (last_index+1) in selections:
-            marker = "beam_end"
-        elif index in selections:
-            marker = "beam_middle"
-        else:
-            marker = None
-        characters.append(Character.create(
-            character,
-            style,
-            marker,
-            extra=extra_fn(index)
-        ))
-    return characters
 def edit_plain_text(text, selection, event):
     if event.GetUnicodeKey() >= 32:
         return (

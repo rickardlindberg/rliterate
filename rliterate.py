@@ -146,13 +146,13 @@ class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
         if first_sizer is None:
             first_sizer = self._label1
             self.Sizer = first_sizer
-        self._label2 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
+        self._label2 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, get_characters=self._get_characters, max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
         self.text = self._label2
         self._label1.Add(self._label2, proportion=1)
         self._label2.listen('double_click', lambda event: self.text.Select(event.Position))
         self._label0.listen('right_click', lambda event: SimpleContextMenu.ShowRecursive(self))
     def _update_gui(self):
-        self._label2.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, characters=self._get_characters(), max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
+        self._label2.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, get_characters=self._get_characters, max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
     @property
     def project(self):
         return self.values["project"]
@@ -173,12 +173,12 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
         if first_sizer is None:
             first_sizer = self._label4
             self.Sizer = first_sizer
-        self._label5 = TextProjection(self, characters=self.characters, line_height=self.line_height, max_width=self.max_width, break_at_word=self.break_at_word, font=self.font, tooltip=self.tooltip, focus=self.selection.present)
+        self._label5 = TextProjection(self, characters=self.get_characters(self), line_height=self.line_height, max_width=self.max_width, break_at_word=self.break_at_word, font=self.font, tooltip=self.tooltip, focus=self.selection.present)
         self.text = self._label5
         self._label4.Add(self._label5, proportion=1)
         self._label5.listen('char', lambda event: self._on_char(event))
     def _update_gui(self):
-        self._label5.UpdateGui(characters=self.characters, line_height=self.line_height, max_width=self.max_width, break_at_word=self.break_at_word, font=self.font, tooltip=self.tooltip, focus=self.selection.present)
+        self._label5.UpdateGui(characters=self.get_characters(self), line_height=self.line_height, max_width=self.max_width, break_at_word=self.break_at_word, font=self.font, tooltip=self.tooltip, focus=self.selection.present)
     @property
     def project(self):
         return self.values["project"]
@@ -189,8 +189,8 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
     def handle_key(self):
         return self.values["handle_key"]
     @property
-    def characters(self):
-        return self.values["characters"]
+    def get_characters(self):
+        return self.values["get_characters"]
     @property
     def line_height(self):
         return self.values["line_height"]
@@ -733,6 +733,36 @@ class TextProjectionEditor(TextProjectionEditorGui):
             self.project.selection = self.selection.create(character.extra[0])
         else:
             self.project.selection = self.selection.create(character.extra[1])
+
+    def create_missing_characters(self, text, index):
+        return self.create_characters(
+            text,
+            self.project.get_style(TokenType.RLiterate.Empty),
+            selections=[0, len(text)],
+            extra_fn=lambda _: (index, index)
+        )
+
+    def create_characters(self, text, style, selections=None, extra_fn=lambda index: (index, index+1)):
+        if not self.selection.present:
+            selections = []
+        characters = []
+        last_index = len(text) - 1
+        for index, character in enumerate(text):
+            if index == 0 and index in selections:
+                marker = "beam_start"
+            elif index == last_index and (last_index+1) in selections:
+                marker = "beam_end"
+            elif index in selections:
+                marker = "beam_middle"
+            else:
+                marker = None
+            characters.append(Character.create(
+                character,
+                style,
+                marker,
+                extra=extra_fn(index)
+            ))
+        return characters
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -3635,21 +3665,15 @@ class Title(TitleGui):
             with self.project.notify():
                 self.page.set_title(result[0])
                 self.project.selection = self.selection.create(result[1])
-    def _get_characters(self):
+    def _get_characters(self, editor):
         if self.page.title:
-            return create_characters(
+            return editor.create_characters(
                 self.page.title,
                 self.project.get_style(TokenType.RLiterate),
-                selections=[self.selection.value] if self.selection.present else []
+                selections=[self.selection.value]
             )
         else:
-            text = "Enter title..."
-            return create_characters(
-                text,
-                self.project.get_style(TokenType.RLiterate.Empty),
-                selections=[0, len(text)] if self.selection.present else [],
-                extra_fn=lambda index: (0, 0)
-            )
+            return editor.create_missing_characters("Enter title...", 0)
     def _create_font(self):
         return create_font(**self.project.theme.title_font)
 class Text(ParagraphBase):
@@ -5074,25 +5098,6 @@ def show_edit_in_progress_error(window):
     )
     dialog.ShowModal()
     dialog.Destroy()
-def create_characters(text, style, selections=None, extra_fn=lambda index: (index, index+1)):
-    characters = []
-    last_index = len(text) - 1
-    for index, character in enumerate(text):
-        if index == 0 and index in selections:
-            marker = "beam_start"
-        elif index == last_index and (last_index+1) in selections:
-            marker = "beam_end"
-        elif index in selections:
-            marker = "beam_middle"
-        else:
-            marker = None
-        characters.append(Character.create(
-            character,
-            style,
-            marker,
-            extra=extra_fn(index)
-        ))
-    return characters
 def edit_plain_text(text, selection, event):
     if event.GetUnicodeKey() >= 32:
         return (

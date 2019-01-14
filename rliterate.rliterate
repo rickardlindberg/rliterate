@@ -11332,7 +11332,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor[text](\n            handle_key    = self._handle_key\n            project       = self.project\n            selection     = self.selection\n            characters    = self._get_characters()\n            max_width     = self.project.theme.page_body_width\n            font          = self._create_font()\n            tooltip       = self.page.full_title\n            @double_click = self.text.Select(event.Position)\n        )\n    }\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"text":" {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor[text](\n            handle_key    = self._handle_key\n            project       = self.project\n            selection     = self.selection\n            get_characters= self._get_characters\n            max_width     = self.project.theme.page_body_width\n            font          = self._create_font()\n            tooltip       = self.page.full_title\n            @double_click = self.text.Select(event.Position)\n        )\n    }\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
@@ -11409,7 +11409,7 @@
 ],
 "fragments":[
 {
-"text":"def _get_characters(self):\n    if self.page.title:\n        return create_characters(\n            self.page.title,\n            self.project.get_style(TokenType.RLiterate),\n            selections=[self.selection.value] if self.selection.present else []\n        )\n    else:\n        text = \"Enter title...\"\n        return create_characters(\n            text,\n            self.project.get_style(TokenType.RLiterate.Empty),\n            selections=[0, len(text)] if self.selection.present else [],\n            extra_fn=lambda index: (0, 0)\n        )\n",
+"text":"def _get_characters(self, editor):\n    if self.page.title:\n        return editor.create_characters(\n            self.page.title,\n            self.project.get_style(TokenType.RLiterate),\n            selections=[self.selection.value]\n        )\n    else:\n        return editor.create_missing_characters(\"Enter title...\", 0)\n",
 "type":"code"
 }
 ],
@@ -14995,7 +14995,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #selection\n    #handle_key\n    #characters\n    #line_height\n    #max_width\n    #break_at_word\n    #font\n    #tooltip\n    HBox {\n        ",
+"text":" {\n    #project\n    #selection\n    #handle_key\n    #get_characters\n    #line_height\n    #max_width\n    #break_at_word\n    #font\n    #tooltip\n    HBox {\n        ",
 "type":"code"
 },
 {
@@ -15003,7 +15003,7 @@
 "type":"variable"
 },
 {
-"text":"[text](\n            characters    = self.characters\n            line_height   = self.line_height\n            max_width     = self.max_width\n            break_at_word = self.break_at_word\n            font          = self.font\n            tooltip       = self.tooltip\n            focus         = self.selection.present\n            @char         = self._on_char(event)\n        )\n    }\n}\n",
+"text":"[text](\n            characters    = self.get_characters(self)\n            line_height   = self.line_height\n            max_width     = self.max_width\n            break_at_word = self.break_at_word\n            font          = self.font\n            tooltip       = self.tooltip\n            focus         = self.selection.present\n            @char         = self._on_char(event)\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -15098,14 +15098,33 @@
 },
 {
 "chunkpath":[
-"functions"
+"base classes",
+"TextProjectionEditor"
 ],
 "filepath":[
 "rliterate_.py"
 ],
 "fragments":[
 {
-"text":"def create_characters(text, style, selections=None, extra_fn=lambda index: (index, index+1)):\n    characters = []\n    last_index = len(text) - 1\n    for index, character in enumerate(text):\n        if index == 0 and index in selections:\n            marker = \"beam_start\"\n        elif index == last_index and (last_index+1) in selections:\n            marker = \"beam_end\"\n        elif index in selections:\n            marker = \"beam_middle\"\n        else:\n            marker = None\n        characters.append(",
+"text":"def create_missing_characters(self, text, index):\n    return self.create_characters(\n        text,\n        self.project.get_style(TokenType.RLiterate.Empty),\n        selections=[0, len(text)],\n        extra_fn=lambda _: (index, index)\n    )\n",
+"type":"code"
+}
+],
+"id":"4850331f0b00404d8c0a4227dc571a16",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"def create_characters(self, text, style, selections=None, extra_fn=lambda index: (index, index+1)):\n    if not self.selection.present:\n        selections = []\n    characters = []\n    last_index = len(text) - 1\n    for index, character in enumerate(text):\n        if index == 0 and index in selections:\n            marker = \"beam_start\"\n        elif index == last_index and (last_index+1) in selections:\n            marker = \"beam_end\"\n        elif index in selections:\n            marker = \"beam_middle\"\n        else:\n            marker = None\n        characters.append(",
 "type":"code"
 },
 {
