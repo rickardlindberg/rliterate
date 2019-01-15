@@ -21,6 +21,17 @@ panel TableOfContentsRowGui {
     @right_click = self._on_right_click_old(event)
     @drag        = self._on_drag_old(event)
 }
+panel TableOfContentsButtonGui {
+    #project
+    #page
+    #visible  = bool(self.page.children)
+    #cursor   = "hand"
+    #min_size = self._get_min_size()
+    HBox {
+    }
+    @click = self.project.toggle_collapsed(self.page.id)
+    @paint = self._on_paint(event)
+}
 panel TitleGui {
     #project
     #page

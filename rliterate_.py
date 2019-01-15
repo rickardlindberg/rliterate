@@ -49,6 +49,7 @@ class GuiFrameworkBaseMixin(object):
         self.values = {}
         self.values.update(self.DEFAULTS)
         self.values.update(kwargs)
+        self.values.update(self._get_derived())
         self.changed = None
         self._handlers = {}
         self.down_pos = None
@@ -57,7 +58,6 @@ class GuiFrameworkBaseMixin(object):
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
         self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
-        self.Bind(wx.EVT_CHAR, lambda event: self._call_handler("char", event))
         self._create_gui()
         self._update_gui()
         self._update_builtin()
@@ -66,6 +66,10 @@ class GuiFrameworkBaseMixin(object):
         if event in self._handlers:
             raise Exception("only one handler per event allowed")
         self._handlers[event] = handler
+        if event == "char":
+            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler("char", event))
+        elif event == "paint":
+            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler("paint", event))
 
     def _get_space_size(self, sizer, size):
         if sizer.Orientation == wx.HORIZONTAL:
@@ -79,15 +83,25 @@ class GuiFrameworkBaseMixin(object):
 
     def UpdateGui(self, **kwargs):
         self.changed = []
-        for key, value in kwargs.items():
-            if key not in self.values or self.values[key] != value:
-                self.values[key] = value
-                self.changed.append(key)
+        self._update(kwargs)
+        self._update(self._get_derived())
         self._update_gui()
         self._update_builtin()
 
+    def _update(self, values):
+        for key, value in values.items():
+            if key not in self.values or self.values[key] != value:
+                self.values[key] = value
+                self.changed.append(key)
+
     def did_change(self, name):
-        return self.changed is None or name in self.changed
+        if self.changed is None:
+            return name in self.values
+        else:
+            return name in self.changed
+
+    def _get_derived(self):
+        return {}
 
     def _create_gui(self):
         pass
@@ -102,6 +116,14 @@ class GuiFrameworkBaseMixin(object):
                 self.UnsetToolTip()
             else:
                 self.SetToolTipString(value)
+        if self.did_change("cursor"):
+            self.SetCursor(wx.StockCursor({
+                "hand": wx.CURSOR_HAND,
+            }.get(self.values["cursor"])))
+        if self.did_change("min_size"):
+            self.SetMinSize(self.values["min_size"])
+        if self.did_change("visible"):
+            self.Show(self.values["visible"])
         if self.values.get("focus", False) and not self.HasFocus():
             self.SetFocus()
 
@@ -126,19 +148,19 @@ class GuiFrameworkBaseMixin(object):
 
     def _on_left_up(self, event):
         if self.down_pos is not None:
-            self._call_handler("click", event)
+            self._call_handler("click", event, propagate=True)
         self.down_pos = None
 
     def _on_left_dclick(self, event):
-        self._call_handler("double_click", event)
+        self._call_handler("double_click", event, propagate=True)
 
     def _on_right_up(self, event):
-        self._call_handler("right_click", event)
+        self._call_handler("right_click", event, propagate=True)
 
-    def _call_handler(self, name, event):
+    def _call_handler(self, name, event, propagate=False):
         if name in self._handlers:
             self._handlers[name](event)
-        elif isinstance(self.Parent, GuiFrameworkBaseMixin):
+        elif propagate and isinstance(self.Parent, GuiFrameworkBaseMixin):
             self.Parent._call_handler(name, event)
 
 ### INSERT GENERATED GUI CLASSES HERE ###
@@ -3056,19 +3078,12 @@ class TableOfContentsRow(TableOfContentsRowGui):
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
-class TableOfContentsButton(GuiUpdatePanel):
+class TableOfContentsButton(TableOfContentsButtonGui):
 
     SIZE = 16
 
-    def _create_gui(self):
-        self.Bind(wx.EVT_PAINT, self._on_paint)
-        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
-        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-        self.SetMinSize((self.SIZE+1, -1))
-
-    def _on_left_down(self, event):
-        self.values["project"].toggle_collapsed(self.values["page"].id)
-
+    def _get_min_size(self):
+        return (self.SIZE+1, -1)
     def _on_paint(self, event):
         dc = wx.GCDC(wx.PaintDC(self))
         dc.SetBrush(wx.BLACK_BRUSH)
@@ -3078,11 +3093,8 @@ class TableOfContentsButton(GuiUpdatePanel):
             self,
             dc,
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
-            flags=0 if self.values["project"].is_collapsed(self.values["page"].id) else wx.CONTROL_EXPANDED
+            flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED
         )
-    def _update_gui(self):
-        self.Show(bool(self.values["page"].children))
-        self.Refresh()
 class PageContextMenu(wx.Menu):
 
     def __init__(self, project, page):

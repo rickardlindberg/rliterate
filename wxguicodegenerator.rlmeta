@@ -2,14 +2,19 @@ WxGuiCodeGenerator {
   file = [ast*:xs] -> { xs }
   ast =
     | ["panel" .:name ast:x] -> {
+      %%handlers
       %%widget
       "class " name "(wx.Panel, GuiFrameworkBaseMixin):\n" >
         "def __init__(self, parent, **kwargs):\n" >
           "wx.Panel.__init__(self, parent)\n"
           "GuiFrameworkBaseMixin.__init__(self, **kwargs)\n"
         <
+        "def _get_derived(self):\n" >
+          "return {\n" > #derived < "}\n"
+        <
         "def _create_gui(self):\n" >
           "first_sizer = None\n"
+          "self." %handlers " = []\n"
           "self." %widget " = self\n"
           #create
         <
@@ -20,7 +25,7 @@ WxGuiCodeGenerator {
         x
       <
     }
-    | ["body" [name*:xs] ast:y [ast*:zs]] -> { xs y zs }
+    | ["body" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }
     | ["hbox" ast*:xs] -> {
       %%sizer
       @create {
@@ -33,6 +38,7 @@ WxGuiCodeGenerator {
       xs
     }
     | ["child" .:x binding:y ast*:zs] -> {
+      %%handlers
       %%createVars
       %%updateVars
       %%sizerFlag
@@ -41,6 +47,7 @@ WxGuiCodeGenerator {
         "self." %createVars " = {}\n"
         "self." %sizerFlag " = 0\n"
         "self." %sizerBorder " = 0\n"
+        "self." %handlers " = []\n"
       }
       @update {
         "self." %updateVars " = {}\n"
@@ -50,6 +57,9 @@ WxGuiCodeGenerator {
       @create {
         "self." %widget " = " x "(self, **self." %createVars ")\n"
         "self." %sizer ".Add(self." %widget ", flag=self." %sizerFlag ", border=self." %sizerBorder ", proportion=0)\n"
+        "for handler in self." %handlers ":\n" >
+          "self." %widget ".listen(*handler)\n"
+        <
         y
       }
       @update {
@@ -70,11 +80,21 @@ WxGuiCodeGenerator {
       @update { "self." %updateVars "[" repr(x) "] = " y "\n" }
     }
     | ["handler" .:x ast:y] -> {
-      @create { "self." %widget ".listen(" repr(x) ", lambda event: " y ")\n" }
+      @create { "self." %handlers ".append((" repr(x) ", lambda event: " y "))\n" }
     }
     | ["get" astGetList:x] -> { x }
     | ["call" ast:x astList:y] -> { x "(" y ")" }
     | ["name" .:x] -> { x }
+    | ["variable" .:x] -> {
+        "@property\n"
+        "def " x "(self):\n" >
+          "return self.values[\"" x "\"]\n"
+        <
+      }
+    | ["derived" .:x ast:y] -> {
+        @derived { repr(x) ": " y ",\n" }
+      }
+    | ["string" .:x] -> { repr(x) }
     | ["sizerBorder" ast:x [border*:y]] -> { @create { "self." %sizerBorder " = " x "\n" y } }
     | ["sizerExpand"]                   -> { @create { "self." %sizerFlag " |= wx.EXPAND\n" } }
     | ["sizerReserve"]                  -> { @create { "self." %sizerFlag " |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\n" } }
@@ -95,10 +115,4 @@ WxGuiCodeGenerator {
   binding =
     | ["binding" .:x] -> { "self." x " = self." %widget "\n" }
     | .               -> {}
-  name = .:x -> {
-    "@property\n"
-    "def " x "(self):\n" >
-      "return self.values[\"" x "\"]\n"
-    <
-  }
 }

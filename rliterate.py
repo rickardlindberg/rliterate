@@ -49,6 +49,7 @@ class GuiFrameworkBaseMixin(object):
         self.values = {}
         self.values.update(self.DEFAULTS)
         self.values.update(kwargs)
+        self.values.update(self._get_derived())
         self.changed = None
         self._handlers = {}
         self.down_pos = None
@@ -57,7 +58,6 @@ class GuiFrameworkBaseMixin(object):
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
         self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
-        self.Bind(wx.EVT_CHAR, lambda event: self._call_handler("char", event))
         self._create_gui()
         self._update_gui()
         self._update_builtin()
@@ -66,6 +66,10 @@ class GuiFrameworkBaseMixin(object):
         if event in self._handlers:
             raise Exception("only one handler per event allowed")
         self._handlers[event] = handler
+        if event == "char":
+            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler("char", event))
+        elif event == "paint":
+            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler("paint", event))
 
     def _get_space_size(self, sizer, size):
         if sizer.Orientation == wx.HORIZONTAL:
@@ -79,15 +83,25 @@ class GuiFrameworkBaseMixin(object):
 
     def UpdateGui(self, **kwargs):
         self.changed = []
-        for key, value in kwargs.items():
-            if key not in self.values or self.values[key] != value:
-                self.values[key] = value
-                self.changed.append(key)
+        self._update(kwargs)
+        self._update(self._get_derived())
         self._update_gui()
         self._update_builtin()
 
+    def _update(self, values):
+        for key, value in values.items():
+            if key not in self.values or self.values[key] != value:
+                self.values[key] = value
+                self.changed.append(key)
+
     def did_change(self, name):
-        return self.changed is None or name in self.changed
+        if self.changed is None:
+            return name in self.values
+        else:
+            return name in self.changed
+
+    def _get_derived(self):
+        return {}
 
     def _create_gui(self):
         pass
@@ -102,6 +116,14 @@ class GuiFrameworkBaseMixin(object):
                 self.UnsetToolTip()
             else:
                 self.SetToolTipString(value)
+        if self.did_change("cursor"):
+            self.SetCursor(wx.StockCursor({
+                "hand": wx.CURSOR_HAND,
+            }.get(self.values["cursor"])))
+        if self.did_change("min_size"):
+            self.SetMinSize(self.values["min_size"])
+        if self.did_change("visible"):
+            self.Show(self.values["visible"])
         if self.values.get("focus", False) and not self.HasFocus():
             self.SetFocus()
 
@@ -126,65 +148,75 @@ class GuiFrameworkBaseMixin(object):
 
     def _on_left_up(self, event):
         if self.down_pos is not None:
-            self._call_handler("click", event)
+            self._call_handler("click", event, propagate=True)
         self.down_pos = None
 
     def _on_left_dclick(self, event):
-        self._call_handler("double_click", event)
+        self._call_handler("double_click", event, propagate=True)
 
     def _on_right_up(self, event):
-        self._call_handler("right_click", event)
+        self._call_handler("right_click", event, propagate=True)
 
-    def _call_handler(self, name, event):
+    def _call_handler(self, name, event, propagate=False):
         if name in self._handlers:
             self._handlers[name](event)
-        elif isinstance(self.Parent, GuiFrameworkBaseMixin):
+        elif propagate and isinstance(self.Parent, GuiFrameworkBaseMixin):
             self.Parent._call_handler(name, event)
 
 class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+    def _get_derived(self):
+        return {
+        }
     def _create_gui(self):
         first_sizer = None
-        self._label0 = self
-        self._label1 = wx.BoxSizer(wx.HORIZONTAL)
+        self._label0 = []
+        self._label1 = self
+        self._label2 = wx.BoxSizer(wx.HORIZONTAL)
         if first_sizer is None:
-            first_sizer = self._label1
+            first_sizer = self._label2
             self.Sizer = first_sizer
-        self._label2 = self._label1.Add(self._get_space_size(self._label1, self._indentation_size()))
-        self._label3 = {}
-        self._label5 = 0
-        self._label6 = 0
-        self._label3['project'] = self.project
-        self._label3['page'] = self.page
-        self._label6 = self.BORDER
-        self._label5 |= wx.LEFT
-        self._label5 |= wx.EXPAND
-        self._label5 |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
-        self._label7 = TableOfContentsButton(self, **self._label3)
-        self._label1.Add(self._label7, flag=self._label5, border=self._label6, proportion=0)
-        self._label8 = {}
-        self._label10 = 0
-        self._label11 = 0
-        self._label8['characters'] = self._get_characters()
-        self._label11 = self.BORDER
-        self._label10 |= wx.ALL
-        self._label12 = TextProjection(self, **self._label8)
-        self._label1.Add(self._label12, flag=self._label10, border=self._label11, proportion=0)
-        self._label0.listen('click', lambda event: self._on_click_old(event))
-        self._label0.listen('right_click', lambda event: self._on_right_click_old(event))
-        self._label0.listen('drag', lambda event: self._on_drag_old(event))
+        self._label3 = self._label2.Add(self._get_space_size(self._label2, self._indentation_size()))
+        self._label5 = {}
+        self._label7 = 0
+        self._label8 = 0
+        self._label4 = []
+        self._label5['project'] = self.project
+        self._label5['page'] = self.page
+        self._label8 = self.BORDER
+        self._label7 |= wx.LEFT
+        self._label7 |= wx.EXPAND
+        self._label7 |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
+        self._label9 = TableOfContentsButton(self, **self._label5)
+        self._label2.Add(self._label9, flag=self._label7, border=self._label8, proportion=0)
+        for handler in self._label4:
+            self._label9.listen(*handler)
+        self._label11 = {}
+        self._label13 = 0
+        self._label14 = 0
+        self._label10 = []
+        self._label11['characters'] = self._get_characters()
+        self._label14 = self.BORDER
+        self._label13 |= wx.ALL
+        self._label15 = TextProjection(self, **self._label11)
+        self._label2.Add(self._label15, flag=self._label13, border=self._label14, proportion=0)
+        for handler in self._label10:
+            self._label15.listen(*handler)
+        self._label0.append(('click', lambda event: self._on_click_old(event)))
+        self._label0.append(('right_click', lambda event: self._on_right_click_old(event)))
+        self._label0.append(('drag', lambda event: self._on_drag_old(event)))
     def _update_gui(self):
         pass
-        self._label2.SetMinSize(self._get_space_size(self._label1, self._indentation_size()))
-        self._label4 = {}
-        self._label4['project'] = self.project
-        self._label4['page'] = self.page
-        self._label7.UpdateGui(**self._label4)
-        self._label9 = {}
-        self._label9['characters'] = self._get_characters()
-        self._label12.UpdateGui(**self._label9)
+        self._label3.SetMinSize(self._get_space_size(self._label2, self._indentation_size()))
+        self._label6 = {}
+        self._label6['project'] = self.project
+        self._label6['page'] = self.page
+        self._label9.UpdateGui(**self._label6)
+        self._label12 = {}
+        self._label12['characters'] = self._get_characters()
+        self._label15.UpdateGui(**self._label12)
     @property
     def project(self):
         return self.values["project"]
@@ -197,43 +229,78 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
     @property
     def indentation(self):
         return self.values["indentation"]
+class TableOfContentsButtonGui(wx.Panel, GuiFrameworkBaseMixin):
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+    def _get_derived(self):
+        return {
+            'visible': bool(self.page.children),
+            'cursor': 'hand',
+            'min_size': self._get_min_size(),
+        }
+    def _create_gui(self):
+        first_sizer = None
+        self._label16 = []
+        self._label17 = self
+        self._label18 = wx.BoxSizer(wx.HORIZONTAL)
+        if first_sizer is None:
+            first_sizer = self._label18
+            self.Sizer = first_sizer
+        self._label16.append(('click', lambda event: self.project.toggle_collapsed(self.page.id)))
+        self._label16.append(('paint', lambda event: self._on_paint(event)))
+    def _update_gui(self):
+        pass
+    @property
+    def project(self):
+        return self.values["project"]
+    @property
+    def page(self):
+        return self.values["page"]
 class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+    def _get_derived(self):
+        return {
+        }
     def _create_gui(self):
         first_sizer = None
-        self._label13 = self
-        self._label14 = wx.BoxSizer(wx.HORIZONTAL)
+        self._label19 = []
+        self._label20 = self
+        self._label21 = wx.BoxSizer(wx.HORIZONTAL)
         if first_sizer is None:
-            first_sizer = self._label14
+            first_sizer = self._label21
             self.Sizer = first_sizer
-        self._label15 = {}
-        self._label17 = 0
-        self._label18 = 0
-        self._label15['handle_key'] = self._handle_key
-        self._label15['project'] = self.project
-        self._label15['selection'] = self.selection
-        self._label15['get_characters'] = self._get_characters
-        self._label15['max_width'] = self.project.theme.page_body_width
-        self._label15['font'] = self._create_font()
-        self._label15['tooltip'] = self.page.full_title
-        self._label13.listen('double_click', lambda event: self.text.Select(event.Position))
-        self._label19 = TextProjectionEditor(self, **self._label15)
-        self._label14.Add(self._label19, flag=self._label17, border=self._label18, proportion=0)
-        self.text = self._label19
-        self._label13.listen('right_click', lambda event: SimpleContextMenu.ShowRecursive(self))
+        self._label23 = {}
+        self._label25 = 0
+        self._label26 = 0
+        self._label22 = []
+        self._label23['handle_key'] = self._handle_key
+        self._label23['project'] = self.project
+        self._label23['selection'] = self.selection
+        self._label23['get_characters'] = self._get_characters
+        self._label23['max_width'] = self.project.theme.page_body_width
+        self._label23['font'] = self._create_font()
+        self._label23['tooltip'] = self.page.full_title
+        self._label22.append(('double_click', lambda event: self.text.Select(event.Position)))
+        self._label27 = TextProjectionEditor(self, **self._label23)
+        self._label21.Add(self._label27, flag=self._label25, border=self._label26, proportion=0)
+        for handler in self._label22:
+            self._label27.listen(*handler)
+        self.text = self._label27
+        self._label19.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
     def _update_gui(self):
         pass
-        self._label16 = {}
-        self._label16['handle_key'] = self._handle_key
-        self._label16['project'] = self.project
-        self._label16['selection'] = self.selection
-        self._label16['get_characters'] = self._get_characters
-        self._label16['max_width'] = self.project.theme.page_body_width
-        self._label16['font'] = self._create_font()
-        self._label16['tooltip'] = self.page.full_title
-        self._label19.UpdateGui(**self._label16)
+        self._label24 = {}
+        self._label24['handle_key'] = self._handle_key
+        self._label24['project'] = self.project
+        self._label24['selection'] = self.selection
+        self._label24['get_characters'] = self._get_characters
+        self._label24['max_width'] = self.project.theme.page_body_width
+        self._label24['font'] = self._create_font()
+        self._label24['tooltip'] = self.page.full_title
+        self._label27.UpdateGui(**self._label24)
     @property
     def project(self):
         return self.values["project"]
@@ -247,38 +314,45 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+    def _get_derived(self):
+        return {
+        }
     def _create_gui(self):
         first_sizer = None
-        self._label20 = self
-        self._label21 = wx.BoxSizer(wx.HORIZONTAL)
+        self._label28 = []
+        self._label29 = self
+        self._label30 = wx.BoxSizer(wx.HORIZONTAL)
         if first_sizer is None:
-            first_sizer = self._label21
+            first_sizer = self._label30
             self.Sizer = first_sizer
-        self._label22 = {}
-        self._label24 = 0
-        self._label25 = 0
-        self._label22['characters'] = self.get_characters(self)
-        self._label22['line_height'] = self.line_height
-        self._label22['max_width'] = self.max_width
-        self._label22['break_at_word'] = self.break_at_word
-        self._label22['font'] = self.font
-        self._label22['tooltip'] = self.tooltip
-        self._label22['focus'] = self.selection.present
-        self._label20.listen('char', lambda event: self._on_char(event))
-        self._label26 = TextProjection(self, **self._label22)
-        self._label21.Add(self._label26, flag=self._label24, border=self._label25, proportion=0)
-        self.text = self._label26
+        self._label32 = {}
+        self._label34 = 0
+        self._label35 = 0
+        self._label31 = []
+        self._label32['characters'] = self.get_characters(self)
+        self._label32['line_height'] = self.line_height
+        self._label32['max_width'] = self.max_width
+        self._label32['break_at_word'] = self.break_at_word
+        self._label32['font'] = self.font
+        self._label32['tooltip'] = self.tooltip
+        self._label32['focus'] = self.selection.present
+        self._label31.append(('char', lambda event: self._on_char(event)))
+        self._label36 = TextProjection(self, **self._label32)
+        self._label30.Add(self._label36, flag=self._label34, border=self._label35, proportion=0)
+        for handler in self._label31:
+            self._label36.listen(*handler)
+        self.text = self._label36
     def _update_gui(self):
         pass
-        self._label23 = {}
-        self._label23['characters'] = self.get_characters(self)
-        self._label23['line_height'] = self.line_height
-        self._label23['max_width'] = self.max_width
-        self._label23['break_at_word'] = self.break_at_word
-        self._label23['font'] = self.font
-        self._label23['tooltip'] = self.tooltip
-        self._label23['focus'] = self.selection.present
-        self._label26.UpdateGui(**self._label23)
+        self._label33 = {}
+        self._label33['characters'] = self.get_characters(self)
+        self._label33['line_height'] = self.line_height
+        self._label33['max_width'] = self.max_width
+        self._label33['break_at_word'] = self.break_at_word
+        self._label33['font'] = self.font
+        self._label33['tooltip'] = self.tooltip
+        self._label33['focus'] = self.selection.present
+        self._label36.UpdateGui(**self._label33)
     @property
     def project(self):
         return self.values["project"]
@@ -3220,19 +3294,12 @@ class TableOfContentsRow(TableOfContentsRowGui):
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
-class TableOfContentsButton(GuiUpdatePanel):
+class TableOfContentsButton(TableOfContentsButtonGui):
 
     SIZE = 16
 
-    def _create_gui(self):
-        self.Bind(wx.EVT_PAINT, self._on_paint)
-        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
-        self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-        self.SetMinSize((self.SIZE+1, -1))
-
-    def _on_left_down(self, event):
-        self.values["project"].toggle_collapsed(self.values["page"].id)
-
+    def _get_min_size(self):
+        return (self.SIZE+1, -1)
     def _on_paint(self, event):
         dc = wx.GCDC(wx.PaintDC(self))
         dc.SetBrush(wx.BLACK_BRUSH)
@@ -3242,11 +3309,8 @@ class TableOfContentsButton(GuiUpdatePanel):
             self,
             dc,
             (0, (h-self.SIZE)/2, self.SIZE, self.SIZE),
-            flags=0 if self.values["project"].is_collapsed(self.values["page"].id) else wx.CONTROL_EXPANDED
+            flags=0 if self.project.is_collapsed(self.page.id) else wx.CONTROL_EXPANDED
         )
-    def _update_gui(self):
-        self.Show(bool(self.values["page"].children))
-        self.Refresh()
 class PageContextMenu(wx.Menu):
 
     def __init__(self, project, page):
