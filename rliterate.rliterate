@@ -8505,7 +8505,7 @@
 "type":"variable"
 },
 {
-"text":"(project=self.",
+"text":"(\n            project=self.",
 "type":"code"
 },
 {
@@ -8513,7 +8513,15 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"], page=page, indentation=indentation)\n    else:\n        row = self.page_container.",
+"text":"[\"project\"],\n            page=page,\n            selection=self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"],\n            indentation=indentation\n        )\n    else:\n        row = self.page_container.",
 "type":"code"
 },
 {
@@ -8529,7 +8537,7 @@
 "type":"variable"
 },
 {
-"text":"(self.page_container, project=self.",
+"text":"(\n                self.page_container,\n                project=self.",
 "type":"code"
 },
 {
@@ -8537,7 +8545,15 @@
 "type":"variable"
 },
 {
-"text":"[\"project\"], page=page, indentation=indentation),\n            flag=wx.EXPAND\n        )\n        divider = self.page_container.",
+"text":"[\"project\"],\n                page=page,\n                selection=self.",
+"type":"code"
+},
+{
+"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"type":"variable"
+},
+{
+"text":"[\"selection\"],\n                indentation=indentation\n            ),\n            flag=wx.EXPAND\n        )\n        divider = self.page_container.",
 "type":"code"
 },
 {
@@ -8950,6 +8966,29 @@
 "type":"text"
 },
 {
+"chunkpath":[],
+"filepath":[
+"widgets.gui"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"5eed749a876348189a57700a970644fc",
+"type":"variable"
+},
+{
+"text":" {\n    #project\n    #page\n    #selection\n    #indentation\n    HBox {\n        BoxSpace(self._indentation_size())\n        TableOfContentsButton(\n            project    = self.project\n            page       = self.page\n            %border[self.BORDER, LEFT]\n            %expand\n            %reserve_space_even_if_hidden\n        )\n        TextProjection(\n            characters = self._get_characters()\n            %border[self.BORDER, ALL]\n        )\n    }\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
+"type":"code"
+}
+],
+"id":"70b28cef364a4bcb9afec06916eaf2c8",
+"language":"",
+"type":"code"
+},
+{
 "chunkpath":[
 "classes"
 ],
@@ -8970,7 +9009,7 @@
 "type":"code"
 },
 {
-"id":"36204f60f46444b6ae7da695dcd1a7c2",
+"id":"5eed749a876348189a57700a970644fc",
 "type":"variable"
 },
 {
@@ -9000,67 +9039,11 @@
 ],
 "fragments":[
 {
-"text":"def ",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self):\n    self._create_indent()\n    self._create_expand_collapse()\n    self._create_text()\n    self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)\n    self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)\n    for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:\n        helper.OnClick = self._on_click\n        helper.OnRightClick = self._on_right_click\n        helper.OnDrag = self._on_drag\n\ndef _create_indent(self):\n    self.indent = self.",
-"type":"code"
-},
-{
-"id":"31a17b208536469099ae5c084d35590d",
-"type":"variable"
-},
-{
-"text":"()\n\ndef _create_expand_collapse(self):\n    self.expand_collapse = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"54f99e72df0b4006b2bd90465c8558c4",
-"type":"variable"
-},
-{
-"text":"(self, **self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"),\n        flag=wx.EXPAND|wx.LEFT|wx.RESERVE_SPACE_EVEN_IF_HIDDEN,\n        border=self.BORDER\n    )\n\ndef _create_text(self):\n    self.text = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"ec33a5e51ade4f3283c735e5afaf45d8",
-"type":"variable"
-},
-{
-"text":"(self),\n        flag=wx.ALL,\n        border=self.BORDER\n    )\n",
+"text":"def _indentation_size(self):\n    return self.indentation*self.INDENTATION_SIZE\n",
 "type":"code"
 }
 ],
-"id":"e7222f9d1f2e4c6dbcdee098b3f75ca4",
+"id":"5265be2a09ab44b6a1d858cbed502736",
 "language":"",
 "type":"code"
 },
@@ -9074,128 +9057,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_click(self):\n    open_pages_gui(self, self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"], [self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"].id], column_index=0)\n\ndef _on_right_click(self, event):\n    menu = PageContextMenu(self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"], self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"])\n    self.PopupMenu(menu)\n    menu.Destroy()\n\ndef _on_drag(self):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"].id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\ndef _on_enter_window(self, event):\n    self.SetBackgroundColour((240, 240, 240))\n\ndef _on_leave_window(self, event):\n    self.SetBackgroundColour((255, 255, 255))\n",
-"type":"code"
-}
-],
-"id":"38c32e72a6514307926cf2ae728dbbf6",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"TableOfContentsRow"
-],
-"filepath":[
-"rliterate_.py"
-],
-"fragments":[
-{
-"text":"def ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n    self.indent.SetSize(self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"indentation\"]*self.INDENTATION_SIZE)\n    self.expand_collapse.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(**self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":")\n    self.text.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(characters=self._get_characters())\n\ndef _get_characters(self):\n    if self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"].is_open(self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"].id):\n        token_type = TokenType.RLiterate.Strong\n    else:\n        token_type = TokenType.RLiterate\n    style = self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"].get_style(token_type)\n    return [\n        ",
+"text":"def _get_characters(self):\n    if self.project.is_open(self.page.id):\n        token_type = TokenType.RLiterate.Strong\n    else:\n        token_type = TokenType.RLiterate\n    style = self.project.get_style(token_type)\n    return [\n        ",
 "type":"code"
 },
 {
@@ -9211,19 +9073,65 @@
 "type":"variable"
 },
 {
-"text":"(x, style)\n        for x\n        in self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"].title\n    ]\n",
+"text":"(x, style)\n        for x\n        in self.page.title\n    ]\n",
 "type":"code"
 }
 ],
 "id":"244f3dbf888c4a6fb2bedda9ce9d224d",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"def _on_click_old(self, event):\n    open_pages_gui(self, self.project, [self.page.id], column_index=0)\n",
+"type":"code"
+}
+],
+"id":"38c32e72a6514307926cf2ae728dbbf6",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"def _on_right_click_old(self, event):\n    menu = PageContextMenu(self.project, self.page)\n    self.PopupMenu(menu)\n    menu.Destroy()\n",
+"type":"code"
+}
+],
+"id":"03755d8bbdfe42359983f0c1d11606a2",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"def _on_drag_old(self, event):\n    data = RliterateDataObject(\"page\", {\n        \"page_id\": self.page.id,\n    })\n    drag_source = wx.DropSource(self)\n    drag_source.SetData(data)\n    result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n",
+"type":"code"
+}
+],
+"id":"a9521985419748e386e6d2503d07a957",
 "language":"",
 "type":"code"
 }
@@ -15903,7 +15811,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y handler*:zs -> [\"body\" xs y zs]\n  variable    = ws '#' name\n  box         = boxType:x ws '{' (child|box)*:xs ws '}' -> [x ~xs]\n  boxType     = ws 'HBox' -> \"hbox\"\n  child       =\n    | box\n    | name:x binding:z ws '(' parameter*:xs handler*:ys ws ')' -> [\"child\" x z xs ys]\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y handler*:zs -> [\"body\" xs y zs]\n  variable    = ws '#' name\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     = ws 'HBox' -> \"hbox\"\n  child       =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
@@ -15934,7 +15842,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          \"first_sizer = None\\n\"\n          \"self.\" %widget \" = self\\n\"\n          #create\n        <\n        \"def _update_gui(self):\\n\" >\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [name*:xs] ast:y [ast*:zs]] -> { xs y zs }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create {\n        \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n        \"if first_sizer is None:\\n\" >\n          \"first_sizer = self.\" %sizer \"\\n\"\n          \"self.Sizer = first_sizer\\n\"\n        <\n      }\n      xs\n    }\n    | [\"child\" .:x binding:ks [astList:y] [ast*:zs]] -> {\n      %%widget\n      @create {\n        \"self.\" %widget \" = \" x \"(self, \" y \")\\n\"\n        ks\n        \"self.\" %sizer \".Add(self.\" %widget \", proportion=1)\\n\"\n      }\n      @update {\n        \"self.\" %widget \".UpdateGui(\" y \")\\n\"\n      }\n      zs\n    }\n    | [\"parameter\" .:x ast:y] -> { x \"=\" y }\n    | [\"handler\" .:x ast:y] -> {\n      @create { \"self.\" %widget \".listen(\" repr(x) \", lambda event: \" y \")\\n\" }\n    }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"name\" .:x] -> { x }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = self.\" %widget \"\\n\" }\n    |                 -> {}\n  name = .:x -> {\n    \"@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
+"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          \"first_sizer = None\\n\"\n          \"self.\" %widget \" = self\\n\"\n          #create\n        <\n        \"def _update_gui(self):\\n\" >\n          \"pass\\n\"\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [name*:xs] ast:y [ast*:zs]] -> { xs y zs }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create {\n        \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n        \"if first_sizer is None:\\n\" >\n          \"first_sizer = self.\" %sizer \"\\n\"\n          \"self.Sizer = first_sizer\\n\"\n        <\n      }\n      xs\n    }\n    | [\"child\" .:x binding:y ast*:zs] -> {\n      %%createVars\n      %%updateVars\n      %%sizerFlag\n      %%sizerBorder\n      @create {\n        \"self.\" %createVars \" = {}\\n\"\n        \"self.\" %sizerFlag \" = 0\\n\"\n        \"self.\" %sizerBorder \" = 0\\n\"\n      }\n      @update {\n        \"self.\" %updateVars \" = {}\\n\"\n      }\n      zs\n      %%widget\n      @create {\n        \"self.\" %widget \" = \" x \"(self, **self.\" %createVars \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %widget \", flag=self.\" %sizerFlag \", border=self.\" %sizerBorder \", proportion=0)\\n\"\n        y\n      }\n      @update {\n        \"self.\" %widget \".UpdateGui(**self.\" %updateVars \")\\n\"\n      }\n    }\n    | [\"boxspace\" ast:x] -> {\n      %%sizeritem\n      @create {\n        \"self.\" %sizeritem \" = self.\" %sizer \".Add(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n      }\n      @update {\n        \"self.\" %sizeritem \".SetMinSize(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n      }\n    }\n    | [\"parameter\" .:x ast:y] -> {\n      @create { \"self.\" %createVars \"[\" repr(x) \"] = \" y \"\\n\" }\n      @update { \"self.\" %updateVars \"[\" repr(x) \"] = \" y \"\\n\" }\n    }\n    | [\"handler\" .:x ast:y] -> {\n      @create { \"self.\" %widget \".listen(\" repr(x) \", lambda event: \" y \")\\n\" }\n    }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"name\" .:x] -> { x }\n    | [\"sizerBorder\" ast:x [border*:y]] -> { @create { \"self.\" %sizerBorder \" = \" x \"\\n\" y } }\n    | [\"sizerExpand\"]                   -> { @create { \"self.\" %sizerFlag \" |= wx.EXPAND\\n\" } }\n    | [\"sizerReserve\"]                  -> { @create { \"self.\" %sizerFlag \" |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n  border =\n    | \"ALL\"    -> { \"self.\" %sizerFlag \" |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { \"self.\" %sizerFlag \" |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { \"self.\" %sizerFlag \" |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { \"self.\" %sizerFlag \" |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { \"self.\" %sizerFlag \" |= wx.BOTTOM\\n\" }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = self.\" %widget \"\\n\" }\n    | .               -> {}\n  name = .:x -> {\n    \"@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
 "type":"code"
 },
 {
@@ -16015,7 +15923,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n\n    @property\n    def ",
+"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n\n    def _get_space_size(self, sizer, size):\n        if sizer.Orientation == wx.HORIZONTAL:\n            return (size, 1)\n        else:\n            return (1, size)\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -16174,7 +16082,7 @@
 ],
 "fragments":[
 {
-"text":"#!/bin/bash\n\nset -e\n\ncd \"$(dirname \"$0\")\"\n\nsupport_py=$(python rlmeta/rlmeta.py --support)\nparser_py=$(python rlmeta/rlmeta.py < guiparser.rlmeta)\nwxcodegenerator_py=$(python rlmeta/rlmeta.py < wxguicodegenerator.rlmeta)\n\ncat <<EOF\nimport sys\n\n$support_py\n\n$parser_py\n\n$wxcodegenerator_py\n\njoin = \"\".join\n\nif __name__ == \"__main__\":\n    parser = GuiParser()\n    wxcodegenerator = WxGuiCodeGenerator()\n    try:\n        ast = parser.run(\"file\", sys.stdin.read())\n        code = wxcodegenerator.run(\"file\", ast)\n        sys.stdout.write(code)\n    except _MatchError as e:\n        sys.stderr.write(e.describe())\n        sys.exit(1)\nEOF\n",
+"text":"#!/bin/bash\n\nset -e\n\ncd \"$(dirname \"$0\")\"\n\nsupport_py=$(python rlmeta/rlmeta.py --support)\nparser_py=$(python rlmeta/rlmeta.py < guiparser.rlmeta)\nwxcodegenerator_py=$(python rlmeta/rlmeta.py < wxguicodegenerator.rlmeta)\n\ncat <<EOF\nimport sys\nimport pprint\n\n$support_py\n\n$parser_py\n\n$wxcodegenerator_py\n\njoin = \"\".join\n\nif __name__ == \"__main__\":\n    parser = GuiParser()\n    wxcodegenerator = WxGuiCodeGenerator()\n    try:\n        ast = None\n        ast = parser.run(\"file\", sys.stdin.read())\n        code = wxcodegenerator.run(\"file\", ast)\n        sys.stdout.write(code)\n    except _MatchError as e:\n        sys.stderr.write(pprint.pformat(ast))\n        sys.stderr.write(\"\\n\")\n        sys.stderr.write(e.describe())\n        sys.exit(1)\nEOF\n",
 "type":"code"
 }
 ],
@@ -19203,6 +19111,7 @@
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "5e10aeda67184296b8d29d6d4d54c2cb":"TableOfContentsRow",
 "5e725316bce6426b88d46fe528e812ff":"_partition_characters",
+"5eed749a876348189a57700a970644fc":"TableOfContentsRowGui",
 "60c633345528443da9cc98eedc41685e":"replace_child_at_index",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
 "67ebf8be121a46768936eec41e336f11":"language",

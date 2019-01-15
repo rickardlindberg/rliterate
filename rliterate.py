@@ -67,6 +67,12 @@ class GuiFrameworkBaseMixin(object):
             raise Exception("only one handler per event allowed")
         self._handlers[event] = handler
 
+    def _get_space_size(self, sizer, size):
+        if sizer.Orientation == wx.HORIZONTAL:
+            return (size, 1)
+        else:
+            return (1, size)
+
     @property
     def has_changes(self):
         return self.changed is None or len(self.changed) > 0
@@ -135,7 +141,7 @@ class GuiFrameworkBaseMixin(object):
         elif isinstance(self.Parent, GuiFrameworkBaseMixin):
             self.Parent._call_handler(name, event)
 
-class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
+class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
@@ -146,13 +152,88 @@ class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
         if first_sizer is None:
             first_sizer = self._label1
             self.Sizer = first_sizer
-        self._label2 = TextProjectionEditor(self, handle_key=self._handle_key, project=self.project, selection=self.selection, get_characters=self._get_characters, max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
-        self.text = self._label2
-        self._label1.Add(self._label2, proportion=1)
-        self._label2.listen('double_click', lambda event: self.text.Select(event.Position))
-        self._label0.listen('right_click', lambda event: SimpleContextMenu.ShowRecursive(self))
+        self._label2 = self._label1.Add(self._get_space_size(self._label1, self._indentation_size()))
+        self._label3 = {}
+        self._label5 = 0
+        self._label6 = 0
+        self._label3['project'] = self.project
+        self._label3['page'] = self.page
+        self._label6 = self.BORDER
+        self._label5 |= wx.LEFT
+        self._label5 |= wx.EXPAND
+        self._label5 |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
+        self._label7 = TableOfContentsButton(self, **self._label3)
+        self._label1.Add(self._label7, flag=self._label5, border=self._label6, proportion=0)
+        self._label8 = {}
+        self._label10 = 0
+        self._label11 = 0
+        self._label8['characters'] = self._get_characters()
+        self._label11 = self.BORDER
+        self._label10 |= wx.ALL
+        self._label12 = TextProjection(self, **self._label8)
+        self._label1.Add(self._label12, flag=self._label10, border=self._label11, proportion=0)
+        self._label0.listen('click', lambda event: self._on_click_old(event))
+        self._label0.listen('right_click', lambda event: self._on_right_click_old(event))
+        self._label0.listen('drag', lambda event: self._on_drag_old(event))
     def _update_gui(self):
-        self._label2.UpdateGui(handle_key=self._handle_key, project=self.project, selection=self.selection, get_characters=self._get_characters, max_width=self.project.theme.page_body_width, font=self._create_font(), tooltip=self.page.full_title)
+        pass
+        self._label2.SetMinSize(self._get_space_size(self._label1, self._indentation_size()))
+        self._label4 = {}
+        self._label4['project'] = self.project
+        self._label4['page'] = self.page
+        self._label7.UpdateGui(**self._label4)
+        self._label9 = {}
+        self._label9['characters'] = self._get_characters()
+        self._label12.UpdateGui(**self._label9)
+    @property
+    def project(self):
+        return self.values["project"]
+    @property
+    def page(self):
+        return self.values["page"]
+    @property
+    def selection(self):
+        return self.values["selection"]
+    @property
+    def indentation(self):
+        return self.values["indentation"]
+class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+    def _create_gui(self):
+        first_sizer = None
+        self._label13 = self
+        self._label14 = wx.BoxSizer(wx.HORIZONTAL)
+        if first_sizer is None:
+            first_sizer = self._label14
+            self.Sizer = first_sizer
+        self._label15 = {}
+        self._label17 = 0
+        self._label18 = 0
+        self._label15['handle_key'] = self._handle_key
+        self._label15['project'] = self.project
+        self._label15['selection'] = self.selection
+        self._label15['get_characters'] = self._get_characters
+        self._label15['max_width'] = self.project.theme.page_body_width
+        self._label15['font'] = self._create_font()
+        self._label15['tooltip'] = self.page.full_title
+        self._label13.listen('double_click', lambda event: self.text.Select(event.Position))
+        self._label19 = TextProjectionEditor(self, **self._label15)
+        self._label14.Add(self._label19, flag=self._label17, border=self._label18, proportion=0)
+        self.text = self._label19
+        self._label13.listen('right_click', lambda event: SimpleContextMenu.ShowRecursive(self))
+    def _update_gui(self):
+        pass
+        self._label16 = {}
+        self._label16['handle_key'] = self._handle_key
+        self._label16['project'] = self.project
+        self._label16['selection'] = self.selection
+        self._label16['get_characters'] = self._get_characters
+        self._label16['max_width'] = self.project.theme.page_body_width
+        self._label16['font'] = self._create_font()
+        self._label16['tooltip'] = self.page.full_title
+        self._label19.UpdateGui(**self._label16)
     @property
     def project(self):
         return self.values["project"]
@@ -168,17 +249,36 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
     def _create_gui(self):
         first_sizer = None
-        self._label3 = self
-        self._label4 = wx.BoxSizer(wx.HORIZONTAL)
+        self._label20 = self
+        self._label21 = wx.BoxSizer(wx.HORIZONTAL)
         if first_sizer is None:
-            first_sizer = self._label4
+            first_sizer = self._label21
             self.Sizer = first_sizer
-        self._label5 = TextProjection(self, characters=self.get_characters(self), line_height=self.line_height, max_width=self.max_width, break_at_word=self.break_at_word, font=self.font, tooltip=self.tooltip, focus=self.selection.present)
-        self.text = self._label5
-        self._label4.Add(self._label5, proportion=1)
-        self._label5.listen('char', lambda event: self._on_char(event))
+        self._label22 = {}
+        self._label24 = 0
+        self._label25 = 0
+        self._label22['characters'] = self.get_characters(self)
+        self._label22['line_height'] = self.line_height
+        self._label22['max_width'] = self.max_width
+        self._label22['break_at_word'] = self.break_at_word
+        self._label22['font'] = self.font
+        self._label22['tooltip'] = self.tooltip
+        self._label22['focus'] = self.selection.present
+        self._label20.listen('char', lambda event: self._on_char(event))
+        self._label26 = TextProjection(self, **self._label22)
+        self._label21.Add(self._label26, flag=self._label24, border=self._label25, proportion=0)
+        self.text = self._label26
     def _update_gui(self):
-        self._label5.UpdateGui(characters=self.get_characters(self), line_height=self.line_height, max_width=self.max_width, break_at_word=self.break_at_word, font=self.font, tooltip=self.tooltip, focus=self.selection.present)
+        pass
+        self._label23 = {}
+        self._label23['characters'] = self.get_characters(self)
+        self._label23['line_height'] = self.line_height
+        self._label23['max_width'] = self.max_width
+        self._label23['break_at_word'] = self.break_at_word
+        self._label23['font'] = self.font
+        self._label23['tooltip'] = self.tooltip
+        self._label23['focus'] = self.selection.present
+        self._label26.UpdateGui(**self._label23)
     @property
     def project(self):
         return self.values["project"]
@@ -3012,10 +3112,21 @@ class TableOfContents(VerticalBasePanel):
     def _get_or_create_row(self, page, indentation):
         if self.row_index < len(self.row_widgets):
             row, divider = self.row_widgets[self.row_index]
-            row.UpdateGui(project=self.values["project"], page=page, indentation=indentation)
+            row.UpdateGui(
+                project=self.values["project"],
+                page=page,
+                selection=self.values["selection"],
+                indentation=indentation
+            )
         else:
             row = self.page_container.AppendChild(
-                TableOfContentsRow(self.page_container, project=self.values["project"], page=page, indentation=indentation),
+                TableOfContentsRow(
+                    self.page_container,
+                    project=self.values["project"],
+                    page=page,
+                    selection=self.values["selection"],
+                    indentation=indentation
+                ),
                 flag=wx.EXPAND
             )
             divider = self.page_container.AppendChild(
@@ -3078,75 +3189,37 @@ class TableOfContentsDropTarget(DropPointDropTarget):
             target_page=drop_point.target_page,
             target_index=drop_point.target_index
         )
-class TableOfContentsRow(HorizontalBasePanel):
+class TableOfContentsRow(TableOfContentsRowGui):
 
     BORDER = 2
     INDENTATION_SIZE = 16
 
-    def _create_gui(self):
-        self._create_indent()
-        self._create_expand_collapse()
-        self._create_text()
-        self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)
-        self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
-        for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:
-            helper.OnClick = self._on_click
-            helper.OnRightClick = self._on_right_click
-            helper.OnDrag = self._on_drag
-
-    def _create_indent(self):
-        self.indent = self.AppendSpace()
-
-    def _create_expand_collapse(self):
-        self.expand_collapse = self.AppendChild(
-            TableOfContentsButton(self, **self.values),
-            flag=wx.EXPAND|wx.LEFT|wx.RESERVE_SPACE_EVEN_IF_HIDDEN,
-            border=self.BORDER
-        )
-
-    def _create_text(self):
-        self.text = self.AppendChild(
-            TextProjection(self),
-            flag=wx.ALL,
-            border=self.BORDER
-        )
-    def _on_click(self):
-        open_pages_gui(self, self.values["project"], [self.values["page"].id], column_index=0)
-
-    def _on_right_click(self, event):
-        menu = PageContextMenu(self.values["project"], self.values["page"])
+    def _indentation_size(self):
+        return self.indentation*self.INDENTATION_SIZE
+    def _get_characters(self):
+        if self.project.is_open(self.page.id):
+            token_type = TokenType.RLiterate.Strong
+        else:
+            token_type = TokenType.RLiterate
+        style = self.project.get_style(token_type)
+        return [
+            Character.create(x, style)
+            for x
+            in self.page.title
+        ]
+    def _on_click_old(self, event):
+        open_pages_gui(self, self.project, [self.page.id], column_index=0)
+    def _on_right_click_old(self, event):
+        menu = PageContextMenu(self.project, self.page)
         self.PopupMenu(menu)
         menu.Destroy()
-
-    def _on_drag(self):
+    def _on_drag_old(self, event):
         data = RliterateDataObject("page", {
-            "page_id": self.values["page"].id,
+            "page_id": self.page.id,
         })
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
-
-    def _on_enter_window(self, event):
-        self.SetBackgroundColour((240, 240, 240))
-
-    def _on_leave_window(self, event):
-        self.SetBackgroundColour((255, 255, 255))
-    def _update_gui(self):
-        self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
-        self.expand_collapse.UpdateGui(**self.values)
-        self.text.UpdateGui(characters=self._get_characters())
-
-    def _get_characters(self):
-        if self.values["project"].is_open(self.values["page"].id):
-            token_type = TokenType.RLiterate.Strong
-        else:
-            token_type = TokenType.RLiterate
-        style = self.values["project"].get_style(token_type)
-        return [
-            Character.create(x, style)
-            for x
-            in self.values["page"].title
-        ]
 class TableOfContentsButton(GuiUpdatePanel):
 
     SIZE = 16

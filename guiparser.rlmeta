@@ -3,16 +3,23 @@ GuiParser {
   widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> ["panel" x y]
   body        = variable*:xs box:y handler*:zs -> ["body" xs y zs]
   variable    = ws '#' name
-  box         = boxType:x ws '{' (child|box)*:xs ws '}' -> [x ~xs]
+  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]
   boxType     = ws 'HBox' -> "hbox"
   child       =
     | box
-    | name:x binding:z ws '(' parameter*:xs handler*:ys ws ')' -> ["child" x z xs ys]
-  parameter   = name:x ws '=' expr:y -> ["parameter" x y]
-  handler     = ws '@' name:x ws '=' expr:y -> ["handler" x y]
+    | ws 'BoxSpace' ws '(' expr:x ws ')' -> ["boxspace" x]
+    | name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> ["child" x y ~zs]
   binding     =
     | '[' name:x ']' -> ["binding" x]
     |                -> []
+  parameter   = name:x ws '=' expr:y -> ["parameter" x y]
+  handler     = ws '@' name:x ws '=' expr:y -> ["handler" x y]
+  sizerprop   =
+    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> ["sizerBorder" x y]
+    | ws '%expand' !nameChar                          -> ["sizerExpand"]
+    | ws '%reserve_space_even_if_hidden' !nameChar    -> ["sizerReserve"]
+  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]
+  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x
   expr        =
     | expr1:x (ws '.' expr1)*:xs -> ["get" x ~xs]
   expr1       =

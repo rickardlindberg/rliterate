@@ -1,3 +1,26 @@
+panel TableOfContentsRowGui {
+    #project
+    #page
+    #selection
+    #indentation
+    HBox {
+        BoxSpace(self._indentation_size())
+        TableOfContentsButton(
+            project    = self.project
+            page       = self.page
+            %border[self.BORDER, LEFT]
+            %expand
+            %reserve_space_even_if_hidden
+        )
+        TextProjection(
+            characters = self._get_characters()
+            %border[self.BORDER, ALL]
+        )
+    }
+    @click       = self._on_click_old(event)
+    @right_click = self._on_right_click_old(event)
+    @drag        = self._on_drag_old(event)
+}
 panel TitleGui {
     #project
     #page

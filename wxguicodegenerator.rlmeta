@@ -14,6 +14,7 @@ WxGuiCodeGenerator {
           #create
         <
         "def _update_gui(self):\n" >
+          "pass\n"
           #update
         <
         x
@@ -31,25 +32,58 @@ WxGuiCodeGenerator {
       }
       xs
     }
-    | ["child" .:x binding:ks [astList:y] [ast*:zs]] -> {
-      %%widget
+    | ["child" .:x binding:y ast*:zs] -> {
+      %%createVars
+      %%updateVars
+      %%sizerFlag
+      %%sizerBorder
       @create {
-        "self." %widget " = " x "(self, " y ")\n"
-        ks
-        "self." %sizer ".Add(self." %widget ", proportion=1)\n"
+        "self." %createVars " = {}\n"
+        "self." %sizerFlag " = 0\n"
+        "self." %sizerBorder " = 0\n"
       }
       @update {
-        "self." %widget ".UpdateGui(" y ")\n"
+        "self." %updateVars " = {}\n"
       }
       zs
+      %%widget
+      @create {
+        "self." %widget " = " x "(self, **self." %createVars ")\n"
+        "self." %sizer ".Add(self." %widget ", flag=self." %sizerFlag ", border=self." %sizerBorder ", proportion=0)\n"
+        y
+      }
+      @update {
+        "self." %widget ".UpdateGui(**self." %updateVars ")\n"
+      }
     }
-    | ["parameter" .:x ast:y] -> { x "=" y }
+    | ["boxspace" ast:x] -> {
+      %%sizeritem
+      @create {
+        "self." %sizeritem " = self." %sizer ".Add(self._get_space_size(self." %sizer ", " x "))\n"
+      }
+      @update {
+        "self." %sizeritem ".SetMinSize(self._get_space_size(self." %sizer ", " x "))\n"
+      }
+    }
+    | ["parameter" .:x ast:y] -> {
+      @create { "self." %createVars "[" repr(x) "] = " y "\n" }
+      @update { "self." %updateVars "[" repr(x) "] = " y "\n" }
+    }
     | ["handler" .:x ast:y] -> {
       @create { "self." %widget ".listen(" repr(x) ", lambda event: " y ")\n" }
     }
     | ["get" astGetList:x] -> { x }
     | ["call" ast:x astList:y] -> { x "(" y ")" }
     | ["name" .:x] -> { x }
+    | ["sizerBorder" ast:x [border*:y]] -> { @create { "self." %sizerBorder " = " x "\n" y } }
+    | ["sizerExpand"]                   -> { @create { "self." %sizerFlag " |= wx.EXPAND\n" } }
+    | ["sizerReserve"]                  -> { @create { "self." %sizerFlag " |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\n" } }
+  border =
+    | "ALL"    -> { "self." %sizerFlag " |= wx.ALL\n" }
+    | "LEFT"   -> { "self." %sizerFlag " |= wx.LEFT\n" }
+    | "RIGHT"  -> { "self." %sizerFlag " |= wx.RIGHT\n" }
+    | "TOP"    -> { "self." %sizerFlag " |= wx.TOP\n" }
+    | "BOTTOM" -> { "self." %sizerFlag " |= wx.BOTTOM\n" }
   astGetList =
     | ast:x astGetList:y -> { x "." y }
     | ast
@@ -60,7 +94,7 @@ WxGuiCodeGenerator {
     | ast:x
   binding =
     | ["binding" .:x] -> { "self." x " = self." %widget "\n" }
-    |                 -> {}
+    | .               -> {}
   name = .:x -> {
     "@property\n"
     "def " x "(self):\n" >

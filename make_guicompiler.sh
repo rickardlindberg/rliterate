@@ -10,6 +10,7 @@ wxcodegenerator_py=$(python rlmeta/rlmeta.py < wxguicodegenerator.rlmeta)
 
 cat <<EOF
 import sys
+import pprint
 
 $support_py
 
@@ -23,10 +24,13 @@ if __name__ == "__main__":
     parser = GuiParser()
     wxcodegenerator = WxGuiCodeGenerator()
     try:
+        ast = None
         ast = parser.run("file", sys.stdin.read())
         code = wxcodegenerator.run("file", ast)
         sys.stdout.write(code)
     except _MatchError as e:
+        sys.stderr.write(pprint.pformat(ast))
+        sys.stderr.write("\n")
         sys.stderr.write(e.describe())
         sys.exit(1)
 EOF

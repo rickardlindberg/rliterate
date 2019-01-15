@@ -67,6 +67,12 @@ class GuiFrameworkBaseMixin(object):
             raise Exception("only one handler per event allowed")
         self._handlers[event] = handler
 
+    def _get_space_size(self, sizer, size):
+        if sizer.Orientation == wx.HORIZONTAL:
+            return (size, 1)
+        else:
+            return (1, size)
+
     @property
     def has_changes(self):
         return self.changed is None or len(self.changed) > 0
@@ -2942,10 +2948,21 @@ class TableOfContents(VerticalBasePanel):
     def _get_or_create_row(self, page, indentation):
         if self.row_index < len(self.row_widgets):
             row, divider = self.row_widgets[self.row_index]
-            row.UpdateGui(project=self.values["project"], page=page, indentation=indentation)
+            row.UpdateGui(
+                project=self.values["project"],
+                page=page,
+                selection=self.values["selection"],
+                indentation=indentation
+            )
         else:
             row = self.page_container.AppendChild(
-                TableOfContentsRow(self.page_container, project=self.values["project"], page=page, indentation=indentation),
+                TableOfContentsRow(
+                    self.page_container,
+                    project=self.values["project"],
+                    page=page,
+                    selection=self.values["selection"],
+                    indentation=indentation
+                ),
                 flag=wx.EXPAND
             )
             divider = self.page_container.AppendChild(
@@ -3008,75 +3025,37 @@ class TableOfContentsDropTarget(DropPointDropTarget):
             target_page=drop_point.target_page,
             target_index=drop_point.target_index
         )
-class TableOfContentsRow(HorizontalBasePanel):
+class TableOfContentsRow(TableOfContentsRowGui):
 
     BORDER = 2
     INDENTATION_SIZE = 16
 
-    def _create_gui(self):
-        self._create_indent()
-        self._create_expand_collapse()
-        self._create_text()
-        self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_window)
-        self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_window)
-        for helper in [MouseEventHelper(self), MouseEventHelper(self.text)]:
-            helper.OnClick = self._on_click
-            helper.OnRightClick = self._on_right_click
-            helper.OnDrag = self._on_drag
-
-    def _create_indent(self):
-        self.indent = self.AppendSpace()
-
-    def _create_expand_collapse(self):
-        self.expand_collapse = self.AppendChild(
-            TableOfContentsButton(self, **self.values),
-            flag=wx.EXPAND|wx.LEFT|wx.RESERVE_SPACE_EVEN_IF_HIDDEN,
-            border=self.BORDER
-        )
-
-    def _create_text(self):
-        self.text = self.AppendChild(
-            TextProjection(self),
-            flag=wx.ALL,
-            border=self.BORDER
-        )
-    def _on_click(self):
-        open_pages_gui(self, self.values["project"], [self.values["page"].id], column_index=0)
-
-    def _on_right_click(self, event):
-        menu = PageContextMenu(self.values["project"], self.values["page"])
+    def _indentation_size(self):
+        return self.indentation*self.INDENTATION_SIZE
+    def _get_characters(self):
+        if self.project.is_open(self.page.id):
+            token_type = TokenType.RLiterate.Strong
+        else:
+            token_type = TokenType.RLiterate
+        style = self.project.get_style(token_type)
+        return [
+            Character.create(x, style)
+            for x
+            in self.page.title
+        ]
+    def _on_click_old(self, event):
+        open_pages_gui(self, self.project, [self.page.id], column_index=0)
+    def _on_right_click_old(self, event):
+        menu = PageContextMenu(self.project, self.page)
         self.PopupMenu(menu)
         menu.Destroy()
-
-    def _on_drag(self):
+    def _on_drag_old(self, event):
         data = RliterateDataObject("page", {
-            "page_id": self.values["page"].id,
+            "page_id": self.page.id,
         })
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
-
-    def _on_enter_window(self, event):
-        self.SetBackgroundColour((240, 240, 240))
-
-    def _on_leave_window(self, event):
-        self.SetBackgroundColour((255, 255, 255))
-    def _update_gui(self):
-        self.indent.SetSize(self.values["indentation"]*self.INDENTATION_SIZE)
-        self.expand_collapse.UpdateGui(**self.values)
-        self.text.UpdateGui(characters=self._get_characters())
-
-    def _get_characters(self):
-        if self.values["project"].is_open(self.values["page"].id):
-            token_type = TokenType.RLiterate.Strong
-        else:
-            token_type = TokenType.RLiterate
-        style = self.values["project"].get_style(token_type)
-        return [
-            Character.create(x, style)
-            for x
-            in self.values["page"].title
-        ]
 class TableOfContentsButton(GuiUpdatePanel):
 
     SIZE = 16
