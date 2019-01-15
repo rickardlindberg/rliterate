@@ -18,6 +18,7 @@ GuiParser {
   handler     = ws '@' name:x ws '=' expr:y -> ["handler" x y]
   sizerprop   =
     | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> ["sizerBorder" x y]
+    | ws '%proportion[' expr:x ws ']'                 -> ["sizerProportion" x]
     | ws '%expand' !nameChar                          -> ["sizerExpand"]
     | ws '%reserve_space_even_if_hidden' !nameChar    -> ["sizerReserve"]
   borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]
@@ -25,6 +26,7 @@ GuiParser {
   expr        =
     | expr1:x (ws '.' expr1)*:xs -> ["get" x ~xs]
     | ws '"' (!'"' .)*:xs '"'    -> ["string" join(xs)]
+    | ws '0'-'9':x ('0'-'9')*:xs           -> ["int" int(join([x ~xs]))]
   expr1       =
     | expr2:x ws '(' expr*:xs ws ')' -> ["call" x ~xs]
     | expr2

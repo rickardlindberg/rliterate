@@ -46,6 +46,7 @@ panel TitleGui {
             font          = self._create_font()
             tooltip       = self.page.full_title
             @double_click = self.text.Select(event.Position)
+            %proportion[1]
         )
     }
     @right_click = SimpleContextMenu.ShowRecursive(self)
