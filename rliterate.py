@@ -53,6 +53,7 @@ class GuiFrameworkBaseMixin(object):
         self.changed = None
         self._handlers = {}
         self.down_pos = None
+        self._default_cursor = self.GetCursor()
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.Bind(wx.EVT_MOTION, self._on_motion)
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
@@ -117,9 +118,11 @@ class GuiFrameworkBaseMixin(object):
             else:
                 self.SetToolTipString(value)
         if self.did_change("cursor"):
-            self.SetCursor(wx.StockCursor({
-                "hand": wx.CURSOR_HAND,
-            }.get(self.values["cursor"])))
+            self.SetCursor({
+                "hand": wx.StockCursor(wx.CURSOR_HAND),
+                "beam": wx.StockCursor(wx.CURSOR_IBEAM),
+                None: self._default_cursor,
+            }.get(self.values["cursor"]))
         if self.did_change("min_size"):
             self.SetMinSize(self.values["min_size"])
         if self.did_change("visible"):
@@ -132,7 +135,7 @@ class GuiFrameworkBaseMixin(object):
 
     def _on_motion(self, event):
         if self.down_pos is None:
-            self._call_handler("mouse_move", event)
+            self._call_handler("mouse_move", event, propagate=True)
         if self._should_drag(event.Position):
             self.down_pos = None
             self._call_handler("drag", event)
@@ -209,6 +212,7 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
         self._label15 = self.BORDER
         self._label14 |= wx.ALL
         self._label11.append(('ctrl_click', lambda event: self.text.Select(event.Position)))
+        self._label11.append(('mouse_move', lambda event: self._set_cursor(event)))
         self._label17 = TextProjectionEditor(self, **self._label12)
         self._label2.Add(self._label17, flag=self._label14, border=self._label15, proportion=self._label16)
         for handler in self._label11:
@@ -3314,6 +3318,11 @@ class TableOfContentsRow(TableOfContentsRowGui):
             )
         else:
             return editor.create_missing_characters("Enter title...", 0)
+    def _set_cursor(self, event):
+        if event.GetModifiers() == wx.MOD_CONTROL:
+            self.text.UpdateGui(cursor="beam")
+        else:
+            self.text.UpdateGui(cursor=None)
     def _on_click_old(self, event):
         open_pages_gui(self, self.project, [self.page.id], column_index=0)
     def _on_right_click_old(self, event):

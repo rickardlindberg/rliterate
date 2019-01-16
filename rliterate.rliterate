@@ -8980,7 +8980,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #page\n    #selection\n    #indentation\n    HBox {\n        BoxSpace(self._indentation_size())\n        TableOfContentsButton(\n            project    = self.project\n            page       = self.page\n            %border[self.BORDER, LEFT]\n            %expand\n            %reserve_space_even_if_hidden\n        )\n        TextProjectionEditor[text](\n            project        = self.project\n            selection      = self.selection\n            handle_key     = self._handle_key\n            get_characters = self._get_characters\n            %border[self.BORDER, ALL]\n            @ctrl_click = self.text.Select(event.Position)\n        )\n    }\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
+"text":" {\n    #project\n    #page\n    #selection\n    #indentation\n    HBox {\n        BoxSpace(self._indentation_size())\n        TableOfContentsButton(\n            project    = self.project\n            page       = self.page\n            %border[self.BORDER, LEFT]\n            %expand\n            %reserve_space_even_if_hidden\n        )\n        TextProjectionEditor[text](\n            project        = self.project\n            selection      = self.selection\n            handle_key     = self._handle_key\n            get_characters = self._get_characters\n            %border[self.BORDER, ALL]\n            @ctrl_click = self.text.Select(event.Position)\n            @mouse_move = self._set_cursor(event)\n        )\n    }\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
 "type":"code"
 }
 ],
@@ -9080,6 +9080,24 @@
 }
 ],
 "id":"244f3dbf888c4a6fb2bedda9ce9d224d",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"def _set_cursor(self, event):\n    if event.GetModifiers() == wx.MOD_CONTROL:\n        self.text.UpdateGui(cursor=\"beam\")\n    else:\n        self.text.UpdateGui(cursor=None)\n",
+"type":"code"
+}
+],
+"id":"52f0a51a6712486897e996824ab0bb98",
 "language":"",
 "type":"code"
 },
@@ -15892,7 +15910,7 @@
 "type":"variable"
 },
 {
-"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.",
+"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self._default_cursor = self.GetCursor()\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.",
 "type":"code"
 },
 {
@@ -16068,7 +16086,7 @@
 "type":"variable"
 },
 {
-"text":"(\"cursor\"):\n            self.SetCursor(wx.StockCursor({\n                \"hand\": wx.CURSOR_HAND,\n            }.get(self.values[\"cursor\"])))\n        if self.",
+"text":"(\"cursor\"):\n            self.SetCursor({\n                \"hand\": wx.StockCursor(wx.CURSOR_HAND),\n                \"beam\": wx.StockCursor(wx.CURSOR_IBEAM),\n                None: self._default_cursor,\n            }.get(self.values[\"cursor\"]))\n        if self.",
 "type":"code"
 },
 {
@@ -16084,7 +16102,7 @@
 "type":"variable"
 },
 {
-"text":"(\"visible\"):\n            self.Show(self.values[\"visible\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
+"text":"(\"visible\"):\n            self.Show(self.values[\"visible\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event, propagate=True)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
 "type":"code"
 },
 {

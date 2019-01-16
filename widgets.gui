@@ -19,6 +19,7 @@ panel TableOfContentsRowGui {
             get_characters = self._get_characters
             %border[self.BORDER, ALL]
             @ctrl_click = self.text.Select(event.Position)
+            @mouse_move = self._set_cursor(event)
         )
     }
     @click       = self._on_click_old(event)
