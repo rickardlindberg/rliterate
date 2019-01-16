@@ -161,7 +161,7 @@ class GuiFrameworkBaseMixin(object):
         if name in self._handlers:
             self._handlers[name](event)
         elif propagate and isinstance(self.Parent, GuiFrameworkBaseMixin):
-            self.Parent._call_handler(name, event)
+            self.Parent._call_handler(name, event, propagate=propagate)
 
 ### INSERT GENERATED GUI CLASSES HERE ###
 class BoxSizerMixin(object):

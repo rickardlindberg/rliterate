@@ -16090,7 +16090,7 @@
 "type":"variable"
 },
 {
-"text":"):\n            self.Parent._call_handler(name, event)\n\n",
+"text":"):\n            self.Parent._call_handler(name, event, propagate=propagate)\n\n",
 "type":"code"
 },
 {
