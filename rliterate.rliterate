@@ -8521,7 +8521,7 @@
 "type":"variable"
 },
 {
-"text":"[\"selection\"],\n            indentation=indentation\n        )\n    else:\n        row = self.page_container.",
+"text":"[\"selection\"].get(page.id),\n            indentation=indentation\n        )\n    else:\n        row = self.page_container.",
 "type":"code"
 },
 {
@@ -8553,7 +8553,7 @@
 "type":"variable"
 },
 {
-"text":"[\"selection\"],\n                indentation=indentation\n            ),\n            flag=wx.EXPAND\n        )\n        divider = self.page_container.",
+"text":"[\"selection\"].get(page.id),\n                indentation=indentation\n            ),\n            flag=wx.EXPAND\n        )\n        divider = self.page_container.",
 "type":"code"
 },
 {
@@ -8980,7 +8980,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #page\n    #selection\n    #indentation\n    HBox {\n        BoxSpace(self._indentation_size())\n        TableOfContentsButton(\n            project    = self.project\n            page       = self.page\n            %border[self.BORDER, LEFT]\n            %expand\n            %reserve_space_even_if_hidden\n        )\n        TextProjection(\n            characters = self._get_characters()\n            %border[self.BORDER, ALL]\n        )\n    }\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
+"text":" {\n    #project\n    #page\n    #selection\n    #indentation\n    HBox {\n        BoxSpace(self._indentation_size())\n        TableOfContentsButton(\n            project    = self.project\n            page       = self.page\n            %border[self.BORDER, LEFT]\n            %expand\n            %reserve_space_even_if_hidden\n        )\n        TextProjectionEditor[text](\n            project        = self.project\n            selection      = self.selection\n            handle_key     = self._handle_key\n            get_characters = self._get_characters\n            %border[self.BORDER, ALL]\n            @ctrl_click = self.text.Select(event.Position)\n        )\n    }\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
 "type":"code"
 }
 ],
@@ -9057,23 +9057,25 @@
 ],
 "fragments":[
 {
-"text":"def _get_characters(self):\n    if self.project.is_open(self.page.id):\n        token_type = TokenType.RLiterate.Strong\n    else:\n        token_type = TokenType.RLiterate\n    style = self.project.get_style(token_type)\n    return [\n        ",
+"text":"def _handle_key(self, event):\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            self.page.set_title(result[0])\n            self.project.selection = self.selection.create(result[1])\n",
+"type":"code"
+}
+],
+"id":"54558e1036ba49b4be900a1ff58817ff",
+"language":"",
 "type":"code"
 },
 {
-"id":"99872a7e246e4fc38f9e0029f076e120",
-"type":"variable"
-},
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
 {
-"text":".",
-"type":"code"
-},
-{
-"id":"ae234077465241e39337f68165ffb11e",
-"type":"variable"
-},
-{
-"text":"(x, style)\n        for x\n        in self.page.title\n    ]\n",
+"text":"def _get_characters(self, editor):\n    if self.project.is_open(self.page.id):\n        token_type = TokenType.RLiterate.Strong\n    else:\n        token_type = TokenType.RLiterate\n    if self.page.title:\n        return editor.create_characters(\n            self.page.title,\n            self.project.get_style(token_type),\n            selections=[self.selection.value]\n        )\n    else:\n        return editor.create_missing_characters(\"Enter title...\", 0)\n",
 "type":"code"
 }
 ],
@@ -14911,7 +14913,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    DEFAULTS = {\n        \"characters\": [],\n        \"line_height\": 1,\n        \"max_width\": None,\n        \"break_at_word\": True,\n        \"font\": None,\n    }\n\n",
+"text":"):\n\n    DEFAULTS = {\n        \"characters\": [],\n        \"line_height\": 1,\n        \"max_width\": None,\n        \"break_at_word\": True,\n        \"font\": None,\n        \"tooltip\": None,\n    }\n\n",
 "type":"code"
 },
 {
@@ -16082,7 +16084,7 @@
 "type":"variable"
 },
 {
-"text":"(\"visible\"):\n            self.Show(self.values[\"visible\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
+"text":"(\"visible\"):\n            self.Show(self.values[\"visible\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
 "type":"code"
 },
 {

@@ -12,9 +12,13 @@ panel TableOfContentsRowGui {
             %expand
             %reserve_space_even_if_hidden
         )
-        TextProjection(
-            characters = self._get_characters()
+        TextProjectionEditor[text](
+            project        = self.project
+            selection      = self.selection
+            handle_key     = self._handle_key
+            get_characters = self._get_characters
             %border[self.BORDER, ALL]
+            @ctrl_click = self.text.Select(event.Position)
         )
     }
     @click       = self._on_click_old(event)

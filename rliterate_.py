@@ -148,7 +148,10 @@ class GuiFrameworkBaseMixin(object):
 
     def _on_left_up(self, event):
         if self.down_pos is not None:
-            self._call_handler("click", event, propagate=True)
+            if event.GetModifiers() == wx.MOD_CONTROL:
+                self._call_handler("ctrl_click", event, propagate=True)
+            else:
+                self._call_handler("click", event, propagate=True)
         self.down_pos = None
 
     def _on_left_dclick(self, event):
@@ -676,6 +679,7 @@ class TextProjectionEditor(TextProjectionEditorGui):
         "max_width": None,
         "break_at_word": True,
         "font": None,
+        "tooltip": None,
     }
 
     @rltime("on char")
@@ -2973,7 +2977,7 @@ class TableOfContents(VerticalBasePanel):
             row.UpdateGui(
                 project=self.values["project"],
                 page=page,
-                selection=self.values["selection"],
+                selection=self.values["selection"].get(page.id),
                 indentation=indentation
             )
         else:
@@ -2982,7 +2986,7 @@ class TableOfContents(VerticalBasePanel):
                     self.page_container,
                     project=self.values["project"],
                     page=page,
-                    selection=self.values["selection"],
+                    selection=self.values["selection"].get(page.id),
                     indentation=indentation
                 ),
                 flag=wx.EXPAND
@@ -3054,17 +3058,25 @@ class TableOfContentsRow(TableOfContentsRowGui):
 
     def _indentation_size(self):
         return self.indentation*self.INDENTATION_SIZE
-    def _get_characters(self):
+    def _handle_key(self, event):
+        result = edit_plain_text(self.page.title, self.selection.value, event)
+        if result:
+            with self.project.notify():
+                self.page.set_title(result[0])
+                self.project.selection = self.selection.create(result[1])
+    def _get_characters(self, editor):
         if self.project.is_open(self.page.id):
             token_type = TokenType.RLiterate.Strong
         else:
             token_type = TokenType.RLiterate
-        style = self.project.get_style(token_type)
-        return [
-            Character.create(x, style)
-            for x
-            in self.page.title
-        ]
+        if self.page.title:
+            return editor.create_characters(
+                self.page.title,
+                self.project.get_style(token_type),
+                selections=[self.selection.value]
+            )
+        else:
+            return editor.create_missing_characters("Enter title...", 0)
     def _on_click_old(self, event):
         open_pages_gui(self, self.project, [self.page.id], column_index=0)
     def _on_right_click_old(self, event):

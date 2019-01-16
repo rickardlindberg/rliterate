@@ -148,7 +148,10 @@ class GuiFrameworkBaseMixin(object):
 
     def _on_left_up(self, event):
         if self.down_pos is not None:
-            self._call_handler("click", event, propagate=True)
+            if event.GetModifiers() == wx.MOD_CONTROL:
+                self._call_handler("ctrl_click", event, propagate=True)
+            else:
+                self._call_handler("click", event, propagate=True)
         self.down_pos = None
 
     def _on_left_dclick(self, event):
@@ -199,13 +202,18 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
         self._label15 = 0
         self._label16 = 0
         self._label11 = []
-        self._label12['characters'] = self._get_characters()
+        self._label12['project'] = self.project
+        self._label12['selection'] = self.selection
+        self._label12['handle_key'] = self._handle_key
+        self._label12['get_characters'] = self._get_characters
         self._label15 = self.BORDER
         self._label14 |= wx.ALL
-        self._label17 = TextProjection(self, **self._label12)
+        self._label11.append(('ctrl_click', lambda event: self.text.Select(event.Position)))
+        self._label17 = TextProjectionEditor(self, **self._label12)
         self._label2.Add(self._label17, flag=self._label14, border=self._label15, proportion=self._label16)
         for handler in self._label11:
             self._label17.listen(*handler)
+        self.text = self._label17
         self._label0.append(('click', lambda event: self._on_click_old(event)))
         self._label0.append(('right_click', lambda event: self._on_right_click_old(event)))
         self._label0.append(('drag', lambda event: self._on_drag_old(event)))
@@ -219,7 +227,10 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
         self._label6['page'] = self.page
         self._label10.UpdateGui(**self._label6)
         self._label13 = {}
-        self._label13['characters'] = self._get_characters()
+        self._label13['project'] = self.project
+        self._label13['selection'] = self.selection
+        self._label13['handle_key'] = self._handle_key
+        self._label13['get_characters'] = self._get_characters
         self._label17.UpdateGui(**self._label13)
     @property
     def project(self):
@@ -905,6 +916,7 @@ class TextProjectionEditor(TextProjectionEditorGui):
         "max_width": None,
         "break_at_word": True,
         "font": None,
+        "tooltip": None,
     }
 
     @rltime("on char")
@@ -3202,7 +3214,7 @@ class TableOfContents(VerticalBasePanel):
             row.UpdateGui(
                 project=self.values["project"],
                 page=page,
-                selection=self.values["selection"],
+                selection=self.values["selection"].get(page.id),
                 indentation=indentation
             )
         else:
@@ -3211,7 +3223,7 @@ class TableOfContents(VerticalBasePanel):
                     self.page_container,
                     project=self.values["project"],
                     page=page,
-                    selection=self.values["selection"],
+                    selection=self.values["selection"].get(page.id),
                     indentation=indentation
                 ),
                 flag=wx.EXPAND
@@ -3283,17 +3295,25 @@ class TableOfContentsRow(TableOfContentsRowGui):
 
     def _indentation_size(self):
         return self.indentation*self.INDENTATION_SIZE
-    def _get_characters(self):
+    def _handle_key(self, event):
+        result = edit_plain_text(self.page.title, self.selection.value, event)
+        if result:
+            with self.project.notify():
+                self.page.set_title(result[0])
+                self.project.selection = self.selection.create(result[1])
+    def _get_characters(self, editor):
         if self.project.is_open(self.page.id):
             token_type = TokenType.RLiterate.Strong
         else:
             token_type = TokenType.RLiterate
-        style = self.project.get_style(token_type)
-        return [
-            Character.create(x, style)
-            for x
-            in self.page.title
-        ]
+        if self.page.title:
+            return editor.create_characters(
+                self.page.title,
+                self.project.get_style(token_type),
+                selections=[self.selection.value]
+            )
+        else:
+            return editor.create_missing_characters("Enter title...", 0)
     def _on_click_old(self, event):
         open_pages_gui(self, self.project, [self.page.id], column_index=0)
     def _on_right_click_old(self, event):
