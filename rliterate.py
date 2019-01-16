@@ -209,6 +209,8 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
         self._label0.append(('click', lambda event: self._on_click_old(event)))
         self._label0.append(('right_click', lambda event: self._on_right_click_old(event)))
         self._label0.append(('drag', lambda event: self._on_drag_old(event)))
+        for handler in self._label0:
+            self._label1.listen(*handler)
     def _update_gui(self):
         pass
         self._label3.SetMinSize(self._get_space_size(self._label2, self._indentation_size()))
@@ -251,6 +253,8 @@ class TableOfContentsButtonGui(wx.Panel, GuiFrameworkBaseMixin):
             self.Sizer = first_sizer
         self._label18.append(('click', lambda event: self.project.toggle_collapsed(self.page.id)))
         self._label18.append(('paint', lambda event: self._on_paint(event)))
+        for handler in self._label18:
+            self._label19.listen(*handler)
     def _update_gui(self):
         pass
     @property
@@ -294,6 +298,8 @@ class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
             self._label30.listen(*handler)
         self.text = self._label30
         self._label21.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        for handler in self._label21:
+            self._label22.listen(*handler)
     def _update_gui(self):
         pass
         self._label26 = {}
@@ -347,6 +353,8 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
         for handler in self._label34:
             self._label40.listen(*handler)
         self.text = self._label40
+        for handler in self._label31:
+            self._label32.listen(*handler)
     def _update_gui(self):
         pass
         self._label36 = {}

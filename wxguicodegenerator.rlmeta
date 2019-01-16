@@ -17,6 +17,9 @@ WxGuiCodeGenerator {
           "self." %handlers " = []\n"
           "self." %widget " = self\n"
           #create
+          "for handler in self." %handlers ":\n" >
+            "self." %widget ".listen(*handler)\n"
+          <
         <
         "def _update_gui(self):\n" >
           "pass\n"
