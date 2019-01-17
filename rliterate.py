@@ -177,14 +177,12 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
         return {
         }
     def _create_gui(self):
-        first_sizer = None
         self._label0 = []
         self._label1 = self
         self._label2 = self
         self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        if first_sizer is None:
-            first_sizer = self._label3
-            self.Sizer = first_sizer
+        if self._label2.Sizer is None:
+            self._label2.Sizer = self._label3
         self._label4 = self._label3.Add(self._get_space_size(self._label3, self._indentation_size()))
         self._label6 = {}
         self._label8 = 0
@@ -262,14 +260,12 @@ class TableOfContentsButtonGui(wx.Panel, GuiFrameworkBaseMixin):
             'min_size': self._get_min_size(),
         }
     def _create_gui(self):
-        first_sizer = None
         self._label21 = []
         self._label22 = self
         self._label23 = self
         self._label24 = wx.BoxSizer(wx.HORIZONTAL)
-        if first_sizer is None:
-            first_sizer = self._label24
-            self.Sizer = first_sizer
+        if self._label23.Sizer is None:
+            self._label23.Sizer = self._label24
         self._label21.append(('click', lambda event: self.project.toggle_collapsed(self.page.id)))
         self._label21.append(('paint', lambda event: self._on_paint(event)))
         for handler in self._label21:
@@ -290,14 +286,12 @@ class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
         return {
         }
     def _create_gui(self):
-        first_sizer = None
         self._label25 = []
         self._label26 = self
         self._label27 = self
         self._label28 = wx.BoxSizer(wx.HORIZONTAL)
-        if first_sizer is None:
-            first_sizer = self._label28
-            self.Sizer = first_sizer
+        if self._label27.Sizer is None:
+            self._label27.Sizer = self._label28
         self._label30 = {}
         self._label32 = 0
         self._label33 = 0
@@ -349,14 +343,12 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
         return {
         }
     def _create_gui(self):
-        first_sizer = None
         self._label37 = []
         self._label38 = self
         self._label39 = self
         self._label40 = wx.BoxSizer(wx.HORIZONTAL)
-        if first_sizer is None:
-            first_sizer = self._label40
-            self.Sizer = first_sizer
+        if self._label39.Sizer is None:
+            self._label39.Sizer = self._label40
         self._label42 = {}
         self._label44 = 0
         self._label45 = 0

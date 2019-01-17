@@ -14,7 +14,6 @@ WxGuiCodeGenerator {
           "return {\n" > #derived < "}\n"
         <
         "def _create_gui(self):\n" >
-          "first_sizer = None\n"
           "self." %handlers " = []\n"
           "self." %widget " = self\n"
           "self." %parent " = self\n"
@@ -35,9 +34,8 @@ WxGuiCodeGenerator {
       %%sizer
       @create {
         "self." %sizer " = wx.BoxSizer(" x ")\n"
-        "if first_sizer is None:\n" >
-          "first_sizer = self." %sizer "\n"
-          "self.Sizer = first_sizer\n"
+        "if self." %parent ".Sizer is None:\n" >
+          "self." %parent ".Sizer = self." %sizer "\n"
         <
       }
       ys
