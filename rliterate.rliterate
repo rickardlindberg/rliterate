@@ -8297,6 +8297,31 @@
 },
 {
 "chunkpath":[
+"dont_render_me_yet"
+],
+"filepath":[
+"widgets.gui"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"0c81b6ab4f7a4542ad9a27332f932a69",
+"type":"variable"
+},
+{
+"text":" {\n    #project\n    #selection\n    #min_size   = tuple(250 -1)\n    #background = \"#ffffff\"\n    HBox {\n        Button(\n            visible = self._has_hoisted_page()\n            %expand\n            @button = self._clear_hoisted_page()\n        )\n        VScroll() {\n            VBox {\n                for (self._get_rows() : row) {\n                    TableOfContentsRow(\n                        project     = self.project\n                        page        = row.page\n                        selection   = self.selection.get(row.page.id)\n                        indentation = row.indentation\n                    )\n                    Divider(\n                        padding = 0\n                        height  = 2\n                    )\n                }\n            }\n        }\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"5b3db6dc57184ce6a4a2ff0b4245a8ff",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
 "classes",
 "TableOfContents"
 ],
@@ -15798,7 +15823,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y handler*:zs -> [\"body\" xs y zs]\n  variable    =\n    | ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n    | ws '#' name:x               -> [\"variable\" x ]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     = ws 'HBox' -> \"hbox\"\n  child       =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws '0'-'9':x ('0'-'9')*:xs           -> [\"int\" int(join([x ~xs]))]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"text":"GuiParser {\n  file        = widget*:xs ws !. -> xs\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' -> [\"panel\" x y]\n  body        = variable*:xs box:y handler*:zs -> [\"body\" xs y zs]\n  variable    =\n    | ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n    | ws '#' name:x               -> [\"variable\" x ]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     =\n    | ws 'HBox' -> \"hbox\"\n    | ws 'VBox' -> \"vbox\"\n  child       =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | ws 'for' !nameChar ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n    | name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' (ws '{' box:x ws '}' -> [x] | -> []):w -> [\"child\" x y zs w]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
@@ -15813,7 +15838,7 @@
 ],
 "fragments":[
 {
-"text":"WxGuiCodeGenerator {\n  file = [ast*:xs] -> { xs }\n  ast =\n    | [\"panel\" .:name ast:x] -> {\n      %%handlers\n      %%widget\n      \"class \" name \"(wx.Panel, ",
+"text":"WxGuiCodeGenerator {\n  file = [ast*:xs] -> { xs }\n  ast =\n    | [\"panel\" .:name ast:x] -> {\n      %%handlers\n      %%widget\n      %%parent\n      \"class \" name \"(wx.Panel, ",
 "type":"code"
 },
 {
@@ -15829,7 +15854,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _get_derived(self):\\n\" >\n          \"return {\\n\" > #derived < \"}\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          \"first_sizer = None\\n\"\n          \"self.\" %handlers \" = []\\n\"\n          \"self.\" %widget \" = self\\n\"\n          #create\n          \"for handler in self.\" %handlers \":\\n\" >\n            \"self.\" %widget \".listen(*handler)\\n\"\n          <\n        <\n        \"def _update_gui(self):\\n\" >\n          \"pass\\n\"\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n    | [\"hbox\" ast*:xs] -> {\n      %%sizer\n      @create {\n        \"self.\" %sizer \" = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n        \"if first_sizer is None:\\n\" >\n          \"first_sizer = self.\" %sizer \"\\n\"\n          \"self.Sizer = first_sizer\\n\"\n        <\n      }\n      xs\n    }\n    | [\"child\" .:x binding:y ast*:zs] -> {\n      %%handlers\n      %%createVars\n      %%updateVars\n      %%sizerFlag\n      %%sizerBorder\n      %%sizerProportion\n      @create {\n        \"self.\" %createVars \" = {}\\n\"\n        \"self.\" %sizerFlag \" = 0\\n\"\n        \"self.\" %sizerBorder \" = 0\\n\"\n        \"self.\" %sizerProportion \" = 0\\n\"\n        \"self.\" %handlers \" = []\\n\"\n      }\n      @update {\n        \"self.\" %updateVars \" = {}\\n\"\n      }\n      zs\n      %%widget\n      @create {\n        \"self.\" %widget \" = \" x \"(self, **self.\" %createVars \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %widget \", flag=self.\" %sizerFlag \", border=self.\" %sizerBorder \", proportion=self.\" %sizerProportion \")\\n\"\n        \"for handler in self.\" %handlers \":\\n\" >\n          \"self.\" %widget \".listen(*handler)\\n\"\n        <\n        y\n      }\n      @update {\n        \"self.\" %widget \".UpdateGui(**self.\" %updateVars \")\\n\"\n      }\n    }\n    | [\"boxspace\" ast:x] -> {\n      %%sizeritem\n      @create {\n        \"self.\" %sizeritem \" = self.\" %sizer \".Add(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n      }\n      @update {\n        \"self.\" %sizeritem \".SetMinSize(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n      }\n    }\n    | [\"parameter\" .:x ast:y] -> {\n      @create { \"self.\" %createVars \"[\" repr(x) \"] = \" y \"\\n\" }\n      @update { \"self.\" %updateVars \"[\" repr(x) \"] = \" y \"\\n\" }\n    }\n    | [\"handler\" .:x ast:y] -> {\n      @create { \"self.\" %handlers \".append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n    }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"name\" .:x] -> { x }\n    | [\"variable\" .:x] -> {\n        \"@property\\n\"\n        \"def \" x \"(self):\\n\" >\n          \"return self.",
+"text":".__init__(self, **kwargs)\\n\"\n        <\n        \"def _get_derived(self):\\n\" >\n          \"return {\\n\" > #derived < \"}\\n\"\n        <\n        \"def _create_gui(self):\\n\" >\n          \"first_sizer = None\\n\"\n          \"self.\" %handlers \" = []\\n\"\n          \"self.\" %widget \" = self\\n\"\n          \"self.\" %parent \" = self\\n\"\n          #create\n          \"for handler in self.\" %handlers \":\\n\" >\n            \"self.\" %widget \".listen(*handler)\\n\"\n          <\n        <\n        \"def _update_gui(self):\\n\" >\n          \"pass\\n\"\n          #update\n        <\n        x\n      <\n    }\n    | [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n    | [boxType:x ast*:ys] -> {\n      %%sizer\n      @create {\n        \"self.\" %sizer \" = wx.BoxSizer(\" x \")\\n\"\n        \"if first_sizer is None:\\n\" >\n          \"first_sizer = self.\" %sizer \"\\n\"\n          \"self.Sizer = first_sizer\\n\"\n        <\n      }\n      ys\n    }\n    | [\"child\" .:x binding:y [ast*:zs] [ast*:ws]] -> {\n      %%handlers\n      %%createVars\n      %%updateVars\n      %%sizerFlag\n      %%sizerBorder\n      %%sizerProportion\n      @create {\n        \"self.\" %createVars \" = {}\\n\"\n        \"self.\" %sizerFlag \" = 0\\n\"\n        \"self.\" %sizerBorder \" = 0\\n\"\n        \"self.\" %sizerProportion \" = 0\\n\"\n        \"self.\" %handlers \" = []\\n\"\n      }\n      @update {\n        \"self.\" %updateVars \" = {}\\n\"\n      }\n      zs\n      %%widget\n      @create {\n        \"self.\" %widget \" = \" x \"(self.\" %parent \", **self.\" %createVars \")\\n\"\n        \"self.\" %sizer \".Add(self.\" %widget \", flag=self.\" %sizerFlag \", border=self.\" %sizerBorder \", proportion=self.\" %sizerProportion \")\\n\"\n        \"for handler in self.\" %handlers \":\\n\" >\n          \"self.\" %widget \".listen(*handler)\\n\"\n        <\n        y\n      }\n      @update {\n        \"self.\" %widget \".UpdateGui(**self.\" %updateVars \")\\n\"\n      }\n      %%parent\n      @create {\n        \"self.\" %parent \" = self.\" %widget \"\\n\"\n      }\n      ws\n    }\n    | [\"boxspace\" ast:x] -> {\n      %%sizeritem\n      @create {\n        \"self.\" %sizeritem \" = self.\" %sizer \".Add(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n      }\n      @update {\n        \"self.\" %sizeritem \".SetMinSize(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n      }\n    }\n    | [\"loop\" ast:x .:y ast*:zs] -> {\n      @create { }\n      @update { }\n    }\n    | [\"parameter\" .:x ast:y] -> {\n      @create { \"self.\" %createVars \"[\" repr(x) \"] = \" y \"\\n\" }\n      @update { \"self.\" %updateVars \"[\" repr(x) \"] = \" y \"\\n\" }\n    }\n    | [\"handler\" .:x ast:y] -> {\n      @create { \"self.\" %handlers \".append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n    }\n    | [\"get\" astGetList:x] -> { x }\n    | [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n    | [\"name\" .:x] -> { x }\n    | [\"variable\" .:x] -> {\n        \"@property\\n\"\n        \"def \" x \"(self):\\n\" >\n          \"return self.",
 "type":"code"
 },
 {
@@ -15837,7 +15862,7 @@
 "type":"variable"
 },
 {
-"text":"[\\\"\" x \"\\\"]\\n\"\n        <\n      }\n    | [\"derived\" .:x ast:y] -> {\n        @derived { repr(x) \": \" y \",\\n\" }\n      }\n    | [\"string\" .:x] -> { repr(x) }\n    | [\"int\" .:x] -> { repr(x) }\n    | [\"sizerBorder\" ast:x [border*:y]] -> { @create { \"self.\" %sizerBorder \" = \" x \"\\n\" y } }\n    | [\"sizerProportion\" ast:x]         -> { @create { \"self.\" %sizerProportion \" = \" x \"\\n\" } }\n    | [\"sizerExpand\"]                   -> { @create { \"self.\" %sizerFlag \" |= wx.EXPAND\\n\" } }\n    | [\"sizerReserve\"]                  -> { @create { \"self.\" %sizerFlag \" |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n  border =\n    | \"ALL\"    -> { \"self.\" %sizerFlag \" |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { \"self.\" %sizerFlag \" |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { \"self.\" %sizerFlag \" |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { \"self.\" %sizerFlag \" |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { \"self.\" %sizerFlag \" |= wx.BOTTOM\\n\" }\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = self.\" %widget \"\\n\" }\n    | .               -> {}\n}\n",
+"text":"[\\\"\" x \"\\\"]\\n\"\n        <\n      }\n    | [\"derived\" .:x ast:y] -> {\n        @derived { repr(x) \": \" y \",\\n\" }\n      }\n    | [\"string\" .:x] -> { repr(x) }\n    | [\"int\" .:x] -> { repr(x) }\n    | [\"sizerBorder\" ast:x [border*:y]] -> { @create { \"self.\" %sizerBorder \" = \" x \"\\n\" y } }\n    | [\"sizerProportion\" ast:x]         -> { @create { \"self.\" %sizerProportion \" = \" x \"\\n\" } }\n    | [\"sizerExpand\"]                   -> { @create { \"self.\" %sizerFlag \" |= wx.EXPAND\\n\" } }\n    | [\"sizerReserve\"]                  -> { @create { \"self.\" %sizerFlag \" |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n  border =\n    | \"ALL\"    -> { \"self.\" %sizerFlag \" |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { \"self.\" %sizerFlag \" |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { \"self.\" %sizerFlag \" |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { \"self.\" %sizerFlag \" |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { \"self.\" %sizerFlag \" |= wx.BOTTOM\\n\" }\n  boxType =\n    | \"hbox\" -> \"wx.HORIZONTAL\"\n    | \"vbox\" -> \"wx.VERTICAL\"\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = self.\" %widget \"\\n\" }\n    | .               -> {}\n}\n",
 "type":"code"
 }
 ],
@@ -19088,6 +19113,7 @@
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "0a759aaf75be46af916c3fa05f8393da":"target_index",
 "0ab7b7119c7f4be5b67d6455e64455b7":"PageDropPoint",
+"0c81b6ab4f7a4542ad9a27332f932a69":"TableOfContentsGui",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
 "10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",

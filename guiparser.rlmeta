@@ -6,11 +6,14 @@ GuiParser {
     | ws '#' name:x ws '=' expr:y -> ["derived" x y]
     | ws '#' name:x               -> ["variable" x ]
   box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]
-  boxType     = ws 'HBox' -> "hbox"
+  boxType     =
+    | ws 'HBox' -> "hbox"
+    | ws 'VBox' -> "vbox"
   child       =
     | box
     | ws 'BoxSpace' ws '(' expr:x ws ')' -> ["boxspace" x]
-    | name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> ["child" x y ~zs]
+    | ws 'for' !nameChar ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> ["loop" x y ~zs]
+    | name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' (ws '{' box:x ws '}' -> [x] | -> []):w -> ["child" x y zs w]
   binding     =
     | '[' name:x ']' -> ["binding" x]
     |                -> []
@@ -26,7 +29,7 @@ GuiParser {
   expr        =
     | expr1:x (ws '.' expr1)*:xs -> ["get" x ~xs]
     | ws '"' (!'"' .)*:xs '"'    -> ["string" join(xs)]
-    | ws '0'-'9':x ('0'-'9')*:xs           -> ["int" int(join([x ~xs]))]
+    | ws ("-" | -> ""):x '0'-'9':y ('0'-'9')*:ys           -> ["int" int(join([x y ~ys]))]
   expr1       =
     | expr2:x ws '(' expr*:xs ws ')' -> ["call" x ~xs]
     | expr2

@@ -4,6 +4,7 @@ WxGuiCodeGenerator {
     | ["panel" .:name ast:x] -> {
       %%handlers
       %%widget
+      %%parent
       "class " name "(wx.Panel, GuiFrameworkBaseMixin):\n" >
         "def __init__(self, parent, **kwargs):\n" >
           "wx.Panel.__init__(self, parent)\n"
@@ -16,6 +17,7 @@ WxGuiCodeGenerator {
           "first_sizer = None\n"
           "self." %handlers " = []\n"
           "self." %widget " = self\n"
+          "self." %parent " = self\n"
           #create
           "for handler in self." %handlers ":\n" >
             "self." %widget ".listen(*handler)\n"
@@ -29,18 +31,18 @@ WxGuiCodeGenerator {
       <
     }
     | ["body" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }
-    | ["hbox" ast*:xs] -> {
+    | [boxType:x ast*:ys] -> {
       %%sizer
       @create {
-        "self." %sizer " = wx.BoxSizer(wx.HORIZONTAL)\n"
+        "self." %sizer " = wx.BoxSizer(" x ")\n"
         "if first_sizer is None:\n" >
           "first_sizer = self." %sizer "\n"
           "self.Sizer = first_sizer\n"
         <
       }
-      xs
+      ys
     }
-    | ["child" .:x binding:y ast*:zs] -> {
+    | ["child" .:x binding:y [ast*:zs] [ast*:ws]] -> {
       %%handlers
       %%createVars
       %%updateVars
@@ -60,7 +62,7 @@ WxGuiCodeGenerator {
       zs
       %%widget
       @create {
-        "self." %widget " = " x "(self, **self." %createVars ")\n"
+        "self." %widget " = " x "(self." %parent ", **self." %createVars ")\n"
         "self." %sizer ".Add(self." %widget ", flag=self." %sizerFlag ", border=self." %sizerBorder ", proportion=self." %sizerProportion ")\n"
         "for handler in self." %handlers ":\n" >
           "self." %widget ".listen(*handler)\n"
@@ -70,6 +72,11 @@ WxGuiCodeGenerator {
       @update {
         "self." %widget ".UpdateGui(**self." %updateVars ")\n"
       }
+      %%parent
+      @create {
+        "self." %parent " = self." %widget "\n"
+      }
+      ws
     }
     | ["boxspace" ast:x] -> {
       %%sizeritem
@@ -79,6 +86,10 @@ WxGuiCodeGenerator {
       @update {
         "self." %sizeritem ".SetMinSize(self._get_space_size(self." %sizer ", " x "))\n"
       }
+    }
+    | ["loop" ast:x .:y ast*:zs] -> {
+      @create { }
+      @update { }
     }
     | ["parameter" .:x ast:y] -> {
       @create { "self." %createVars "[" repr(x) "] = " y "\n" }
@@ -111,6 +122,9 @@ WxGuiCodeGenerator {
     | "RIGHT"  -> { "self." %sizerFlag " |= wx.RIGHT\n" }
     | "TOP"    -> { "self." %sizerFlag " |= wx.TOP\n" }
     | "BOTTOM" -> { "self." %sizerFlag " |= wx.BOTTOM\n" }
+  boxType =
+    | "hbox" -> "wx.HORIZONTAL"
+    | "vbox" -> "wx.VERTICAL"
   astGetList =
     | ast:x astGetList:y -> { x "." y }
     | ast
