@@ -86,8 +86,34 @@ WxGuiCodeGenerator {
       }
     }
     | ["loop" ast:x .:y ast*:zs] -> {
-      @create { }
-      @update { }
+      %%loop
+      @create {
+        "self._items_" %loop " = []\n"
+        "def create_" %loop "(" y "):\n" >
+          "pass\n"
+      }
+      @update {
+        "def update_" %loop "(" y "):\n" >
+          "pass\n"
+      }
+      zs
+      @create {
+        <
+        "for loopitem in " x ":\n" >
+          "self._items_" %loop ".append(create_" %loop "(loopitem))\n"
+        <
+      }
+      @update {
+        <
+        "index = -1\n" >
+        "for index, loopitem in enumerate(" x "):\n" >
+          "if index < len(self._items_" %loop "):\n" >
+            "self._items_" %loop "[index].update_somehow()\n"
+          < "else:\n" >
+            "self._items_" %loop ".append(create_" %loop "(loopitem))\n"
+          <
+        <
+      }
     }
     | ["parameter" .:x ast:y] -> {
       @create { "self." %createVars "[" repr(x) "] = " y "\n" }
