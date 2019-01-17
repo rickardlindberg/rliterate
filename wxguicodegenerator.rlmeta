@@ -14,11 +14,11 @@ WxGuiCodeGenerator {
           "return {\n" > #derived < "}\n"
         <
         "def _create_gui(self):\n" >
-          "self." %handlers " = []\n"
+          %handlers " = []\n"
           "self." %widget " = self\n"
           "self." %parent " = self\n"
           #create
-          "for handler in self." %handlers ":\n" >
+          "for handler in " %handlers ":\n" >
             "self." %widget ".listen(*handler)\n"
           <
         <
@@ -48,27 +48,27 @@ WxGuiCodeGenerator {
       %%sizerBorder
       %%sizerProportion
       @create {
-        "self." %createVars " = {}\n"
-        "self." %sizerFlag " = 0\n"
-        "self." %sizerBorder " = 0\n"
-        "self." %sizerProportion " = 0\n"
-        "self." %handlers " = []\n"
+        %handlers " = []\n"
+        %createVars " = {}\n"
+        %sizerFlag " = 0\n"
+        %sizerBorder " = 0\n"
+        %sizerProportion " = 0\n"
       }
       @update {
-        "self." %updateVars " = {}\n"
+        %updateVars " = {}\n"
       }
       zs
       %%widget
       @create {
-        "self." %widget " = " x "(self." %parent ", **self." %createVars ")\n"
-        "self." %sizer ".Add(self." %widget ", flag=self." %sizerFlag ", border=self." %sizerBorder ", proportion=self." %sizerProportion ")\n"
-        "for handler in self." %handlers ":\n" >
+        "self." %widget " = " x "(self." %parent ", **" %createVars ")\n"
+        "self." %sizer ".Add(self." %widget ", flag=" %sizerFlag ", border=" %sizerBorder ", proportion=" %sizerProportion ")\n"
+        "for handler in " %handlers ":\n" >
           "self." %widget ".listen(*handler)\n"
         <
         y
       }
       @update {
-        "self." %widget ".UpdateGui(**self." %updateVars ")\n"
+        "self." %widget ".UpdateGui(**" %updateVars ")\n"
       }
       %%parent
       @create {
@@ -116,11 +116,11 @@ WxGuiCodeGenerator {
       }
     }
     | ["parameter" .:x ast:y] -> {
-      @create { "self." %createVars "[" repr(x) "] = " y "\n" }
-      @update { "self." %updateVars "[" repr(x) "] = " y "\n" }
+      @create { %createVars "[" repr(x) "] = " y "\n" }
+      @update { %updateVars "[" repr(x) "] = " y "\n" }
     }
     | ["handler" .:x ast:y] -> {
-      @create { "self." %handlers ".append((" repr(x) ", lambda event: " y "))\n" }
+      @create { %handlers ".append((" repr(x) ", lambda event: " y "))\n" }
     }
     | ["get" astGetList:x] -> { x }
     | ["call" ast:x astList:y] -> { x "(" y ")" }
@@ -136,16 +136,16 @@ WxGuiCodeGenerator {
       }
     | ["string" .:x] -> { repr(x) }
     | ["int" .:x] -> { repr(x) }
-    | ["sizerBorder" ast:x [border*:y]] -> { @create { "self." %sizerBorder " = " x "\n" y } }
-    | ["sizerProportion" ast:x]         -> { @create { "self." %sizerProportion " = " x "\n" } }
-    | ["sizerExpand"]                   -> { @create { "self." %sizerFlag " |= wx.EXPAND\n" } }
-    | ["sizerReserve"]                  -> { @create { "self." %sizerFlag " |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\n" } }
+    | ["sizerBorder" ast:x [border*:y]] -> { @create { %sizerBorder " = " x "\n" y } }
+    | ["sizerProportion" ast:x]         -> { @create { %sizerProportion " = " x "\n" } }
+    | ["sizerExpand"]                   -> { @create { %sizerFlag " |= wx.EXPAND\n" } }
+    | ["sizerReserve"]                  -> { @create { %sizerFlag " |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\n" } }
   border =
-    | "ALL"    -> { "self." %sizerFlag " |= wx.ALL\n" }
-    | "LEFT"   -> { "self." %sizerFlag " |= wx.LEFT\n" }
-    | "RIGHT"  -> { "self." %sizerFlag " |= wx.RIGHT\n" }
-    | "TOP"    -> { "self." %sizerFlag " |= wx.TOP\n" }
-    | "BOTTOM" -> { "self." %sizerFlag " |= wx.BOTTOM\n" }
+    | "ALL"    -> { %sizerFlag " |= wx.ALL\n" }
+    | "LEFT"   -> { %sizerFlag " |= wx.LEFT\n" }
+    | "RIGHT"  -> { %sizerFlag " |= wx.RIGHT\n" }
+    | "TOP"    -> { %sizerFlag " |= wx.TOP\n" }
+    | "BOTTOM" -> { %sizerFlag " |= wx.BOTTOM\n" }
   boxType =
     | "hbox" -> "wx.HORIZONTAL"
     | "vbox" -> "wx.VERTICAL"
