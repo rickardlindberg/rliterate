@@ -15970,7 +15970,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  widget =\n    | containerType:x name:y boxType:z ws '{' body:a ws '}' ws !. ",
+"text":"GuiParser {\n  widget =\n    | containerType:x name:y boxType:z\n      ws '{' body:a ws '}' ws !. ",
 "type":"code"
 },
 {
@@ -15978,15 +15978,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [x y [z a]]\n  containerType =\n    | ws ('panel' | 'scroll' | 'vscroll' | 'hscroll'):x !nameChar ",
-"type":"code"
-},
-{
-"index":20,
-"type":"tabstop"
-},
-{
-"text":"-> x\n  body =\n    | (variable | handler | child)*\n  variable =\n    | derived\n    | ws '#' name:x ",
+"text":"-> [x y [z a]]\n  body =\n    | (variable | handler | child)*\n  variable =\n    | derived\n    | ws '#' name:x ",
 "type":"code"
 },
 {
@@ -16042,7 +16034,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"child\" x y [] [z]]\n    | !reserved name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' ",
+"text":"-> [\"child\" x y [] [z]]\n    | !reserved name:x binding:y\n      ws '(' (parameter|handler|sizerprop)*:zs ws ')' ",
 "type":"code"
 },
 {
@@ -16050,7 +16042,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' ",
+"text":"-> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')'\n      ws '{' child*:zs ws '}' ",
 "type":"code"
 },
 {
@@ -16130,15 +16122,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [x ~xs]\n  side =\n    | ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar ",
-"type":"code"
-},
-{
-"index":20,
-"type":"tabstop"
-},
-{
-"text":"-> x\n  expr =\n    | expr1:x (ws '.' expr1)*:xs ",
+"text":"-> [x ~xs]\n  expr =\n    | expr1:x (ws '.' expr1)*:xs ",
 "type":"code"
 },
 {
@@ -16194,7 +16178,7 @@
 "type":"tabstop"
 },
 {
-"text":" = containerType | for\n  for ",
+"text":"= containerType | for\n  for ",
 "type":"code"
 },
 {
@@ -16202,7 +16186,7 @@
 "type":"tabstop"
 },
 {
-"text":" = ws 'for' !nameChar\n  name ",
+"text":"= ws 'for' !nameChar\n  side ",
 "type":"code"
 },
 {
@@ -16210,7 +16194,55 @@
 "type":"tabstop"
 },
 {
-"text":" = ws nameStart:x nameChar*:xs ",
+"text":"= ws side2:x !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> x\n  side2 ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":"= 'ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'\n  containerType ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":"= ws containerType2:x !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> x\n  containerType2 ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":"= 'panel' | 'scroll' | 'vscroll' | 'hscroll'\n  name ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":"= ws nameStart:x nameChar*:xs ",
 "type":"code"
 },
 {
@@ -16226,7 +16258,7 @@
 "type":"tabstop"
 },
 {
-"text":" = alpha | '_'\n  nameChar ",
+"text":"= alpha | '_'\n  nameChar ",
 "type":"code"
 },
 {
@@ -16234,7 +16266,7 @@
 "type":"tabstop"
 },
 {
-"text":" = alphanum | '_'\n  alpha ",
+"text":"= alphanum | '_'\n  alpha ",
 "type":"code"
 },
 {
@@ -16242,7 +16274,7 @@
 "type":"tabstop"
 },
 {
-"text":" = 'a'-'z' | 'A'-'Z'\n  alphanum ",
+"text":"= 'a'-'z' | 'A'-'Z'\n  alphanum ",
 "type":"code"
 },
 {
@@ -16250,7 +16282,7 @@
 "type":"tabstop"
 },
 {
-"text":" = alpha | '0'-'9'\n  ws ",
+"text":"= alpha | '0'-'9'\n  ws ",
 "type":"code"
 },
 {
@@ -16258,7 +16290,7 @@
 "type":"tabstop"
 },
 {
-"text":" = (' ' | '\\n')*\n}\n",
+"text":"= (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
