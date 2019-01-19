@@ -243,12 +243,15 @@ class SizeWrapper(object):
         self.SetSize(size)
         return self
 class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
+
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+
     def _get_derived(self):
         return {
         }
+
     def _create_gui(self):
         _label0 = []
         self._label1 = self
@@ -297,6 +300,7 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
         _label0.append(('drag', lambda event: self._on_drag_old(event)))
         for handler in _label0:
             self._label1.listen(*handler)
+
     def _update_gui(self):
         pass
         self._label4.SetMinSize(self._get_space_size(self._label3, self._indentation_size()))
@@ -310,28 +314,35 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
         _label15['handle_key'] = self._handle_key
         _label15['get_characters'] = self._get_characters
         self._label19.UpdateGui(**_label15)
+
     @property
     def project(self):
         return self.values["project"]
+
     @property
     def page(self):
         return self.values["page"]
+
     @property
     def selection(self):
         return self.values["selection"]
+
     @property
     def indentation(self):
         return self.values["indentation"]
 class TableOfContentsButtonGui(wx.Panel, GuiFrameworkBaseMixin):
+
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+
     def _get_derived(self):
         return {
             'visible': bool(self.page.children),
             'cursor': 'hand',
             'min_size': self._get_min_size(),
         }
+
     def _create_gui(self):
         _label0 = []
         self._label1 = self
@@ -343,21 +354,27 @@ class TableOfContentsButtonGui(wx.Panel, GuiFrameworkBaseMixin):
         _label0.append(('paint', lambda event: self._on_paint(event)))
         for handler in _label0:
             self._label1.listen(*handler)
+
     def _update_gui(self):
         pass
+
     @property
     def project(self):
         return self.values["project"]
+
     @property
     def page(self):
         return self.values["page"]
 class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
+
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+
     def _get_derived(self):
         return {
         }
+
     def _create_gui(self):
         _label0 = []
         self._label1 = self
@@ -388,6 +405,7 @@ class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
         _label0.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
         for handler in _label0:
             self._label1.listen(*handler)
+
     def _update_gui(self):
         pass
         _label6 = {}
@@ -399,12 +417,15 @@ class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
         _label6['font'] = self._create_font()
         _label6['tooltip'] = self.page.full_title
         self._label10.UpdateGui(**_label6)
+
     @property
     def project(self):
         return self.values["project"]
+
     @property
     def page(self):
         return self.values["page"]
+
     @property
     def selection(self):
         return self.values["selection"]
@@ -466,12 +487,15 @@ class Editable(VerticalBasePanel):
         self.edit.Save()
         self.project.active_editor = None
 class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
+
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+
     def _get_derived(self):
         return {
         }
+
     def _create_gui(self):
         _label0 = []
         self._label1 = self
@@ -500,6 +524,7 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
         self._label11 = self._label10
         for handler in _label0:
             self._label1.listen(*handler)
+
     def _update_gui(self):
         pass
         _label6 = {}
@@ -511,30 +536,39 @@ class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
         _label6['tooltip'] = self.tooltip
         _label6['focus'] = self.selection.present
         self._label10.UpdateGui(**_label6)
+
     @property
     def project(self):
         return self.values["project"]
+
     @property
     def selection(self):
         return self.values["selection"]
+
     @property
     def handle_key(self):
         return self.values["handle_key"]
+
     @property
     def get_characters(self):
         return self.values["get_characters"]
+
     @property
     def line_height(self):
         return self.values["line_height"]
+
     @property
     def max_width(self):
         return self.values["max_width"]
+
     @property
     def break_at_word(self):
         return self.values["break_at_word"]
+
     @property
     def font(self):
         return self.values["font"]
+
     @property
     def tooltip(self):
         return self.values["tooltip"]
