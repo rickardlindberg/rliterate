@@ -1,7 +1,7 @@
 # This file is extracted from rliterate.rliterate.
 # DO NOT EDIT MANUALLY!
 
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, OrderedDict
 import contextlib
 import json
 import os
@@ -4791,17 +4791,20 @@ class CodeExpander(object):
 
     def __init__(self, document):
         self.document = document
-        self._parts = defaultdict(list)
+        self._parts = OrderedDict()
         self._ids = {}
         self._collect_parts(self.document.get_root_page())
 
     def _collect_parts(self, page):
         for paragraph in page.paragraphs:
             if paragraph.type == "code":
-                self._parts[(
+                key = (
                     tuple(paragraph.path.filepath),
                     tuple(paragraph.path.chunkpath),
-                )].append(paragraph)
+                )
+                if key not in self._parts:
+                    self._parts[key] = []
+                self._parts[key].append(paragraph)
                 self._ids[paragraph.id] = paragraph
         for child in page.children:
             self._collect_parts(child)

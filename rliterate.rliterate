@@ -16752,7 +16752,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, document):\n        self.document = document\n        self._parts = defaultdict(list)\n        self._ids = {}\n        self._collect_parts(self.document.",
+"text":"(object):\n\n    def __init__(self, document):\n        self.document = document\n        self._parts = OrderedDict()\n        self._ids = {}\n        self._collect_parts(self.document.",
 "type":"code"
 },
 {
@@ -16760,7 +16760,7 @@
 "type":"variable"
 },
 {
-"text":"())\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n                self._ids[paragraph.id] = paragraph\n        for child in page.children:\n            self._collect_parts(child)\n\n    def generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                chain = self._expand(self._parts[key])\n                with open(filepath, \"w\") as f:\n                    f.write(\"\".join(char.value for char in chain))\n\n    def expand_id(self, paragraph_id, post_process=True):\n        if paragraph_id in self._ids:\n            return (\n                self._ids[paragraph_id],\n                self._expand([self._ids[paragraph_id]], post_process=post_process)\n            )\n        else:\n            chain = ",
+"text":"())\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                key = (\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )\n                if key not in self._parts:\n                    self._parts[key] = []\n                self._parts[key].append(paragraph)\n                self._ids[paragraph.id] = paragraph\n        for child in page.children:\n            self._collect_parts(child)\n\n    def generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                chain = self._expand(self._parts[key])\n                with open(filepath, \"w\") as f:\n                    f.write(\"\".join(char.value for char in chain))\n\n    def expand_id(self, paragraph_id, post_process=True):\n        if paragraph_id in self._ids:\n            return (\n                self._ids[paragraph_id],\n                self._expand([self._ids[paragraph_id]], post_process=post_process)\n            )\n        else:\n            chain = ",
 "type":"code"
 },
 {
@@ -17424,12 +17424,15 @@
 ],
 "fragments":[
 {
-"text":"from collections import defaultdict, namedtuple\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
+"text":"from collections import defaultdict, namedtuple, OrderedDict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
 "type":"code"
 }
 ],
 "id":"0fe8dfc503a54cde9df4de6a2cf65b7a",
 "language":"",
+"post_process":[
+""
+],
 "type":"code"
 },
 {
