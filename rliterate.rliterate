@@ -8393,15 +8393,43 @@
 "type":"code"
 },
 {
-"chunkpath":[
-"dont render me"
-],
+"chunkpath":[],
 "filepath":[
-"foo.py"
+"example_gui.py"
 ],
 "fragments":[
 {
-"text":"panel Widget %vbox {\n    vscroll %vbox {\n        Button()\n    }\n}\n",
+"text":"import wx\nfrom rliterate import *\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"classes"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"text":"\napp = wx.App()\nframe = wx.Frame(None)\nwidget = Widget(frame)\nframe.Show()\napp.MainLoop()\n",
+"type":"code"
+}
+],
+"id":"748b5dc88cee4bf1b787d1ba1b17b2b7",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"example_gui.py"
+],
+"fragments":[
+{
+"text":"panel Widget %vbox {\n    %hbox {\n        Button()\n        Button()\n    }\n    %hbox {\n        Button()\n        Button()\n        Button()\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -15625,7 +15653,7 @@
 },
 {
 "chunkpath":[
-"base classes"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
@@ -15636,6 +15664,7 @@
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "CompactScrolledWindow"
 ],
@@ -15644,6 +15673,8 @@
 }
 ],
 "id":"9bf32ef3ab984aca83e6ec65321388c7",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -15668,7 +15699,7 @@
 },
 {
 "chunkpath":[
-"base classes",
+"base base base classes",
 "CompactScrolledWindow"
 ],
 "filepath":[
@@ -15681,6 +15712,8 @@
 }
 ],
 "id":"e34007a32f2d4df2986d366befc1fe78",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -15705,6 +15738,8 @@
 }
 ],
 "id":"41f34229e34943af88852b4f07e305d2",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -15984,7 +16019,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  widget      = widgetType:x name:y boxType:z ws '{' body:a ws '}' ws !. -> [x y [z ~a]]\n  widgetType  = ws (\n                'panel' | 'scroll' | 'vscroll' | 'hscroll'\n                ):x !nameChar -> x\n  body        = (variable | handler | child)*\n  variable    =\n    | derived\n    | ws '#' name:x               -> [\"variable\" x ]\n  derived     = ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     =\n    | ws '%hbox' !nameChar -> \"hbox\"\n    | ws '%vbox' !nameChar -> \"vbox\"\n  child    =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | widgetType:x box:y -> [\"child\" x [] [] [y]]\n    | !reserved name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n    | ws '[' expr*:xs ws ']' -> [\"list\" ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  reserved    = widgetType | for\n  for         = ws 'for' !nameChar\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"text":"GuiParser {\n  widget      = widgetType:x name:y boxType:z ws '{' body:a ws '}' ws !. -> [x y [z a]]\n  widgetType  = ws (\n                'panel' | 'scroll' | 'vscroll' | 'hscroll'\n                ):x !nameChar -> x\n  body        = (variable | handler | child)*\n  variable    =\n    | derived\n    | ws '#' name:x               -> [\"variable\" x ]\n  derived     = ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x [] xs]\n  boxType     =\n    | ws '%hbox' !nameChar -> \"hbox\"\n    | ws '%vbox' !nameChar -> \"vbox\"\n  child    =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | widgetType:x box:y -> [\"child\" x [] [] [y]]\n    | !reserved name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n    | ws '[' expr*:xs ws ']' -> [\"list\" ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  reserved    = widgetType | for\n  for         = ws 'for' !nameChar\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
@@ -16126,7 +16161,53 @@
 ],
 "fragments":[
 {
-"text":"| [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n| [boxType:x ast*:ys] -> {\n  %%sizer\n  @create {\n    \"self.\" %sizer \" = wx.BoxSizer(\" x \")\\n\"\n    \"if self.\" %parent \".Sizer is None:\\n\" >\n      \"self.\" %parent \".Sizer = self.\" %sizer \"\\n\"\n    <\n  }\n  ys\n}\n| [\"boxspace\" ast:x] -> {\n  %%sizeritem\n  @create {\n    \"self.\" %sizeritem \" = self.\" %sizer \".Add(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n  }\n  @update {\n    \"self.\" %sizeritem \".SetMinSize(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n  }\n}\n| [\"parameter\" .:x ast:y] -> {\n  @create { %createVars \"[\" repr(x) \"] = \" y \"\\n\" }\n  @update { %updateVars \"[\" repr(x) \"] = \" y \"\\n\" }\n}\n| [\"handler\" .:x ast:y] -> {\n  @create { %handlers \".append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n}\n| [\"get\" astGetList:x] -> { x }\n| [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n| [\"name\" .:x] -> { x }\n| [\"variable\" .:x] -> {\n    \"\\n@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
+"text":"| [boxType:x [ast*:ys]] -> {\n  %%sizer\n  @create {\n    \"self.\" %sizer \" = wx.BoxSizer(\" x \")\\n\"\n    \"self.\" %parent \".Sizer = self.\" %sizer \"\\n\"\n  }\n  ys\n}\n",
+"type":"code"
+}
+],
+"id":"a1a7a01b20a64b5baa9b6164de81b131",
+"language":"rlmeta",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"WxCodeGenerator",
+"ast"
+],
+"filepath":[
+"rlgui.py"
+],
+"fragments":[
+{
+"text":"| [boxType:x [ast*:ys] [ast*:zs]] -> {\n  %%childSizer\n  %%sizerFlag\n  %%sizerBorder\n  %%sizerProportion\n  @create {\n    %sizerFlag \" = 0\\n\"\n    %sizerBorder \" = 0\\n\"\n    %sizerProportion \" = 0\\n\"\n  }\n  ys\n  @create {\n    \"self.\" %childSizer \" = wx.BoxSizer(\" x \")\\n\"\n    \"self.\" %sizer \".Add(self.\" %childSizer \", flag=\" %sizerFlag \", border=\" %sizerBorder \", proportion=\" %sizerProportion \")\\n\"\n    ys\n  }\n  %%sizer\n  @create {\n    \"self.\" %sizer \" = self.\" %childSizer \"\\n\"\n  }\n  zs\n}\n",
+"type":"code"
+}
+],
+"id":"ef4ff71046fb4f0b9d0fcfbb4e5a088f",
+"language":"rlmeta",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"WxCodeGenerator",
+"ast"
+],
+"filepath":[
+"rlgui.py"
+],
+"fragments":[
+{
+"text":"| [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n| [\"boxspace\" ast:x] -> {\n  %%sizeritem\n  @create {\n    \"self.\" %sizeritem \" = self.\" %sizer \".Add(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n  }\n  @update {\n    \"self.\" %sizeritem \".SetMinSize(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n  }\n}\n| [\"parameter\" .:x ast:y] -> {\n  @create { %createVars \"[\" repr(x) \"] = \" y \"\\n\" }\n  @update { %updateVars \"[\" repr(x) \"] = \" y \"\\n\" }\n}\n| [\"handler\" .:x ast:y] -> {\n  @create { %handlers \".append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n}\n| [\"get\" astGetList:x] -> { x }\n| [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n| [\"name\" .:x] -> { x }\n| [\"variable\" .:x] -> {\n    \"\\n@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
 "type":"code"
 },
 {
@@ -16138,7 +16219,7 @@
 "type":"code"
 }
 ],
-"id":"a1a7a01b20a64b5baa9b6164de81b131",
+"id":"451452bcebeb41de9f70d165fbb6a377",
 "language":"rlmeta",
 "post_process":[
 "python",
@@ -16650,6 +16731,48 @@
 }
 ],
 "id":"44bbf98c73494e5fb96d7e6fdd36338f",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"4bb7b8ed322441f284c23879725bf1bf",
+"type":"variable"
+},
+{
+"text":"(wx.Button, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.Button.__init__(self, parent, wx.HORIZONTAL)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n",
+"type":"code"
+}
+],
+"id":"ad2732c68e4e4076a3a82ad201912e86",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -19704,6 +19827,7 @@
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
 "4a627e93978545b1895fedf553faa161":"TextProjectionEditorGui",
 "4b9ee6bd24a74475a73197299f60dd85":"im_modify",
+"4bb7b8ed322441f284c23879725bf1bf":"Button",
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
 "51198e87cf1944e49dea6e2a48938b8f":"chunk_delimiters",

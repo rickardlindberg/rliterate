@@ -41,6 +41,44 @@ def rltime(text):
         else:
             return fn
     return wrap
+class CompactScrolledWindow(wx.ScrolledWindow):
+
+    MIN_WIDTH = 200
+    MIN_HEIGHT = 200
+
+    def __init__(self, parent, style=0, size=wx.DefaultSize, step=100):
+        w, h = size
+        size = (max(w, self.MIN_WIDTH), max(h, self.MIN_HEIGHT))
+        wx.ScrolledWindow.__init__(self, parent, style=style, size=size)
+        self.Size = size
+        if style == wx.HSCROLL:
+            self.SetScrollRate(1, 0)
+            self._calc_scroll_pos = self._calc_scroll_pos_hscroll
+        elif style == wx.VSCROLL:
+            self.SetScrollRate(0, 1)
+            self._calc_scroll_pos = self._calc_scroll_pos_vscroll
+        else:
+            self.SetScrollRate(1, 1)
+            self._calc_scroll_pos = self._calc_scroll_pos_vscroll
+        self.step = step
+        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)
+
+    def _on_mousewheel(self, event):
+        x, y = self.GetViewStart()
+        delta = event.GetWheelRotation() / event.GetWheelDelta()
+        self.Scroll(*self._calc_scroll_pos(x, y, delta))
+
+    def _calc_scroll_pos_hscroll(self, x, y, delta):
+        return (x+delta*self.step, y)
+
+    def _calc_scroll_pos_vscroll(self, x, y, delta):
+        return (x, y-delta*self.step)
+
+    def ScrollToBeginning(self):
+        self.Scroll(0, 0)
+
+    def ScrollToEnd(self):
+        self.Scroll(*(self.GetSizer().Size - self.Size))
 class GuiFrameworkBaseMixin(object):
 
     DEFAULTS = {}
@@ -188,6 +226,11 @@ class GuiFrameworkHScroll(CompactScrolledWindow, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         CompactScrolledWindow.__init__(self, parent, wx.HORIZONTAL)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class Button(wx.Button, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.Button.__init__(self, parent, wx.HORIZONTAL)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -273,8 +316,7 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         self._label1 = self
         self._label2 = self
         self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        if self._label2.Sizer is None:
-            self._label2.Sizer = self._label3
+        self._label2.Sizer = self._label3
         self._label4 = self._label3.Add(self._get_space_size(self._label3, self._indentation_size()))
         _label5 = []
         _label6 = {}
@@ -360,8 +402,7 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
         self._label1 = self
         self._label2 = self
         self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        if self._label2.Sizer is None:
-            self._label2.Sizer = self._label3
+        self._label2.Sizer = self._label3
         _label0.append(('click', lambda event: self.project.toggle_collapsed(self.page.id)))
         _label0.append(('paint', lambda event: self._on_paint(event)))
         for handler in _label0:
@@ -388,8 +429,7 @@ class TitleGui(GuiFrameworkPanel):
         self._label1 = self
         self._label2 = self
         self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        if self._label2.Sizer is None:
-            self._label2.Sizer = self._label3
+        self._label2.Sizer = self._label3
         _label4 = []
         _label5 = {}
         _label7 = 0
@@ -505,8 +545,7 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         self._label1 = self
         self._label2 = self
         self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        if self._label2.Sizer is None:
-            self._label2.Sizer = self._label3
+        self._label2.Sizer = self._label3
         _label4 = []
         _label5 = {}
         _label7 = 0
@@ -1054,44 +1093,6 @@ class TokenView(TextProjection):
             return (0, character.extra)
     def SetDefaultCursor(self):
         self.SetCursor(self._default_cursor)
-class CompactScrolledWindow(wx.ScrolledWindow):
-
-    MIN_WIDTH = 200
-    MIN_HEIGHT = 200
-
-    def __init__(self, parent, style=0, size=wx.DefaultSize, step=100):
-        w, h = size
-        size = (max(w, self.MIN_WIDTH), max(h, self.MIN_HEIGHT))
-        wx.ScrolledWindow.__init__(self, parent, style=style, size=size)
-        self.Size = size
-        if style == wx.HSCROLL:
-            self.SetScrollRate(1, 0)
-            self._calc_scroll_pos = self._calc_scroll_pos_hscroll
-        elif style == wx.VSCROLL:
-            self.SetScrollRate(0, 1)
-            self._calc_scroll_pos = self._calc_scroll_pos_vscroll
-        else:
-            self.SetScrollRate(1, 1)
-            self._calc_scroll_pos = self._calc_scroll_pos_vscroll
-        self.step = step
-        self.Bind(wx.EVT_MOUSEWHEEL, self._on_mousewheel)
-
-    def _on_mousewheel(self, event):
-        x, y = self.GetViewStart()
-        delta = event.GetWheelRotation() / event.GetWheelDelta()
-        self.Scroll(*self._calc_scroll_pos(x, y, delta))
-
-    def _calc_scroll_pos_hscroll(self, x, y, delta):
-        return (x+delta*self.step, y)
-
-    def _calc_scroll_pos_vscroll(self, x, y, delta):
-        return (x, y-delta*self.step)
-
-    def ScrollToBeginning(self):
-        self.Scroll(0, 0)
-
-    def ScrollToEnd(self):
-        self.Scroll(*(self.GetSizer().Size - self.Size))
 class VerticalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):
 
     def __init__(self, *args, **kwargs):
