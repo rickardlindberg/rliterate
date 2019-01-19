@@ -15978,7 +15978,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [x y [z a]]\n  body =\n    | (variable | handler | child)*\n  variable =\n    | derived\n    | ws '#' name:x ",
+"text":"-> [x y [z a]]\n  body =\n    | (derived | variable | handler | child)*\n  variable =\n    | ws '#' name:x ",
 "type":"code"
 },
 {
