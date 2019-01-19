@@ -8,3 +8,6 @@
 /__pycache__
 *.pyc
 /rlgui.py
+/test_rliterate.py
+/example_*.py
+/Makefile
