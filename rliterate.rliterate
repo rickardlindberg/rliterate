@@ -3771,6 +3771,55 @@
 }
 ],
 "title":"Language"
+},
+{
+"children":[],
+"id":"b9d69b5aae8d4fe79548cae361a5fabc",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"CodeParagraph"
+],
+"filepath":[
+"rliterate_.py"
+],
+"fragments":[
+{
+"text":"@property\ndef has_post_process(self):\n    return len(self.post_process) > 0\n\n@property\ndef ",
+"type":"code"
+},
+{
+"id":"78f04cb2a0ea4a8bac572d43487d2581",
+"type":"variable"
+},
+{
+"text":"(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":".get(\"post_process\", [])\n\n@post_process.setter\ndef ",
+"type":"code"
+},
+{
+"id":"78f04cb2a0ea4a8bac572d43487d2581",
+"type":"variable"
+},
+{
+"text":"(self, value):\n    self.update({\n        \"post_process\": value,\n    })\n",
+"type":"code"
+}
+],
+"id":"fc1c88aee87c474cab4df461126c5ad3",
+"language":"",
+"type":"code"
+}
+],
+"title":"Post process"
 }
 ],
 "id":"74b0c8c33aa0436cbd01d16e205a738c",
@@ -12286,10 +12335,11 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, parent, size=(-1, max(90, view.Size[1])))\n        self.project = project\n        self.paragraph = paragraph\n        self.view = view\n        self.extra = extra\n        self._create_gui()\n        self._focus()\n\n",
+"text":".__init__(self, parent, size=(-1, max(150, view.Size[1])))\n        self.project = project\n        self.paragraph = paragraph\n        self.view = view\n        self.extra = extra\n        self._create_gui()\n        self._focus()\n\n",
 "type":"code"
 },
 {
+"blank_lines_before":0,
 "path":[
 "CodeEditor"
 ],
@@ -12298,6 +12348,7 @@
 }
 ],
 "id":"f7d289a713724b6a94edb96f4d823e90",
+"language":"",
 "type":"code"
 },
 {
@@ -12376,11 +12427,28 @@
 "type":"variable"
 },
 {
-"text":"(\n        MultilineTextCtrl(\n            self,\n            value=self.paragraph.text_version\n        ),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,\n        proportion=1\n    )\n",
+"text":"(\n        MultilineTextCtrl(\n            self,\n            value=self.paragraph.text_version\n        ),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,\n        proportion=1\n    )\n    self.post_process = self.",
+"type":"code"
+},
+{
+"id":"359755e756af4e708b237cd9753ae046",
+"type":"variable"
+},
+{
+"text":"(\n        SelectionableTextCtrl(\n            self,\n            value=\" \".join(self.paragraph.",
+"type":"code"
+},
+{
+"id":"78f04cb2a0ea4a8bac572d43487d2581",
+"type":"variable"
+},
+{
+"text":")\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=0\n    )\n",
 "type":"code"
 }
 ],
 "id":"15f5a394dc9148d3a3f4c92355f64909",
+"language":"",
 "type":"code"
 },
 {
@@ -12438,7 +12506,15 @@
 "type":"variable"
 },
 {
-"text":"():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n",
+"text":"():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n        self.paragraph.",
+"type":"code"
+},
+{
+"id":"78f04cb2a0ea4a8bac572d43487d2581",
+"type":"variable"
+},
+{
+"text":" = self.post_process.Value.split(\" \")\n",
 "type":"code"
 }
 ],
@@ -16621,7 +16697,7 @@
 "type":"variable"
 },
 {
-"text":"())\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n                self._ids[paragraph.id] = paragraph\n        for child in page.children:\n            self._collect_parts(child)\n\n    def generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                chain = self._expand(self._parts[key])\n                with open(filepath, \"w\") as f:\n                    f.write(\"\".join(char.value for char in chain))\n\n    def expand_id(self, paragraph_id):\n        if paragraph_id in self._ids:\n            return (self._ids[paragraph_id], self._expand([self._ids[paragraph_id]]))\n        else:\n            chain = ",
+"text":"())\n\n    def _collect_parts(self, page):\n        for paragraph in page.paragraphs:\n            if paragraph.type == \"code\":\n                self._parts[(\n                    tuple(paragraph.path.filepath),\n                    tuple(paragraph.path.chunkpath),\n                )].append(paragraph)\n                self._ids[paragraph.id] = paragraph\n        for child in page.children:\n            self._collect_parts(child)\n\n    def generate_files(self):\n        for key in self._parts.keys():\n            filepath = self._get_filepath(key)\n            if filepath:\n                chain = self._expand(self._parts[key])\n                with open(filepath, \"w\") as f:\n                    f.write(\"\".join(char.value for char in chain))\n\n    def expand_id(self, paragraph_id, post_process=True):\n        if paragraph_id in self._ids:\n            return (\n                self._ids[paragraph_id],\n                self._expand([self._ids[paragraph_id]], post_process=post_process)\n            )\n        else:\n            chain = ",
 "type":"code"
 },
 {
@@ -16629,7 +16705,7 @@
 "type":"variable"
 },
 {
-"text":"()\n            chain.append(\"Could not find {}\".format(paragraph_id))\n            return (None, chain)\n\n    def _expand(self, paragraphs):\n        self._tabstops = []\n        chain = ",
+"text":"()\n            chain.append(\"Could not find {}\".format(paragraph_id))\n            return (None, chain)\n\n    def _expand(self, paragraphs, post_process=True):\n        chain = ",
 "type":"code"
 },
 {
@@ -16637,7 +16713,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._render(chain, paragraphs)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix)\n            for fragment in paragraph.",
+"text":"()\n        self._render(chain, paragraphs, [], post_process=post_process)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, tabstops, post_process, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix, tabstops)\n            if paragraph.has_post_process and post_process:\n                print(\"has post process: {}\".format(paragraph.post_process))\n                self._add_text_to_chain(\n                    subprocess.Popen(\n                        paragraph.post_process,\n                        stdin=subprocess.PIPE,\n                        stdout=subprocess.PIPE\n                    ).communicate(\n                        \"\".join(\n                            char.value for\n                            char in self.expand_id(paragraph.id, post_process=False)[1]\n                        )\n                    )[0],\n                    chain,\n                    prefix,\n                    tabstops\n                )\n                print(\"post process done\")\n            else:\n                for fragment in paragraph.",
 "type":"code"
 },
 {
@@ -16645,7 +16721,7 @@
 "type":"variable"
 },
 {
-"text":":\n                if fragment.type == \"chunk\":\n                    self._render(\n                        chain,\n                        self._parts[(\n                            tuple(paragraph.path.filepath),\n                            tuple(paragraph.path.chunkpath)+tuple(fragment.path)\n                        )],\n                        prefix=prefix+fragment.prefix,\n                        blank_lines_before=fragment.blank_lines_before\n                    )\n                elif fragment.type == \"variable\":\n                    self._add_text_to_chain(fragment.name, chain, prefix)\n                elif fragment.type == \"code\":\n                    self._add_text_to_chain(fragment.text, chain, prefix)\n                elif fragment.type == \"tabstop\":\n                    self._tabstops.append(fragment.index)\n        self._mark_tabstops(chain)\n        if chain.tail is not None and chain.tail.value != \"\\n\":\n            chain.append(\"\\n\")\n\n    def _add_text_to_chain(self, text, chain, prefix):\n        for char in text:\n            if chain.tail is None or (chain.tail.value == \"\\n\" and char != \"\\n\"):\n                chain.append(prefix)\n            self._mark_tabstops(chain)\n            chain.append(char)\n\n    def _mark_tabstops(self, chain):\n        while self._tabstops:\n            chain.mark_tabstop(self._tabstops.pop())\n\n    def _get_filepath(self, key):\n        if len(key[0]) > 0 and len(key[1]) == 0:\n            return os.path.join(*key[0])\n        else:\n            return None\n",
+"text":":\n                    if fragment.type == \"chunk\":\n                        self._render(\n                            chain,\n                            self._parts[(\n                                tuple(paragraph.path.filepath),\n                                tuple(paragraph.path.chunkpath)+tuple(fragment.path)\n                            )],\n                            tabstops,\n                            post_process,\n                            prefix=prefix+fragment.prefix,\n                            blank_lines_before=fragment.blank_lines_before\n                        )\n                    elif fragment.type == \"variable\":\n                        self._add_text_to_chain(fragment.name, chain, prefix, tabstops)\n                    elif fragment.type == \"code\":\n                        self._add_text_to_chain(fragment.text, chain, prefix, tabstops)\n                    elif fragment.type == \"tabstop\":\n                        tabstops.append(fragment.index)\n        while tabstops:\n            chain.mark_tabstop(tabstops.pop())\n        if chain.tail is not None and chain.tail.value != \"\\n\":\n            chain.append(\"\\n\")\n\n    def _add_text_to_chain(self, text, chain, prefix, tabstops):\n        for char in text:\n            if chain.tail is None or (chain.tail.value == \"\\n\" and char != \"\\n\"):\n                chain.append(prefix)\n            while tabstops:\n                chain.mark_tabstop(tabstops.pop())\n            chain.append(char)\n\n    def _get_filepath(self, key):\n        if len(key[0]) > 0 and len(key[1]) == 0:\n            return os.path.join(*key[0])\n        else:\n            return None\n",
 "type":"code"
 }
 ],
@@ -19206,6 +19282,7 @@
 "7682e2b75c064afd96c7dde2a6830749":"insert_paragraph_before",
 "76b9d362e0714c1da27953dd46e8ef0b":"page_padding",
 "777225827647402d975279d0fa55c788":"next_paragraph_id",
+"78f04cb2a0ea4a8bac572d43487d2581":"post_process",
 "7a9fc5b110114e64b871a0f672c764c2":"_max_width",
 "7de0449a51914343bdefb494a4287c6b":"_5e725316bce6426b88d46fe528e812ff",
 "80c88031ba2244b4b116f5b597e585d8":"CharChain",

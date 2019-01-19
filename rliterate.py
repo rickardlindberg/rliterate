@@ -1952,6 +1952,19 @@ class CodeParagraph(Paragraph):
             "__RL_",
             "__"
         )
+    @property
+    def has_post_process(self):
+        return len(self.post_process) > 0
+
+    @property
+    def post_process(self):
+        return self._fragment.get("post_process", [])
+
+    @post_process.setter
+    def post_process(self, value):
+        self.update({
+            "post_process": value,
+        })
 class Path(object):
 
     @classmethod
@@ -4331,7 +4344,7 @@ class CodeView(VerticalBasePanel):
 class CodeEditor(VerticalPanel):
 
     def __init__(self, parent, project, paragraph, view, extra):
-        VerticalPanel.__init__(self, parent, size=(-1, max(90, view.Size[1])))
+        VerticalPanel.__init__(self, parent, size=(-1, max(150, view.Size[1])))
         self.project = project
         self.paragraph = paragraph
         self.view = view
@@ -4369,6 +4382,14 @@ class CodeEditor(VerticalPanel):
             flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,
             proportion=1
         )
+        self.post_process = self.AppendChild(
+            SelectionableTextCtrl(
+                self,
+                value=" ".join(self.paragraph.post_process)
+            ),
+            flag=wx.ALL|wx.EXPAND,
+            proportion=0
+        )
     def _focus(self):
         if "subpath" in self.extra:
             self._focus_path(self.extra["subpath"], self.extra.get("edge"))
@@ -4396,6 +4417,7 @@ class CodeEditor(VerticalPanel):
             self.paragraph.path = Path.from_text_version(self.path.Value)
             self.paragraph.text_version = self.text.Value
             self.paragraph.raw_language = self.language.Value
+            self.paragraph.post_process = self.post_process.Value.split(" ")
 class Image(ParagraphBase):
 
     PADDING = 30
@@ -4793,56 +4815,77 @@ class CodeExpander(object):
                 with open(filepath, "w") as f:
                     f.write("".join(char.value for char in chain))
 
-    def expand_id(self, paragraph_id):
+    def expand_id(self, paragraph_id, post_process=True):
         if paragraph_id in self._ids:
-            return (self._ids[paragraph_id], self._expand([self._ids[paragraph_id]]))
+            return (
+                self._ids[paragraph_id],
+                self._expand([self._ids[paragraph_id]], post_process=post_process)
+            )
         else:
             chain = CharChain()
             chain.append("Could not find {}".format(paragraph_id))
             return (None, chain)
 
-    def _expand(self, paragraphs):
-        self._tabstops = []
+    def _expand(self, paragraphs, post_process=True):
         chain = CharChain()
-        self._render(chain, paragraphs)
+        self._render(chain, paragraphs, [], post_process=post_process)
         chain.align_tabstops()
         return chain
 
-    def _render(self, chain, paragraphs, prefix="", blank_lines_before=0):
+    def _render(self, chain, paragraphs, tabstops, post_process, prefix="", blank_lines_before=0):
         for index, paragraph in enumerate(paragraphs):
             if index > 0:
-                self._add_text_to_chain("\n"*blank_lines_before, chain, prefix)
-            for fragment in paragraph.fragments:
-                if fragment.type == "chunk":
-                    self._render(
-                        chain,
-                        self._parts[(
-                            tuple(paragraph.path.filepath),
-                            tuple(paragraph.path.chunkpath)+tuple(fragment.path)
-                        )],
-                        prefix=prefix+fragment.prefix,
-                        blank_lines_before=fragment.blank_lines_before
-                    )
-                elif fragment.type == "variable":
-                    self._add_text_to_chain(fragment.name, chain, prefix)
-                elif fragment.type == "code":
-                    self._add_text_to_chain(fragment.text, chain, prefix)
-                elif fragment.type == "tabstop":
-                    self._tabstops.append(fragment.index)
-        self._mark_tabstops(chain)
+                self._add_text_to_chain("\n"*blank_lines_before, chain, prefix, tabstops)
+            if paragraph.has_post_process and post_process:
+                print("has post process: {}".format(paragraph.post_process))
+                self._add_text_to_chain(
+                    subprocess.Popen(
+                        paragraph.post_process,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE
+                    ).communicate(
+                        "".join(
+                            char.value for
+                            char in self.expand_id(paragraph.id, post_process=False)[1]
+                        )
+                    )[0],
+                    chain,
+                    prefix,
+                    tabstops
+                )
+                print("post process done")
+            else:
+                for fragment in paragraph.fragments:
+                    if fragment.type == "chunk":
+                        self._render(
+                            chain,
+                            self._parts[(
+                                tuple(paragraph.path.filepath),
+                                tuple(paragraph.path.chunkpath)+tuple(fragment.path)
+                            )],
+                            tabstops,
+                            post_process,
+                            prefix=prefix+fragment.prefix,
+                            blank_lines_before=fragment.blank_lines_before
+                        )
+                    elif fragment.type == "variable":
+                        self._add_text_to_chain(fragment.name, chain, prefix, tabstops)
+                    elif fragment.type == "code":
+                        self._add_text_to_chain(fragment.text, chain, prefix, tabstops)
+                    elif fragment.type == "tabstop":
+                        tabstops.append(fragment.index)
+        while tabstops:
+            chain.mark_tabstop(tabstops.pop())
         if chain.tail is not None and chain.tail.value != "\n":
             chain.append("\n")
 
-    def _add_text_to_chain(self, text, chain, prefix):
+    def _add_text_to_chain(self, text, chain, prefix, tabstops):
         for char in text:
             if chain.tail is None or (chain.tail.value == "\n" and char != "\n"):
                 chain.append(prefix)
-            self._mark_tabstops(chain)
+            while tabstops:
+                chain.mark_tabstop(tabstops.pop())
             chain.append(char)
-
-    def _mark_tabstops(self, chain):
-        while self._tabstops:
-            chain.mark_tabstop(self._tabstops.pop())
 
     def _get_filepath(self, key):
         if len(key[0]) > 0 and len(key[1]) == 0:
