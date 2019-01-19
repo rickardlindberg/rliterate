@@ -8380,7 +8380,7 @@
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        %expand\n        @button = self._clear_hoisted_page()\n    )\n    vscroll %vbox {\n        for (self._get_rows() : row) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = row.page\n                selection   = self.selection.get(row.page.id)\n                indentation = row.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n            )\n        }\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        %expand\n        @button = self._clear_hoisted_page()\n    )\n    vscroll %vbox {\n        for (self._get_rows() : row) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = row.page\n                selection   = self.selection.get(row.page.id)\n                indentation = row.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n            )\n        }\n    }\n}\n",
 "type":"code"
 }
 ],
