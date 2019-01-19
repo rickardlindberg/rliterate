@@ -4599,9 +4599,8 @@ class CodeExpander(object):
             if index > 0:
                 self._add_text_to_chain("\n"*blank_lines_before, chain, prefix, tabstops)
             if paragraph.has_post_process and post_process:
-                print("has post process: {}".format(paragraph.post_process))
-                self._add_text_to_chain(
-                    subprocess.Popen(
+                try:
+                    value = subprocess.Popen(
                         paragraph.post_process,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE
@@ -4610,12 +4609,11 @@ class CodeExpander(object):
                             char.value for
                             char in self.expand_id(paragraph.id, post_process=False)[1]
                         )
-                    )[0],
-                    chain,
-                    prefix,
-                    tabstops
-                )
-                print("post process done")
+                    )[0]
+                except Exception as e:
+                    value = str(e)
+                    sys.stderr.write("Command {} failed: {}".format(paragraph.post_process, value))
+                self._add_text_to_chain(value, chain, prefix, tabstops)
             else:
                 for fragment in paragraph.fragments:
                     if fragment.type == "chunk":
