@@ -168,6 +168,11 @@ class GuiFrameworkBaseMixin(object):
             self._handlers[name](event)
         elif propagate and isinstance(self.Parent, GuiFrameworkBaseMixin):
             self.Parent._call_handler(name, event, propagate=propagate)
+class GuiFrameworkPanel(wx.Panel, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.Panel.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -242,11 +247,7 @@ class SizeWrapper(object):
     def WithSize(self, size):
         self.SetSize(size)
         return self
-class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
-
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class TableOfContentsRowGui(GuiFrameworkPanel):
 
     def _get_derived(self):
         return {
@@ -330,11 +331,7 @@ class TableOfContentsRowGui(wx.Panel, GuiFrameworkBaseMixin):
     @property
     def indentation(self):
         return self.values["indentation"]
-class TableOfContentsButtonGui(wx.Panel, GuiFrameworkBaseMixin):
-
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class TableOfContentsButtonGui(GuiFrameworkPanel):
 
     def _get_derived(self):
         return {
@@ -365,11 +362,7 @@ class TableOfContentsButtonGui(wx.Panel, GuiFrameworkBaseMixin):
     @property
     def page(self):
         return self.values["page"]
-class TitleGui(wx.Panel, GuiFrameworkBaseMixin):
-
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class TitleGui(GuiFrameworkPanel):
 
     def _get_derived(self):
         return {
@@ -486,11 +479,7 @@ class Editable(VerticalBasePanel):
     def Save(self):
         self.edit.Save()
         self.project.active_editor = None
-class TextProjectionEditorGui(wx.Panel, GuiFrameworkBaseMixin):
-
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class TextProjectionEditorGui(GuiFrameworkPanel):
 
     def _get_derived(self):
         return {

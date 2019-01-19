@@ -16025,6 +16025,15 @@
 "type":"chunk"
 },
 {
+"blank_lines_before":0,
+"path":[
+"WxCodeGenerator",
+"rules"
+],
+"prefix":"  ",
+"type":"chunk"
+},
+{
 "text":"  border =\n    | \"ALL\"    -> { %sizerFlag \" |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { %sizerFlag \" |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { %sizerFlag \" |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { %sizerFlag \" |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { %sizerFlag \" |= wx.BOTTOM\\n\" }\n  boxType =\n    | \"hbox\" -> \"wx.HORIZONTAL\"\n    | \"vbox\" -> \"wx.VERTICAL\"\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = self.\" %widget \"\\n\" }\n    | .               -> {}\n}\n",
 "type":"code"
 }
@@ -16048,27 +16057,42 @@
 ],
 "fragments":[
 {
-"text":"| [\"panel\" .:name ast:x] -> {\n  %%handlers\n  %%widget\n  %%parent\n  \"class \" name \"(wx.Panel, ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":"):\\n\" >\n    \"\\ndef __init__(self, parent, **kwargs):\\n\" >\n      \"wx.Panel.__init__(self, parent)\\n\"\n      \"",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":".__init__(self, **kwargs)\\n\"\n    <\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      %handlers \" = []\\n\"\n      \"self.\" %widget \" = self\\n\"\n      \"self.\" %parent \" = self\\n\"\n      #create\n      \"for handler in \" %handlers \":\\n\" >\n        \"self.\" %widget \".listen(*handler)\\n\"\n      <\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"pass\\n\"\n      #update\n    <\n    x\n  <\n}\n",
+"text":"| [widget:x .:name ast:y] -> {\n  %%handlers\n  %%widget\n  %%parent\n  \"class \" name \"(\" x \"):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      %handlers \" = []\\n\"\n      \"self.\" %widget \" = self\\n\"\n      \"self.\" %parent \" = self\\n\"\n      #create\n      \"for handler in \" %handlers \":\\n\" >\n        \"self.\" %widget \".listen(*handler)\\n\"\n      <\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"pass\\n\"\n      #update\n    <\n    y\n  <\n}\n",
 "type":"code"
 }
 ],
 "id":"3a378364ccd44065bacc1daace521a3b",
+"language":"rlmeta",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"WxCodeGenerator",
+"rules"
+],
+"filepath":[
+"rlgui.py"
+],
+"fragments":[
+{
+"text":"widget =\n  | \"panel\" -> \"",
+"type":"code"
+},
+{
+"id":"946dd579e2a94e49a5679094477fefd0",
+"type":"variable"
+},
+{
+"text":"\"\n",
+"type":"code"
+}
+],
+"id":"b90a2613093741a18cb0bb5805f3ad89",
 "language":"rlmeta",
 "post_process":[
 "python",
@@ -16430,6 +16454,50 @@
 }
 ],
 "id":"f45e69b9f48840a4af35c1a9b4ca5599",
+"language":"",
+"post_process":[
+""
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"946dd579e2a94e49a5679094477fefd0",
+"type":"variable"
+},
+{
+"text":"(wx.Panel, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n",
+"type":"code"
+}
+],
+"id":"6f70dce877674117b2ca4a80264d34ee",
 "language":"",
 "post_process":[
 ""
@@ -19536,6 +19604,7 @@
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "8db58d842ac34e0aa51ea908cd841520":"theme",
 "90d6de1e6f714f1497872ca757b501b6":"value",
+"946dd579e2a94e49a5679094477fefd0":"GuiFrameworkPanel",
 "94ebdf2d279b424580629906ad32a461":"characters",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
 "985e71100d1344daba62a309a21872aa":"insert_paragraph_before",
