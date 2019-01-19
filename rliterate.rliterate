@@ -12547,7 +12547,7 @@
 "type":"variable"
 },
 {
-"text":"():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n        self.paragraph.",
+"text":"():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n        if self.post_process.Value.strip():\n            self.paragraph.",
 "type":"code"
 },
 {
@@ -12555,7 +12555,15 @@
 "type":"variable"
 },
 {
-"text":" = self.post_process.Value.split(\" \")\n",
+"text":" = self.post_process.Value.strip().split(\" \")\n        else:\n            self.paragraph.",
+"type":"code"
+},
+{
+"id":"78f04cb2a0ea4a8bac572d43487d2581",
+"type":"variable"
+},
+{
+"text":" = []\n",
 "type":"code"
 }
 ],

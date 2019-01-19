@@ -4416,7 +4416,10 @@ class CodeEditor(VerticalPanel):
             self.paragraph.path = Path.from_text_version(self.path.Value)
             self.paragraph.text_version = self.text.Value
             self.paragraph.raw_language = self.language.Value
-            self.paragraph.post_process = self.post_process.Value.split(" ")
+            if self.post_process.Value.strip():
+                self.paragraph.post_process = self.post_process.Value.strip().split(" ")
+            else:
+                self.paragraph.post_process = []
 class Image(ParagraphBase):
 
     PADDING = 30
