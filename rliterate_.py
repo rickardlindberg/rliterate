@@ -1716,7 +1716,7 @@ class CodeParagraph(Paragraph):
         )
     @property
     def has_post_process(self):
-        return len(self.post_process) > 0
+        return len(" ".join(self.post_process)) > 0
 
     @property
     def post_process(self):

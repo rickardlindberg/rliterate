@@ -3786,7 +3786,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef has_post_process(self):\n    return len(self.post_process) > 0\n\n@property\ndef ",
+"text":"@property\ndef has_post_process(self):\n    return len(\" \".join(self.post_process)) > 0\n\n@property\ndef ",
 "type":"code"
 },
 {
@@ -15893,9 +15893,11 @@
 "id":"4a5f39dbce724c2ba0f7f2ca4f298659",
 "paragraphs":[
 {
-"chunkpath":[],
+"chunkpath":[
+"classes"
+],
 "filepath":[
-"guiparser.rlmeta"
+"rlgui.py"
 ],
 "fragments":[
 {
@@ -15904,13 +15906,19 @@
 }
 ],
 "id":"ddb2d0857afd4298ba3d55bfecdc5790",
-"language":"",
+"language":"rlmeta",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py"
+],
 "type":"code"
 },
 {
-"chunkpath":[],
+"chunkpath":[
+"classes"
+],
 "filepath":[
-"wxguicodegenerator.rlmeta"
+"rlgui.py"
 ],
 "fragments":[
 {
@@ -15943,7 +15951,11 @@
 }
 ],
 "id":"e91ab38b002a413b9fef73440e3177ee",
-"language":"",
+"language":"rlmeta",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py"
+],
 "type":"code"
 },
 {
@@ -16230,16 +16242,65 @@
 {
 "chunkpath":[],
 "filepath":[
-"make_guicompiler.sh"
+"rlgui.py"
 ],
 "fragments":[
 {
-"text":"#!/bin/bash\n\nset -e\n\ncd \"$(dirname \"$0\")\"\n\nsupport_py=$(python rlmeta/rlmeta.py --support)\nparser_py=$(python rlmeta/rlmeta.py < guiparser.rlmeta)\nwxcodegenerator_py=$(python rlmeta/rlmeta.py < wxguicodegenerator.rlmeta)\n\ncat <<EOF\nimport sys\nimport pprint\n\n$support_py\n\n$parser_py\n\n$wxcodegenerator_py\n\njoin = \"\".join\n\nif __name__ == \"__main__\":\n    parser = GuiParser()\n    wxcodegenerator = WxGuiCodeGenerator()\n    try:\n        ast = None\n        ast = parser.run(\"file\", sys.stdin.read())\n        code = wxcodegenerator.run(\"file\", ast)\n        sys.stdout.write(code)\n    except _MatchError as e:\n        sys.stderr.write(pprint.pformat(ast))\n        sys.stderr.write(\"\\n\")\n        sys.stderr.write(e.describe())\n        sys.exit(1)\nEOF\n",
+"text":"import sys\nimport pprint\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"support"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"text":"\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"classes"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"text":"\njoin = \"\".join\n\nif __name__ == \"__main__\":\n    parser = GuiParser()\n    wxcodegenerator = WxGuiCodeGenerator()\n    try:\n        ast = None\n        ast = parser.run(\"file\", sys.stdin.read())\n        code = wxcodegenerator.run(\"file\", ast)\n        sys.stdout.write(code)\n    except _MatchError as e:\n        sys.stderr.write(pprint.pformat(ast))\n        sys.stderr.write(\"\\n\")\n        sys.stderr.write(e.describe())\n        sys.exit(1)\n",
 "type":"code"
 }
 ],
 "id":"c488f8ce4ecf468d8039d241103648ab",
 "language":"",
+"post_process":[
+""
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"support"
+],
+"filepath":[
+"rlgui.py"
+],
+"fragments":[
+{
+"text":"# Placeholder just to generate support library in post processing step\n",
+"type":"code"
+}
+],
+"id":"c3cc8ceafb7a4e77b16f2eafc15893f0",
+"language":"",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py",
+"--support"
+],
 "type":"code"
 },
 {
@@ -16251,7 +16312,7 @@
 ],
 "fragments":[
 {
-"text":"rliterate.py: rliterate_.py widgets.py\n\tpython splice.py rliterate_.py widgets.py > rliterate.py\n\nwidgets.py: guicompiler.py widgets.gui\n\tpython guicompiler.py < widgets.gui > widgets.py\n\nguicompiler.py: guiparser.rlmeta wxguicodegenerator.rlmeta\n\t./make_guicompiler.sh > guicompiler.py\n",
+"text":"rliterate.py: rliterate_.py widgets.py\n\tpython splice.py rliterate_.py widgets.py > rliterate.py\n\nwidgets.py: rlgui.py widgets.gui\n\tpython rlgui.py < widgets.gui > widgets.py\n",
 "type":"code"
 }
 ],

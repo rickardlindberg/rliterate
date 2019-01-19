@@ -4,11 +4,8 @@
 rliterate.py: rliterate_.py widgets.py
 	python splice.py rliterate_.py widgets.py > rliterate.py
 
-widgets.py: guicompiler.py widgets.gui
-	python guicompiler.py < widgets.gui > widgets.py
-
-guicompiler.py: guiparser.rlmeta wxguicodegenerator.rlmeta
-	./make_guicompiler.sh > guicompiler.py
+widgets.py: rlgui.py widgets.gui
+	python rlgui.py < widgets.gui > widgets.py
 .PHONY: test
 test:
 	py.test -vv

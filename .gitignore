@@ -7,5 +7,5 @@
 /.cache
 /__pycache__
 *.pyc
-/guicompiler.py
 /widgets.py
+/rlgui.py
