@@ -16073,37 +16073,6 @@
 "chunkpath":[
 "classes",
 "WxCodeGenerator",
-"rules"
-],
-"filepath":[
-"rlgui.py"
-],
-"fragments":[
-{
-"text":"widget =\n  | \"panel\" -> \"",
-"type":"code"
-},
-{
-"id":"946dd579e2a94e49a5679094477fefd0",
-"type":"variable"
-},
-{
-"text":"\"\n",
-"type":"code"
-}
-],
-"id":"b90a2613093741a18cb0bb5805f3ad89",
-"language":"rlmeta",
-"post_process":[
-"python",
-"rlmeta/rlmeta.py"
-],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"WxCodeGenerator",
 "ast"
 ],
 "filepath":[
@@ -16111,7 +16080,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"child\" .:x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%handlers\n  %%createVars\n  %%updateVars\n  %%sizerFlag\n  %%sizerBorder\n  %%sizerProportion\n  @create {\n    %handlers \" = []\\n\"\n    %createVars \" = {}\\n\"\n    %sizerFlag \" = 0\\n\"\n    %sizerBorder \" = 0\\n\"\n    %sizerProportion \" = 0\\n\"\n  }\n  @update {\n    %updateVars \" = {}\\n\"\n  }\n  zs\n  %%widget\n  @create {\n    \"self.\" %widget \" = \" x \"(self.\" %parent \", **\" %createVars \")\\n\"\n    \"self.\" %sizer \".Add(self.\" %widget \", flag=\" %sizerFlag \", border=\" %sizerBorder \", proportion=\" %sizerProportion \")\\n\"\n    \"for handler in \" %handlers \":\\n\" >\n      \"self.\" %widget \".listen(*handler)\\n\"\n    <\n    y\n  }\n  @update {\n    \"self.\" %widget \".UpdateGui(**\" %updateVars \")\\n\"\n  }\n  %%parent\n  @create {\n    \"self.\" %parent \" = self.\" %widget \"\\n\"\n  }\n  ws\n}\n",
+"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%handlers\n  %%createVars\n  %%updateVars\n  %%sizerFlag\n  %%sizerBorder\n  %%sizerProportion\n  @create {\n    %handlers \" = []\\n\"\n    %createVars \" = {}\\n\"\n    %sizerFlag \" = 0\\n\"\n    %sizerBorder \" = 0\\n\"\n    %sizerProportion \" = 0\\n\"\n  }\n  @update {\n    %updateVars \" = {}\\n\"\n  }\n  zs\n  %%widget\n  @create {\n    \"self.\" %widget \" = \" x \"(self.\" %parent \", **\" %createVars \")\\n\"\n    \"self.\" %sizer \".Add(self.\" %widget \", flag=\" %sizerFlag \", border=\" %sizerBorder \", proportion=\" %sizerProportion \")\\n\"\n    \"for handler in \" %handlers \":\\n\" >\n      \"self.\" %widget \".listen(*handler)\\n\"\n    <\n    y\n  }\n  @update {\n    \"self.\" %widget \".UpdateGui(**\" %updateVars \")\\n\"\n  }\n  %%parent\n  @create {\n    \"self.\" %parent \" = self.\" %widget \"\\n\"\n  }\n  ws\n}\n",
 "type":"code"
 }
 ],
@@ -16170,6 +16139,61 @@
 }
 ],
 "id":"a1a7a01b20a64b5baa9b6164de81b131",
+"language":"rlmeta",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"WxCodeGenerator",
+"rules"
+],
+"filepath":[
+"rlgui.py"
+],
+"fragments":[
+{
+"text":"widget =\n  | \"panel\"   -> \"",
+"type":"code"
+},
+{
+"id":"946dd579e2a94e49a5679094477fefd0",
+"type":"variable"
+},
+{
+"text":"\"\n  | \"scroll\"  -> \"",
+"type":"code"
+},
+{
+"id":"224b3148a7914a7a8c9c9038908d4f63",
+"type":"variable"
+},
+{
+"text":"\"\n  | \"vscroll\" -> \"",
+"type":"code"
+},
+{
+"id":"5ca1e41e12834873aeff9e832dd119b6",
+"type":"variable"
+},
+{
+"text":"\"\n  | \"hscroll\" -> \"",
+"type":"code"
+},
+{
+"id":"22b14d6c952c469eb7f9f8d6d0f7c8cc",
+"type":"variable"
+},
+{
+"text":"\"\n",
+"type":"code"
+}
+],
+"id":"b90a2613093741a18cb0bb5805f3ad89",
 "language":"rlmeta",
 "post_process":[
 "python",
@@ -16502,6 +16526,132 @@
 "post_process":[
 ""
 ],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"224b3148a7914a7a8c9c9038908d4f63",
+"type":"variable"
+},
+{
+"text":"(CompactScrolledWindow, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        CompactScrolledWindow.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n",
+"type":"code"
+}
+],
+"id":"3569756e77ef40dfb2fe08c308cb9ec9",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"5ca1e41e12834873aeff9e832dd119b6",
+"type":"variable"
+},
+{
+"text":"(CompactScrolledWindow, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        CompactScrolledWindow.__init__(self, parent, wx.VERTICAL)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n",
+"type":"code"
+}
+],
+"id":"3259608c6e4f4d1bb894b7c226af260b",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"22b14d6c952c469eb7f9f8d6d0f7c8cc",
+"type":"variable"
+},
+{
+"text":"(CompactScrolledWindow, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        CompactScrolledWindow.__init__(self, parent, wx.HORIZONTAL)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n",
+"type":"code"
+}
+],
+"id":"44bbf98c73494e5fb96d7e6fdd36338f",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -19509,6 +19659,8 @@
 "1f5e6f3baaa0428cb1ce92e49af41f62":"_update_gui",
 "1f8f14208d274d0cbab10d21ec300882":"code_font",
 "20656ab448a944f7b3659aeb42405b15":"_line_height",
+"224b3148a7914a7a8c9c9038908d4f63":"GuiFrameworkScroll",
+"22b14d6c952c469eb7f9f8d6d0f7c8cc":"GuiFrameworkHScroll",
 "242fcd9d10934eff9fe96e226c34f260":"_get_derived",
 "2449e9bb4a8143fbb06bf888bc1d1f9c":"fragments",
 "25dfed2d02124924b27ccee34278dc26":"_setup_beams",
@@ -19563,6 +19715,7 @@
 "5a66414227d04b228db871fc070f0b19":"_line_height_pixels",
 "5affa32461a54d70a681332cbfbcac11":"SetParameters",
 "5bf37424f5634fcaaf91e43d607a41ca":"GuiUpdatePanel",
+"5ca1e41e12834873aeff9e832dd119b6":"GuiFrameworkVScroll",
 "5d5cbe77035c40379816eb19327f1267":"fragments",
 "5e10aeda67184296b8d29d6d4d54c2cb":"TableOfContentsRow",
 "5e725316bce6426b88d46fe528e812ff":"_partition_characters",

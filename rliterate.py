@@ -173,6 +173,21 @@ class GuiFrameworkPanel(wx.Panel, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class GuiFrameworkScroll(CompactScrolledWindow, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        CompactScrolledWindow.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class GuiFrameworkVScroll(CompactScrolledWindow, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        CompactScrolledWindow.__init__(self, parent, wx.VERTICAL)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class GuiFrameworkHScroll(CompactScrolledWindow, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        CompactScrolledWindow.__init__(self, parent, wx.HORIZONTAL)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
