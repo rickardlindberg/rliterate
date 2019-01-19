@@ -16018,7 +16018,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> \"vbox\"\n  child =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' ",
+"text":"-> \"vbox\"\n  child =\n    | ws 'BoxSpace' ws '(' expr:x ws ')' ",
 "type":"code"
 },
 {
