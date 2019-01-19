@@ -15936,8 +15936,10 @@
 "title":"Text entry helper"
 },
 {
+"children":[
+{
 "children":[],
-"id":"4a5f39dbce724c2ba0f7f2ca4f298659",
+"id":"066d3042279b4bbbbb0a0de743307709",
 "paragraphs":[
 {
 "chunkpath":[
@@ -15959,7 +15961,14 @@
 "rlmeta/rlmeta.py"
 ],
 "type":"code"
+}
+],
+"title":"Parser"
 },
+{
+"children":[],
+"id":"ebe6538e47e94386bcc0169cf5540838",
+"paragraphs":[
 {
 "chunkpath":[
 "classes"
@@ -16004,7 +16013,14 @@
 "rlmeta/rlmeta.py"
 ],
 "type":"code"
+}
+],
+"title":"Code generator"
 },
+{
+"children":[],
+"id":"6565ec4684064857aa685fd30a934442",
+"paragraphs":[
 {
 "chunkpath":[
 "base base base classes"
@@ -16280,7 +16296,14 @@
 ""
 ],
 "type":"code"
+}
+],
+"title":"Support library"
 },
+{
+"children":[],
+"id":"497c5bfbc108433692009007a4fd765d",
+"paragraphs":[
 {
 "chunkpath":[],
 "filepath":[
@@ -16346,6 +16369,11 @@
 "type":"code"
 }
 ],
+"title":"Compiler"
+}
+],
+"id":"4a5f39dbce724c2ba0f7f2ca4f298659",
+"paragraphs":[],
 "title":"GUI language framework"
 },
 {
