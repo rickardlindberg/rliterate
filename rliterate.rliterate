@@ -8380,7 +8380,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        %expand\n        @button = self._clear_hoisted_page()\n    )\n    vscroll %vbox {\n        for (self._get_rows() : row) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = row.page\n                selection   = self.selection.get(row.page.id)\n                indentation = row.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n            )\n        }\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        %expand\n        @button = self._clear_hoisted_page()\n    )\n    vscroll() %vbox {\n        for (self._get_rows() : row) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = row.page\n                selection   = self.selection.get(row.page.id)\n                indentation = row.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n            )\n        }\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -15970,7 +15970,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  widget =\n    | containerType:x name:y boxType:z\n      ws '{' body:a ws '}' ws !. ",
+"text":"GuiParser {\n  widget =\n    | containerType:x name:y boxType:z\n      ws '{' body*:as ws '}' ws !. ",
 "type":"code"
 },
 {
@@ -15978,7 +15978,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [x y [z a]]\n  body =\n    | (derived | variable | handler | child)*\n  variable =\n    | ws '#' name:x ",
+"text":"-> [x y [z as]]\n  body =\n    | derived | variable | handler | child\n  variable =\n    | ws '#' name:x ",
 "type":"code"
 },
 {
@@ -16002,7 +16002,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [x [] xs]\n  boxType =\n    | ws '%hbox' !nameChar ",
+"text":"-> [x xs]\n  boxType =\n    | ws '%hbox' !nameChar ",
 "type":"code"
 },
 {
@@ -16026,7 +16026,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"boxspace\" x]\n    | containerType:x binding:y box:z ",
+"text":"-> [\"boxspace\" x]\n    | containerType:x binding:y\n      ws '(' (parameter|handler|sizerprop)*:zs ws ')'\n      box:ws ",
 "type":"code"
 },
 {
@@ -16034,7 +16034,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"child\" x y [] [z]]\n    | !reserved name:x binding:y\n      ws '(' (parameter|handler|sizerprop)*:zs ws ')' ",
+"text":"-> [\"child\" x y zs [ws]]\n    | !reserved name:x binding:y\n      ws '(' (parameter|handler|sizerprop)*:zs ws ')' ",
 "type":"code"
 },
 {
@@ -16437,29 +16437,6 @@
 }
 ],
 "id":"a1a7a01b20a64b5baa9b6164de81b131",
-"language":"rlmeta",
-"post_process":[
-"python",
-"rlmeta/rlmeta.py"
-],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"WxCodeGenerator",
-"ast"
-],
-"filepath":[
-"rlgui.py"
-],
-"fragments":[
-{
-"text":"| [boxType:x [ast*:ys] [ast*:zs]] -> {\n  %%childSizer\n  %%sizerFlag\n  %%sizerBorder\n  %%sizerProportion\n  @create {\n    %sizerFlag \" = 0\\n\"\n    %sizerBorder \" = 0\\n\"\n    %sizerProportion \" = 0\\n\"\n  }\n  ys\n  @create {\n    \"self.\" %childSizer \" = wx.BoxSizer(\" x \")\\n\"\n    \"self.\" %sizer \".Add(self.\" %childSizer \", flag=\" %sizerFlag \", border=\" %sizerBorder \", proportion=\" %sizerProportion \")\\n\"\n    ys\n  }\n  %%sizer\n  @create {\n    \"self.\" %sizer \" = self.\" %childSizer \"\\n\"\n  }\n  zs\n}\n",
-"type":"code"
-}
-],
-"id":"ef4ff71046fb4f0b9d0fcfbb4e5a088f",
 "language":"rlmeta",
 "post_process":[
 "python",
