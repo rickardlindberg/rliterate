@@ -138,7 +138,7 @@ class GuiFrameworkBaseMixin(object):
             self._call_handler("mouse_move", event, propagate=True)
         if self._should_drag(event.Position):
             self.down_pos = None
-            self._call_handler("drag", event)
+            self._call_handler("drag", event, propagate=True)
 
     def _should_drag(self, pos):
         if self.down_pos is not None:
