@@ -1212,12 +1212,30 @@
 {
 "fragments":[
 {
-"text":"RLiterate is implemented in Python. The implementation consists of three files: one for the program, one for the test code, and a Makefile for various operations.",
+"text":"RLiterate is implemented in Python. The implementation consists of four files: one for a compiler of gui widgets, one for the program, one for the test code, and a Makefile for various operations.",
 "type":"text"
 }
 ],
 "id":"918c58768ee3442da6bc41cbeba8d211",
 "type":"text"
+},
+{
+"chunkpath":[],
+"filepath":[
+"rlgui.py"
+],
+"fragments":[
+{
+"text":"# This file is extracted from rliterate.rliterate.\n# DO NOT EDIT MANUALLY!\n",
+"type":"code"
+}
+],
+"id":"5550ad9d761e447982bd863a238f9ac8",
+"language":"",
+"post_process":[
+""
+],
+"type":"code"
 },
 {
 "chunkpath":[],
