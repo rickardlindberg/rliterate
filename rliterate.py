@@ -312,66 +312,66 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        _label0 = []
-        self._label1 = self
-        self._label2 = self
-        self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        self._label2.Sizer = self._label3
-        self._label4 = self._label3.Add(self._get_space_size(self._label3, self._indentation_size()))
-        _label5 = []
-        _label6 = {}
-        _label8 = 0
-        _label9 = 0
-        _label10 = 0
-        _label6['project'] = self.project
-        _label6['page'] = self.page
-        _label9 = self.BORDER
-        _label8 |= wx.LEFT
-        _label8 |= wx.EXPAND
-        _label8 |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
-        self._label11 = TableOfContentsButton(self._label2, **_label6)
-        self._label3.Add(self._label11, flag=_label8, border=_label9, proportion=_label10)
-        for handler in _label5:
-            self._label11.listen(*handler)
-        self._label12 = self._label11
-        _label13 = []
-        _label14 = {}
-        _label16 = 0
-        _label17 = 0
-        _label18 = 0
-        _label14['project'] = self.project
-        _label14['selection'] = self.selection
-        _label14['handle_key'] = self._handle_key
-        _label14['get_characters'] = self._get_characters
-        _label17 = self.BORDER
-        _label16 |= wx.ALL
-        _label13.append(('ctrl_click', lambda event: self.text.Select(event.Position)))
-        _label13.append(('mouse_move', lambda event: self._set_cursor(event)))
-        self._label19 = TextProjectionEditor(self._label2, **_label14)
-        self._label3.Add(self._label19, flag=_label16, border=_label17, proportion=_label18)
-        for handler in _label13:
-            self._label19.listen(*handler)
-        self.text = self._label19
-        self._label20 = self._label19
-        _label0.append(('click', lambda event: self._on_click_old(event)))
-        _label0.append(('right_click', lambda event: self._on_right_click_old(event)))
-        _label0.append(('drag', lambda event: self._on_drag_old(event)))
-        for handler in _label0:
-            self._label1.listen(*handler)
+        _handlers0 = []
+        self._widget1 = self
+        self._parent2 = self
+        self._sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        self._parent2.Sizer = self._sizer3
+        self._sizeritem4 = self._sizer3.Add(self._get_space_size(self._sizer3, self._indentation_size()))
+        _handlers5 = []
+        _createVars6 = {}
+        _sizerFlag8 = 0
+        _sizerBorder9 = 0
+        _sizerProportion10 = 0
+        _createVars6['project'] = self.project
+        _createVars6['page'] = self.page
+        _sizerBorder9 = self.BORDER
+        _sizerFlag8 |= wx.LEFT
+        _sizerFlag8 |= wx.EXPAND
+        _sizerFlag8 |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
+        self._widget11 = TableOfContentsButton(self._parent2, **_createVars6)
+        self._sizer3.Add(self._widget11, flag=_sizerFlag8, border=_sizerBorder9, proportion=_sizerProportion10)
+        for handler in _handlers5:
+            self._widget11.listen(*handler)
+        self._parent12 = self._widget11
+        _handlers13 = []
+        _createVars14 = {}
+        _sizerFlag16 = 0
+        _sizerBorder17 = 0
+        _sizerProportion18 = 0
+        _createVars14['project'] = self.project
+        _createVars14['selection'] = self.selection
+        _createVars14['handle_key'] = self._handle_key
+        _createVars14['get_characters'] = self._get_characters
+        _sizerBorder17 = self.BORDER
+        _sizerFlag16 |= wx.ALL
+        _handlers13.append(('ctrl_click', lambda event: self.text.Select(event.Position)))
+        _handlers13.append(('mouse_move', lambda event: self._set_cursor(event)))
+        self._widget19 = TextProjectionEditor(self._parent2, **_createVars14)
+        self._sizer3.Add(self._widget19, flag=_sizerFlag16, border=_sizerBorder17, proportion=_sizerProportion18)
+        for handler in _handlers13:
+            self._widget19.listen(*handler)
+        self.text = self._widget19
+        self._parent20 = self._widget19
+        _handlers0.append(('click', lambda event: self._on_click_old(event)))
+        _handlers0.append(('right_click', lambda event: self._on_right_click_old(event)))
+        _handlers0.append(('drag', lambda event: self._on_drag_old(event)))
+        for handler in _handlers0:
+            self._widget1.listen(*handler)
 
     def _update_gui(self):
         pass
-        self._label4.SetMinSize(self._get_space_size(self._label3, self._indentation_size()))
-        _label7 = {}
-        _label7['project'] = self.project
-        _label7['page'] = self.page
-        self._label11.UpdateGui(**_label7)
-        _label15 = {}
-        _label15['project'] = self.project
-        _label15['selection'] = self.selection
-        _label15['handle_key'] = self._handle_key
-        _label15['get_characters'] = self._get_characters
-        self._label19.UpdateGui(**_label15)
+        self._sizeritem4.SetMinSize(self._get_space_size(self._sizer3, self._indentation_size()))
+        _updateVars7 = {}
+        _updateVars7['project'] = self.project
+        _updateVars7['page'] = self.page
+        self._widget11.UpdateGui(**_updateVars7)
+        _updateVars15 = {}
+        _updateVars15['project'] = self.project
+        _updateVars15['selection'] = self.selection
+        _updateVars15['handle_key'] = self._handle_key
+        _updateVars15['get_characters'] = self._get_characters
+        self._widget19.UpdateGui(**_updateVars15)
 
     @property
     def project(self):
@@ -398,15 +398,15 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        _label0 = []
-        self._label1 = self
-        self._label2 = self
-        self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        self._label2.Sizer = self._label3
-        _label0.append(('click', lambda event: self.project.toggle_collapsed(self.page.id)))
-        _label0.append(('paint', lambda event: self._on_paint(event)))
-        for handler in _label0:
-            self._label1.listen(*handler)
+        _handlers0 = []
+        self._widget1 = self
+        self._parent2 = self
+        self._sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        self._parent2.Sizer = self._sizer3
+        _handlers0.append(('click', lambda event: self.project.toggle_collapsed(self.page.id)))
+        _handlers0.append(('paint', lambda event: self._on_paint(event)))
+        for handler in _handlers0:
+            self._widget1.listen(*handler)
 
     def _update_gui(self):
         pass
@@ -425,46 +425,46 @@ class TitleGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        _label0 = []
-        self._label1 = self
-        self._label2 = self
-        self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        self._label2.Sizer = self._label3
-        _label4 = []
-        _label5 = {}
-        _label7 = 0
-        _label8 = 0
-        _label9 = 0
-        _label5['handle_key'] = self._handle_key
-        _label5['project'] = self.project
-        _label5['selection'] = self.selection
-        _label5['get_characters'] = self._get_characters
-        _label5['max_width'] = self.project.theme.page_body_width
-        _label5['font'] = self._create_font()
-        _label5['tooltip'] = self.page.full_title
-        _label4.append(('double_click', lambda event: self.text.Select(event.Position)))
-        _label9 = 1
-        self._label10 = TextProjectionEditor(self._label2, **_label5)
-        self._label3.Add(self._label10, flag=_label7, border=_label8, proportion=_label9)
-        for handler in _label4:
-            self._label10.listen(*handler)
-        self.text = self._label10
-        self._label11 = self._label10
-        _label0.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
-        for handler in _label0:
-            self._label1.listen(*handler)
+        _handlers0 = []
+        self._widget1 = self
+        self._parent2 = self
+        self._sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        self._parent2.Sizer = self._sizer3
+        _handlers4 = []
+        _createVars5 = {}
+        _sizerFlag7 = 0
+        _sizerBorder8 = 0
+        _sizerProportion9 = 0
+        _createVars5['handle_key'] = self._handle_key
+        _createVars5['project'] = self.project
+        _createVars5['selection'] = self.selection
+        _createVars5['get_characters'] = self._get_characters
+        _createVars5['max_width'] = self.project.theme.page_body_width
+        _createVars5['font'] = self._create_font()
+        _createVars5['tooltip'] = self.page.full_title
+        _handlers4.append(('double_click', lambda event: self.text.Select(event.Position)))
+        _sizerProportion9 = 1
+        self._widget10 = TextProjectionEditor(self._parent2, **_createVars5)
+        self._sizer3.Add(self._widget10, flag=_sizerFlag7, border=_sizerBorder8, proportion=_sizerProportion9)
+        for handler in _handlers4:
+            self._widget10.listen(*handler)
+        self.text = self._widget10
+        self._parent11 = self._widget10
+        _handlers0.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        for handler in _handlers0:
+            self._widget1.listen(*handler)
 
     def _update_gui(self):
         pass
-        _label6 = {}
-        _label6['handle_key'] = self._handle_key
-        _label6['project'] = self.project
-        _label6['selection'] = self.selection
-        _label6['get_characters'] = self._get_characters
-        _label6['max_width'] = self.project.theme.page_body_width
-        _label6['font'] = self._create_font()
-        _label6['tooltip'] = self.page.full_title
-        self._label10.UpdateGui(**_label6)
+        _updateVars6 = {}
+        _updateVars6['handle_key'] = self._handle_key
+        _updateVars6['project'] = self.project
+        _updateVars6['selection'] = self.selection
+        _updateVars6['get_characters'] = self._get_characters
+        _updateVars6['max_width'] = self.project.theme.page_body_width
+        _updateVars6['font'] = self._create_font()
+        _updateVars6['tooltip'] = self.page.full_title
+        self._widget10.UpdateGui(**_updateVars6)
 
     @property
     def project(self):
@@ -541,44 +541,44 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        _label0 = []
-        self._label1 = self
-        self._label2 = self
-        self._label3 = wx.BoxSizer(wx.HORIZONTAL)
-        self._label2.Sizer = self._label3
-        _label4 = []
-        _label5 = {}
-        _label7 = 0
-        _label8 = 0
-        _label9 = 0
-        _label5['characters'] = self.get_characters(self)
-        _label5['line_height'] = self.line_height
-        _label5['max_width'] = self.max_width
-        _label5['break_at_word'] = self.break_at_word
-        _label5['font'] = self.font
-        _label5['tooltip'] = self.tooltip
-        _label5['focus'] = self.selection.present
-        _label4.append(('char', lambda event: self._on_char(event)))
-        self._label10 = TextProjection(self._label2, **_label5)
-        self._label3.Add(self._label10, flag=_label7, border=_label8, proportion=_label9)
-        for handler in _label4:
-            self._label10.listen(*handler)
-        self.text = self._label10
-        self._label11 = self._label10
-        for handler in _label0:
-            self._label1.listen(*handler)
+        _handlers0 = []
+        self._widget1 = self
+        self._parent2 = self
+        self._sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        self._parent2.Sizer = self._sizer3
+        _handlers4 = []
+        _createVars5 = {}
+        _sizerFlag7 = 0
+        _sizerBorder8 = 0
+        _sizerProportion9 = 0
+        _createVars5['characters'] = self.get_characters(self)
+        _createVars5['line_height'] = self.line_height
+        _createVars5['max_width'] = self.max_width
+        _createVars5['break_at_word'] = self.break_at_word
+        _createVars5['font'] = self.font
+        _createVars5['tooltip'] = self.tooltip
+        _createVars5['focus'] = self.selection.present
+        _handlers4.append(('char', lambda event: self._on_char(event)))
+        self._widget10 = TextProjection(self._parent2, **_createVars5)
+        self._sizer3.Add(self._widget10, flag=_sizerFlag7, border=_sizerBorder8, proportion=_sizerProportion9)
+        for handler in _handlers4:
+            self._widget10.listen(*handler)
+        self.text = self._widget10
+        self._parent11 = self._widget10
+        for handler in _handlers0:
+            self._widget1.listen(*handler)
 
     def _update_gui(self):
         pass
-        _label6 = {}
-        _label6['characters'] = self.get_characters(self)
-        _label6['line_height'] = self.line_height
-        _label6['max_width'] = self.max_width
-        _label6['break_at_word'] = self.break_at_word
-        _label6['font'] = self.font
-        _label6['tooltip'] = self.tooltip
-        _label6['focus'] = self.selection.present
-        self._label10.UpdateGui(**_label6)
+        _updateVars6 = {}
+        _updateVars6['characters'] = self.get_characters(self)
+        _updateVars6['line_height'] = self.line_height
+        _updateVars6['max_width'] = self.max_width
+        _updateVars6['break_at_word'] = self.break_at_word
+        _updateVars6['font'] = self.font
+        _updateVars6['tooltip'] = self.tooltip
+        _updateVars6['focus'] = self.selection.present
+        self._widget10.UpdateGui(**_updateVars6)
 
     @property
     def project(self):

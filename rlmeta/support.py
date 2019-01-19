@@ -153,13 +153,13 @@ class _Output(object):
         self.parent = parent
         self.indentation = indentation
 
-    def new_label(self):
+    def new_label(self, name):
         if self.parent is None:
-            label = "_label{}".format(self.label_counter)
+            label = "_{}{}".format(name, self.label_counter)
             self.label_counter += 1
             return label
         else:
-            return self.parent.new_label()
+            return self.parent.new_label(name)
 
     @property
     def value(self):
@@ -213,7 +213,7 @@ class _CreateLabel(_Builder):
         self.name = name
 
     def write(self, output):
-        self.parent.labels[self.name] = output.new_label()
+        self.parent.labels[self.name] = output.new_label(self.name)
 
 class _UseLabel(_Builder):
 
