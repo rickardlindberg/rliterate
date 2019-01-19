@@ -15970,7 +15970,295 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  widget      = widgetType:x name:y boxType:z ws '{' body:a ws '}' ws !. -> [x y [z a]]\n  widgetType  = ws (\n                'panel' | 'scroll' | 'vscroll' | 'hscroll'\n                ):x !nameChar -> x\n  body        = (variable | handler | child)*\n  variable    =\n    | derived\n    | ws '#' name:x               -> [\"variable\" x ]\n  derived     = ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x [] xs]\n  boxType     =\n    | ws '%hbox' !nameChar -> \"hbox\"\n    | ws '%vbox' !nameChar -> \"vbox\"\n  child    =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | widgetType:x binding:y box:z -> [\"child\" x y [] [z]]\n    | !reserved name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n    | ws '[' expr*:xs ws ']' -> [\"list\" ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  reserved    = widgetType | for\n  for         = ws 'for' !nameChar\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"text":"GuiParser {\n  widget =\n    | containerType:x name:y boxType:z ws '{' body:a ws '}' ws !. ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [x y [z a]]\n  containerType =\n    | ws ('panel' | 'scroll' | 'vscroll' | 'hscroll'):x !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> x\n  body =\n    | (variable | handler | child)*\n  variable =\n    | derived\n    | ws '#' name:x ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"variable\" x ]\n  derived =\n    | ws '#' name:x ws '=' expr:y ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"derived\" x y]\n  box =\n    | boxType:x ws '{' child*:xs ws '}' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [x [] xs]\n  boxType =\n    | ws '%hbox' !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> \"hbox\"\n    | ws '%vbox' !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> \"vbox\"\n  child =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"boxspace\" x]\n    | containerType:x binding:y box:z ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"child\" x y [] [z]]\n    | !reserved name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"loop\" x y ~zs]\n  binding =\n    | '[' name:x ']' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"binding\" x]\n    | ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> []\n  parameter =\n    | name:x ws '=' expr:y ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"parameter\" x y]\n  handler =\n    | ws '@' name:x ws '=' expr:y ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"handler\" x y]\n  sizerprop =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"sizerReserve\"]\n  borderSide =\n    | side:x (ws '|' side)*:xs ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [x ~xs]\n  side =\n    | ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> x\n  expr =\n    | expr1:x (ws '.' expr1)*:xs ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"int\" int(join([x y ~ys]))]\n    | ws '[' expr*:xs ws ']' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"list\" ~xs]\n  expr1 =\n    | expr2:x ws '(' expr*:xs ws ')' ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"call\" x ~xs]\n    | expr2\n  expr2 =\n    | name:x ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"name\" x]\n  reserved ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = containerType | for\n  for ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = ws 'for' !nameChar\n  name ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = ws nameStart:x nameChar*:xs ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> join([x ~xs])\n  nameStart ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = alpha | '_'\n  nameChar ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = alphanum | '_'\n  alpha ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = 'a'-'z' | 'A'-'Z'\n  alphanum ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = alpha | '0'-'9'\n  ws ",
+"type":"code"
+},
+{
+"index":10,
+"type":"tabstop"
+},
+{
+"text":" = (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
