@@ -8393,8 +8393,29 @@
 "type":"code"
 },
 {
-"code_id":"5b3db6dc57184ce6a4a2ff0b4245a8ff",
-"id":"1ae07dabe14547628b3f5813d9b9a110",
+"chunkpath":[
+"dont render me"
+],
+"filepath":[
+"foo.py"
+],
+"fragments":[
+{
+"text":"panel Widget %vbox {\n    vscroll %vbox {\n        Button()\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"a462ddca868448729272fab996a730ec",
+"language":"",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"code_id":"a462ddca868448729272fab996a730ec",
+"id":"6b6c1d12f9174e6dbca878067c3bff3c",
 "type":"expanded_code"
 },
 {
@@ -15963,7 +15984,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  widget      = widgetType:x name:y boxType:z ws '{' body:a ws '}' ws !. -> [x y [z ~a]]\n  widgetType  = ws (\n                'panel' | 'scroll' | 'vscroll' | 'hscroll'\n                ):x !nameChar -> x\n  body        = (variable | handler | child)*\n  variable    =\n    | derived\n    | ws '#' name:x               -> [\"variable\" x ]\n  derived     = ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     =\n    | ws '%hbox' !nameChar -> \"hbox\"\n    | ws '%vbox' !nameChar -> \"vbox\"\n  child    =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | widgetType:x boxType:y ws '{' (derived | handler | child | sizerprop)*:zs ws '}' -> [\"child\" x y [] zs]\n    | !reserved name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n    | ws '[' expr*:xs ws ']' -> [\"list\" ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  reserved    = widgetType | for\n  for         = ws 'for' !nameChar\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"text":"GuiParser {\n  widget      = widgetType:x name:y boxType:z ws '{' body:a ws '}' ws !. -> [x y [z ~a]]\n  widgetType  = ws (\n                'panel' | 'scroll' | 'vscroll' | 'hscroll'\n                ):x !nameChar -> x\n  body        = (variable | handler | child)*\n  variable    =\n    | derived\n    | ws '#' name:x               -> [\"variable\" x ]\n  derived     = ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     =\n    | ws '%hbox' !nameChar -> \"hbox\"\n    | ws '%vbox' !nameChar -> \"vbox\"\n  child    =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | widgetType:x box:y -> [\"child\" x [] [] [y]]\n    | !reserved name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n    | ws '[' expr*:xs ws ']' -> [\"list\" ~xs]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  reserved    = widgetType | for\n  for         = ws 'for' !nameChar\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
