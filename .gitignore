@@ -7,5 +7,4 @@
 /.cache
 /__pycache__
 *.pyc
-/widgets.py
 /rlgui.py

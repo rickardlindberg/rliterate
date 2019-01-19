@@ -1,11 +1,6 @@
 # This file is extracted from rliterate.rliterate.
 # DO NOT EDIT MANUALLY!
 
-rliterate.py: rliterate_.py widgets.py
-	python splice.py rliterate_.py widgets.py > rliterate.py
-
-widgets.py: rlgui.py widgets.gui
-	python rlgui.py < widgets.gui > widgets.py
 .PHONY: test
 test:
 	py.test -vv
