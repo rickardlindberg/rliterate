@@ -8380,7 +8380,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #selection\n    #min_size   = tuple(250 -1)\n    #background = \"#ffffff\"\n    HBox {\n        Button(\n            visible = self._has_hoisted_page()\n            %expand\n            @button = self._clear_hoisted_page()\n        )\n        VScroll() {\n            VBox {\n                for (self._get_rows() : row) {\n                    TableOfContentsRow(\n                        project     = self.project\n                        page        = row.page\n                        selection   = self.selection.get(row.page.id)\n                        indentation = row.indentation\n                    )\n                    Divider(\n                        padding = 0\n                        height  = 2\n                    )\n                }\n            }\n        }\n    }\n}\n",
+"text":" %hbox {\n    #project\n    #selection\n    #min_size   = tuple(250 -1)\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        %expand\n        @button = self._clear_hoisted_page()\n    )\n    vscroll %vbox {\n        for (self._get_rows() : row) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = row.page\n                selection   = self.selection.get(row.page.id)\n                indentation = row.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n            )\n        }\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -9079,7 +9079,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #page\n    #selection\n    #indentation\n    HBox {\n        BoxSpace(self._indentation_size())\n        TableOfContentsButton(\n            project    = self.project\n            page       = self.page\n            %border[self.BORDER, LEFT]\n            %expand\n            %reserve_space_even_if_hidden\n        )\n        TextProjectionEditor[text](\n            project        = self.project\n            selection      = self.selection\n            handle_key     = self._handle_key\n            get_characters = self._get_characters\n            %border[self.BORDER, ALL]\n            @ctrl_click = self.text.Select(event.Position)\n            @mouse_move = self._set_cursor(event)\n        )\n    }\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
+"text":" %hbox {\n    #project\n    #page\n    #selection\n    #indentation\n    BoxSpace(self._indentation_size())\n    TableOfContentsButton(\n        project    = self.project\n        page       = self.page\n        %border[self.BORDER, LEFT]\n        %expand\n        %reserve_space_even_if_hidden\n    )\n    TextProjectionEditor[text](\n        project        = self.project\n        selection      = self.selection\n        handle_key     = self._handle_key\n        get_characters = self._get_characters\n        %border[self.BORDER, ALL]\n        @ctrl_click = self.text.Select(event.Position)\n        @mouse_move = self._set_cursor(event)\n    )\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
 "type":"code"
 }
 ],
@@ -9292,7 +9292,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #page\n    #visible  = bool(self.page.children)\n    #cursor   = \"hand\"\n    #min_size = self._get_min_size()\n    HBox {\n    }\n    @click = self.project.toggle_collapsed(self.page.id)\n    @paint = self._on_paint(event)\n}\n",
+"text":" %hbox {\n    #project\n    #page\n    #visible  = bool(self.page.children)\n    #cursor   = \"hand\"\n    #min_size = self._get_min_size()\n    @click = self.project.toggle_collapsed(self.page.id)\n    @paint = self._on_paint(event)\n}\n",
 "type":"code"
 }
 ],
@@ -11338,7 +11338,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #page\n    #selection\n    HBox {\n        TextProjectionEditor[text](\n            handle_key    = self._handle_key\n            project       = self.project\n            selection     = self.selection\n            get_characters= self._get_characters\n            max_width     = self.project.theme.page_body_width\n            font          = self._create_font()\n            tooltip       = self.page.full_title\n            @double_click = self.text.Select(event.Position)\n            %proportion[1]\n        )\n    }\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"text":" %hbox {\n    #project\n    #page\n    #selection\n    TextProjectionEditor[text](\n        handle_key    = self._handle_key\n        project       = self.project\n        selection     = self.selection\n        get_characters= self._get_characters\n        max_width     = self.project.theme.page_body_width\n        font          = self._create_font()\n        tooltip       = self.page.full_title\n        @double_click = self.text.Select(event.Position)\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
@@ -15042,7 +15042,7 @@
 "type":"variable"
 },
 {
-"text":" {\n    #project\n    #selection\n    #handle_key\n    #get_characters\n    #line_height\n    #max_width\n    #break_at_word\n    #font\n    #tooltip\n    HBox {\n        ",
+"text":" %hbox {\n    #project\n    #selection\n    #handle_key\n    #get_characters\n    #line_height\n    #max_width\n    #break_at_word\n    #font\n    #tooltip\n    ",
 "type":"code"
 },
 {
@@ -15050,7 +15050,7 @@
 "type":"variable"
 },
 {
-"text":"[text](\n            characters    = self.get_characters(self)\n            line_height   = self.line_height\n            max_width     = self.max_width\n            break_at_word = self.break_at_word\n            font          = self.font\n            tooltip       = self.tooltip\n            focus         = self.selection.present\n            @char         = self._on_char(event)\n        )\n    }\n}\n",
+"text":"[text](\n        characters    = self.get_characters(self)\n        line_height   = self.line_height\n        max_width     = self.max_width\n        break_at_word = self.break_at_word\n        font          = self.font\n        tooltip       = self.tooltip\n        focus         = self.selection.present\n        @char         = self._on_char(event)\n    )\n}\n",
 "type":"code"
 }
 ],
@@ -15958,7 +15958,7 @@
 ],
 "fragments":[
 {
-"text":"GuiParser {\n  widget      = ws 'panel' !nameChar name:x ws '{' body:y ws '}' ws !. -> [\"panel\" x y]\n  body        = variable*:xs box:y handler*:zs -> [\"body\" xs y zs]\n  variable    =\n    | ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n    | ws '#' name:x               -> [\"variable\" x ]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     =\n    | ws 'HBox' -> \"hbox\"\n    | ws 'VBox' -> \"vbox\"\n  child       =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | ws 'for' !nameChar ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n    | name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' (ws '{' box:x ws '}' -> [x] | -> []):w -> [\"child\" x y zs w]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
+"text":"GuiParser {\n  widget      = widgetType:x name:y boxType:z ws '{' body:a ws '}' ws !. -> [x y [z ~a]]\n  widgetType  = ws (\n                'panel' | 'scroll' | 'vscroll' | 'hscroll'\n                ):x !nameChar -> x\n  body        = (variable | handler | child)*\n  variable    =\n    | derived\n    | ws '#' name:x               -> [\"variable\" x ]\n  derived     = ws '#' name:x ws '=' expr:y -> [\"derived\" x y]\n  box         = boxType:x ws '{' child*:xs ws '}' -> [x ~xs]\n  boxType     =\n    | ws '%hbox' !nameChar -> \"hbox\"\n    | ws '%vbox' !nameChar -> \"vbox\"\n  child    =\n    | box\n    | ws 'BoxSpace' ws '(' expr:x ws ')' -> [\"boxspace\" x]\n    | widgetType:x boxType:y ws '{' (derived | handler | child | sizerprop)*:zs ws '}' -> [\"child\" x y [] zs]\n    | !widgetType name:x binding:y ws '(' (parameter|handler|sizerprop)*:zs ws ')' -> [\"child\" x y zs []]\n    | ws 'for' !nameChar ws '(' expr:x ws ':' name:y ws ')' ws '{' child*:zs ws '}' -> [\"loop\" x y ~zs]\n  binding     =\n    | '[' name:x ']' -> [\"binding\" x]\n    |                -> []\n  parameter   = name:x ws '=' expr:y -> [\"parameter\" x y]\n  handler     = ws '@' name:x ws '=' expr:y -> [\"handler\" x y]\n  sizerprop   =\n    | ws '%border[' expr:x ws ',' borderSide:y ws ']' -> [\"sizerBorder\" x y]\n    | ws '%proportion[' expr:x ws ']'                 -> [\"sizerProportion\" x]\n    | ws '%expand' !nameChar                          -> [\"sizerExpand\"]\n    | ws '%reserve_space_even_if_hidden' !nameChar    -> [\"sizerReserve\"]\n  borderSide  = side:x (ws '|' side)*:xs              -> [x ~xs]\n  side        = ws ('ALL' | 'LEFT' | 'RIGHT' | 'TOP' | 'BOTTOM'):x !nameChar -> x\n  expr        =\n    | expr1:x (ws '.' expr1)*:xs -> [\"get\" x ~xs]\n    | ws '\"' (!'\"' .)*:xs '\"'    -> [\"string\" join(xs)]\n    | ws (\"-\" | -> \"\"):x '0'-'9':y ('0'-'9')*:ys           -> [\"int\" int(join([x y ~ys]))]\n  expr1       =\n    | expr2:x ws '(' expr*:xs ws ')' -> [\"call\" x ~xs]\n    | expr2\n  expr2       =\n    | name:x -> [\"name\" x]\n  name        = ws nameStart:x nameChar*:xs -> join([x ~xs])\n  nameStart   = alpha | '_'\n  nameChar    = alphanum | '_'\n  alpha       = 'a'-'z' | 'A'-'Z'\n  alphanum    = alpha | '0'-'9'\n  ws          = (' ' | '\\n')*\n}\n",
 "type":"code"
 }
 ],
