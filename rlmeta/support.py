@@ -127,6 +127,8 @@ class _Builder(object):
     def lookup(self, name):
         if name in self.labels:
             return self.labels[name]
+        elif self.parent is None:
+            raise Exception("{!r} not found".format(name))
         else:
             return self.parent.lookup(name)
 
@@ -176,8 +178,10 @@ class _Output(object):
     def get(self, name):
         if name in self.forks:
             return self.forks[name]
+        elif self.parent is None:
+            raise Exception("{!r} not found".format(name))
         else:
-            self.parent.get(name)
+            return self.parent.get(name)
 
     def write(self, value):
         for ch in value:
