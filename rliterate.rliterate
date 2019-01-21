@@ -16404,7 +16404,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"loop\" ast:x .:y ast*:zs] -> {\n  %%loop\n  @create {\n    \"self._items_\" %loop \" = []\\n\"\n    \"def create_\" %loop \"(\" y \"):\\n\" >\n      \"pass\\n\"\n  }\n  @update {\n    \"def update_\" %loop \"(\" y \"):\\n\" >\n      \"pass\\n\"\n  }\n  zs\n  @create {\n    <\n    \"for loopitem in \" x \":\\n\" >\n      \"self._items_\" %loop \".append(create_\" %loop \"(loopitem))\\n\"\n    <\n  }\n  @update {\n    <\n    \"index = -1\\n\" >\n    \"for index, loopitem in enumerate(\" x \"):\\n\" >\n      \"if index < len(self._items_\" %loop \"):\\n\" >\n        \"self._items_\" %loop \"[index].update_somehow()\\n\"\n      < \"else:\\n\" >\n        \"self._items_\" %loop \".append(create_\" %loop \"(loopitem))\\n\"\n      <\n    <\n  }\n}\n",
+"text":"| [\"loop\" ast:x .:y ast*:zs] -> {\n  @create {\n    \"for \" y \" in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  @update {\n    \"for \" y \" in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @create {\n    <\n  }\n  @update {\n    <\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16789,6 +16789,14 @@
 "type":"variable"
 },
 {
+"text":"(\"label\"):\n            self.SetLabel(self.values[\"label\"])\n        if self.",
+"type":"code"
+},
+{
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
+"type":"variable"
+},
+{
 "text":"(\"visible\"):\n            self.Show(self.values[\"visible\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event, propagate=True)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event, propagate=True)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
 "type":"code"
 },
@@ -17107,7 +17115,7 @@
 ],
 "fragments":[
 {
-"text":"panel Example %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n    )\n    hscroll(%expand %proportion[1]) %hbox {\n        Button(\n        )\n        Button(\n        )\n        Button(\n        )\n    }\n    vscroll() %vbox {\n        Button(\n        )\n        Button(\n        )\n        Button(\n        )\n    }\n    panel() %hbox {\n        Button(\n        )\n        Button(\n        )\n        Button(\n        )\n    }\n}\n",
+"text":"panel Example %vbox {\n    Button(label=\"top\")\n    for (expression() : row) {\n        Button(label=str(row))\n    }\n    Button(label=\"bottom\")\n}\n",
 "type":"code"
 }
 ],
@@ -17143,7 +17151,7 @@
 "type":"chunk"
 },
 {
-"text":"\napp = wx.App()\nframe = wx.Frame(None)\nframe.Sizer = wx.BoxSizer(wx.HORIZONTAL)\npanel = Example(frame)\nframe.Sizer.Add(panel, flag=wx.EXPAND, proportion=1)\nframe.Show()\napp.MainLoop()\n",
+"text":"\ndef expression():\n    return list(range(5))\n\napp = wx.App()\nframe = wx.Frame(None)\nframe.Sizer = wx.BoxSizer(wx.HORIZONTAL)\npanel = Example(frame)\nframe.Sizer.Add(panel, flag=wx.EXPAND, proportion=1)\nframe.Show()\napp.MainLoop()\n",
 "type":"code"
 }
 ],

@@ -163,6 +163,8 @@ class GuiFrameworkBaseMixin(object):
             }.get(self.values["cursor"]))
         if self.did_change("min_size"):
             self.SetMinSize(self.values["min_size"])
+        if self.did_change("label"):
+            self.SetLabel(self.values["label"])
         if self.did_change("visible"):
             self.Show(self.values["visible"])
         if self.values.get("focus", False) and not self.HasFocus():
