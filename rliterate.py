@@ -213,6 +213,11 @@ class GuiFrameworkWidgetInfo(object):
     def __init__(self, widget):
         self.widget = widget
         self.children = []
+        self.index = 0
+
+    @property
+    def current_child(self):
+        return self.children[self.index]
 
     @property
     def sizer(self):
@@ -352,12 +357,12 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        index = 0
+        parent.index = 0
         self._sizeritem1.SetMinSize(self._get_space_size(parent.widget.Sizer , self._indentation_size()))
-        self._update_child2(parent, index)
-        index += 1
-        self._update_child3(parent, index)
-        index += 1
+        self._update_child2(parent)
+        parent.index += 1
+        self._update_child3(parent)
+        parent.index += 1
 
     def _create_child2(self, parent):
         handlers = []
@@ -373,13 +378,13 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         sizerFlag |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
         parent = parent.add(TableOfContentsButton, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
 
-    def _update_child2(self, parent, index):
+    def _update_child2(self, parent):
         properties = {}
         properties['project'] = self.project
         properties['page'] = self.page
-        parent.children[index].widget.UpdateGui(**properties)
-        parent = parent.children[index]
-        index = 0
+        parent.current_child.widget.UpdateGui(**properties)
+        parent = parent.current_child
+        parent.index = 0
 
     def _create_child3(self, parent):
         handlers = []
@@ -398,15 +403,15 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         parent = parent.add(TextProjectionEditor, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
         self.text = parent.widget
 
-    def _update_child3(self, parent, index):
+    def _update_child3(self, parent):
         properties = {}
         properties['project'] = self.project
         properties['selection'] = self.selection
         properties['handle_key'] = self._handle_key
         properties['get_characters'] = self._get_characters
-        parent.children[index].widget.UpdateGui(**properties)
-        parent = parent.children[index]
-        index = 0
+        parent.current_child.widget.UpdateGui(**properties)
+        parent = parent.current_child
+        parent.index = 0
 
     @property
     def project(self):
@@ -442,7 +447,7 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        index = 0
+        parent.index = 0
 
     @property
     def project(self):
@@ -467,9 +472,9 @@ class TitleGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        index = 0
-        self._update_child1(parent, index)
-        index += 1
+        parent.index = 0
+        self._update_child1(parent)
+        parent.index += 1
 
     def _create_child1(self, parent):
         handlers = []
@@ -489,7 +494,7 @@ class TitleGui(GuiFrameworkPanel):
         parent = parent.add(TextProjectionEditor, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
         self.text = parent.widget
 
-    def _update_child1(self, parent, index):
+    def _update_child1(self, parent):
         properties = {}
         properties['handle_key'] = self._handle_key
         properties['project'] = self.project
@@ -498,9 +503,9 @@ class TitleGui(GuiFrameworkPanel):
         properties['max_width'] = self.project.theme.page_body_width
         properties['font'] = self._create_font()
         properties['tooltip'] = self.page.full_title
-        parent.children[index].widget.UpdateGui(**properties)
-        parent = parent.children[index]
-        index = 0
+        parent.current_child.widget.UpdateGui(**properties)
+        parent = parent.current_child
+        parent.index = 0
 
     @property
     def project(self):
@@ -585,9 +590,9 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        index = 0
-        self._update_child1(parent, index)
-        index += 1
+        parent.index = 0
+        self._update_child1(parent)
+        parent.index += 1
 
     def _create_child1(self, parent):
         handlers = []
@@ -606,7 +611,7 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         parent = parent.add(TextProjection, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
         self.text = parent.widget
 
-    def _update_child1(self, parent, index):
+    def _update_child1(self, parent):
         properties = {}
         properties['characters'] = self.get_characters(self)
         properties['line_height'] = self.line_height
@@ -615,9 +620,9 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         properties['font'] = self.font
         properties['tooltip'] = self.tooltip
         properties['focus'] = self.selection.present
-        parent.children[index].widget.UpdateGui(**properties)
-        parent = parent.children[index]
-        index = 0
+        parent.current_child.widget.UpdateGui(**properties)
+        parent = parent.current_child
+        parent.index = 0
 
     @property
     def project(self):
