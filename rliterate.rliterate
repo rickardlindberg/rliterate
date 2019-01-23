@@ -11351,6 +11351,11 @@
 "type":"code"
 },
 {
+"code_id":"b069cd5fab6541a0a3c5b95fe1ec4b09",
+"id":"b0c7c158862c463ba08297a2b5185fb3",
+"type":"expanded_code"
+},
+{
 "chunkpath":[
 "classes"
 ],
@@ -16335,7 +16340,7 @@
 "type":"chunk"
 },
 {
-"text":"  border =\n    | \"ALL\"    -> { %sizerFlag \" |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { %sizerFlag \" |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { %sizerFlag \" |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { %sizerFlag \" |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { %sizerFlag \" |= wx.BOTTOM\\n\" }\n  boxType =\n    | \"hbox\" -> \"wx.HORIZONTAL\"\n    | \"vbox\" -> \"wx.VERTICAL\"\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = self.\" %widget \"\\n\" }\n    | .               -> {}\n}\n",
+"text":"  border =\n    | \"ALL\"    -> { \"sizerFlag |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { \"sizerFlag |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { \"sizerFlag |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { \"sizerFlag |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { \"sizerFlag |= wx.BOTTOM\\n\" }\n  boxType =\n    | \"hbox\" -> \"wx.HORIZONTAL\"\n    | \"vbox\" -> \"wx.VERTICAL\"\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = parent.widget\\n\" }\n    | .               -> {}\n}\n",
 "type":"code"
 }
 ],
@@ -16358,7 +16363,15 @@
 ],
 "fragments":[
 {
-"text":"| [widget:x .:name ast:y] -> {\n  %%handlers\n  %%widget\n  %%parent\n  \"class \" name \"(\" x \"):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      %handlers \" = []\\n\"\n      \"self.\" %widget \" = self\\n\"\n      \"self.\" %parent \" = self\\n\"\n      #create\n      \"for handler in \" %handlers \":\\n\" >\n        \"self.\" %widget \".listen(*handler)\\n\"\n      <\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"pass\\n\"\n      #update\n    <\n    y\n  <\n}\n",
+"text":"| [widget:x .:name ast:y] -> {\n  \"class \" name \"(\" x \"):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      \"self._root_widget = parent = ",
+"type":"code"
+},
+{
+"id":"84efae9f935b4926b3f8658d9d4f39c2",
+"type":"variable"
+},
+{
+"text":"(self)\\n\"\n      \"handlers = []\\n\"\n      #create\n      \"parent.listen(handlers)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"parent = self._root_widget\\n\"\n      \"index = 0\\n\"\n      #update\n    <\n    #methods\n    y\n  <\n}\n",
 "type":"code"
 }
 ],
@@ -16381,7 +16394,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%handlers\n  %%createVars\n  %%updateVars\n  %%sizerFlag\n  %%sizerBorder\n  %%sizerProportion\n  @create {\n    %handlers \" = []\\n\"\n    %createVars \" = {}\\n\"\n    %sizerFlag \" = 0\\n\"\n    %sizerBorder \" = 0\\n\"\n    %sizerProportion \" = 0\\n\"\n  }\n  @update {\n    %updateVars \" = {}\\n\"\n  }\n  zs\n  %%widget\n  @create {\n    \"self.\" %widget \" = \" x \"(self.\" %parent \", **\" %createVars \")\\n\"\n    \"self.\" %sizer \".Add(self.\" %widget \", flag=\" %sizerFlag \", border=\" %sizerBorder \", proportion=\" %sizerProportion \")\\n\"\n    \"for handler in \" %handlers \":\\n\" >\n      \"self.\" %widget \".listen(*handler)\\n\"\n    <\n    y\n  }\n  @update {\n    \"self.\" %widget \".UpdateGui(**\" %updateVars \")\\n\"\n  }\n  %%parent\n  @create {\n    \"self.\" %parent \" = self.\" %widget \"\\n\"\n  }\n  ws\n}\n",
+"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @create {\n    \"self._create\" %child \"(parent)\\n\"\n  }\n  @update {\n    \"self._update\" %child \"(parent, index)\\n\"\n    \"index += 1\\n\"\n  }\n  @methods {\n    \"\\ndef _create\" %child \"(self, parent):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizerFlag = 0\\n\"\n      \"sizerBorder = 0\\n\"\n      \"sizerProportion = 0\\n\"\n      #create\n    <\n    \"\\ndef _update\" %child \"(self, parent, index):\\n\" >\n      \"properties = {}\\n\"\n      #update\n    <\n    zs\n    @create {\n      \"parent = parent.add(\" x \", properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)\\n\"\n      y\n    }\n    @update {\n      \"parent.children[index].widget.UpdateGui(**properties)\\n\"\n      \"parent = parent.children[index]\\n\"\n      \"index = 0\\n\"\n    }\n    #methods\n    ws\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16427,7 +16440,7 @@
 ],
 "fragments":[
 {
-"text":"| [boxType:x [ast*:ys]] -> {\n  %%sizer\n  @create {\n    \"self.\" %sizer \" = wx.BoxSizer(\" x \")\\n\"\n    \"self.\" %parent \".Sizer = self.\" %sizer \"\\n\"\n  }\n  ys\n}\n",
+"text":"| [boxType:x [ast*:ys]] -> {\n  %%sizer\n  @create {\n    \"parent.sizer = wx.BoxSizer(\" x \")\\n\"\n  }\n  ys\n}\n",
 "type":"code"
 }
 ],
@@ -16450,7 +16463,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n| [\"boxspace\" ast:x] -> {\n  %%sizeritem\n  @create {\n    \"self.\" %sizeritem \" = self.\" %sizer \".Add(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n  }\n  @update {\n    \"self.\" %sizeritem \".SetMinSize(self._get_space_size(self.\" %sizer \", \" x \"))\\n\"\n  }\n}\n| [\"parameter\" .:x ast:y] -> {\n  @create { %createVars \"[\" repr(x) \"] = \" y \"\\n\" }\n  @update { %updateVars \"[\" repr(x) \"] = \" y \"\\n\" }\n}\n| [\"handler\" .:x ast:y] -> {\n  @create { %handlers \".append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n}\n| [\"get\" astGetList:x] -> { x }\n| [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n| [\"name\" .:x] -> { x }\n| [\"variable\" .:x] -> {\n    \"\\n@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
+"text":"| [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n| [\"boxspace\" ast:x] -> {\n  %%sizeritem\n  @create {\n    \"self.\" %sizeritem \" = parent.widget.Sizer.Add(self._get_space_size(parent.widget.Sizer , \" x \"))\\n\"\n  }\n  @update {\n    \"self.\" %sizeritem \".SetMinSize(self._get_space_size(parent.widget.Sizer , \" x \"))\\n\"\n  }\n}\n| [\"parameter\" .:x ast:y] -> {\n  @create { \"properties[\" repr(x) \"] = \" y \"\\n\" }\n  @update { \"properties[\" repr(x) \"] = \" y \"\\n\" }\n}\n| [\"handler\" .:x ast:y] -> {\n  @create { \"handlers.append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n}\n| [\"get\" astGetList:x] -> { x }\n| [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n| [\"name\" .:x] -> { x }\n| [\"variable\" .:x] -> {\n    \"\\n@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
 "type":"code"
 },
 {
@@ -16458,7 +16471,7 @@
 "type":"variable"
 },
 {
-"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n| [\"derived\" .:x ast:y] -> {\n    @derived { repr(x) \": \" y \",\\n\" }\n  }\n| [\"string\" .:x] -> { repr(x) }\n| [\"int\" .:x] -> { repr(x) }\n| [\"list\" astList:x] -> { \"[\" x \"]\" }\n| [\"sizerBorder\" ast:x [border*:y]] -> { @create { %sizerBorder \" = \" x \"\\n\" y } }\n| [\"sizerProportion\" ast:x]         -> { @create { %sizerProportion \" = \" x \"\\n\" } }\n| [\"sizerExpand\"]                   -> { @create { %sizerFlag \" |= wx.EXPAND\\n\" } }\n| [\"sizerReserve\"]                  -> { @create { %sizerFlag \" |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n",
+"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n| [\"derived\" .:x ast:y] -> {\n    @derived { repr(x) \": \" y \",\\n\" }\n  }\n| [\"string\" .:x] -> { repr(x) }\n| [\"int\" .:x] -> { repr(x) }\n| [\"list\" astList:x] -> { \"[\" x \"]\" }\n| [\"sizerBorder\" ast:x [border*:y]] -> { @create { \"sizerBorder = \" x \"\\n\" y } }\n| [\"sizerProportion\" ast:x]         -> { @create { \"sizerProportion = \" x \"\\n\" } }\n| [\"sizerExpand\"]                   -> { @create { \"sizerFlag |= wx.EXPAND\\n\" } }\n| [\"sizerReserve\"]                  -> { @create { \"sizerFlag |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n",
 "type":"code"
 }
 ],
@@ -16811,9 +16824,41 @@
 ],
 "id":"f45e69b9f48840a4af35c1a9b4ca5599",
 "language":"",
-"post_process":[
-""
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
 ],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"84efae9f935b4926b3f8658d9d4f39c2",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, **kwargs):\n        widget = widget_cls(self.widget, **properties)\n        self.sizer.Add(widget, **kwargs)\n        widget_info = ",
+"type":"code"
+},
+{
+"id":"84efae9f935b4926b3f8658d9d4f39c2",
+"type":"variable"
+},
+{
+"text":"(widget)\n        widget_info.listen(handlers)\n        self.children.append(widget_info)\n        return widget_info\n\n    def listen(self, event_handlers):\n        for event_handler in event_handlers:\n            self.widget.listen(*event_handler)\n",
+"type":"code"
+}
+],
+"id":"d01b217740d64e10869e34e0c626d8ee",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -17011,7 +17056,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.Button.__init__(self, parent, wx.HORIZONTAL)\n        ",
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.Button.__init__(self, parent)\n        ",
 "type":"code"
 },
 {
@@ -20178,6 +20223,7 @@
 "80c88031ba2244b4b116f5b597e585d8":"CharChain",
 "81e263c387054c5b926af1ca2dda72d2":"get_paragraph",
 "82902f4f6d91479f88d33e04619a3915":"chain",
+"84efae9f935b4926b3f8658d9d4f39c2":"GuiFrameworkWidgetInfo",
 "879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",
 "883ac73a999c403e8274442301acdbb3":"UpdateGui",
 "885085190cef47709dd3922b7c386fab":"fragments",
