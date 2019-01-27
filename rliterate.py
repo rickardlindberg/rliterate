@@ -727,7 +727,7 @@ class PageContainerGui(GuiFrameworkPanel):
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         self._child1(parent, loopvar)
         self._child10(parent, loopvar)
-        handlers.append(('richt_click', lambda event: SimpleContextMenu.ShowRecursive(slef)))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
         if first:
             parent.listen(handlers)
 
