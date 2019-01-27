@@ -10136,15 +10136,7 @@
 {
 "fragments":[
 {
-"text":"The page container widget renders a page frame with a border, and inside the frame it renders a page widget vertically. It re-renders when ",
-"type":"text"
-},
-{
-"id":"37f8b479b7eb4013bea0222eacc5ea6f",
-"type":"variable"
-},
-{
-"text":" is called.",
+"text":"The page container widget renders a page frame with a border, and inside the frame it renders a page widget.",
 "type":"text"
 }
 ],
