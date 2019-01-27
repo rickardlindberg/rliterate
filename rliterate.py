@@ -1019,6 +1019,64 @@ class TitleGui(GuiFrameworkPanel):
     @property
     def selection(self):
         return self.values["selection"]
+class TextGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child1(parent, loopvar)
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['handle_key'] = self._handle_key
+        properties['project'] = self.project
+        properties['selection'] = self.selection
+        properties['get_characters'] = self._get_characters
+        properties['max_width'] = self.project.theme.page_body_width
+        properties['line_height'] = self.LINE_HEIGHT
+        properties['skip_extra_space'] = True
+        handlers.append(('double_click', lambda event: self.text.Select(event.Position)))
+        sizer["proportion"] = 1
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('text', widget.widget)
+        else:
+            self.text = widget.widget
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 class Editable(VerticalBasePanel):
 
     @property
@@ -1546,9 +1604,9 @@ class TextProjectionEditor(TextProjectionEditorGui):
         if character is None:
             pass
         elif side == wx.LEFT:
-            self.project.selection = self.selection.create(character.extra[0])
+            self.project.selection = character.extra["selection"].create(character.extra["indices"][0])
         else:
-            self.project.selection = self.selection.create(character.extra[1])
+            self.project.selection = character.extra["selection"].create(character.extra["indices"][1])
 
     def create_missing_characters(self, text, index):
         return self.create_characters(
@@ -1558,7 +1616,7 @@ class TextProjectionEditor(TextProjectionEditorGui):
             extra_fn=lambda _: (index, index)
         )
 
-    def create_characters(self, text, style, selections=None, extra_fn=lambda index: (index, index+1)):
+    def create_characters(self, text, style, selections=None, selection=None, extra_fn=lambda index: (index, index+1)):
         if not self.selection.present:
             selections = []
         characters = []
@@ -1572,11 +1630,13 @@ class TextProjectionEditor(TextProjectionEditorGui):
                 marker = "beam_middle"
             else:
                 marker = None
+            if selection is None:
+                selection = self.selection
             characters.append(Character.create(
                 character,
                 style,
                 marker,
-                extra=extra_fn(index)
+                extra={"selection": selection, "indices": extra_fn(index)}
             ))
         return characters
 class TokenView(TextProjection):
@@ -2948,6 +3008,8 @@ class VariableTextFragment(TextFragment):
         else:
             return name
 
+    text = name
+
     def fill_text_version(self, text_version):
         text_version.add("``")
         text_version.add_with_index(self.id, self._index)
@@ -4218,6 +4280,37 @@ class TextEdit(MultilineTextCtrl):
 
     def Save(self):
         self.paragraph.text_version = self.Value
+class TextNew(TextGui):
+
+    LINE_HEIGHT = 1.2
+
+    def _handle_key(self, event):
+        return
+        result = edit_plain_text(self.page.title, self.selection.value, event)
+        if result:
+            with self.project.notify():
+                pass
+    def _get_characters(self, editor):
+        if self.paragraph.fragments:
+            characters = []
+            for index, fragment in enumerate(self.paragraph.fragments):
+                selection = self.selection.get(index)
+                characters.extend(editor.create_characters(
+                    fragment.text,
+                    self.project.get_style({
+                        "strong": TokenType.RLiterate.Strong,
+                        "emphasis": TokenType.RLiterate.Emphasis,
+                        "code": TokenType.RLiterate.Code,
+                        "variable": TokenType.RLiterate.Variable,
+                        "reference": TokenType.RLiterate.Reference,
+                        "link": TokenType.RLiterate.Link,
+                    }.get(fragment.type, TokenType.RLiterate)),
+                    selections=[selection.value],
+                    selection=selection
+                ))
+            return characters
+        else:
+            return editor.create_missing_characters("Enter text...", 0)
 class Quote(Text):
 
     INDENT = 20

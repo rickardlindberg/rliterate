@@ -4521,12 +4521,13 @@
 "type":"variable"
 },
 {
-"text":".lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"``\")\n        text_version.add_with_index(self.id, self._index)\n        text_version.add(\"``\")\n\n    @property\n    def token(self):\n        return Token(self.name, token_type=TokenType.RLiterate.Variable, fragment_index=self._index)\n",
+"text":".lookup_variable(self.id)\n        if name is None:\n            return self.id\n        else:\n            return name\n\n    text = name\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"``\")\n        text_version.add_with_index(self.id, self._index)\n        text_version.add(\"``\")\n\n    @property\n    def token(self):\n        return Token(self.name, token_type=TokenType.RLiterate.Variable, fragment_index=self._index)\n",
 "type":"code"
 }
 ],
 "id":"ce734c9048bf421698c7f5f4ed990122",
 "language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -11052,6 +11053,122 @@
 },
 {
 "children":[],
+"id":"9592721f763d45d1bf00007c8923d193",
+"paragraphs":[
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"61a4f35b1538441ebd2d17e8cc02a14a",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    TextProjectionEditor[text](\n        handle_key     = self._handle_key\n        project        = self.project\n        selection      = self.selection\n        get_characters = self._get_characters\n        max_width      = self.project.theme.page_body_width\n        line_height    = self.LINE_HEIGHT\n        skip_extra_space = True\n        @double_click  = self.text.Select(event.Position)\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
+}
+],
+"id":"a95bd9901ed243fcbf2036c63db0d5d7",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"51d7ad6401584de9b61508e00d7fd770",
+"type":"variable"
+},
+{
+"text":"New(",
+"type":"code"
+},
+{
+"id":"61a4f35b1538441ebd2d17e8cc02a14a",
+"type":"variable"
+},
+{
+"text":"):\n\n    LINE_HEIGHT = 1.2\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"Text"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"fef186169dfc47bfa84a120dce951389",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Text"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _handle_key(self, event):\n    return\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            pass\n",
+"type":"code"
+}
+],
+"id":"f77fb7101b5143a5bdbd5da17d16ce7a",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Text"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_characters(self, editor):\n    if self.paragraph.fragments:\n        characters = []\n        for index, fragment in enumerate(self.paragraph.fragments):\n            selection = self.selection.get(index)\n            characters.extend(editor.create_characters(\n                fragment.text,\n                self.project.get_style({\n                    \"strong\": TokenType.RLiterate.Strong,\n                    \"emphasis\": TokenType.RLiterate.Emphasis,\n                    \"code\": TokenType.RLiterate.Code,\n                    \"variable\": TokenType.RLiterate.Variable,\n                    \"reference\": TokenType.RLiterate.Reference,\n                    \"link\": TokenType.RLiterate.Link,\n                }.get(fragment.type, TokenType.RLiterate)),\n                selections=[selection.value],\n                selection=selection\n            ))\n        return characters\n    else:\n        return editor.create_missing_characters(\"Enter text...\", 0)\n",
+"type":"code"
+}
+],
+"id":"e10a5290609641a0a03fff3df5c78d86",
+"language":"",
+"post_process":[],
+"type":"code"
+}
+],
+"title":"New Text"
+},
+{
+"children":[],
 "id":"7a79cf8e89e54505a3096182df3969de",
 "paragraphs":[
 {
@@ -14453,7 +14570,7 @@
 "type":"variable"
 },
 {
-"text":"(pos)\n    if character is None:\n        pass\n    elif side == wx.LEFT:\n        self.project.selection = self.selection.create(character.extra[0])\n    else:\n        self.project.selection = self.selection.create(character.extra[1])\n",
+"text":"(pos)\n    if character is None:\n        pass\n    elif side == wx.LEFT:\n        self.project.selection = character.extra[\"selection\"].create(character.extra[\"indices\"][0])\n    else:\n        self.project.selection = character.extra[\"selection\"].create(character.extra[\"indices\"][1])\n",
 "type":"code"
 }
 ],
@@ -14489,7 +14606,7 @@
 ],
 "fragments":[
 {
-"text":"def create_characters(self, text, style, selections=None, extra_fn=lambda index: (index, index+1)):\n    if not self.selection.present:\n        selections = []\n    characters = []\n    last_index = len(text) - 1\n    for index, character in enumerate(text):\n        if index == 0 and index in selections:\n            marker = \"beam_start\"\n        elif index == last_index and (last_index+1) in selections:\n            marker = \"beam_end\"\n        elif index in selections:\n            marker = \"beam_middle\"\n        else:\n            marker = None\n        characters.append(",
+"text":"def create_characters(self, text, style, selections=None, selection=None, extra_fn=lambda index: (index, index+1)):\n    if not self.selection.present:\n        selections = []\n    characters = []\n    last_index = len(text) - 1\n    for index, character in enumerate(text):\n        if index == 0 and index in selections:\n            marker = \"beam_start\"\n        elif index == last_index and (last_index+1) in selections:\n            marker = \"beam_end\"\n        elif index in selections:\n            marker = \"beam_middle\"\n        else:\n            marker = None\n        if selection is None:\n            selection = self.selection\n        characters.append(",
 "type":"code"
 },
 {
@@ -14505,7 +14622,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            character,\n            style,\n            marker,\n            extra=extra_fn(index)\n        ))\n    return characters\n",
+"text":"(\n            character,\n            style,\n            marker,\n            extra={\"selection\": selection, \"indices\": extra_fn(index)}\n        ))\n    return characters\n",
 "type":"code"
 }
 ],
@@ -19701,6 +19818,7 @@
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
 "51198e87cf1944e49dea6e2a48938b8f":"chunk_delimiters",
 "51708e28ba3245859e0554a504cc015c":"im_replace",
+"51d7ad6401584de9b61508e00d7fd770":"Text",
 "52a4cb0c44124d518647a92eb25a876d":"page_body_width",
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
 "54f99e72df0b4006b2bd90465c8558c4":"TableOfContentsButton",
