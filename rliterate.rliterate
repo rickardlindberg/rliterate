@@ -16463,7 +16463,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n| [\"boxspace\" ast:x] -> {\n  %%sizeritem\n  @create {\n    \"self.\" %sizeritem \" = parent.widget.Sizer.Add(self._get_space_size(parent.widget.Sizer , \" x \"))\\n\"\n  }\n  @update {\n    \"self.\" %sizeritem \".SetMinSize(self._get_space_size(parent.widget.Sizer , \" x \"))\\n\"\n  }\n}\n| [\"parameter\" .:x ast:y] -> {\n  @create { \"properties[\" repr(x) \"] = \" y \"\\n\" }\n  @update { \"properties[\" repr(x) \"] = \" y \"\\n\" }\n}\n| [\"handler\" .:x ast:y] -> {\n  @create { \"handlers.append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n}\n| [\"get\" astGetList:x] -> { x }\n| [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n| [\"name\" .:x] -> { x }\n| [\"variable\" .:x] -> {\n    \"\\n@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
+"text":"| [\"body\" [ast*:xs] ast:y [ast*:zs]] -> { xs y zs }\n| [\"boxspace\" ast:x] -> {\n  @create { \"parent.add_space(\" x \")\\n\" }\n  @update { \"parent.update_space(\" x \")\\n\" }\n}\n| [\"parameter\" .:x ast:y] -> {\n  @create { \"properties[\" repr(x) \"] = \" y \"\\n\" }\n  @update { \"properties[\" repr(x) \"] = \" y \"\\n\" }\n}\n| [\"handler\" .:x ast:y] -> {\n  @create { \"handlers.append((\" repr(x) \", lambda event: \" y \"))\\n\" }\n}\n| [\"get\" astGetList:x] -> { x }\n| [\"call\" ast:x astList:y] -> { x \"(\" y \")\" }\n| [\"name\" .:x] -> { x }\n| [\"variable\" .:x] -> {\n    \"\\n@property\\n\"\n    \"def \" x \"(self):\\n\" >\n      \"return self.",
 "type":"code"
 },
 {
@@ -16626,7 +16626,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n\n    def _get_space_size(self, sizer, size):\n        if sizer.Orientation == wx.HORIZONTAL:\n            return (size, 1)\n        else:\n            return (1, size)\n\n    @property\n    def ",
+"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -16844,7 +16844,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.reset()\n\n    def reset(self):\n        self.index = 0\n\n    def loop_start(self):\n        pass\n\n    def loop_end(self):\n        pass\n\n    def update_current_child(self, **kwargs):\n        x = self.children[self.index]\n        x.widget.UpdateGui(**kwargs)\n        self.index += 1\n        return x\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, **kwargs):\n        widget = widget_cls(self.widget, **properties)\n        self.sizer.Add(widget, **kwargs)\n        widget_info = ",
+"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.reset()\n\n    def reset(self):\n        self.index = 0\n\n    def loop_start(self):\n        pass\n\n    def loop_end(self):\n        pass\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, **kwargs):\n        widget = widget_cls(self.widget, **properties)\n        self.sizer.Insert(self.index, widget, **kwargs)\n        widget_info = ",
 "type":"code"
 },
 {
@@ -16852,7 +16852,7 @@
 "type":"variable"
 },
 {
-"text":"(widget)\n        widget_info.listen(handlers)\n        self.children.append(widget_info)\n        self.index += 1\n        return widget_info\n\n    def listen(self, event_handlers):\n        for event_handler in event_handlers:\n            self.widget.listen(*event_handler)\n",
+"text":"(widget)\n        widget_info.listen(handlers)\n        self.children.insert(self.index, widget_info)\n        self.index += 1\n        return widget_info\n\n    def update_current_child(self, **kwargs):\n        x = self.children[self.index]\n        x.widget.UpdateGui(**kwargs)\n        self.index += 1\n        return x\n\n    def add_space(self, space):\n        x = self.sizer.Insert(self.index, self._get_space_size(space))\n        self.children.insert(self.index, x)\n        self.index += 1\n\n    def update_space(self, space):\n        self.children[self.index].SetMinSize(self._get_space_size(space))\n        self.index += 1\n\n    def _get_space_size(self, size):\n        if self.sizer.Orientation == wx.HORIZONTAL:\n            return (size, 1)\n        else:\n            return (1, size)\n\n    def listen(self, event_handlers):\n        for event_handler in event_handlers:\n            self.widget.listen(*event_handler)\n",
 "type":"code"
 }
 ],

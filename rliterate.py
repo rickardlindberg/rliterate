@@ -110,12 +110,6 @@ class GuiFrameworkBaseMixin(object):
         elif event == "paint":
             self.Bind(wx.EVT_PAINT, lambda event: self._call_handler("paint", event))
 
-    def _get_space_size(self, sizer, size):
-        if sizer.Orientation == wx.HORIZONTAL:
-            return (size, 1)
-        else:
-            return (1, size)
-
     @property
     def has_changes(self):
         return self.changed is None or len(self.changed) > 0
@@ -224,12 +218,6 @@ class GuiFrameworkWidgetInfo(object):
     def loop_end(self):
         pass
 
-    def update_current_child(self, **kwargs):
-        x = self.children[self.index]
-        x.widget.UpdateGui(**kwargs)
-        self.index += 1
-        return x
-
     @property
     def sizer(self):
         return self.widget.Sizer
@@ -240,12 +228,33 @@ class GuiFrameworkWidgetInfo(object):
 
     def add(self, widget_cls, properties, handlers, **kwargs):
         widget = widget_cls(self.widget, **properties)
-        self.sizer.Add(widget, **kwargs)
+        self.sizer.Insert(self.index, widget, **kwargs)
         widget_info = GuiFrameworkWidgetInfo(widget)
         widget_info.listen(handlers)
-        self.children.append(widget_info)
+        self.children.insert(self.index, widget_info)
         self.index += 1
         return widget_info
+
+    def update_current_child(self, **kwargs):
+        x = self.children[self.index]
+        x.widget.UpdateGui(**kwargs)
+        self.index += 1
+        return x
+
+    def add_space(self, space):
+        x = self.sizer.Insert(self.index, self._get_space_size(space))
+        self.children.insert(self.index, x)
+        self.index += 1
+
+    def update_space(self, space):
+        self.children[self.index].SetMinSize(self._get_space_size(space))
+        self.index += 1
+
+    def _get_space_size(self, size):
+        if self.sizer.Orientation == wx.HORIZONTAL:
+            return (size, 1)
+        else:
+            return (1, size)
 
     def listen(self, event_handlers):
         for event_handler in event_handlers:
@@ -359,9 +368,9 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         self._root_widget = parent = GuiFrameworkWidgetInfo(self)
         handlers = []
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._sizeritem1 = parent.widget.Sizer.Add(self._get_space_size(parent.widget.Sizer , self._indentation_size()))
+        parent.add_space(self._indentation_size())
+        self._create_child1(parent)
         self._create_child2(parent)
-        self._create_child3(parent)
         handlers.append(('click', lambda event: self._on_click_old(event)))
         handlers.append(('right_click', lambda event: self._on_right_click_old(event)))
         handlers.append(('drag', lambda event: self._on_drag_old(event)))
@@ -370,11 +379,11 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
     def _update_gui(self):
         parent = self._root_widget
         parent.reset()
-        self._sizeritem1.SetMinSize(self._get_space_size(parent.widget.Sizer , self._indentation_size()))
+        parent.update_space(self._indentation_size())
+        self._update_child1(parent)
         self._update_child2(parent)
-        self._update_child3(parent)
 
-    def _create_child2(self, parent):
+    def _create_child1(self, parent):
         handlers = []
         properties = {}
         sizerFlag = 0
@@ -388,14 +397,14 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         sizerFlag |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
         parent = parent.add(TableOfContentsButton, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
 
-    def _update_child2(self, parent):
+    def _update_child1(self, parent):
         properties = {}
         properties['project'] = self.project
         properties['page'] = self.page
         parent = parent.update_current_child(**properties)
         parent.reset()
 
-    def _create_child3(self, parent):
+    def _create_child2(self, parent):
         handlers = []
         properties = {}
         sizerFlag = 0
@@ -412,7 +421,7 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         parent = parent.add(TextProjectionEditor, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
         self.text = parent.widget
 
-    def _update_child3(self, parent):
+    def _update_child2(self, parent):
         properties = {}
         properties['project'] = self.project
         properties['selection'] = self.selection
