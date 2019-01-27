@@ -687,6 +687,133 @@ class ColumnGui(GuiFrameworkVScroll):
     @property
     def index(self):
         return self.values["index"]
+class PageContainerGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        self._child1(parent, loopvar)
+        self._child10(parent, loopvar)
+        handlers.append(('richt_click', lambda event: SimpleContextMenu.ShowRecursive(slef)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child3(parent, loopvar)
+        self._child6(parent, loopvar)
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        sizer["proportion"] = 1
+        properties['background'] = '#ffffff'
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child5(parent, loopvar)
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['page'] = self.page
+        properties['selection'] = self.selection
+        sizer["flag"] |= wx.EXPAND
+        sizer["proportion"] = 1
+        sizer["border"] = self.project.theme.container_border
+        sizer["flag"] |= wx.ALL
+        widget = parent.add(PagePanel, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('page_panel', widget.widget)
+        else:
+            self.page_panel = widget.widget
+        parent = widget
+        parent.reset()
+
+    def _child6(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.add_space(self.project.theme.shadow_size)
+        self._child8(parent, loopvar)
+
+    def _child8(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['min_size'] = tuple([self.project.theme.shadow_size, -1])
+        properties['background'] = '#969696'
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    def _child10(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        parent.add_space(self.project.theme.shadow_size)
+        self._child12(parent, loopvar)
+
+    def _child12(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['min_size'] = tuple([-1, self.project.theme.shadow_size])
+        properties['background'] = '#969696'
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page(self):
+        return self.values["page"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 class TitleGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -3765,91 +3892,8 @@ class Column(ColumnGui):
             lambda container: container.FindClosestDropPoint(screen_pos)
         )
 ColumnRow = namedtuple("ColumnRow", ["page", "index"])
-class PageContainer(VerticalBasePanel):
+class PageContainer(PageContainerGui):
 
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def page(self):
-        return self.values["page"]
-
-    @property
-    def selection(self):
-        return self.values["selection"]
-    def _create_gui(self):
-        self._create_first_row()
-        self._create_second_row()
-        MouseEventHelper.bind(
-            [
-                self.inner_container,
-                self.right,
-                self.right_border,
-                self.bottom,
-                self.bottom_border,
-            ],
-            right_click=lambda event:
-                SimpleContextMenu.ShowRecursive(self)
-        )
-
-    def _create_first_row(self):
-        first_row = self.AppendChild(
-            HorizontalPanel(self),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-        self.inner_container = first_row.AppendChild(
-            VerticalPanel(first_row),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-        self.page_panel, self.page_sizer = self.inner_container.AppendChildWithSizer(
-            PagePanel(
-                self.inner_container,
-                project=self.project,
-                page=self.page,
-                selection=self.selection
-            ),
-            flag=wx.ALL|wx.EXPAND,
-            proportion=1
-        )
-        self.right = first_row.AppendChild(
-            VerticalPanel(first_row),
-            flag=wx.EXPAND
-        )
-        self.right_space = self.right.AppendSpace()
-        self.right_border = self.right.AppendChild(
-            wx.Panel(self.right),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-
-    def _create_second_row(self):
-        self.bottom = self.AppendChild(
-            HorizontalPanel(self),
-            flag=wx.EXPAND
-        )
-        self.bottom_space = self.bottom.AppendSpace()
-        self.bottom_border = self.bottom.AppendChild(
-            wx.Panel(self.bottom),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-    def _update_gui(self):
-        self.page_panel.UpdateGui(
-            project=self.project,
-            page=self.page,
-            selection=self.selection
-        )
-        self.inner_container.SetBackgroundColour((255, 255, 255))
-        self.right_border.SetBackgroundColour((150, 150, 150))
-        self.bottom_border.SetBackgroundColour((150, 150, 150))
-        self.right.MinSize = (self.project.theme.shadow_size, -1)
-        self.right_space.SetSize(self.project.theme.shadow_size)
-        self.bottom.MinSize = (-1, self.project.theme.shadow_size)
-        self.bottom_space.SetSize(self.project.theme.shadow_size)
-        self.page_sizer.Border = self.project.theme.container_border
     def CreateContextMenu(self):
         menu = SimpleContextMenu("Page")
         menu.AppendItem("Change width", lambda:

@@ -10130,150 +10130,98 @@
 "title":"Column widget"
 },
 {
-"children":[
-{
 "children":[],
-"id":"3950322ebcac468897cb6bb68eec5b49",
+"id":"1164b94ba82c476897ce18fc1b70a5b8",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The page container widget renders a page frame with a border, and inside the frame it renders a page widget vertically. It re-renders when ",
+"type":"text"
+},
+{
+"id":"37f8b479b7eb4013bea0222eacc5ea6f",
+"type":"variable"
+},
+{
+"text":" is called.",
+"type":"text"
+}
+],
+"id":"bb9393f32b254e4c8d629a90e706a5a1",
+"type":"text"
+},
+{
 "chunkpath":[
-"classes",
-"PageContainer"
+"base base classes"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"def ",
+"text":"panel ",
 "type":"code"
 },
 {
-"id":"887acc7e530b4d98933d11e223d58c42",
+"id":"3d37ceb60aa04ff6830b584eb805ac78",
 "type":"variable"
 },
 {
-"text":"(self):\n    self._create_first_row()\n    self._create_second_row()\n    MouseEventHelper.bind(\n        [\n            self.inner_container,\n            self.right,\n            self.right_border,\n            self.bottom,\n            self.bottom_border,\n        ],\n        right_click=lambda event:\n            ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"b0201e824c464356aa706a0440192e5c",
-"type":"variable"
-},
-{
-"text":"(self)\n    )\n\ndef _create_first_row(self):\n    first_row = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        HorizontalPanel(self),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n    self.inner_container = first_row.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(first_row),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n    self.page_panel, self.page_sizer = self.inner_container.",
-"type":"code"
-},
-{
-"id":"30ba4e602df545be8fa892a31e88c6ce",
-"type":"variable"
-},
-{
-"text":"(\n        PagePanel(\n            self.inner_container,\n            project=self.project,\n            page=self.page,\n            selection=self.selection\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.right = first_row.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(first_row),\n        flag=wx.EXPAND\n    )\n    self.right_space = self.right.AppendSpace()\n    self.right_border = self.right.AppendChild(\n        wx.Panel(self.right),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n\ndef _create_second_row(self):\n    self.bottom = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        HorizontalPanel(self),\n        flag=wx.EXPAND\n    )\n    self.bottom_space = self.bottom.AppendSpace()\n    self.bottom_border = self.bottom.AppendChild(\n        wx.Panel(self.bottom),\n        flag=wx.EXPAND,\n        proportion=1\n    )\n",
+"text":" %vbox {\n    #project\n    #page\n    #selection\n    panel(%expand %proportion[1]) %hbox {\n        panel(%expand %proportion[1] background=\"#ffffff\") %hbox {\n          PagePanel[page_panel](\n              project    = self.project\n              page       = self.page\n              selection  = self.selection\n              %expand\n              %proportion[1]\n              %border[self.project.theme.container_border, ALL]\n          )\n        }\n        panel(%expand) %vbox {\n            BoxSpace(self.project.theme.shadow_size)\n            panel(\n                min_size   = tuple([self.project.theme.shadow_size -1])\n                background = \"#969696\"\n                %proportion[1]\n            ) %hbox {}\n        }\n    }\n    panel(%expand) %hbox {\n        BoxSpace(self.project.theme.shadow_size)\n        panel(\n            min_size   = tuple([-1 self.project.theme.shadow_size])\n            background = \"#969696\"\n            %proportion[1]\n        ) %hbox {}\n    }\n    @richt_click = SimpleContextMenu.ShowRecursive(slef)\n}\n",
 "type":"code"
 }
 ],
-"id":"ca54d3c269204fdd8b473a10655ba7a0",
-"language":"",
+"id":"517d6ff6d3d7453da62f6dd31fd86ed9",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
 "type":"code"
 },
 {
 "chunkpath":[
-"classes",
-"PageContainer"
+"classes"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"def ",
+"text":"class ",
 "type":"code"
 },
 {
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"id":"33a426d54550425b9af7aa62911343b8",
 "type":"variable"
 },
 {
-"text":"(self):\n    self.page_panel.",
+"text":"(",
 "type":"code"
 },
 {
-"id":"883ac73a999c403e8274442301acdbb3",
+"id":"3d37ceb60aa04ff6830b584eb805ac78",
 "type":"variable"
 },
 {
-"text":"(\n        project=self.project,\n        page=self.page,\n        selection=self.selection\n    )\n    self.inner_container.SetBackgroundColour((255, 255, 255))\n    self.right_border.SetBackgroundColour((150, 150, 150))\n    self.bottom_border.SetBackgroundColour((150, 150, 150))\n    self.right.MinSize = (self.project.theme.shadow_size, -1)\n    self.right_space.SetSize(self.project.theme.shadow_size)\n    self.bottom.MinSize = (-1, self.project.theme.shadow_size)\n    self.bottom_space.SetSize(self.project.theme.shadow_size)\n    self.page_sizer.Border = self.project.theme.container_border\n",
+"text":"):\n\n",
 "type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"PageContainer"
+],
+"prefix":"    ",
+"type":"chunk"
 }
 ],
-"id":"14a9f369ce9748ee838a45a9afdecec3",
+"id":"29a948082ed3467395fb08fcbc0ad7c9",
 "language":"",
+"post_process":[],
 "type":"code"
-}
-],
-"title":"Rendering"
 },
-{
-"children":[],
-"id":"9de831e3ccc94b46b5ec4ffb681fd43f",
-"paragraphs":[
 {
 "chunkpath":[
 "classes",
@@ -10298,14 +10246,7 @@
 ],
 "id":"e7a9c903c2d34ee58130f68f1cf6a8c8",
 "type":"code"
-}
-],
-"title":"Menu"
 },
-{
-"children":[],
-"id":"e92b1b5a939742deb77dff7b2fd37e09",
-"paragraphs":[
 {
 "chunkpath":[
 "classes",
@@ -10337,113 +10278,6 @@
 }
 ],
 "id":"1f9b7900690743bbbcb9f50a5587e3aa",
-"language":"",
-"type":"code"
-}
-],
-"title":"Dropping paragrpahs"
-}
-],
-"id":"1164b94ba82c476897ce18fc1b70a5b8",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"The page container widget renders a page frame with a border, and inside the frame it renders a page widget vertically. It re-renders when ",
-"type":"text"
-},
-{
-"id":"37f8b479b7eb4013bea0222eacc5ea6f",
-"type":"variable"
-},
-{
-"text":" is called.",
-"type":"text"
-}
-],
-"id":"bb9393f32b254e4c8d629a90e706a5a1",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"33a426d54550425b9af7aa62911343b8",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"50f1b4552c0340eab599c8bc578334de",
-"type":"variable"
-},
-{
-"text":"):\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"PageContainer"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"29a948082ed3467395fb08fcbc0ad7c9",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"PageContainer"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef project(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"]\n\n@property\ndef page(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"]\n\n@property\ndef selection(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"]\n",
-"type":"code"
-}
-],
-"id":"fa8603dca3824d91bfd5cc2519840460",
 "language":"",
 "type":"code"
 }
@@ -20029,6 +19863,7 @@
 "39e82e917b36405caa218fe04a43d0ba":"create_list",
 "3acdc29e28484de3b989d6eb1b75a97e":"create_font",
 "3c5ca1194b034e9b9131fe6267a5e657":"GuiFrameworkBase",
+"3d37ceb60aa04ff6830b584eb805ac78":"PageContainerGui",
 "3d6ead2c4a274ae78afa33875235e150":"_apply_style",
 "3f3b43d27029407baea6e0281eaa456d":"_paragraph_dict",
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
