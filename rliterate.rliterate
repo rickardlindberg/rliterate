@@ -9963,7 +9963,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #page_ids\n    #index\n    #min_size = self._get_size()\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_rows()) {\n        PageContainer(\n            project   = self.project\n            page      = loopvar.page\n            selection = self.selection.get(loopvar.index).get(loopvar.page.id)\n            %border[self.project.theme.page_padding, RIGHT|BOTTOM]\n            %expand\n        )\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #page_ids\n    #index\n    #min_size = self._get_size()\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_rows()) {\n        PageContainer[containers](\n            project   = self.project\n            page      = loopvar.page\n            selection = self.selection.get(loopvar.index).get(loopvar.page.id)\n            %border[self.project.theme.page_padding, RIGHT|BOTTOM]\n            %expand\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -9974,6 +9974,11 @@
 "rlgui.py"
 ],
 "type":"code"
+},
+{
+"code_id":"b542a6172c4b442dbbd3aee777c3eab9",
+"id":"c2be93658aad47928674dc045f482549",
+"type":"expanded_code"
 },
 {
 "chunkpath":[
@@ -10242,7 +10247,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        [x.widget for x in self._root_widget.children[1]],\n        lambda container: container.",
+"text":"(\n        self.containers,\n        lambda container: container.",
 "type":"code"
 },
 {
@@ -16215,7 +16220,7 @@
 "type":"chunk"
 },
 {
-"text":"  border =\n    | \"ALL\"    -> { \"sizer[\\\"flag\\\"] |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { \"sizer[\\\"flag\\\"] |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { \"sizer[\\\"flag\\\"] |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { \"sizer[\\\"flag\\\"] |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { \"sizer[\\\"flag\\\"] |= wx.BOTTOM\\n\" }\n  boxType =\n    | \"hbox\" -> \"wx.HORIZONTAL\"\n    | \"vbox\" -> \"wx.VERTICAL\"\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> { \"self.\" x \" = parent.widget\\n\" }\n    | .               -> {}\n}\n",
+"text":"  border =\n    | \"ALL\"    -> { \"sizer[\\\"flag\\\"] |= wx.ALL\\n\" }\n    | \"LEFT\"   -> { \"sizer[\\\"flag\\\"] |= wx.LEFT\\n\" }\n    | \"RIGHT\"  -> { \"sizer[\\\"flag\\\"] |= wx.RIGHT\\n\" }\n    | \"TOP\"    -> { \"sizer[\\\"flag\\\"] |= wx.TOP\\n\" }\n    | \"BOTTOM\" -> { \"sizer[\\\"flag\\\"] |= wx.BOTTOM\\n\" }\n  boxType =\n    | \"hbox\" -> \"wx.HORIZONTAL\"\n    | \"vbox\" -> \"wx.VERTICAL\"\n  astGetList =\n    | ast:x astGetList:y -> { x \".\" y }\n    | ast\n  astList = astEmptyList | astNonEmptyList\n  astEmptyList = !. -> {}\n  astNonEmptyList =\n    | ast:x astNonEmptyList:y -> { x \", \" y }\n    | ast:x\n  binding =\n    | [\"binding\" .:x] -> {\n      \"if parent.inside_loop:\\n\" >\n        \"parent.add_loop_var(\" repr(x) \", widget.widget)\\n\"\n      < \"else:\\n\" >\n        \"self.\" x \" = widget.widget\\n\"\n      <\n    }\n    | .               -> {}\n}\n",
 "type":"code"
 }
 ],
@@ -16269,7 +16274,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @child {\n    \"self.\" %child \"(parent, loopvar)\\n\"\n  }\n  @methods {\n    \"\\ndef \" %child \"(self, parent, loopvar):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizer = {\\\"flag\\\": 0, \\\"border\\\": 0, \\\"proportion\\\": 0}\\n\"\n      #child\n    <\n    zs\n    @child {\n      \"parent = parent.add(\" x \", properties, handlers, sizer)\\n\"\n      \"parent.reset()\\n\"\n      y\n    }\n    #methods\n    ws\n  }\n}\n",
+"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @child {\n    \"self.\" %child \"(parent, loopvar)\\n\"\n  }\n  @methods {\n    \"\\ndef \" %child \"(self, parent, loopvar):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizer = {\\\"flag\\\": 0, \\\"border\\\": 0, \\\"proportion\\\": 0}\\n\"\n      #child\n    <\n    zs\n    @child {\n      \"widget = parent.add(\" x \", properties, handlers, sizer)\\n\"\n      y\n      \"parent = widget\\n\"\n      \"parent.reset()\\n\"\n    }\n    #methods\n    ws\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16292,7 +16297,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"loop\" ast:x ast*:zs] -> {\n  @child {\n    \"parent.loop_start()\\n\"\n    \"for loopvar in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @child {\n    <\n    \"parent.loop_end()\\n\"\n  }\n}\n",
+"text":"| [\"loop\" ast:x ast*:zs] -> {\n  @child {\n    \"parent.loop_start()\\n\"\n    \"for loopvar in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @child {\n    <\n    \"parent.loop_end(self)\\n\"\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16727,7 +16732,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.reset()\n\n    def reset(self):\n        self.sizer_index = 0\n        self.child_index = 0\n        self.inside_loop = False\n\n    def loop_start(self):\n        self.inside_loop = True\n        if self.child_index >= len(self.children):\n            self.children.append([])\n        self.old_children = self.children\n        self.next_index = self.child_index + 1\n        self.children = self.children[self.child_index]\n        self.child_index = 0\n\n    def loop_end(self):\n        while self.child_index < len(self.children):\n            self.children.pop(-1).widget.Destroy()\n        self.children = self.old_children\n        self.child_index = self.next_index\n        self.inside_loop = False\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        if self.widget.Sizer is None:\n            self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, sizer):\n        if self.child_index >= len(self.children) or (self.inside_loop and type(self.children[self.child_index].widget) != widget_cls):\n            widget = widget_cls(self.widget, **properties)\n            self.sizer.Insert(self.sizer_index, widget, **sizer)\n            widget_info = ",
+"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.reset()\n        self.vars = defaultdict(list)\n\n    def reset(self):\n        self.sizer_index = 0\n        self.child_index = 0\n        self.inside_loop = False\n\n    def loop_start(self):\n        self.inside_loop = True\n        if self.child_index >= len(self.children):\n            self.children.append([])\n        self.old_children = self.children\n        self.next_index = self.child_index + 1\n        self.children = self.children[self.child_index]\n        self.child_index = 0\n\n    def add_loop_var(self, name, value):\n        self.vars[name].append(value)\n\n    def loop_end(self, parent):\n        while self.child_index < len(self.children):\n            self.children.pop(-1).widget.Destroy()\n        self.children = self.old_children\n        self.child_index = self.next_index\n        self.inside_loop = False\n        for name, values in self.vars.items():\n            setattr(parent, name, values)\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        if self.widget.Sizer is None:\n            self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, sizer):\n        if self.child_index >= len(self.children) or (self.inside_loop and type(self.children[self.child_index].widget) != widget_cls):\n            widget = widget_cls(self.widget, **properties)\n            self.sizer.Insert(self.sizer_index, widget, **sizer)\n            widget_info = ",
 "type":"code"
 },
 {

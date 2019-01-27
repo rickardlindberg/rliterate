@@ -211,6 +211,7 @@ class GuiFrameworkWidgetInfo(object):
         self.widget = widget
         self.children = []
         self.reset()
+        self.vars = defaultdict(list)
 
     def reset(self):
         self.sizer_index = 0
@@ -226,12 +227,17 @@ class GuiFrameworkWidgetInfo(object):
         self.children = self.children[self.child_index]
         self.child_index = 0
 
-    def loop_end(self):
+    def add_loop_var(self, name, value):
+        self.vars[name].append(value)
+
+    def loop_end(self, parent):
         while self.child_index < len(self.children):
             self.children.pop(-1).widget.Destroy()
         self.children = self.old_children
         self.child_index = self.next_index
         self.inside_loop = False
+        for name, values in self.vars.items():
+            setattr(parent, name, values)
 
     @property
     def sizer(self):
@@ -406,7 +412,8 @@ class TableOfContentsGui(GuiFrameworkPanel):
         properties['label'] = 'unhoist'
         sizer["flag"] |= wx.EXPAND
         handlers.append(('button', lambda event: setattr(self.project, 'hoisted_page', None)))
-        parent = parent.add(Button, properties, handlers, sizer)
+        widget = parent.add(Button, properties, handlers, sizer)
+        parent = widget
         parent.reset()
 
     def _child2(self, parent, loopvar):
@@ -415,16 +422,20 @@ class TableOfContentsGui(GuiFrameworkPanel):
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         sizer["flag"] |= wx.EXPAND
         sizer["proportion"] = 1
-        parent = parent.add(GuiFrameworkVScroll, properties, handlers, sizer)
+        widget = parent.add(GuiFrameworkVScroll, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('page_container', widget.widget)
+        else:
+            self.page_container = widget.widget
+        parent = widget
         parent.reset()
-        self.page_container = parent.widget
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         parent.loop_start()
         for loopvar in self._get_rows():
             pass
             self._child4(parent, loopvar)
             self._child5(parent, loopvar)
-        parent.loop_end()
+        parent.loop_end(self)
 
     def _child4(self, parent, loopvar):
         handlers = []
@@ -434,7 +445,8 @@ class TableOfContentsGui(GuiFrameworkPanel):
         properties['page'] = loopvar.page
         properties['selection'] = self.selection.get(loopvar.page.id)
         properties['indentation'] = loopvar.indentation
-        parent = parent.add(TableOfContentsRow, properties, handlers, sizer)
+        widget = parent.add(TableOfContentsRow, properties, handlers, sizer)
+        parent = widget
         parent.reset()
 
     def _child5(self, parent, loopvar):
@@ -445,7 +457,8 @@ class TableOfContentsGui(GuiFrameworkPanel):
         properties['height'] = 2
         properties['row'] = loopvar
         sizer["flag"] |= wx.EXPAND
-        parent = parent.add(Divider, properties, handlers, sizer)
+        widget = parent.add(Divider, properties, handlers, sizer)
+        parent = widget
         parent.reset()
 
     @property
@@ -491,7 +504,8 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         sizer["flag"] |= wx.LEFT
         sizer["flag"] |= wx.EXPAND
         sizer["flag"] |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
-        parent = parent.add(TableOfContentsButton, properties, handlers, sizer)
+        widget = parent.add(TableOfContentsButton, properties, handlers, sizer)
+        parent = widget
         parent.reset()
 
     def _child2(self, parent, loopvar):
@@ -506,9 +520,13 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         sizer["flag"] |= wx.ALL
         handlers.append(('ctrl_click', lambda event: self.text.Select(event.Position)))
         handlers.append(('mouse_move', lambda event: self._set_cursor(event)))
-        parent = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('text', widget.widget)
+        else:
+            self.text = widget.widget
+        parent = widget
         parent.reset()
-        self.text = parent.widget
 
     @property
     def project(self):
@@ -580,7 +598,7 @@ class WorkspaceGui(GuiFrameworkHScroll):
         for loopvar in self._get_columns():
             pass
             self._child1(parent, loopvar)
-        parent.loop_end()
+        parent.loop_end(self)
         if first:
             parent.listen(handlers)
 
@@ -593,7 +611,8 @@ class WorkspaceGui(GuiFrameworkHScroll):
         properties['page_ids'] = loopvar.page_ids
         properties['selection'] = self.selection.get(loopvar.index)
         sizer["flag"] |= wx.EXPAND
-        parent = parent.add(Column, properties, handlers, sizer)
+        widget = parent.add(Column, properties, handlers, sizer)
+        parent = widget
         parent.reset()
 
     @property
@@ -626,7 +645,7 @@ class ColumnGui(GuiFrameworkVScroll):
         for loopvar in self._get_rows():
             pass
             self._child1(parent, loopvar)
-        parent.loop_end()
+        parent.loop_end(self)
         if first:
             parent.listen(handlers)
 
@@ -641,7 +660,12 @@ class ColumnGui(GuiFrameworkVScroll):
         sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.EXPAND
-        parent = parent.add(PageContainer, properties, handlers, sizer)
+        widget = parent.add(PageContainer, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('containers', widget.widget)
+        else:
+            self.containers = widget.widget
+        parent = widget
         parent.reset()
 
     @property
@@ -694,9 +718,13 @@ class TitleGui(GuiFrameworkPanel):
         properties['tooltip'] = self.page.full_title
         handlers.append(('double_click', lambda event: self.text.Select(event.Position)))
         sizer["proportion"] = 1
-        parent = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('text', widget.widget)
+        else:
+            self.text = widget.widget
+        parent = widget
         parent.reset()
-        self.text = parent.widget
 
     @property
     def project(self):
@@ -799,9 +827,13 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         properties['tooltip'] = self.tooltip
         properties['focus'] = self.selection.present
         handlers.append(('char', lambda event: self._on_char(event)))
-        parent = parent.add(TextProjection, properties, handlers, sizer)
+        widget = parent.add(TextProjection, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('text', widget.widget)
+        else:
+            self.text = widget.widget
+        parent = widget
         parent.reset()
-        self.text = parent.widget
 
     @property
     def project(self):
@@ -3725,7 +3757,7 @@ class Column(ColumnGui):
         )
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            [x.widget for x in self._root_widget.children[1]],
+            self.containers,
             lambda container: container.FindClosestDropPoint(screen_pos)
         )
 ColumnRow = namedtuple("ColumnRow", ["page", "index"])
