@@ -243,7 +243,7 @@ class GuiFrameworkWidgetInfo(object):
             self.widget.Sizer = value
 
     def add(self, widget_cls, properties, handlers, sizer):
-        if self.child_index >= len(self.children):
+        if self.child_index >= len(self.children) or (self.inside_loop and type(self.children[self.child_index].widget) != widget_cls):
             widget = widget_cls(self.widget, **properties)
             self.sizer.Insert(self.sizer_index, widget, **sizer)
             widget_info = GuiFrameworkWidgetInfo(widget)
