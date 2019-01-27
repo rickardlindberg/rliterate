@@ -557,6 +557,62 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
     @property
     def page(self):
         return self.values["page"]
+class ColumnGui(GuiFrameworkVScroll):
+
+    def _get_derived(self):
+        return {
+            'min_size': self._get_size(),
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.add_space(self.project.theme.page_padding)
+        parent.loop_start()
+        for loopvar in self._get_rows():
+            pass
+            self._child1(parent, loopvar)
+        parent.loop_end()
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['page'] = loopvar.page
+        properties['selection'] = self.selection.get(loopvar.index).get(loopvar.page.id)
+        sizer["border"] = self.project.theme.page_padding
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.EXPAND
+        parent = parent.add(PageContainer, properties, handlers, sizer)
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+
+    @property
+    def page_ids(self):
+        return self.values["page_ids"]
+
+    @property
+    def index(self):
+        return self.values["index"]
 class TitleGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -3615,75 +3671,29 @@ class WorkspaceDropTarget(DropPointDropTarget):
             target_page=drop_point.target_page,
             target_index=drop_point.target_index
         )
-class Column(VerticalScrolledWindow, GuiFrameworkBaseMixin):
-
-    def __init__(self, parent, **kwargs):
-        VerticalScrolledWindow.__init__(
-            self,
-            parent,
-            style=wx.VSCROLL
-        )
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class Column(ColumnGui):
 
     def _create_gui(self):
+        ColumnGui._create_gui(self)
         self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)
         self.Bind(EVT_TOKEN_CLICK, self._on_token_click)
-        self._containers = []
-        self._space = self.AppendSpace()
-    def _update_gui(self):
-        self._adjust_space()
-        self._adjust_size()
-        self._adjust_containers()
-
-    def _adjust_space(self):
-        self._space.SetSize(self.project.theme.page_padding)
-
-    def _adjust_size(self):
-        self.MinSize = (
+    def _get_size(self):
+        return (
             self.project.theme.page_body_width+
             2*self.project.theme.container_border+
             self.project.theme.page_padding+
             self.project.theme.shadow_size,
             -1
         )
-
-    def _adjust_containers(self):
-        num_added = 0
-        for index, page_id in enumerate(self.values["page_ids"]):
-            page = self.project.get_page(page_id)
-            if page is not None:
-                if index >= len(self._containers):
-                    self._containers.append(
-                        self.AppendChild(
-                            PageContainer(
-                                self,
-                                project=self.project,
-                                page=page,
-                                selection=self.values["selection"].get(index).get(page_id)
-                            ),
-                            flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,
-                            border=self.project.theme.page_padding
-                        )
-                    )
-                else:
-                    self._containers[index].UpdateGui(
-                        project=self.project,
-                        page=page,
-                        selection=self.values["selection"].get(index).get(page_id)
-                    )
-                num_added += 1
-        while len(self._containers) > num_added:
-            self._containers.pop(-1).Destroy()
-        # When?
-        #self.ScrollToBeginning()
-
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def index(self):
-        return self.values["index"]
+    def _get_rows(self):
+        return [
+            ColumnRow(
+                page=self.project.get_page(page_id),
+                index=index
+            )
+            for index, page_id
+            in enumerate(self.page_ids)
+        ]
     def _on_hovered_token_changed(self, event):
         if event.token is not None and event.token.token_type in [
             TokenType.RLiterate.Link,
@@ -3709,6 +3719,7 @@ class Column(VerticalScrolledWindow, GuiFrameworkBaseMixin):
             self._containers,
             lambda container: container.FindClosestDropPoint(screen_pos)
         )
+ColumnRow = namedtuple("ColumnRow", ["page", "index"])
 class PageContainer(VerticalBasePanel):
 
     @property

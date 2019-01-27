@@ -9971,11 +9971,98 @@
 "title":"Main widget"
 },
 {
-"children":[
-{
 "children":[],
-"id":"f17b89026691484b823a0e91a11f091c",
+"id":"b5ccbbfc0b6445a3a19a5c3dc39daa81",
 "paragraphs":[
+{
+"fragments":[
+{
+"text":"The column widget renders page container widgets vertically. It can be scrolled up and down if more pages are shown than can fit on the screen. It re-renders when ",
+"type":"text"
+},
+{
+"id":"bba79578dc084c859c4f3eef0cd79771",
+"type":"variable"
+},
+{
+"text":" is called.",
+"type":"text"
+}
+],
+"id":"5d9d79b33aa44d6ca21b8a760fd09dc3",
+"type":"text"
+},
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"vscroll ",
+"type":"code"
+},
+{
+"id":"4a4e06b5e3e644548062e01d0f107cf4",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #selection\n    #page_ids\n    #index\n    #min_size = self._get_size()\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_rows()) {\n        PageContainer(\n            project   = self.project\n            page      = loopvar.page\n            selection = self.selection.get(loopvar.index).get(loopvar.page.id)\n            %border[self.project.theme.page_padding, RIGHT|BOTTOM]\n            %expand\n        )\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"b542a6172c4b442dbbd3aee777c3eab9",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"a886e97ceb3d427c8190487d23d12bc1",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"4a4e06b5e3e644548062e01d0f107cf4",
+"type":"variable"
+},
+{
+"text":"):\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"Column"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"cb982a3129f940f18cd4bc9237d4c8f8",
+"language":"",
+"post_process":[],
+"type":"code"
+},
 {
 "chunkpath":[
 "classes",
@@ -9994,15 +10081,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n    self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n    self._containers = []\n    self._space = self.",
+"text":"(self):\n    ColumnGui.",
 "type":"code"
 },
 {
-"id":"31a17b208536469099ae5c084d35590d",
+"id":"887acc7e530b4d98933d11e223d58c42",
 "type":"variable"
 },
 {
-"text":"()\n",
+"text":"(self)\n    self.Bind(EVT_HOVERED_TOKEN_CHANGED, self._on_hovered_token_changed)\n    self.Bind(EVT_TOKEN_CLICK, self._on_token_click)\n",
 "type":"code"
 }
 ],
@@ -10020,31 +10107,7 @@
 ],
 "fragments":[
 {
-"text":"def ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n    self._adjust_space()\n    self._adjust_size()\n    self._adjust_containers()\n\ndef _adjust_space(self):\n    self._space.SetSize(self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"76b9d362e0714c1da27953dd46e8ef0b",
-"type":"variable"
-},
-{
-"text":")\n\ndef _adjust_size(self):\n    self.MinSize = (\n        self.project.",
+"text":"def _get_size(self):\n    return (\n        self.project.",
 "type":"code"
 },
 {
@@ -10108,15 +10171,34 @@
 "type":"variable"
 },
 {
-"text":",\n        -1\n    )\n\ndef _adjust_containers(self):\n    num_added = 0\n    for index, page_id in enumerate(self.",
+"text":",\n        -1\n    )\n",
+"type":"code"
+}
+],
+"id":"43932453f289428abb21fbd2032fa567",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
+"chunkpath":[
+"classes",
+"Column"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_rows(self):\n    return [\n        ",
+"type":"code"
+},
+{
+"id":"45b2b281c8914428b601cd55f9d1c92f",
 "type":"variable"
 },
 {
-"text":"[\"page_ids\"]):\n        page = self.project.",
+"text":"(\n            page=self.project.",
 "type":"code"
 },
 {
@@ -10124,93 +10206,45 @@
 "type":"variable"
 },
 {
-"text":"(page_id)\n        if page is not None:\n            if index >= len(self._containers):\n                self._containers.append(\n                    self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n                        ",
-"type":"code"
-},
-{
-"id":"33a426d54550425b9af7aa62911343b8",
-"type":"variable"
-},
-{
-"text":"(\n                            self,\n                            project=self.project,\n                            page=page,\n                            selection=self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"].get(index).get(page_id)\n                        ),\n                        flag=wx.RIGHT|wx.BOTTOM|wx.EXPAND,\n                        border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"76b9d362e0714c1da27953dd46e8ef0b",
-"type":"variable"
-},
-{
-"text":"\n                    )\n                )\n            else:\n                self._containers[index].",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n                    project=self.project,\n                    page=page,\n                    selection=self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"].get(index).get(page_id)\n                )\n            num_added += 1\n    while len(self._containers) > num_added:\n        self._containers.pop(-1).Destroy()\n    # When?\n    #self.ScrollToBeginning()\n\n@property\ndef project(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"]\n\n@property\ndef index(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"index\"]\n",
+"text":"(page_id),\n            index=index\n        )\n        for index, page_id\n        in enumerate(self.page_ids)\n    ]\n",
 "type":"code"
 }
 ],
-"id":"43932453f289428abb21fbd2032fa567",
+"id":"b6dd95c031cc45d9a00f4eb05e05ddda",
 "language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"45b2b281c8914428b601cd55f9d1c92f",
+"type":"variable"
+},
+{
+"text":" = namedtuple(\"",
+"type":"code"
+},
+{
+"id":"45b2b281c8914428b601cd55f9d1c92f",
+"type":"variable"
+},
+{
+"text":"\", [\"page\", \"index\"])\n",
 "type":"code"
 }
 ],
-"title":"Rendering"
+"id":"e121c0caf9394b92a65151397cfd5139",
+"language":"",
+"post_process":[],
+"type":"code"
 },
-{
-"children":[],
-"id":"0101ffbf9ff44194a140b3cc8a4125de",
-"paragraphs":[
 {
 "chunkpath":[
 "classes",
@@ -10227,14 +10261,7 @@
 ],
 "id":"34504aba164047408652c6a114b9372d",
 "type":"code"
-}
-],
-"title":"Token event handlers"
 },
-{
-"children":[],
-"id":"dac1f837e584402cbd5e1bfe12e29f23",
-"paragraphs":[
 {
 "chunkpath":[
 "classes",
@@ -10274,95 +10301,6 @@
 }
 ],
 "id":"625fe6ac645e438cb2f1795e54bcc63c",
-"type":"code"
-}
-],
-"title":"Dropping paragraphs"
-}
-],
-"id":"b5ccbbfc0b6445a3a19a5c3dc39daa81",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"The column widget renders page container widgets vertically. It can be scrolled up and down if more pages are shown than can fit on the screen. It re-renders when ",
-"type":"text"
-},
-{
-"id":"bba79578dc084c859c4f3eef0cd79771",
-"type":"variable"
-},
-{
-"text":" is called.",
-"type":"text"
-}
-],
-"id":"5d9d79b33aa44d6ca21b8a760fd09dc3",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"a886e97ceb3d427c8190487d23d12bc1",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"3457c112c47c41a293d77cc79f99badf",
-"type":"variable"
-},
-{
-"text":", ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, **kwargs):\n        ",
-"type":"code"
-},
-{
-"id":"3457c112c47c41a293d77cc79f99badf",
-"type":"variable"
-},
-{
-"text":".__init__(\n            self,\n            parent,\n            style=wx.VSCROLL\n        )\n        ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":".__init__(self, **kwargs)\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"Column"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"cb982a3129f940f18cd4bc9237d4c8f8",
-"language":"",
 "type":"code"
 }
 ],
@@ -11318,11 +11256,6 @@
 "rlgui.py"
 ],
 "type":"code"
-},
-{
-"code_id":"b069cd5fab6541a0a3c5b95fe1ec4b09",
-"id":"b0c7c158862c463ba08297a2b5185fb3",
-"type":"expanded_code"
 },
 {
 "chunkpath":[
@@ -20174,9 +20107,11 @@
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "457a1dbf134c431881e590e7b7db9907":"_break_at_word",
+"45b2b281c8914428b601cd55f9d1c92f":"ColumnRow",
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
 "49916c3d2ee1468e9cbcb40d6b37bed6":"did_change",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
+"4a4e06b5e3e644548062e01d0f107cf4":"ColumnGui",
 "4a627e93978545b1895fedf553faa161":"TextProjectionEditorGui",
 "4b9ee6bd24a74475a73197299f60dd85":"im_modify",
 "4bb7b8ed322441f284c23879725bf1bf":"Button",
