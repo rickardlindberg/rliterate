@@ -8380,7 +8380,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        %expand\n        @button = self._clear_hoisted_page()\n    )\n    vscroll() %vbox {\n        for (self._get_rows() : row) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = row.page\n                selection   = self.selection.get(row.page.id)\n                indentation = row.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n            )\n        }\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        %expand\n        @button = self._clear_hoisted_page()\n    )\n    vscroll() %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.get(loopvar.page.id)\n                indentation = loopvar.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n            )\n        }\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -8390,6 +8390,39 @@
 "python",
 "rlgui.py"
 ],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class TableOfContents(",
+"type":"code"
+},
+{
+"id":"50f1b4552c0340eab599c8bc578334de",
+"type":"variable"
+},
+{
+"text":"):\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"TableOfContents"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"19989e3da6004e61b58d3a570b52d9fc",
+"language":"",
 "type":"code"
 },
 {
@@ -9011,41 +9044,7 @@
 }
 ],
 "id":"f0c6aa103d2a45aa8737d7d964e860bc",
-"paragraphs":[
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class TableOfContents(",
-"type":"code"
-},
-{
-"id":"50f1b4552c0340eab599c8bc578334de",
-"type":"variable"
-},
-{
-"text":"):\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"TableOfContents"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"19989e3da6004e61b58d3a570b52d9fc",
-"language":"",
-"type":"code"
-}
-],
+"paragraphs":[],
 "title":"Main widget"
 },
 {
