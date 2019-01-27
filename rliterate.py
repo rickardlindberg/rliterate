@@ -210,13 +210,22 @@ class GuiFrameworkWidgetInfo(object):
         self.reset()
 
     def reset(self):
-        self.index = 0
+        self.sizer_index = 0
+        self.child_index = 0
 
     def loop_start(self):
-        pass
+        if self.child_index >= len(self.children):
+            self.children.append([])
+        self.old_children = self.children
+        self.next_index = self.child_index + 1
+        self.children = self.children[self.child_index]
+        self.child_index = 0
 
     def loop_end(self):
-        pass
+        while self.child_index > len(self.children):
+            self.children.pop(-1).widget.Destroy()
+        self.children = self.old_children
+        self.child_index = self.next_index
 
     @property
     def sizer(self):
@@ -228,27 +237,31 @@ class GuiFrameworkWidgetInfo(object):
 
     def add(self, widget_cls, properties, handlers, **kwargs):
         widget = widget_cls(self.widget, **properties)
-        self.sizer.Insert(self.index, widget, **kwargs)
+        self.sizer.Insert(self.sizer_index, widget, **kwargs)
         widget_info = GuiFrameworkWidgetInfo(widget)
         widget_info.listen(handlers)
-        self.children.insert(self.index, widget_info)
-        self.index += 1
+        self.children.insert(self.child_index, widget_info)
+        self.child_index += 1
+        self.sizer_index += 1
         return widget_info
 
     def update_current_child(self, **kwargs):
-        x = self.children[self.index]
+        x = self.children[self.child_index]
         x.widget.UpdateGui(**kwargs)
-        self.index += 1
+        self.child_index += 1
+        self.sizer_index += 1
         return x
 
     def add_space(self, space):
-        x = self.sizer.Insert(self.index, self._get_space_size(space))
-        self.children.insert(self.index, x)
-        self.index += 1
+        x = self.sizer.Insert(self.sizer_index, self._get_space_size(space))
+        self.children.insert(self.child_index, x)
+        self.sizer_index += 1
+        self.child_index += 1
 
     def update_space(self, space):
-        self.children[self.index].SetMinSize(self._get_space_size(space))
-        self.index += 1
+        self.children[self.child_index].SetMinSize(self._get_space_size(space))
+        self.sizer_index += 1
+        self.child_index += 1
 
     def _get_space_size(self, size):
         if self.sizer.Orientation == wx.HORIZONTAL:
