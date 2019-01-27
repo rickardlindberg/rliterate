@@ -212,8 +212,10 @@ class GuiFrameworkWidgetInfo(object):
     def reset(self):
         self.sizer_index = 0
         self.child_index = 0
+        self.inside_loop = False
 
     def loop_start(self):
+        self.inside_loop = True
         if self.child_index >= len(self.children):
             self.children.append([])
         self.old_children = self.children
@@ -222,10 +224,11 @@ class GuiFrameworkWidgetInfo(object):
         self.child_index = 0
 
     def loop_end(self):
-        while self.child_index > len(self.children):
+        while self.child_index < len(self.children):
             self.children.pop(-1).widget.Destroy()
         self.children = self.old_children
         self.child_index = self.next_index
+        self.inside_loop = False
 
     @property
     def sizer(self):
@@ -233,33 +236,29 @@ class GuiFrameworkWidgetInfo(object):
 
     @sizer.setter
     def sizer(self, value):
-        self.widget.Sizer = value
+        if self.widget.Sizer is None:
+            self.widget.Sizer = value
 
-    def add(self, widget_cls, properties, handlers, **kwargs):
-        widget = widget_cls(self.widget, **properties)
-        self.sizer.Insert(self.sizer_index, widget, **kwargs)
-        widget_info = GuiFrameworkWidgetInfo(widget)
-        widget_info.listen(handlers)
-        self.children.insert(self.child_index, widget_info)
+    def add(self, widget_cls, properties, handlers, sizer):
+        if self.child_index >= len(self.children):
+            widget = widget_cls(self.widget, **properties)
+            self.sizer.Insert(self.sizer_index, widget, **sizer)
+            widget_info = GuiFrameworkWidgetInfo(widget)
+            widget_info.listen(handlers)
+            self.children.insert(self.child_index, widget_info)
+        else:
+            widget_info = self.children[self.child_index]
+            widget_info.widget.UpdateGui(**properties)
         self.child_index += 1
         self.sizer_index += 1
         return widget_info
 
-    def update_current_child(self, **kwargs):
-        x = self.children[self.child_index]
-        x.widget.UpdateGui(**kwargs)
-        self.child_index += 1
-        self.sizer_index += 1
-        return x
-
     def add_space(self, space):
-        x = self.sizer.Insert(self.sizer_index, self._get_space_size(space))
-        self.children.insert(self.child_index, x)
-        self.sizer_index += 1
-        self.child_index += 1
-
-    def update_space(self, space):
-        self.children[self.child_index].SetMinSize(self._get_space_size(space))
+        if self.child_index >= len(self.children):
+            x = self.sizer.Insert(self.sizer_index, self._get_space_size(space))
+            self.children.insert(self.child_index, x)
+        else:
+            self.children[self.child_index].SetMinSize(self._get_space_size(space))
         self.sizer_index += 1
         self.child_index += 1
 
@@ -378,70 +377,53 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        self._root_widget = parent = GuiFrameworkWidgetInfo(self)
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, first=False):
+        parent.reset()
         handlers = []
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
         parent.add_space(self._indentation_size())
-        self._create_child1(parent)
-        self._create_child2(parent)
+        self._child1(parent)
+        self._child2(parent)
         handlers.append(('click', lambda event: self._on_click_old(event)))
         handlers.append(('right_click', lambda event: self._on_right_click_old(event)))
         handlers.append(('drag', lambda event: self._on_drag_old(event)))
-        parent.listen(handlers)
+        if first:
+            parent.listen(handlers)
 
-    def _update_gui(self):
-        parent = self._root_widget
-        parent.reset()
-        parent.update_space(self._indentation_size())
-        self._update_child1(parent)
-        self._update_child2(parent)
-
-    def _create_child1(self, parent):
+    def _child1(self, parent):
         handlers = []
         properties = {}
-        sizerFlag = 0
-        sizerBorder = 0
-        sizerProportion = 0
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
         properties['page'] = self.page
-        sizerBorder = self.BORDER
-        sizerFlag |= wx.LEFT
-        sizerFlag |= wx.EXPAND
-        sizerFlag |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
-        parent = parent.add(TableOfContentsButton, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
-
-    def _update_child1(self, parent):
-        properties = {}
-        properties['project'] = self.project
-        properties['page'] = self.page
-        parent = parent.update_current_child(**properties)
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.LEFT
+        sizer["flag"] |= wx.EXPAND
+        sizer["flag"] |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN
+        parent = parent.add(TableOfContentsButton, properties, handlers, sizer)
         parent.reset()
 
-    def _create_child2(self, parent):
+    def _child2(self, parent):
         handlers = []
         properties = {}
-        sizerFlag = 0
-        sizerBorder = 0
-        sizerProportion = 0
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
         properties['selection'] = self.selection
         properties['handle_key'] = self._handle_key
         properties['get_characters'] = self._get_characters
-        sizerBorder = self.BORDER
-        sizerFlag |= wx.ALL
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.ALL
         handlers.append(('ctrl_click', lambda event: self.text.Select(event.Position)))
         handlers.append(('mouse_move', lambda event: self._set_cursor(event)))
-        parent = parent.add(TextProjectionEditor, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
-        self.text = parent.widget
-
-    def _update_child2(self, parent):
-        properties = {}
-        properties['project'] = self.project
-        properties['selection'] = self.selection
-        properties['handle_key'] = self._handle_key
-        properties['get_characters'] = self._get_characters
-        parent = parent.update_current_child(**properties)
+        parent = parent.add(TextProjectionEditor, properties, handlers, sizer)
         parent.reset()
+        self.text = parent.widget
 
     @property
     def project(self):
@@ -468,16 +450,20 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        self._root_widget = parent = GuiFrameworkWidgetInfo(self)
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, first=False):
+        parent.reset()
         handlers = []
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
         handlers.append(('click', lambda event: self.project.toggle_collapsed(self.page.id)))
         handlers.append(('paint', lambda event: self._on_paint(event)))
-        parent.listen(handlers)
-
-    def _update_gui(self):
-        parent = self._root_widget
-        parent.reset()
+        if first:
+            parent.listen(handlers)
 
     @property
     def project(self):
@@ -493,24 +479,25 @@ class TitleGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        self._root_widget = parent = GuiFrameworkWidgetInfo(self)
-        handlers = []
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._create_child1(parent)
-        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
-        parent.listen(handlers)
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
 
     def _update_gui(self):
-        parent = self._root_widget
-        parent.reset()
-        self._update_child1(parent)
+        self._child_root(self._root_widget)
 
-    def _create_child1(self, parent):
+    def _child_root(self, parent, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child1(parent)
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent):
         handlers = []
         properties = {}
-        sizerFlag = 0
-        sizerBorder = 0
-        sizerProportion = 0
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['handle_key'] = self._handle_key
         properties['project'] = self.project
         properties['selection'] = self.selection
@@ -519,21 +506,10 @@ class TitleGui(GuiFrameworkPanel):
         properties['font'] = self._create_font()
         properties['tooltip'] = self.page.full_title
         handlers.append(('double_click', lambda event: self.text.Select(event.Position)))
-        sizerProportion = 1
-        parent = parent.add(TextProjectionEditor, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
-        self.text = parent.widget
-
-    def _update_child1(self, parent):
-        properties = {}
-        properties['handle_key'] = self._handle_key
-        properties['project'] = self.project
-        properties['selection'] = self.selection
-        properties['get_characters'] = self._get_characters
-        properties['max_width'] = self.project.theme.page_body_width
-        properties['font'] = self._create_font()
-        properties['tooltip'] = self.page.full_title
-        parent = parent.update_current_child(**properties)
+        sizer["proportion"] = 1
+        parent = parent.add(TextProjectionEditor, properties, handlers, sizer)
         parent.reset()
+        self.text = parent.widget
 
     @property
     def project(self):
@@ -610,23 +586,24 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         }
 
     def _create_gui(self):
-        self._root_widget = parent = GuiFrameworkWidgetInfo(self)
-        handlers = []
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._create_child1(parent)
-        parent.listen(handlers)
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
 
     def _update_gui(self):
-        parent = self._root_widget
-        parent.reset()
-        self._update_child1(parent)
+        self._child_root(self._root_widget)
 
-    def _create_child1(self, parent):
+    def _child_root(self, parent, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child1(parent)
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent):
         handlers = []
         properties = {}
-        sizerFlag = 0
-        sizerBorder = 0
-        sizerProportion = 0
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['characters'] = self.get_characters(self)
         properties['line_height'] = self.line_height
         properties['max_width'] = self.max_width
@@ -635,20 +612,9 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         properties['tooltip'] = self.tooltip
         properties['focus'] = self.selection.present
         handlers.append(('char', lambda event: self._on_char(event)))
-        parent = parent.add(TextProjection, properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)
-        self.text = parent.widget
-
-    def _update_child1(self, parent):
-        properties = {}
-        properties['characters'] = self.get_characters(self)
-        properties['line_height'] = self.line_height
-        properties['max_width'] = self.max_width
-        properties['break_at_word'] = self.break_at_word
-        properties['font'] = self.font
-        properties['tooltip'] = self.tooltip
-        properties['focus'] = self.selection.present
-        parent = parent.update_current_child(**properties)
+        parent = parent.add(TextProjection, properties, handlers, sizer)
         parent.reset()
+        self.text = parent.widget
 
     @property
     def project(self):
