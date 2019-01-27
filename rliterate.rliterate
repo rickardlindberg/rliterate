@@ -8347,10 +8347,8 @@
 {
 "children":[
 {
-"children":[
-{
 "children":[],
-"id":"49b2e6c578264b24a860b0172a9ac3a3",
+"id":"f0c6aa103d2a45aa8737d7d964e860bc",
 "paragraphs":[
 {
 "fragments":[
@@ -8379,7 +8377,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.get(loopvar.page.id)\n                indentation = loopvar.indentation\n            )\n            Divider(\n                padding = 0\n                height  = 2\n                row     = loopvar\n                %expand\n            )\n        }\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.get(loopvar.page.id)\n                indentation = loopvar.indentation\n            )\n            Divider[dividers](\n                padding = 0\n                height  = 2\n                row     = loopvar\n                %expand\n            )\n        }\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -8587,7 +8585,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        row=row,\n        indentation=indentation+1,\n        ",
+"text":"(\n        divider_fn=(lambda index: lambda: self.dividers[index])(len(self.rows)-1),\n        indentation=indentation+1,\n        ",
 "type":"code"
 },
 {
@@ -8619,7 +8617,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                row=row,\n                indentation=indentation+1,\n                ",
+"text":"(\n                divider_fn=(lambda index: lambda: self.dividers[index])(len(self.rows)-1),\n                indentation=indentation+1,\n                ",
 "type":"code"
 },
 {
@@ -8703,7 +8701,11 @@
 ],
 "fragments":[
 {
-"text":"class ",
+"id":"0b9a1815cd8e4d9fa585ab8bd8479bb5",
+"type":"variable"
+},
+{
+"text":" = namedtuple(\"",
 "type":"code"
 },
 {
@@ -8711,12 +8713,13 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, page, indentation):\n        self.page = page\n        self.indentation = indentation\n        self.divider = None\n",
+"text":"\", [\"page\", \"indentation\"])\n",
 "type":"code"
 }
 ],
-"id":"c91d8a6c1d184cdaa913ce64eb399d0f",
+"id":"873261edc915473c9e4cdf6a5358f519",
 "language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -8736,7 +8739,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, row, indentation, ",
+"text":"(object):\n\n    def __init__(self, divider_fn, indentation, ",
 "type":"code"
 },
 {
@@ -8752,7 +8755,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.row = row\n        self.indentation = indentation\n        self.",
+"text":"):\n        self.divider_fn = divider_fn\n        self.indentation = indentation\n        self.",
 "type":"code"
 },
 {
@@ -8784,7 +8787,7 @@
 "type":"variable"
 },
 {
-"text":"\n\n    @property\n    def divider(self):\n        return self.row.divider\n\n    def x_distance_to(self, x):\n        left_padding = ",
+"text":"\n\n    @property\n    def divider(self):\n        return self.divider_fn()\n\n    def x_distance_to(self, x):\n        left_padding = ",
 "type":"code"
 },
 {
@@ -8839,14 +8842,7 @@
 "id":"f1e8ef353eac47dd93dc76d86efcce6e",
 "language":"",
 "type":"code"
-}
-],
-"title":"Rendering"
 },
-{
-"children":[],
-"id":"99a2a81b38164293b9ad9287b33bfbbb",
-"paragraphs":[
 {
 "fragments":[
 {
@@ -9010,12 +9006,7 @@
 "type":"code"
 }
 ],
-"title":"Dropping pages"
-}
-],
-"id":"f0c6aa103d2a45aa8737d7d964e860bc",
-"paragraphs":[],
-"title":"Main widget"
+"title":"Table of contents widget"
 },
 {
 "children":[],
@@ -13370,7 +13361,7 @@
 "type":"variable"
 },
 {
-"text":"(self)\n        )\n\n    def _create_gui(self):\n        if \"row\" in self.values:\n            self.values[\"row\"].divider = self\n\n    def _update_gui(self):\n        if \"row\" in self.values:\n            self.values[\"row\"].divider = self\n\n    def Show(self, left_space=0):\n        with ",
+"text":"(self)\n        )\n\n    def Show(self, left_space=0):\n        with ",
 "type":"code"
 },
 {
@@ -19637,7 +19628,7 @@
 "07b4671de05745a7bddd1eea74535277":"ParagraphBase",
 "0a759aaf75be46af916c3fa05f8393da":"target_index",
 "0ab7b7119c7f4be5b67d6455e64455b7":"PageDropPoint",
-"0b9a1815cd8e4d9fa585ab8bd8479bb5":"Row",
+"0b9a1815cd8e4d9fa585ab8bd8479bb5":"TocRow",
 "0c81b6ab4f7a4542ad9a27332f932a69":"TableOfContentsGui",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
 "10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",

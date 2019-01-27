@@ -475,6 +475,10 @@ class TableOfContentsGui(GuiFrameworkPanel):
         properties['row'] = loopvar
         sizer["flag"] |= wx.EXPAND
         widget = parent.add(Divider, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('dividers', widget.widget)
+        else:
+            self.dividers = widget.widget
         parent = widget
         parent.reset()
 
@@ -3749,14 +3753,14 @@ class TableOfContents(TableOfContentsGui):
 
     def _flatten_page(self, page, indentation=0):
         is_collapsed = self.values["project"].is_collapsed(page.id)
-        row = Row(page=page, indentation=indentation)
+        row = TocRow(page=page, indentation=indentation)
         self.rows.append(row)
         if is_collapsed or len(page.children) == 0:
             target_index = len(page.children)
         else:
             target_index = 0
         self.drop_points.append(TableOfContentsDropPoint(
-            row=row,
+            divider_fn=(lambda index: lambda: self.dividers[index])(len(self.rows)-1),
             indentation=indentation+1,
             target_page=page,
             target_index=target_index
@@ -3765,7 +3769,7 @@ class TableOfContents(TableOfContentsGui):
             for index, child in enumerate(page.children):
                 row = self._flatten_page(child, indentation+1)
                 self.drop_points.append(TableOfContentsDropPoint(
-                    row=row,
+                    divider_fn=(lambda index: lambda: self.dividers[index])(len(self.rows)-1),
                     indentation=indentation+1,
                     target_page=page,
                     target_index=index+1
@@ -3787,23 +3791,18 @@ class TableOfContents(TableOfContentsGui):
                     y_distances[min(y_distances.keys())],
                     key=lambda drop_point: drop_point.x_distance_to(client_x)
                 )
-class Row(object):
-
-    def __init__(self, page, indentation):
-        self.page = page
-        self.indentation = indentation
-        self.divider = None
+TocRow = namedtuple("TocRow", ["page", "indentation"])
 class TableOfContentsDropPoint(object):
 
-    def __init__(self, row, indentation, target_page, target_index):
-        self.row = row
+    def __init__(self, divider_fn, indentation, target_page, target_index):
+        self.divider_fn = divider_fn
         self.indentation = indentation
         self.target_page = target_page
         self.target_index = target_index
 
     @property
     def divider(self):
-        return self.row.divider
+        return self.divider_fn()
 
     def x_distance_to(self, x):
         left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
@@ -4898,14 +4897,6 @@ class Divider(VerticalPanel, GuiFrameworkBaseMixin):
             right_click=lambda event:
                 SimpleContextMenu.ShowRecursive(self)
         )
-
-    def _create_gui(self):
-        if "row" in self.values:
-            self.values["row"].divider = self
-
-    def _update_gui(self):
-        if "row" in self.values:
-            self.values["row"].divider = self
 
     def Show(self, left_space=0):
         with flicker_free_drawing(self):
