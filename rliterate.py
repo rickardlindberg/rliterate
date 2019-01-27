@@ -161,11 +161,14 @@ class GuiFrameworkBaseMixin(object):
             self.SetLabel(self.values["label"])
         if self.did_change("visible"):
             self.Show(self.values["visible"])
+        if self.did_change("background"):
+            self.SetBackgroundColour(self.values["background"])
         if self.values.get("focus", False) and not self.HasFocus():
             self.SetFocus()
 
     def _on_left_down(self, event):
         self.down_pos = event.Position
+        event.Skip()
 
     def _on_motion(self, event):
         if self.down_pos is None:
@@ -296,6 +299,7 @@ class Button(wx.Button, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.Button.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
 class BoxSizerMixin(object):
 
     def __init__(self, orientation):
@@ -370,6 +374,87 @@ class SizeWrapper(object):
     def WithSize(self, size):
         self.SetSize(size)
         return self
+class TableOfContentsGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+            'min_size': tuple([250, -1]),
+            'background': '#ffffff',
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        self._child1(parent, loopvar)
+        self._child2(parent, loopvar)
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['visible'] = self._has_hoisted_page()
+        properties['label'] = 'unhoist'
+        sizer["flag"] |= wx.EXPAND
+        handlers.append(('button', lambda event: setattr(self.project, 'hoisted_page', None)))
+        parent = parent.add(Button, properties, handlers, sizer)
+        parent.reset()
+
+    def _child2(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        sizer["proportion"] = 1
+        parent = parent.add(GuiFrameworkVScroll, properties, handlers, sizer)
+        parent.reset()
+        self.page_container = parent.widget
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.loop_start()
+        for loopvar in self._get_rows():
+            pass
+            self._child4(parent, loopvar)
+            self._child5(parent, loopvar)
+        parent.loop_end()
+
+    def _child4(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['page'] = loopvar.page
+        properties['selection'] = self.selection.get(loopvar.page.id)
+        properties['indentation'] = loopvar.indentation
+        parent = parent.add(TableOfContentsRow, properties, handlers, sizer)
+        parent.reset()
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['padding'] = 0
+        properties['height'] = 2
+        properties['row'] = loopvar
+        sizer["flag"] |= wx.EXPAND
+        parent = parent.add(Divider, properties, handlers, sizer)
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 class TableOfContentsRowGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -3231,101 +3316,50 @@ class Tool(object):
 
     def get_state(self):
         return self._is_enabled()
-class TableOfContents(VerticalBasePanel):
+class TableOfContents(TableOfContentsGui):
 
     def _create_gui(self):
-        self.SetMinSize((250, -1))
-        self.SetBackgroundColour((255, 255, 255))
+        TableOfContentsGui._create_gui(self)
         self.SetDropTarget(TableOfContentsDropTarget(self, self.values["project"]))
-        self._create_unhoist_button()
-        self._create_page_container()
 
     @rltime("update toc")
     def _update_gui(self):
-        self._update_unhoist_button()
-        self._update_page_container()
-    def _create_unhoist_button(self):
-        self.unhoist_button = self.AppendChild(
-            wx.Button(self, label="unhoist"),
-            flag=wx.EXPAND
-        )
-        self.unhoist_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event: setattr(self.values["project"], "hoisted_page", None)
-        )
-
-    def _update_unhoist_button(self):
-        self.unhoist_button.Show(self._get_hoisted_page() is not None)
-    def _create_page_container(self):
-        self.page_container = self.AppendChild(
-            VerticalScrolledWindow(self),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-        self.row_widgets = []
-
-    def _update_page_container(self):
-        self.row_index = 0
+        TableOfContentsGui._update_gui(self)
+    def _has_hoisted_page(self):
+        return self._get_hoisted_page() is not None
+    def _get_rows(self):
+        self.rows = []
         self.drop_points = []
         if self._get_hoisted_page() is None:
             self._flatten_page(self.values["project"].get_root_page())
         else:
             self._flatten_page(self._get_hoisted_page())
-        while self.row_index < len(self.row_widgets):
-            for widget in self.row_widgets.pop(-1):
-                widget.Destroy()
+        return self.rows
 
     def _flatten_page(self, page, indentation=0):
         is_collapsed = self.values["project"].is_collapsed(page.id)
-        divider = self._get_or_create_row(page, indentation)
+        row = Row(page=page, indentation=indentation)
+        self.rows.append(row)
         if is_collapsed or len(page.children) == 0:
             target_index = len(page.children)
         else:
             target_index = 0
         self.drop_points.append(TableOfContentsDropPoint(
-            divider=divider,
+            row=row,
             indentation=indentation+1,
             target_page=page,
             target_index=target_index
         ))
         if not is_collapsed:
             for index, child in enumerate(page.children):
-                divider = self._flatten_page(child, indentation+1)
+                row = self._flatten_page(child, indentation+1)
                 self.drop_points.append(TableOfContentsDropPoint(
-                    divider=divider,
+                    row=row,
                     indentation=indentation+1,
                     target_page=page,
                     target_index=index+1
                 ))
-        return divider
-
-    def _get_or_create_row(self, page, indentation):
-        if self.row_index < len(self.row_widgets):
-            row, divider = self.row_widgets[self.row_index]
-            row.UpdateGui(
-                project=self.values["project"],
-                page=page,
-                selection=self.values["selection"].get(page.id),
-                indentation=indentation
-            )
-        else:
-            row = self.page_container.AppendChild(
-                TableOfContentsRow(
-                    self.page_container,
-                    project=self.values["project"],
-                    page=page,
-                    selection=self.values["selection"].get(page.id),
-                    indentation=indentation
-                ),
-                flag=wx.EXPAND
-            )
-            divider = self.page_container.AppendChild(
-                Divider(self.page_container, padding=0, height=2),
-                flag=wx.EXPAND
-            )
-            self.row_widgets.append((row, divider))
-        self.row_index += 1
-        return divider
+        return row
     def _get_hoisted_page(self):
         if self.values["project"].hoisted_page is None:
             return None
@@ -3342,13 +3376,23 @@ class TableOfContents(VerticalBasePanel):
                     y_distances[min(y_distances.keys())],
                     key=lambda drop_point: drop_point.x_distance_to(client_x)
                 )
+class Row(object):
+
+    def __init__(self, page, indentation):
+        self.page = page
+        self.indentation = indentation
+        self.divider = None
 class TableOfContentsDropPoint(object):
 
-    def __init__(self, divider, indentation, target_page, target_index):
-        self.divider = divider
+    def __init__(self, row, indentation, target_page, target_index):
+        self.row = row
         self.indentation = indentation
         self.target_page = target_page
         self.target_index = target_index
+
+    @property
+    def divider(self):
+        return self.row.divider
 
     def x_distance_to(self, x):
         left_padding = TableOfContentsButton.SIZE+1+TableOfContentsRow.BORDER
@@ -4694,10 +4738,11 @@ class RliterateDataObject(wx.CustomDataObject):
 
     def get_json(self):
         return json.loads(self.GetData())
-class Divider(VerticalPanel):
+class Divider(VerticalPanel, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, padding=0, height=1):
+    def __init__(self, parent, padding=0, height=1, **kwargs):
         VerticalPanel.__init__(self, parent, size=(-1, height+2*padding))
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
         self.line = wx.Panel(self, size=(-1, height))
         self.line.SetBackgroundColour((255, 100, 0))
         self.line.Hide()
@@ -4712,6 +4757,14 @@ class Divider(VerticalPanel):
             right_click=lambda event:
                 SimpleContextMenu.ShowRecursive(self)
         )
+
+    def _create_gui(self):
+        if "row" in self.values:
+            self.values["row"].divider = self
+
+    def _update_gui(self):
+        if "row" in self.values:
+            self.values["row"].divider = self
 
     def Show(self, left_space=0):
         with flicker_free_drawing(self):
