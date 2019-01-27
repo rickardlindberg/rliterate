@@ -383,20 +383,20 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
     def _update_gui(self):
         self._child_root(self._root_widget)
 
-    def _child_root(self, parent, first=False):
+    def _child_root(self, parent, loopvar=None, first=False):
         parent.reset()
         handlers = []
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
         parent.add_space(self._indentation_size())
-        self._child1(parent)
-        self._child2(parent)
+        self._child1(parent, loopvar)
+        self._child2(parent, loopvar)
         handlers.append(('click', lambda event: self._on_click_old(event)))
         handlers.append(('right_click', lambda event: self._on_right_click_old(event)))
         handlers.append(('drag', lambda event: self._on_drag_old(event)))
         if first:
             parent.listen(handlers)
 
-    def _child1(self, parent):
+    def _child1(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -409,7 +409,7 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         parent = parent.add(TableOfContentsButton, properties, handlers, sizer)
         parent.reset()
 
-    def _child2(self, parent):
+    def _child2(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -456,7 +456,7 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
     def _update_gui(self):
         self._child_root(self._root_widget)
 
-    def _child_root(self, parent, first=False):
+    def _child_root(self, parent, loopvar=None, first=False):
         parent.reset()
         handlers = []
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -485,16 +485,16 @@ class TitleGui(GuiFrameworkPanel):
     def _update_gui(self):
         self._child_root(self._root_widget)
 
-    def _child_root(self, parent, first=False):
+    def _child_root(self, parent, loopvar=None, first=False):
         parent.reset()
         handlers = []
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._child1(parent)
+        self._child1(parent, loopvar)
         handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
         if first:
             parent.listen(handlers)
 
-    def _child1(self, parent):
+    def _child1(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -592,15 +592,15 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
     def _update_gui(self):
         self._child_root(self._root_widget)
 
-    def _child_root(self, parent, first=False):
+    def _child_root(self, parent, loopvar=None, first=False):
         parent.reset()
         handlers = []
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._child1(parent)
+        self._child1(parent, loopvar)
         if first:
             parent.listen(handlers)
 
-    def _child1(self, parent):
+    def _child1(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}

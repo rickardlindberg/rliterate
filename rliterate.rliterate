@@ -16042,7 +16042,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ':' name:y ws ')'\n      ws '{' child*:zs ws '}' ",
+"text":"-> [\"child\" x y zs []]\n    | for ws '(' expr:x ws ')'\n      ws '{' child*:zs ws '}' ",
 "type":"code"
 },
 {
@@ -16050,7 +16050,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"loop\" x y ~zs]\n  binding =\n    | '[' name:x ']' ",
+"text":"-> [\"loop\" x ~zs]\n  binding =\n    | '[' name:x ']' ",
 "type":"code"
 },
 {
@@ -16371,7 +16371,7 @@
 "type":"variable"
 },
 {
-"text":"(self)\\n\"\n      \"self._child_root(self._root_widget, first=True)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"self._child_root(self._root_widget)\\n\"\n    <\n    \"\\ndef _child_root(self, parent, first=False):\\n\" >\n      \"parent.reset()\\n\"\n      \"handlers = []\\n\"\n      #child\n      \"if first:\\n\" >\n        \"parent.listen(handlers)\\n\"\n      <\n    <\n    #methods\n    y\n  <\n}\n",
+"text":"(self)\\n\"\n      \"self._child_root(self._root_widget, first=True)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"self._child_root(self._root_widget)\\n\"\n    <\n    \"\\ndef _child_root(self, parent, loopvar=None, first=False):\\n\" >\n      \"parent.reset()\\n\"\n      \"handlers = []\\n\"\n      #child\n      \"if first:\\n\" >\n        \"parent.listen(handlers)\\n\"\n      <\n    <\n    #methods\n    y\n  <\n}\n",
 "type":"code"
 }
 ],
@@ -16394,7 +16394,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @child {\n    \"self.\" %child \"(parent)\\n\"\n  }\n  @methods {\n    \"\\ndef \" %child \"(self, parent):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizer = {\\\"flag\\\": 0, \\\"border\\\": 0, \\\"proportion\\\": 0}\\n\"\n      #child\n    <\n    zs\n    @child {\n      \"parent = parent.add(\" x \", properties, handlers, sizer)\\n\"\n      \"parent.reset()\\n\"\n      y\n    }\n    #methods\n    ws\n  }\n}\n",
+"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @child {\n    \"self.\" %child \"(parent, loopvar)\\n\"\n  }\n  @methods {\n    \"\\ndef \" %child \"(self, parent, loopvar):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizer = {\\\"flag\\\": 0, \\\"border\\\": 0, \\\"proportion\\\": 0}\\n\"\n      #child\n    <\n    zs\n    @child {\n      \"parent = parent.add(\" x \", properties, handlers, sizer)\\n\"\n      \"parent.reset()\\n\"\n      y\n    }\n    #methods\n    ws\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16417,7 +16417,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"loop\" ast:x .:y ast*:zs] -> {\n  @child {\n    \"parent.loop_start()\\n\"\n    \"for \" y \" in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @child {\n    <\n    \"parent.loop_end()\\n\"\n  }\n}\n",
+"text":"| [\"loop\" ast:x ast*:zs] -> {\n  @child {\n    \"parent.loop_start()\\n\"\n    \"for loopvar in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @child {\n    <\n    \"parent.loop_end()\\n\"\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -17160,7 +17160,7 @@
 ],
 "fragments":[
 {
-"text":"panel Example %vbox {\n    #x\n    #y\n    Button(label=str([\"top\" self.x]) @click=new_number())\n    for (list(range(self.x)) : x) {\n        Button(label=str([self.x self]))\n    }\n    for (list(range(self.y)) : y) {\n        Button(label=str([self.y self]))\n    }\n    Button(label=\"bottom\" @click=reset())\n}\n",
+"text":"panel Example %vbox {\n    #x\n    #y\n    Button(label=str([\"top\" self.x]) @click=new_number())\n    for (list(range(self.x))) {\n        Button(label=str([self.x loopvar]))\n    }\n    for (list(range(self.y))) {\n        Button(label=str([self.y loopvar]))\n    }\n    Button(label=\"bottom\" @click=reset())\n}\n",
 "type":"code"
 }
 ],
