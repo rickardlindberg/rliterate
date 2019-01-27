@@ -8302,49 +8302,6 @@
 "title":"Toolbar"
 },
 {
-"children":[],
-"id":"53cd8500e2714415b67bb86a14956a23",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"As soon as something changes in the project, many widgets are re-rendered. Instead of passing information of what changed, the widgets are just notified that something changed. It is up to the widgets to \"figure out\" what has changed and find an optimal way to redraw itself.",
-"type":"text"
-}
-],
-"id":"2a0caf7b69bb4e73806a44d43dba2c27",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"The ",
-"type":"text"
-},
-{
-"text":"_render",
-"type":"code"
-},
-{
-"text":" method sets up things one time. The ",
-"type":"text"
-},
-{
-"text":"_re_render",
-"type":"code"
-},
-{
-"text":" method then figures out the optimal way to change itself.",
-"type":"text"
-}
-],
-"id":"519e9c8a5dc44bce9188ce2c507ae3f3",
-"type":"text"
-}
-],
-"title":"Rendering strategy"
-},
-{
 "children":[
 {
 "children":[],
@@ -15309,6 +15266,49 @@
 },
 {
 "children":[
+{
+"children":[],
+"id":"53cd8500e2714415b67bb86a14956a23",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"As soon as something changes in the project, many widgets are re-rendered. Instead of passing information of what changed, the widgets are just notified that something changed. It is up to the widgets to \"figure out\" what has changed and find an optimal way to redraw itself.",
+"type":"text"
+}
+],
+"id":"2a0caf7b69bb4e73806a44d43dba2c27",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"The ",
+"type":"text"
+},
+{
+"text":"_render",
+"type":"code"
+},
+{
+"text":" method sets up things one time. The ",
+"type":"text"
+},
+{
+"text":"_re_render",
+"type":"code"
+},
+{
+"text":" method then figures out the optimal way to change itself.",
+"type":"text"
+}
+],
+"id":"519e9c8a5dc44bce9188ce2c507ae3f3",
+"type":"text"
+}
+],
+"title":"Rendering strategy"
+},
 {
 "children":[],
 "id":"066d3042279b4bbbbb0a0de743307709",
