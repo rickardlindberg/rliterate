@@ -9499,15 +9499,15 @@
 "type":"chunk"
 },
 {
-"text":"    self.space = self.",
+"text":"    WorkspaceGui.",
 "type":"code"
 },
 {
-"id":"31a17b208536469099ae5c084d35590d",
+"id":"887acc7e530b4d98933d11e223d58c42",
 "type":"variable"
 },
 {
-"text":"()\n    self.columns = []\n",
+"text":"(self)\n",
 "type":"code"
 }
 ],
@@ -9533,7 +9533,15 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    if self.project.active_editor is not None:\n        return\n    self.SetBackgroundColour(self.project.theme.workspace_background)\n    self._update_space()\n    self._update_columns()\n",
+"text":"(self):\n    if self.project.active_editor is not None:\n        return\n    WorkspaceGui.",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self)\n",
 "type":"code"
 }
 ],
@@ -9551,92 +9559,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef project(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"]\n",
-"type":"code"
-}
-],
-"id":"cbc584ec3fc74bb39edb7c7bb38d2573",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Workspace"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef selection(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"]\n",
-"type":"code"
-}
-],
-"id":"06e8bef362c84b26b833c5fa4af23e25",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Workspace"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _update_space(self):\n    self.space.SetSize(self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"76b9d362e0714c1da27953dd46e8ef0b",
-"type":"variable"
-},
-{
-"text":")\n",
-"type":"code"
-}
-],
-"id":"c5feeb2e593e4b199fd62a793989c0b7",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Workspace"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _update_columns(self):\n    self.column_count_changed = False\n    for index, page_ids in enumerate(self.project.columns):\n        self._add_column(page_ids, index)\n    while len(self.columns) > len(self.project.columns):\n        self.columns.pop(-1).Destroy()\n        self.column_count_changed = True\n    if self.project.columns and (self.column_count_changed or self.columns[index].",
+"text":"# When to call\n#    if self.project.columns and (self.column_count_changed or self.columns[index].",
 "type":"code"
 },
 {
@@ -9644,31 +9567,7 @@
 "type":"variable"
 },
 {
-"text":"(\"page_ids\")):\n        wx.CallAfter(self.ScrollToEnd)\n\ndef _add_column(self, page_ids, index):\n    if index < len(self.columns):\n        self.columns[index].",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n            project=self.project,\n            index=index,\n            page_ids=page_ids,\n            selection=self.selection.get(index)\n        )\n    else:\n        self.columns.append(self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            ",
-"type":"code"
-},
-{
-"id":"a886e97ceb3d427c8190487d23d12bc1",
-"type":"variable"
-},
-{
-"text":"(\n                self,\n                project=self.project,\n                index=index,\n                page_ids=page_ids,\n                selection=self.selection.get(index)\n            ),\n            flag=wx.EXPAND\n        ))\n        self.column_count_changed = True\n    return self.columns[index]\n",
+"text":"(\"page_ids\")):\n#        wx.CallAfter(self.ScrollToEnd)\n",
 "type":"code"
 }
 ],
@@ -9879,7 +9778,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self.columns,\n        lambda column: column.",
+"text":"(\n        [x.widget for x in self._root_widget.children[1]],\n        lambda column: column.",
 "type":"code"
 },
 {
@@ -9912,6 +9811,84 @@
 },
 {
 "chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"hscroll ",
+"type":"code"
+},
+{
+"id":"f9f8c0bf50b24d2e8e09b0004573494f",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #project\n    #selection\n    #background = self.project.theme.workspace_background\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_columns()) {\n        Column(\n            project   = self.project\n            index     = loopvar.index\n            page_ids  = loopvar.page_ids\n            selection = self.selection.get(loopvar.index)\n            %expand\n        )\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"403eefa14804492db4ff3ce4a927c911",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Workspace"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_columns(self):\n    return [\n        WorkspaceColumn(index=index, page_ids=page_ids)\n        for index, page_ids in enumerate(self.project.columns)\n    ]\n",
+"type":"code"
+}
+],
+"id":"7773e4214e684028a83995b635a62789",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"66ac3230cd674a0b9218fee28b51be5d",
+"type":"variable"
+},
+{
+"text":" = namedtuple(\"",
+"type":"code"
+},
+{
+"id":"66ac3230cd674a0b9218fee28b51be5d",
+"type":"variable"
+},
+{
+"text":"\", [\"index\", \"page_ids\"])\n",
+"type":"code"
+}
+],
+"id":"83129a669f504688ab753af579cd0654",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
 "classes"
 ],
 "filepath":[
@@ -9923,35 +9900,11 @@
 "type":"code"
 },
 {
-"id":"8d2b6dc31cdb4b2dba29488fa3263c53",
+"id":"f9f8c0bf50b24d2e8e09b0004573494f",
 "type":"variable"
 },
 {
-"text":", ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, **kwargs):\n        ",
-"type":"code"
-},
-{
-"id":"8d2b6dc31cdb4b2dba29488fa3263c53",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, style=wx.HSCROLL)\n        ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":".__init__(self, **kwargs)\n\n",
+"text":"):\n\n",
 "type":"code"
 },
 {
@@ -9965,6 +9918,7 @@
 ],
 "id":"a9f5b20c21c244d583d9b4f808ac8753",
 "language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -10288,7 +10242,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        self._containers,\n        lambda container: container.",
+"text":"(\n        [x.widget for x in self._root_widget.children[1]],\n        lambda container: container.",
 "type":"code"
 },
 {
@@ -10301,6 +10255,8 @@
 }
 ],
 "id":"625fe6ac645e438cb2f1795e54bcc63c",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -20133,6 +20089,7 @@
 "5eed749a876348189a57700a970644fc":"TableOfContentsRowGui",
 "60c633345528443da9cc98eedc41685e":"replace_child_at_index",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
+"66ac3230cd674a0b9218fee28b51be5d":"WorkspaceColumn",
 "67ebf8be121a46768936eec41e336f11":"language",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
 "6a754b8a39e24518b76e88d57a89eff6":"container_border",
@@ -20274,6 +20231,7 @@
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
 "f88683cb708944e3bf47d9f8077840b0":"insert_child_at_index",
 "f9605031f42b4c37a170779d7ee7fe6e":"UpdateTokens",
+"f9f8c0bf50b24d2e8e09b0004573494f":"WorkspaceGui",
 "fa5caec06ed84470a3797f18af6cde3a":"modify_fn",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
 "fc1f325e626046aead62192c2c25413f":"NewDivider",

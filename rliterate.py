@@ -557,6 +557,52 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
     @property
     def page(self):
         return self.values["page"]
+class WorkspaceGui(GuiFrameworkHScroll):
+
+    def _get_derived(self):
+        return {
+            'background': self.project.theme.workspace_background,
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        parent.add_space(self.project.theme.page_padding)
+        parent.loop_start()
+        for loopvar in self._get_columns():
+            pass
+            self._child1(parent, loopvar)
+        parent.loop_end()
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['index'] = loopvar.index
+        properties['page_ids'] = loopvar.page_ids
+        properties['selection'] = self.selection.get(loopvar.index)
+        sizer["flag"] |= wx.EXPAND
+        parent = parent.add(Column, properties, handlers, sizer)
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 class ColumnGui(GuiFrameworkVScroll):
 
     def _get_derived(self):
@@ -3596,65 +3642,28 @@ class PageContextMenu(wx.Menu):
             lambda event: self.page.delete(),
             delete_item
         )
-class Workspace(HorizontalScrolledWindow, GuiFrameworkBaseMixin):
+WorkspaceColumn = namedtuple("WorkspaceColumn", ["index", "page_ids"])
+class Workspace(WorkspaceGui):
 
-    def __init__(self, parent, **kwargs):
-        HorizontalScrolledWindow.__init__(self, parent, style=wx.HSCROLL)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
-
+    def _get_columns(self):
+        return [
+            WorkspaceColumn(index=index, page_ids=page_ids)
+            for index, page_ids in enumerate(self.project.columns)
+        ]
     def _create_gui(self):
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
-        self.space = self.AppendSpace()
-        self.columns = []
+        WorkspaceGui._create_gui(self)
     @rltime("update workspace")
     def _update_gui(self):
         if self.project.active_editor is not None:
             return
-        self.SetBackgroundColour(self.project.theme.workspace_background)
-        self._update_space()
-        self._update_columns()
-    @property
-    def project(self):
-        return self.values["project"]
-    @property
-    def selection(self):
-        return self.values["selection"]
-    def _update_space(self):
-        self.space.SetSize(self.project.theme.page_padding)
-    def _update_columns(self):
-        self.column_count_changed = False
-        for index, page_ids in enumerate(self.project.columns):
-            self._add_column(page_ids, index)
-        while len(self.columns) > len(self.project.columns):
-            self.columns.pop(-1).Destroy()
-            self.column_count_changed = True
-        if self.project.columns and (self.column_count_changed or self.columns[index].did_change("page_ids")):
-            wx.CallAfter(self.ScrollToEnd)
-
-    def _add_column(self, page_ids, index):
-        if index < len(self.columns):
-            self.columns[index].UpdateGui(
-                project=self.project,
-                index=index,
-                page_ids=page_ids,
-                selection=self.selection.get(index)
-            )
-        else:
-            self.columns.append(self.AppendChild(
-                Column(
-                    self,
-                    project=self.project,
-                    index=index,
-                    page_ids=page_ids,
-                    selection=self.selection.get(index)
-                ),
-                flag=wx.EXPAND
-            ))
-            self.column_count_changed = True
-        return self.columns[index]
+        WorkspaceGui._update_gui(self)
+    # When to call
+    #    if self.project.columns and (self.column_count_changed or self.columns[index].did_change("page_ids")):
+    #        wx.CallAfter(self.ScrollToEnd)
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            self.columns,
+            [x.widget for x in self._root_widget.children[1]],
             lambda column: column.FindClosestDropPoint(screen_pos)
         )
 class WorkspaceDropTarget(DropPointDropTarget):
@@ -3716,7 +3725,7 @@ class Column(ColumnGui):
         )
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
-            self._containers,
+            [x.widget for x in self._root_widget.children[1]],
             lambda container: container.FindClosestDropPoint(screen_pos)
         )
 ColumnRow = namedtuple("ColumnRow", ["page", "index"])
