@@ -16417,7 +16417,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"loop\" ast:x .:y ast*:zs] -> {\n  @create {\n    \"for \" y \" in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  @update {\n    \"for \" y \" in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @create {\n    <\n  }\n  @update {\n    <\n  }\n}\n",
+"text":"| [\"loop\" ast:x .:y ast*:zs] -> {\n  @create {\n    \"parent.loop_start()\\n\"\n    \"for \" y \" in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  @update {\n    \"parent.loop_start()\\n\"\n    \"for \" y \" in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @create {\n    <\n    \"parent.loop_end()\\n\"\n  }\n  @update {\n    <\n    \"parent.loop_end()\\n\"\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16844,7 +16844,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.index = 0\n\n    @property\n    def current_child(self):\n        return self.children[self.index]\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, **kwargs):\n        widget = widget_cls(self.widget, **properties)\n        self.sizer.Add(widget, **kwargs)\n        widget_info = ",
+"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.index = 0\n\n    def loop_start(self):\n        pass\n\n    def loop_end(self):\n        pass\n\n    @property\n    def current_child(self):\n        return self.children[self.index]\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, **kwargs):\n        widget = widget_cls(self.widget, **properties)\n        self.sizer.Add(widget, **kwargs)\n        widget_info = ",
 "type":"code"
 },
 {

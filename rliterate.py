@@ -215,6 +215,12 @@ class GuiFrameworkWidgetInfo(object):
         self.children = []
         self.index = 0
 
+    def loop_start(self):
+        pass
+
+    def loop_end(self):
+        pass
+
     @property
     def current_child(self):
         return self.children[self.index]
