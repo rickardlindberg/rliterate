@@ -9436,38 +9436,130 @@
 {
 "children":[
 {
-"children":[
-{
 "children":[],
-"id":"3f0fc44a9eba4a5cbcae5da3ee5d8925",
+"id":"e2de7fc557e542a7ac8fde91b7651736",
 "paragraphs":[
 {
 "fragments":[
 {
-"text":"Rendering a workspace means laying out a set of ",
-"type":"text"
-},
-{
-"page_id":"b5ccbbfc0b6445a3a19a5c3dc39daa81",
-"text":"column",
-"type":"reference"
-},
-{
-"text":" widgets horizontally. Columns are filled with page containers. It uses ",
-"type":"text"
-},
-{
-"page_id":"53cd8500e2714415b67bb86a14956a23",
-"text":null,
-"type":"reference"
-},
-{
-"text":".",
+"text":"The workspace widget renders column widgets horizontally. It can be scrolled left and right if more columns are shown than can fit on the screen.",
 "type":"text"
 }
 ],
-"id":"246a23a170164f1c91e73f877b824930",
+"id":"6a9ac9606ee5499694f3236ccabf1127",
 "type":"text"
+},
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"hscroll ",
+"type":"code"
+},
+{
+"id":"f9f8c0bf50b24d2e8e09b0004573494f",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #project\n    #selection\n    #background = self.project.theme.workspace_background\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_columns()) {\n        Column[columns](\n            project   = self.project\n            index     = loopvar.index\n            page_ids  = loopvar.page_ids\n            selection = self.selection.get(loopvar.index)\n            %expand\n        )\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"403eefa14804492db4ff3ce4a927c911",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class Workspace(",
+"type":"code"
+},
+{
+"id":"f9f8c0bf50b24d2e8e09b0004573494f",
+"type":"variable"
+},
+{
+"text":"):\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"Workspace"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"a9f5b20c21c244d583d9b4f808ac8753",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Workspace"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_columns(self):\n    return [\n        WorkspaceColumn(*x)\n        for x in enumerate(self.project.columns)\n    ]\n",
+"type":"code"
+}
+],
+"id":"7773e4214e684028a83995b635a62789",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"66ac3230cd674a0b9218fee28b51be5d",
+"type":"variable"
+},
+{
+"text":" = namedtuple(\"",
+"type":"code"
+},
+{
+"id":"66ac3230cd674a0b9218fee28b51be5d",
+"type":"variable"
+},
+{
+"text":"\", [\"index\", \"page_ids\"])\n",
+"type":"code"
+}
+],
+"id":"83129a669f504688ab753af579cd0654",
+"language":"",
+"post_process":[],
+"type":"code"
 },
 {
 "chunkpath":[
@@ -9550,108 +9642,9 @@
 "type":"code"
 },
 {
-"chunkpath":[
-"classes",
-"Workspace"
-],
-"filepath":[
-"rliterate.py"
-],
 "fragments":[
 {
-"text":"# When to call\n#    if self.project.columns and (self.column_count_changed or self.columns[index].",
-"type":"code"
-},
-{
-"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
-"type":"variable"
-},
-{
-"text":"(\"page_ids\")):\n#        wx.CallAfter(self.ScrollToEnd)\n",
-"type":"code"
-}
-],
-"id":"df673e4bd65749648e19ffdebec90f41",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"CallAfter",
-"type":"code"
-},
-{
-"text":" is needed becasue the layout is not \"ready\" at this point, and sizer reports size (0, 0), so ",
-"type":"text"
-},
-{
-"text":"ScrollToEnd",
-"type":"code"
-},
-{
-"text":" does not work.",
-"type":"text"
-}
-],
-"id":"3072a65bad8c4b9eb59ea3f1d05bb6fc",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"On removing widgets ",
-"type":"text"
-},
-{
-"text":"Removing a widget from its wxPython parent",
-"type":"link",
-"url":"https://stackoverflow.com/a/41064558"
-},
-{
-"text":":",
-"type":"text"
-}
-],
-"id":"859451cd2a664a1698affbc6ea11fa46",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"Widgets will remove themselves from the sizer when they are destroyed, so yes, it is redundant. Also, widgets will remove themselves from the parent's child list, so calling ",
-"type":"text"
-},
-{
-"text":"RemoveChild",
-"type":"code"
-},
-{
-"text":" is also redundant. IOW, the call to ",
-"type":"text"
-},
-{
-"text":"window.Destroy()",
-"type":"code"
-},
-{
-"text":" will be sufficient to remove the widget and its resources, and to do the necessary clean-ups in the parent and the sizer.",
-"type":"text"
-}
-],
-"id":"c881d2542f834261b1060e001e991f85",
-"type":"quote"
-}
-],
-"title":"Rendering"
-},
-{
-"children":[],
-"id":"e056bc29d02647a0a67d03693ddc4c7d",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"Inside a workspace, paragraphs can be dragged and dropped. The drag is handled in the paragraph widget, but the drop is handled in the workspace widget.",
+"text":"Inside a workspace, paragraphs can be dragged and dropped. The drag is handled in the paragraph widgets, but the drop is handled in the workspace widget.",
 "type":"text"
 }
 ],
@@ -9778,7 +9771,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        [x.widget for x in self._root_widget.children[1]],\n        lambda column: column.",
+"text":"(\n        self.columns,\n        lambda column: column.",
 "type":"code"
 },
 {
@@ -9791,138 +9784,12 @@
 }
 ],
 "id":"9c426c9c3e10484ba02da8bf2b2ff94d",
-"type":"code"
-}
-],
-"title":"Dropping paragraphs"
-}
-],
-"id":"e2de7fc557e542a7ac8fde91b7651736",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"The main workspace widget renders column widgets horizontally. It can be scrolled left and right if more columns are shown than can fit on the screen. It re-renderes when the project changes.",
-"type":"text"
-}
-],
-"id":"6a9ac9606ee5499694f3236ccabf1127",
-"type":"text"
-},
-{
-"chunkpath":[
-"base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"hscroll ",
-"type":"code"
-},
-{
-"id":"f9f8c0bf50b24d2e8e09b0004573494f",
-"type":"variable"
-},
-{
-"text":" %hbox {\n    #project\n    #selection\n    #background = self.project.theme.workspace_background\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_columns()) {\n        Column(\n            project   = self.project\n            index     = loopvar.index\n            page_ids  = loopvar.page_ids\n            selection = self.selection.get(loopvar.index)\n            %expand\n        )\n    }\n}\n",
-"type":"code"
-}
-],
-"id":"403eefa14804492db4ff3ce4a927c911",
-"language":"rlgui",
-"post_process":[
-"python",
-"rlgui.py"
-],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Workspace"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _get_columns(self):\n    return [\n        WorkspaceColumn(index=index, page_ids=page_ids)\n        for index, page_ids in enumerate(self.project.columns)\n    ]\n",
-"type":"code"
-}
-],
-"id":"7773e4214e684028a83995b635a62789",
-"language":"",
-"post_process":[],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"id":"66ac3230cd674a0b9218fee28b51be5d",
-"type":"variable"
-},
-{
-"text":" = namedtuple(\"",
-"type":"code"
-},
-{
-"id":"66ac3230cd674a0b9218fee28b51be5d",
-"type":"variable"
-},
-{
-"text":"\", [\"index\", \"page_ids\"])\n",
-"type":"code"
-}
-],
-"id":"83129a669f504688ab753af579cd0654",
-"language":"",
-"post_process":[],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class Workspace(",
-"type":"code"
-},
-{
-"id":"f9f8c0bf50b24d2e8e09b0004573494f",
-"type":"variable"
-},
-{
-"text":"):\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"Workspace"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"a9f5b20c21c244d583d9b4f808ac8753",
 "language":"",
 "post_process":[],
 "type":"code"
 }
 ],
-"title":"Main widget"
+"title":"Workspace widget"
 },
 {
 "children":[],
@@ -9974,11 +9841,6 @@
 "rlgui.py"
 ],
 "type":"code"
-},
-{
-"code_id":"b542a6172c4b442dbbd3aee777c3eab9",
-"id":"c2be93658aad47928674dc045f482549",
-"type":"expanded_code"
 },
 {
 "chunkpath":[
@@ -18370,6 +18232,112 @@
 }
 ],
 "title":"Debugging focus problems"
+},
+{
+"children":[],
+"id":"9703370a97cd4c6bb484ef1136f9ca70",
+"paragraphs":[
+{
+"chunkpath":[
+"classes",
+"Workspace"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"# When to call\n#    if self.project.columns and (self.column_count_changed or self.columns[index].",
+"type":"code"
+},
+{
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
+"type":"variable"
+},
+{
+"text":"(\"page_ids\")):\n#        wx.CallAfter(self.ScrollToEnd)\n",
+"type":"code"
+}
+],
+"id":"df673e4bd65749648e19ffdebec90f41",
+"type":"code"
+},
+{
+"fragments":[
+{
+"text":"CallAfter",
+"type":"code"
+},
+{
+"text":" is needed becasue the layout is not \"ready\" at this point, and sizer reports size (0, 0), so ",
+"type":"text"
+},
+{
+"text":"ScrollToEnd",
+"type":"code"
+},
+{
+"text":" does not work.",
+"type":"text"
+}
+],
+"id":"3072a65bad8c4b9eb59ea3f1d05bb6fc",
+"type":"text"
+}
+],
+"title":"Call after on scrolling containers"
+},
+{
+"children":[],
+"id":"476d11bd6b12477ba1f09e5fcdde4456",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"On removing widgets ",
+"type":"text"
+},
+{
+"text":"Removing a widget from its wxPython parent",
+"type":"link",
+"url":"https://stackoverflow.com/a/41064558"
+},
+{
+"text":":",
+"type":"text"
+}
+],
+"id":"859451cd2a664a1698affbc6ea11fa46",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"Widgets will remove themselves from the sizer when they are destroyed, so yes, it is redundant. Also, widgets will remove themselves from the parent's child list, so calling ",
+"type":"text"
+},
+{
+"text":"RemoveChild",
+"type":"code"
+},
+{
+"text":" is also redundant. IOW, the call to ",
+"type":"text"
+},
+{
+"text":"window.Destroy()",
+"type":"code"
+},
+{
+"text":" will be sufficient to remove the widget and its resources, and to do the necessary clean-ups in the parent and the sizer.",
+"type":"text"
+}
+],
+"id":"c881d2542f834261b1060e001e991f85",
+"type":"quote"
+}
+],
+"title":"On removing widgets"
 }
 ],
 "id":"a6dbde4ee7ec4f5a9ac4f83bff4fa48f",

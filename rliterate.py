@@ -612,6 +612,10 @@ class WorkspaceGui(GuiFrameworkHScroll):
         properties['selection'] = self.selection.get(loopvar.index)
         sizer["flag"] |= wx.EXPAND
         widget = parent.add(Column, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('columns', widget.widget)
+        else:
+            self.columns = widget.widget
         parent = widget
         parent.reset()
 
@@ -3674,13 +3678,12 @@ class PageContextMenu(wx.Menu):
             lambda event: self.page.delete(),
             delete_item
         )
-WorkspaceColumn = namedtuple("WorkspaceColumn", ["index", "page_ids"])
 class Workspace(WorkspaceGui):
 
     def _get_columns(self):
         return [
-            WorkspaceColumn(index=index, page_ids=page_ids)
-            for index, page_ids in enumerate(self.project.columns)
+            WorkspaceColumn(*x)
+            for x in enumerate(self.project.columns)
         ]
     def _create_gui(self):
         self.SetDropTarget(WorkspaceDropTarget(self, self.project))
@@ -3690,14 +3693,15 @@ class Workspace(WorkspaceGui):
         if self.project.active_editor is not None:
             return
         WorkspaceGui._update_gui(self)
+    def FindClosestDropPoint(self, screen_pos):
+        return find_first(
+            self.columns,
+            lambda column: column.FindClosestDropPoint(screen_pos)
+        )
     # When to call
     #    if self.project.columns and (self.column_count_changed or self.columns[index].did_change("page_ids")):
     #        wx.CallAfter(self.ScrollToEnd)
-    def FindClosestDropPoint(self, screen_pos):
-        return find_first(
-            [x.widget for x in self._root_widget.children[1]],
-            lambda column: column.FindClosestDropPoint(screen_pos)
-        )
+WorkspaceColumn = namedtuple("WorkspaceColumn", ["index", "page_ids"])
 class WorkspaceDropTarget(DropPointDropTarget):
 
     def __init__(self, workspace, project):
