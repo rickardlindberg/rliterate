@@ -16371,7 +16371,7 @@
 "type":"variable"
 },
 {
-"text":"(self)\\n\"\n      \"handlers = []\\n\"\n      #create\n      \"parent.listen(handlers)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"parent = self._root_widget\\n\"\n      \"parent.index = 0\\n\"\n      #update\n    <\n    #methods\n    y\n  <\n}\n",
+"text":"(self)\\n\"\n      \"handlers = []\\n\"\n      #create\n      \"parent.listen(handlers)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"parent = self._root_widget\\n\"\n      \"parent.reset()\\n\"\n      #update\n    <\n    #methods\n    y\n  <\n}\n",
 "type":"code"
 }
 ],
@@ -16394,7 +16394,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @create {\n    \"self._create\" %child \"(parent)\\n\"\n  }\n  @update {\n    \"self._update\" %child \"(parent)\\n\"\n    \"parent.index += 1\\n\"\n  }\n  @methods {\n    \"\\ndef _create\" %child \"(self, parent):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizerFlag = 0\\n\"\n      \"sizerBorder = 0\\n\"\n      \"sizerProportion = 0\\n\"\n      #create\n    <\n    \"\\ndef _update\" %child \"(self, parent):\\n\" >\n      \"properties = {}\\n\"\n      #update\n    <\n    zs\n    @create {\n      \"parent = parent.add(\" x \", properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)\\n\"\n      y\n    }\n    @update {\n      \"parent.current_child.widget.UpdateGui(**properties)\\n\"\n      \"parent = parent.current_child\\n\"\n      \"parent.index = 0\\n\"\n    }\n    #methods\n    ws\n  }\n}\n",
+"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @create {\n    \"self._create\" %child \"(parent)\\n\"\n  }\n  @update {\n    \"self._update\" %child \"(parent)\\n\"\n  }\n  @methods {\n    \"\\ndef _create\" %child \"(self, parent):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizerFlag = 0\\n\"\n      \"sizerBorder = 0\\n\"\n      \"sizerProportion = 0\\n\"\n      #create\n    <\n    \"\\ndef _update\" %child \"(self, parent):\\n\" >\n      \"properties = {}\\n\"\n      #update\n    <\n    zs\n    @create {\n      \"parent = parent.add(\" x \", properties, handlers, flag=sizerFlag, border=sizerBorder, proportion=sizerProportion)\\n\"\n      y\n    }\n    @update {\n      \"parent = parent.update_current_child(**properties)\\n\"\n      \"parent.reset()\\n\"\n    }\n    #methods\n    ws\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16844,7 +16844,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.index = 0\n\n    def loop_start(self):\n        pass\n\n    def loop_end(self):\n        pass\n\n    @property\n    def current_child(self):\n        return self.children[self.index]\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, **kwargs):\n        widget = widget_cls(self.widget, **properties)\n        self.sizer.Add(widget, **kwargs)\n        widget_info = ",
+"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.reset()\n\n    def reset(self):\n        self.index = 0\n\n    def loop_start(self):\n        pass\n\n    def loop_end(self):\n        pass\n\n    def update_current_child(self, **kwargs):\n        x = self.children[self.index]\n        x.widget.UpdateGui(**kwargs)\n        self.index += 1\n        return x\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, **kwargs):\n        widget = widget_cls(self.widget, **properties)\n        self.sizer.Add(widget, **kwargs)\n        widget_info = ",
 "type":"code"
 },
 {
@@ -16852,7 +16852,7 @@
 "type":"variable"
 },
 {
-"text":"(widget)\n        widget_info.listen(handlers)\n        self.children.append(widget_info)\n        return widget_info\n\n    def listen(self, event_handlers):\n        for event_handler in event_handlers:\n            self.widget.listen(*event_handler)\n",
+"text":"(widget)\n        widget_info.listen(handlers)\n        self.children.append(widget_info)\n        self.index += 1\n        return widget_info\n\n    def listen(self, event_handlers):\n        for event_handler in event_handlers:\n            self.widget.listen(*event_handler)\n",
 "type":"code"
 }
 ],
@@ -17160,7 +17160,7 @@
 ],
 "fragments":[
 {
-"text":"panel Example %vbox {\n    Button(label=\"top\")\n    for (expression() : row) {\n        Button(label=str(row))\n    }\n    Button(label=\"bottom\")\n}\n",
+"text":"panel Example %vbox {\n    Button(label=\"top\")\n    for (expression() : x) {\n        Button(label=str(self))\n    }\n    Button(label=\"bottom\")\n}\n",
 "type":"code"
 }
 ],

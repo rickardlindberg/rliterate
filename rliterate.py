@@ -213,6 +213,9 @@ class GuiFrameworkWidgetInfo(object):
     def __init__(self, widget):
         self.widget = widget
         self.children = []
+        self.reset()
+
+    def reset(self):
         self.index = 0
 
     def loop_start(self):
@@ -221,9 +224,11 @@ class GuiFrameworkWidgetInfo(object):
     def loop_end(self):
         pass
 
-    @property
-    def current_child(self):
-        return self.children[self.index]
+    def update_current_child(self, **kwargs):
+        x = self.children[self.index]
+        x.widget.UpdateGui(**kwargs)
+        self.index += 1
+        return x
 
     @property
     def sizer(self):
@@ -239,6 +244,7 @@ class GuiFrameworkWidgetInfo(object):
         widget_info = GuiFrameworkWidgetInfo(widget)
         widget_info.listen(handlers)
         self.children.append(widget_info)
+        self.index += 1
         return widget_info
 
     def listen(self, event_handlers):
@@ -363,12 +369,10 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        parent.index = 0
+        parent.reset()
         self._sizeritem1.SetMinSize(self._get_space_size(parent.widget.Sizer , self._indentation_size()))
         self._update_child2(parent)
-        parent.index += 1
         self._update_child3(parent)
-        parent.index += 1
 
     def _create_child2(self, parent):
         handlers = []
@@ -388,9 +392,8 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         properties = {}
         properties['project'] = self.project
         properties['page'] = self.page
-        parent.current_child.widget.UpdateGui(**properties)
-        parent = parent.current_child
-        parent.index = 0
+        parent = parent.update_current_child(**properties)
+        parent.reset()
 
     def _create_child3(self, parent):
         handlers = []
@@ -415,9 +418,8 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         properties['selection'] = self.selection
         properties['handle_key'] = self._handle_key
         properties['get_characters'] = self._get_characters
-        parent.current_child.widget.UpdateGui(**properties)
-        parent = parent.current_child
-        parent.index = 0
+        parent = parent.update_current_child(**properties)
+        parent.reset()
 
     @property
     def project(self):
@@ -453,7 +455,7 @@ class TableOfContentsButtonGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        parent.index = 0
+        parent.reset()
 
     @property
     def project(self):
@@ -478,9 +480,8 @@ class TitleGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        parent.index = 0
+        parent.reset()
         self._update_child1(parent)
-        parent.index += 1
 
     def _create_child1(self, parent):
         handlers = []
@@ -509,9 +510,8 @@ class TitleGui(GuiFrameworkPanel):
         properties['max_width'] = self.project.theme.page_body_width
         properties['font'] = self._create_font()
         properties['tooltip'] = self.page.full_title
-        parent.current_child.widget.UpdateGui(**properties)
-        parent = parent.current_child
-        parent.index = 0
+        parent = parent.update_current_child(**properties)
+        parent.reset()
 
     @property
     def project(self):
@@ -596,9 +596,8 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
 
     def _update_gui(self):
         parent = self._root_widget
-        parent.index = 0
+        parent.reset()
         self._update_child1(parent)
-        parent.index += 1
 
     def _create_child1(self, parent):
         handlers = []
@@ -626,9 +625,8 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
         properties['font'] = self.font
         properties['tooltip'] = self.tooltip
         properties['focus'] = self.selection.present
-        parent.current_child.widget.UpdateGui(**properties)
-        parent = parent.current_child
-        parent.index = 0
+        parent = parent.update_current_child(**properties)
+        parent.reset()
 
     @property
     def project(self):
