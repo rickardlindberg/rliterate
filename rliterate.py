@@ -211,12 +211,12 @@ class GuiFrameworkWidgetInfo(object):
         self.widget = widget
         self.children = []
         self.reset()
-        self.vars = defaultdict(list)
 
     def reset(self):
         self.sizer_index = 0
         self.child_index = 0
         self.inside_loop = False
+        self.vars = defaultdict(list)
 
     def loop_start(self):
         self.inside_loop = True
@@ -304,6 +304,23 @@ class Button(wx.Button, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, **kwargs):
         wx.Button.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
+class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.BitmapButton.__init__(
+            self,
+            parent,
+            bitmap=wx.ArtProvider.GetBitmap(
+                {
+                    "add": wx.ART_ADD_BOOKMARK,
+                }[kwargs["icon"]],
+                wx.ART_BUTTON,
+                (16, 16)
+            ),
+            style=wx.NO_BORDER
+        )
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
 class BoxSizerMixin(object):
@@ -802,6 +819,135 @@ class PageContainerGui(GuiFrameworkPanel):
         parent = widget
         parent.reset()
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page(self):
+        return self.values["page"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+class PageGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+            'min_size': tuple([self.project.theme.page_body_width, -1]),
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        self._child1(parent, loopvar)
+        self._child2(parent, loopvar)
+        parent.loop_start()
+        for loopvar in self._get_paragraphs():
+            pass
+            self._child3(parent, loopvar)
+            self._child4(parent, loopvar)
+        parent.loop_end(self)
+        self._child5(parent, loopvar)
+        handlers.append(('richt_click', lambda event: SimpleContextMenu.ShowRecursive(slef)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['page'] = self.page
+        properties['selection'] = self.selection.get('title')
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(Title, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child2(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['padding'] = self.divider_padding()
+        properties['height'] = 3
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(Divider, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('top_divider', widget.widget)
+        else:
+            self.top_divider = widget.widget
+        parent = widget
+        parent.reset()
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['page_id'] = self.page.id
+        properties['paragraph'] = loopvar.paragraph
+        properties['selection'] = self.selection.get('paragraph').get(loopvar.paragraph.id)
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(loopvar.widget_cls, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child4(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['padding'] = self.divider_padding()
+        properties['height'] = 3
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(Divider, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('dividers', widget.widget)
+        else:
+            self.dividers = widget.widget
+        parent = widget
+        parent.reset()
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child7(parent, loopvar)
+        self._child9(parent, loopvar)
+
+    def _child7(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    def _child9(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'add'
+        handlers.append(('button', lambda event: self.project.add_paragraph(self.page.id)))
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
 
     @property
     def project(self):
@@ -3905,146 +4051,40 @@ class PageContainer(PageContainerGui):
         return menu
     def FindClosestDropPoint(self, screen_pos):
         return self.page_panel.FindClosestDropPoint(screen_pos)
-class PagePanel(VerticalBasePanel):
+class PagePanel(PageGui):
 
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def page(self):
-        return self.values["page"]
-
-    @property
-    def selection(self):
-        return self.values["selection"]
-    def _create_gui(self):
-        self._create_dynamic_container()
-        self._create_title()
-        self._create_top_divider()
-        self._create_add_button()
-        MouseEventHelper.bind([self], right_click=lambda event:
-            SimpleContextMenu.ShowRecursive(self)
-        )
-
-    def _create_dynamic_container(self):
-        self.dynamic_container = self.AppendChild(
-            VerticalPanel(self),
-            flag=wx.EXPAND
-        )
-        self.paragraph_rows = []
-
-    def _create_title(self):
-        self.title = self.dynamic_container.AppendChild(Title(
-            self.dynamic_container,
-            project=self.project,
-            page=self.page,
-            selection=self.selection.get("title")
-        ), flag=wx.EXPAND)
-
-    def _create_top_divider(self):
-        self.top_divider = self.dynamic_container.AppendChild(
-            self._create_divider(self.dynamic_container),
-            flag=wx.EXPAND
-        )
-
-    def _create_add_button(self):
-        add_button = self.AppendChild(
-            wx.BitmapButton(
-                self,
-                bitmap=wx.ArtProvider.GetBitmap(
-                    wx.ART_ADD_BOOKMARK,
-                    wx.ART_BUTTON,
-                    (16, 16)
-                ),
-                style=wx.NO_BORDER
-            ),
-            flag=wx.ALIGN_RIGHT,
-            border=self.project.theme.paragraph_space
-        )
-        add_button.Bind(wx.EVT_BUTTON, self._on_add_button)
-
-    def _on_add_button(self, event):
-        self.project.add_paragraph(self.page.id)
-
-    def _update_gui(self):
-        self._update_title()
-        self._update_paragraphs()
-        self.MinSize = (
-            self.project.theme.page_body_width,
-            -1
-        )
-
-    def _update_title(self):
-        self.title.UpdateGui(
-            project=self.project,
-            page=self.page,
-            selection=self.selection.get("title")
-        )
-
-    def _update_paragraphs(self):
+    def _get_paragraphs(self):
         self.drop_points = []
-        divider = self.top_divider
+        divider_fn = lambda: self.top_divider
+        paragraphs = []
         index = -1
         for index, paragraph in enumerate(self.page.paragraphs):
             self.drop_points.append(PageDropPoint(
-                divider=divider,
+                divider_fn=divider_fn,
                 target_page=self.page,
                 target_index=index
             ))
-            divider = self._render_paragraph(index, paragraph)
+            divider_fn = (lambda index: lambda: self.dividers[index])(index)
+            paragraphs.append(ParagraphRow(
+                {
+                    "text": Text,
+                    "quote": Quote,
+                    "list": List,
+                    "code": Code,
+                    "image": Image,
+                    "expanded_code": ExpandedCode,
+                    "factory": Factory,
+                }[paragraph.type],
+                paragraph
+            ))
         self.drop_points.append(PageDropPoint(
-            divider=divider,
+            divider_fn=divider_fn,
             target_page=self.page,
             target_index=index+1
         ))
-        while index < len(self.paragraph_rows) - 1:
-            for widget in self.paragraph_rows.pop(-1):
-                widget.Destroy()
-
-    def _render_paragraph(self, index, paragraph):
-        widget_class = {
-            "text": Text,
-            "quote": Quote,
-            "list": List,
-            "code": Code,
-            "image": Image,
-            "expanded_code": ExpandedCode,
-            "factory": Factory,
-        }[paragraph.type]
-        while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:
-            for widget in self.paragraph_rows.pop(index):
-                widget.Destroy()
-        if index < len(self.paragraph_rows):
-            widget, divider = self.paragraph_rows[index]
-            widget.UpdateGui(
-                project=self.project,
-                page_id=self.page.id,
-                paragraph=paragraph,
-                selection=self.selection.get("paragraph").get(paragraph.id)
-            )
-            return divider
-        else:
-            widget = self.dynamic_container.AppendChild(widget_class(
-                self.dynamic_container,
-                project=self.project,
-                page_id=self.page.id,
-                paragraph=paragraph,
-                selection=self.selection.get("paragraph").get(paragraph.id)
-            ), flag=wx.EXPAND)
-            divider = self.dynamic_container.AppendChild(
-                self._create_divider(self.dynamic_container),
-                flag=wx.EXPAND
-            )
-            self.paragraph_rows.append((widget, divider))
-            return divider
-
-    def _create_divider(self, parent):
-        return Divider(
-            parent,
-            padding=(self.project.theme.paragraph_space-3)/2,
-            height=3
-        )
+        return paragraphs
+    def divider_padding(self):
+        return (self.project.theme.paragraph_space-3)/2
     def FindClosestDropPoint(self, screen_pos):
         client_pos = (client_x, client_y) = self.ScreenToClient(screen_pos)
         if self.HitTest(client_pos) == wx.HT_WINDOW_INSIDE:
@@ -4052,21 +4092,22 @@ class PagePanel(VerticalBasePanel):
                 self.drop_points,
                 key=lambda drop_point: drop_point.y_distance_to(client_y)
             )
+ParagraphRow = namedtuple("ParagraphRow", ["widget_cls", "paragraph"])
 class PageDropPoint(object):
 
-    def __init__(self, divider, target_page, target_index):
-        self.divider = divider
+    def __init__(self, divider_fn, target_page, target_index):
+        self.divider_fn = divider_fn
         self.target_page = target_page
         self.target_index = target_index
 
     def y_distance_to(self, y):
-        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)
+        return abs(self.divider_fn().Position.y + self.divider_fn().Size[1]/2 - y)
 
     def Show(self):
-        self.divider.Show()
+        self.divider_fn().Show()
 
     def Hide(self):
-        self.divider.Hide()
+        self.divider_fn().Hide()
 class Title(TitleGui):
 
     def _handle_key(self, event):

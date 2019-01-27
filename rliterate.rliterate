@@ -10277,98 +10277,81 @@
 "title":"Page container widget"
 },
 {
-"children":[
-{
 "children":[],
-"id":"553a9a3715bc4c18b143572352fc922e",
+"id":"eb6360eff66245daa2fe09b04bbbc120",
 "paragraphs":[
 {
 "fragments":[
 {
-"text":"A page has the following widgets laid out vertically:",
+"text":"The page widget renders a title widget, paragraph widgets, and an add button widget vertically.",
 "type":"text"
 }
 ],
-"id":"66726c54ba184b4eb2faebd5f109e33f",
+"id":"dd73d26e23144db58ea875993479c119",
 "type":"text"
 },
 {
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Title",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Divider",
-"type":"text"
-}
-]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Paragraph",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Divider",
-"type":"text"
-}
-]
-}
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
 ],
 "fragments":[
 {
-"text":"For each paragraph",
-"type":"text"
-}
-]
+"text":"panel ",
+"type":"code"
 },
 {
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Add button",
-"type":"text"
-}
-]
-}
-],
-"id":"8f36df872ea544ee9324ef98991739be",
-"type":"list"
+"id":"fb6f0e06980d41798bee1182f28eb513",
+"type":"variable"
 },
 {
-"fragments":[
-{
-"text":"All dividers must be in a container that starts at Y=0, otherwise its Position will not be correct relative to the parent.",
-"type":"text"
+"text":" %vbox {\n    #project\n    #page\n    #selection\n    #min_size = tuple([self.project.theme.page_body_width -1])\n    Title(\n        project   = self.project\n        page      = self.page\n        selection = self.selection.get(\"title\")\n        %expand\n    )\n    Divider[top_divider](\n        padding = self.divider_padding()\n        height  = 3\n        %expand\n    )\n    for (self._get_paragraphs()) {\n      loopvar.widget_cls(\n        project   = self.project\n        page_id   = self.page.id\n        paragraph = loopvar.paragraph\n        selection = self.selection.get(\"paragraph\").get(loopvar.paragraph.id)\n        %expand\n      )\n      Divider[dividers](\n          padding = self.divider_padding()\n          height  = 3\n          %expand\n      )\n    }\n    panel(%expand) %hbox {\n        panel(%proportion[1]) %hbox {}\n        IconButton(\n            icon = \"add\"\n            @button = self.project.add_paragraph(self.page.id)\n        )\n    }\n    @richt_click = SimpleContextMenu.ShowRecursive(slef)\n}\n",
+"type":"code"
 }
 ],
-"id":"d11f78f3d0434d988d0518f2a6c9fff6",
-"type":"text"
+"id":"54e5111e83d24dedad586d9214538f82",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class PagePanel(",
+"type":"code"
+},
+{
+"id":"fb6f0e06980d41798bee1182f28eb513",
+"type":"variable"
+},
+{
+"text":"):\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"PagePanel"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"1994c9452817497c92e1d51cf6a050bc",
+"language":"",
+"post_process":[],
+"type":"code"
 },
 {
 "chunkpath":[
@@ -10380,135 +10363,7 @@
 ],
 "fragments":[
 {
-"text":"def ",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self):\n    self._create_dynamic_container()\n    self._create_title()\n    self._create_top_divider()\n    self._create_add_button()\n    MouseEventHelper.bind([self], right_click=lambda event:\n        ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"b0201e824c464356aa706a0440192e5c",
-"type":"variable"
-},
-{
-"text":"(self)\n    )\n\ndef _create_dynamic_container(self):\n    self.dynamic_container = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(self),\n        flag=wx.EXPAND\n    )\n    self.paragraph_rows = []\n\ndef _create_title(self):\n    self.title = self.dynamic_container.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"12f482d927e54efa94ec8c3165307f41",
-"type":"variable"
-},
-{
-"text":"(\n        self.dynamic_container,\n        project=self.project,\n        page=self.page,\n        selection=self.selection.get(\"title\")\n    ), flag=wx.EXPAND)\n\ndef _create_top_divider(self):\n    self.top_divider = self.dynamic_container.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        self._create_divider(self.dynamic_container),\n        flag=wx.EXPAND\n    )\n\ndef _create_add_button(self):\n    add_button = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        wx.BitmapButton(\n            self,\n            bitmap=wx.ArtProvider.GetBitmap(\n                wx.ART_ADD_BOOKMARK,\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        ),\n        flag=wx.ALIGN_RIGHT,\n        border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"30eeb77f05c34590a6498edb391d0916",
-"type":"variable"
-},
-{
-"text":"\n    )\n    add_button.Bind(wx.EVT_BUTTON, self._on_add_button)\n\ndef _on_add_button(self, event):\n    self.project.",
-"type":"code"
-},
-{
-"id":"a5a0f92d74364068a5a5ab9e9140a00f",
-"type":"variable"
-},
-{
-"text":"(self.page.id)\n\ndef ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n    self._update_title()\n    self._update_paragraphs()\n    self.MinSize = (\n        self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":",\n        -1\n    )\n\ndef _update_title(self):\n    self.title.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n        project=self.project,\n        page=self.page,\n        selection=self.selection.get(\"title\")\n    )\n\ndef _update_paragraphs(self):\n    self.drop_points = []\n    divider = self.top_divider\n    index = -1\n    for index, paragraph in enumerate(self.page.paragraphs):\n        self.drop_points.append(",
+"text":"def _get_paragraphs(self):\n    self.drop_points = []\n    divider_fn = lambda: self.top_divider\n    paragraphs = []\n    index = -1\n    for index, paragraph in enumerate(self.page.paragraphs):\n        self.drop_points.append(",
 "type":"code"
 },
 {
@@ -10516,7 +10371,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            divider=divider,\n            ",
+"text":"(\n            divider_fn=divider_fn,\n            ",
 "type":"code"
 },
 {
@@ -10532,7 +10387,15 @@
 "type":"variable"
 },
 {
-"text":"=index\n        ))\n        divider = self._render_paragraph(index, paragraph)\n    self.drop_points.append(",
+"text":"=index\n        ))\n        divider_fn = (lambda index: lambda: self.dividers[index])(index)\n        paragraphs.append(",
+"type":"code"
+},
+{
+"id":"df1193f3a09e42b49a2c51ad258d8c6f",
+"type":"variable"
+},
+{
+"text":"(\n            {\n                \"text\": Text,\n                \"quote\": Quote,\n                \"list\": List,\n                \"code\": Code,\n                \"image\": Image,\n                \"expanded_code\": ExpandedCode,\n                \"factory\": Factory,\n            }[paragraph.type],\n            paragraph\n        ))\n    self.drop_points.append(",
 "type":"code"
 },
 {
@@ -10540,7 +10403,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        divider=divider,\n        ",
+"text":"(\n        divider_fn=divider_fn,\n        ",
 "type":"code"
 },
 {
@@ -10556,35 +10419,60 @@
 "type":"variable"
 },
 {
-"text":"=index+1\n    ))\n    while index < len(self.paragraph_rows) - 1:\n        for widget in self.paragraph_rows.pop(-1):\n            widget.Destroy()\n\ndef _render_paragraph(self, index, paragraph):\n    widget_class = {\n        \"text\": Text,\n        \"quote\": Quote,\n        \"list\": List,\n        \"code\": Code,\n        \"image\": Image,\n        \"expanded_code\": ExpandedCode,\n        \"factory\": Factory,\n    }[paragraph.type]\n    while index < len(self.paragraph_rows) and type(self.paragraph_rows[index][0]) != widget_class:\n        for widget in self.paragraph_rows.pop(index):\n            widget.Destroy()\n    if index < len(self.paragraph_rows):\n        widget, divider = self.paragraph_rows[index]\n        widget.",
+"text":"=index+1\n    ))\n    return paragraphs\n",
+"type":"code"
+}
+],
+"id":"ca2bc70f56ba4b248d294bca3a094307",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
-"id":"883ac73a999c403e8274442301acdbb3",
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"df1193f3a09e42b49a2c51ad258d8c6f",
 "type":"variable"
 },
 {
-"text":"(\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        )\n        return divider\n    else:\n        widget = self.dynamic_container.",
+"text":" = namedtuple(\"",
 "type":"code"
 },
 {
-"id":"359755e756af4e708b237cd9753ae046",
+"id":"df1193f3a09e42b49a2c51ad258d8c6f",
 "type":"variable"
 },
 {
-"text":"(widget_class(\n            self.dynamic_container,\n            project=self.project,\n            page_id=self.page.id,\n            paragraph=paragraph,\n            selection=self.selection.get(\"paragraph\").get(paragraph.id)\n        ), flag=wx.EXPAND)\n        divider = self.dynamic_container.",
+"text":"\", [\"widget_cls\", \"paragraph\"])\n",
+"type":"code"
+}
+],
+"id":"3a010b18b24442bcb91455cf2f6c15bb",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
+"chunkpath":[
+"classes",
+"PagePanel"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
 {
-"text":"(\n            self._create_divider(self.dynamic_container),\n            flag=wx.EXPAND\n        )\n        self.paragraph_rows.append((widget, divider))\n        return divider\n\ndef _create_divider(self, parent):\n    return Divider(\n        parent,\n        padding=(self.project.",
+"text":"def divider_padding(self):\n    return (self.project.",
 "type":"code"
 },
 {
-"id":"ae8e603135854b1787ca652bf6304e9e",
+"id":"e4b9c7edfc9f4acfb16e557210be1d01",
 "type":"variable"
 },
 {
@@ -10592,17 +10480,28 @@
 "type":"code"
 },
 {
-"id":"30eeb77f05c34590a6498edb391d0916",
+"id":"d1585d1e348b4c7cb99a21220ce16ce6",
 "type":"variable"
 },
 {
-"text":"-3)/2,\n        height=3\n    )\n",
+"text":"-3)/2\n",
 "type":"code"
 }
 ],
-"id":"0d23868db06847a1800d8ef8659887f3",
+"id":"b567e0a6850f4511ae22651367e461e8",
 "language":"",
+"post_process":[],
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"All dividers must be in a container that starts at Y=0, otherwise its Position will not be correct relative to the parent.",
+"type":"text"
+}
+],
+"id":"d11f78f3d0434d988d0518f2a6c9fff6",
+"type":"text"
 },
 {
 "fragments":[
@@ -10631,7 +10530,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, divider, ",
+"text":"(object):\n\n    def __init__(self, divider_fn, ",
 "type":"code"
 },
 {
@@ -10647,7 +10546,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.divider = divider\n        self.",
+"text":"):\n        self.divider_fn = divider_fn\n        self.",
 "type":"code"
 },
 {
@@ -10679,21 +10578,14 @@
 "type":"variable"
 },
 {
-"text":"\n\n    def y_distance_to(self, y):\n        return abs(self.divider.Position.y + self.divider.Size[1]/2 - y)\n\n    def Show(self):\n        self.divider.Show()\n\n    def Hide(self):\n        self.divider.Hide()\n",
+"text":"\n\n    def y_distance_to(self, y):\n        return abs(self.divider_fn().Position.y + self.divider_fn().Size[1]/2 - y)\n\n    def Show(self):\n        self.divider_fn().Show()\n\n    def Hide(self):\n        self.divider_fn().Hide()\n",
 "type":"code"
 }
 ],
 "id":"ceac79cd0d6f400ba9d4be19e8e79672",
 "language":"",
 "type":"code"
-}
-],
-"title":"Rendering"
 },
-{
-"children":[],
-"id":"9d0b1c1dc456410180edbb1a45fb56cb",
-"paragraphs":[
 {
 "chunkpath":[
 "classes",
@@ -10750,105 +10642,6 @@
 }
 ],
 "id":"5480673f44df4d8e9655016fcc82e291",
-"type":"code"
-}
-],
-"title":"Dropping paragraphs"
-}
-],
-"id":"eb6360eff66245daa2fe09b04bbbc120",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"The page widget renders a title widget, paragraph widgets, and an add button widget vertically. It re-renders when ",
-"type":"text"
-},
-{
-"id":"39785d8cdcb4445bad27a741363efa23",
-"type":"variable"
-},
-{
-"text":" is called.",
-"type":"text"
-}
-],
-"id":"dd73d26e23144db58ea875993479c119",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class PagePanel(",
-"type":"code"
-},
-{
-"id":"50f1b4552c0340eab599c8bc578334de",
-"type":"variable"
-},
-{
-"text":"):\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"PagePanel"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"1994c9452817497c92e1d51cf6a050bc",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"PagePanel"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef project(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"]\n\n@property\ndef page(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page\"]\n\n@property\ndef selection(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"]\n",
-"type":"code"
-}
-],
-"id":"c05d9598dbb247ba932b175e9f843be0",
-"language":"",
 "type":"code"
 }
 ],
@@ -15602,7 +15395,7 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"child\" x y zs [ws]]\n    | !reserved name:x binding:y\n      ws '(' (parameter|handler|sizerprop)*:zs ws ')' ",
+"text":"-> [\"child\" x y zs [ws]]\n    | !reserved expr:x binding:y\n      ws '(' (parameter|handler|sizerprop)*:zs ws ')' ",
 "type":"code"
 },
 {
@@ -15962,7 +15755,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"child\" (widget|.):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @child {\n    \"self.\" %child \"(parent, loopvar)\\n\"\n  }\n  @methods {\n    \"\\ndef \" %child \"(self, parent, loopvar):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizer = {\\\"flag\\\": 0, \\\"border\\\": 0, \\\"proportion\\\": 0}\\n\"\n      #child\n    <\n    zs\n    @child {\n      \"widget = parent.add(\" x \", properties, handlers, sizer)\\n\"\n      y\n      \"parent = widget\\n\"\n      \"parent.reset()\\n\"\n    }\n    #methods\n    ws\n  }\n}\n",
+"text":"| [\"child\" (widget|ast):x binding:y [ast*:zs] [ast*:ws]] -> {\n  %%child\n  @child {\n    \"self.\" %child \"(parent, loopvar)\\n\"\n  }\n  @methods {\n    \"\\ndef \" %child \"(self, parent, loopvar):\\n\" >\n      \"handlers = []\\n\"\n      \"properties = {}\\n\"\n      \"sizer = {\\\"flag\\\": 0, \\\"border\\\": 0, \\\"proportion\\\": 0}\\n\"\n      #child\n    <\n    zs\n    @child {\n      \"widget = parent.add(\" x \", properties, handlers, sizer)\\n\"\n      y\n      \"parent = widget\\n\"\n      \"parent.reset()\\n\"\n    }\n    #methods\n    ws\n  }\n}\n",
 "type":"code"
 }
 ],
@@ -16420,7 +16213,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.reset()\n        self.vars = defaultdict(list)\n\n    def reset(self):\n        self.sizer_index = 0\n        self.child_index = 0\n        self.inside_loop = False\n\n    def loop_start(self):\n        self.inside_loop = True\n        if self.child_index >= len(self.children):\n            self.children.append([])\n        self.old_children = self.children\n        self.next_index = self.child_index + 1\n        self.children = self.children[self.child_index]\n        self.child_index = 0\n\n    def add_loop_var(self, name, value):\n        self.vars[name].append(value)\n\n    def loop_end(self, parent):\n        while self.child_index < len(self.children):\n            self.children.pop(-1).widget.Destroy()\n        self.children = self.old_children\n        self.child_index = self.next_index\n        self.inside_loop = False\n        for name, values in self.vars.items():\n            setattr(parent, name, values)\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        if self.widget.Sizer is None:\n            self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, sizer):\n        if self.child_index >= len(self.children) or (self.inside_loop and type(self.children[self.child_index].widget) != widget_cls):\n            widget = widget_cls(self.widget, **properties)\n            self.sizer.Insert(self.sizer_index, widget, **sizer)\n            widget_info = ",
+"text":"(object):\n\n    def __init__(self, widget):\n        self.widget = widget\n        self.children = []\n        self.reset()\n\n    def reset(self):\n        self.sizer_index = 0\n        self.child_index = 0\n        self.inside_loop = False\n        self.vars = defaultdict(list)\n\n    def loop_start(self):\n        self.inside_loop = True\n        if self.child_index >= len(self.children):\n            self.children.append([])\n        self.old_children = self.children\n        self.next_index = self.child_index + 1\n        self.children = self.children[self.child_index]\n        self.child_index = 0\n\n    def add_loop_var(self, name, value):\n        self.vars[name].append(value)\n\n    def loop_end(self, parent):\n        while self.child_index < len(self.children):\n            self.children.pop(-1).widget.Destroy()\n        self.children = self.old_children\n        self.child_index = self.next_index\n        self.inside_loop = False\n        for name, values in self.vars.items():\n            setattr(parent, name, values)\n\n    @property\n    def sizer(self):\n        return self.widget.Sizer\n\n    @sizer.setter\n    def sizer(self, value):\n        if self.widget.Sizer is None:\n            self.widget.Sizer = value\n\n    def add(self, widget_cls, properties, handlers, sizer):\n        if self.child_index >= len(self.children) or (self.inside_loop and type(self.children[self.child_index].widget) != widget_cls):\n            widget = widget_cls(self.widget, **properties)\n            self.sizer.Insert(self.sizer_index, widget, **sizer)\n            widget_info = ",
 "type":"code"
 },
 {
@@ -16645,6 +16438,48 @@
 }
 ],
 "id":"ad2732c68e4e4076a3a82ad201912e86",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"7bb593936bf64710a372c6ef49286159",
+"type":"variable"
+},
+{
+"text":"(wx.BitmapButton, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.BitmapButton.__init__(\n            self,\n            parent,\n            bitmap=wx.ArtProvider.GetBitmap(\n                {\n                    \"add\": wx.ART_ADD_BOOKMARK,\n                }[kwargs[\"icon\"]],\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        )\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n        self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler(\"button\", event, propagate=True))\n",
+"type":"code"
+}
+],
+"id":"37211517e17a4507a217032b4202563b",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -19906,6 +19741,7 @@
 "777225827647402d975279d0fa55c788":"next_paragraph_id",
 "78f04cb2a0ea4a8bac572d43487d2581":"post_process",
 "7a9fc5b110114e64b871a0f672c764c2":"_max_width",
+"7bb593936bf64710a372c6ef49286159":"IconButton",
 "7de0449a51914343bdefb494a4287c6b":"_5e725316bce6426b88d46fe528e812ff",
 "80c88031ba2244b4b116f5b597e585d8":"CharChain",
 "81e263c387054c5b926af1ca2dda72d2":"get_paragraph",
@@ -19987,6 +19823,7 @@
 "ccfadc7f9fb14a8e8fd927e994ecf8e1":"TextProjectionEditorGui",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d126e525b923499f9c0176206b3e886c":"ReRender",
+"d1585d1e348b4c7cb99a21220ce16ce6":"paragraph_space",
 "d3e26230c2c34d0986f2bbae0bab25b4":"Container",
 "d3f9252875944a4e94cbb00851a7384f":"variable_delimiters",
 "d4d8284a9d5f4e0abbbbc328581ef877":"value",
@@ -20001,6 +19838,7 @@
 "de16dfdd628d459ba5af528db2604934":"fragments",
 "de2a97b0705243c784e1cd7884873895":"_e2666ed6e8d5428e901fc58bfe11a45b",
 "deed113aeefa46e7a4ffdf2d0ceff136":"_iter_characters_with_style",
+"df1193f3a09e42b49a2c51ad258d8c6f":"ParagraphRow",
 "df94156ca33b47a1beb10346870806ec":"shadow_size",
 "e087edfd1a854e0782f91a4087f53f8a":"fragments",
 "e0909ed28a5c4099952ff992a821d163":"### INSERT GENERATED GUI CLASSES HERE ###",
@@ -20010,6 +19848,7 @@
 "e327d4d3650047bc9eedb2a21d4c2613":"Editable",
 "e3f662313fd1489c9fc8347b0d24ca9d":"SimpleContextMenu",
 "e48f335915b94544a04357b0e4fcea31":"_history",
+"e4b9c7edfc9f4acfb16e557210be1d01":"theme",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
 "e4f044d70bf7427a8ddc1884b24fdf1f":"_calculate_lines",
 "e5e85527ddd849b293456d25540e6163":"8cc78ba335d744e7aaefde463d19c0b2Gui",
@@ -20033,6 +19872,7 @@
 "f9605031f42b4c37a170779d7ee7fe6e":"UpdateTokens",
 "f9f8c0bf50b24d2e8e09b0004573494f":"WorkspaceGui",
 "fa5caec06ed84470a3797f18af6cde3a":"modify_fn",
+"fb6f0e06980d41798bee1182f28eb513":"PageGui",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
 "fc1f325e626046aead62192c2c25413f":"NewDivider",
 "fd0b723e1c31414e92fab6bb72b0ecf5":"_create_gui",
