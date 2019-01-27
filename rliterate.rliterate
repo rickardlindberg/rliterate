@@ -8334,7 +8334,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.get(loopvar.page.id)\n                indentation = loopvar.indentation\n            )\n            Divider[dividers](\n                padding = 0\n                height  = 2\n                row     = loopvar\n                %expand\n            )\n        }\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.get(loopvar.page.id)\n                indentation = loopvar.indentation\n                %expand\n            )\n            Divider[dividers](\n                padding = 0\n                height  = 2\n                row     = loopvar\n                %expand\n            )\n        }\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -19714,6 +19714,7 @@
 "5e725316bce6426b88d46fe528e812ff":"_partition_characters",
 "5eed749a876348189a57700a970644fc":"TableOfContentsRowGui",
 "60c633345528443da9cc98eedc41685e":"replace_child_at_index",
+"61a4f35b1538441ebd2d17e8cc02a14a":"TextGui",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
 "66ac3230cd674a0b9218fee28b51be5d":"WorkspaceColumn",
 "67ebf8be121a46768936eec41e336f11":"language",

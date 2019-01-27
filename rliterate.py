@@ -462,6 +462,7 @@ class TableOfContentsGui(GuiFrameworkPanel):
         properties['page'] = loopvar.page
         properties['selection'] = self.selection.get(loopvar.page.id)
         properties['indentation'] = loopvar.indentation
+        sizer["flag"] |= wx.EXPAND
         widget = parent.add(TableOfContentsRow, properties, handlers, sizer)
         parent = widget
         parent.reset()
