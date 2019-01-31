@@ -9078,12 +9078,13 @@
 ],
 "fragments":[
 {
-"text":"def _handle_key(self, event):\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            self.page.set_title(result[0])\n            self.project.selection = self.selection.create(result[1])\n",
+"text":"def _handle_key(self, event):\n    TitleKeyHandler(self.text, self.project, self.page, self.selection).handle_key(event)\n",
 "type":"code"
 }
 ],
 "id":"54558e1036ba49b4be900a1ff58817ff",
 "language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -10699,7 +10700,7 @@
 ],
 "fragments":[
 {
-"text":"def _handle_key(self, event):\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            self.page.set_title(result[0])\n            self.project.selection = self.selection.create(result[1])\n",
+"text":"def _handle_key(self, event):\n    TitleKeyHandler(self.text, self.project, self.page, self.selection).handle_key(event)\n",
 "type":"code"
 }
 ],
@@ -10765,6 +10766,24 @@
 ],
 "id":"7fd262c1472f49698d6cc46ddd20e997",
 "language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class TitleKeyHandler(PlainTextKeyHandler):\n\n    def __init__(self, editor, project, page, selection):\n        PlainTextKeyHandler.__init__(self, editor, page.title, selection.value)\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.page.set_title(text)\n            self.project.selection = self.selection.create(index)\n",
+"type":"code"
+}
+],
+"id":"f2fb856d1ec842be84c19896a400ea54",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -11136,7 +11155,7 @@
 ],
 "fragments":[
 {
-"text":"def _handle_key(self, event):\n    return\n    result = edit_plain_text(self.page.title, self.selection.value, event)\n    if result:\n        with self.project.notify():\n            pass\n",
+"text":"def _handle_key(self, event):\n    return\n",
 "type":"code"
 }
 ],
@@ -14632,19 +14651,20 @@
 },
 {
 "chunkpath":[
-"functions"
+"base classes"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"def edit_plain_text(text, selection, event):\n    if event.GetUnicodeKey() >= 32:\n        return (\n            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],\n            selection+1\n        )\n    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:\n        return (\n            text[:selection-1]+text[selection:],\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):\n        return (\n            text[:selection]+text[selection+1:],\n            selection\n        )\n    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:\n        return (\n            text,\n            selection-1\n        )\n    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):\n        return (\n            text,\n            selection+1\n        )\n",
+"text":"class PlainTextKeyHandler(object):\n\n    def __init__(self, editor, text, index):\n        self.editor = editor\n        self.text = text\n        self.index = index\n\n    def handle_key(self, event):\n        if event.GetUnicodeKey() >= 32:\n            self.save(\n                self.text[:self.index]+unichr(event.GetUnicodeKey())+self.text[self.index:],\n                self.index+1\n            )\n        elif event.GetKeyCode() == wx.WXK_BACK and self.index > 0:\n            self.save(\n                self.text[:self.index-1]+self.text[self.index:],\n                self.index-1\n            )\n        elif event.GetKeyCode() == wx.WXK_DELETE and self.index < len(self.text):\n            self.save(\n                self.text[:self.index]+self.text[self.index+1:],\n                self.index\n            )\n        elif event.GetKeyCode() == wx.WXK_LEFT and self.index > 0:\n            self.save(\n                self.text,\n                self.index-1\n            )\n        elif event.GetKeyCode() == wx.WXK_RIGHT and self.index < len(self.text):\n            self.save(\n                self.text,\n                self.index+1\n            )\n",
 "type":"code"
 }
 ],
-"id":"88b2995fd24f41d3a94822d9b8051e1f",
+"id":"cfe42d2d36d14f83853d0f699bb67e0f",
 "language":"",
+"post_process":[],
 "type":"code"
 }
 ],

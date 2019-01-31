@@ -1639,6 +1639,39 @@ class TextProjectionEditor(TextProjectionEditorGui):
                 extra={"selection": selection, "indices": extra_fn(index)}
             ))
         return characters
+class PlainTextKeyHandler(object):
+
+    def __init__(self, editor, text, index):
+        self.editor = editor
+        self.text = text
+        self.index = index
+
+    def handle_key(self, event):
+        if event.GetUnicodeKey() >= 32:
+            self.save(
+                self.text[:self.index]+unichr(event.GetUnicodeKey())+self.text[self.index:],
+                self.index+1
+            )
+        elif event.GetKeyCode() == wx.WXK_BACK and self.index > 0:
+            self.save(
+                self.text[:self.index-1]+self.text[self.index:],
+                self.index-1
+            )
+        elif event.GetKeyCode() == wx.WXK_DELETE and self.index < len(self.text):
+            self.save(
+                self.text[:self.index]+self.text[self.index+1:],
+                self.index
+            )
+        elif event.GetKeyCode() == wx.WXK_LEFT and self.index > 0:
+            self.save(
+                self.text,
+                self.index-1
+            )
+        elif event.GetKeyCode() == wx.WXK_RIGHT and self.index < len(self.text):
+            self.save(
+                self.text,
+                self.index+1
+            )
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -3904,11 +3937,7 @@ class TableOfContentsRow(TableOfContentsRowGui):
     def _indentation_size(self):
         return self.indentation*self.INDENTATION_SIZE
     def _handle_key(self, event):
-        result = edit_plain_text(self.page.title, self.selection.value, event)
-        if result:
-            with self.project.notify():
-                self.page.set_title(result[0])
-                self.project.selection = self.selection.create(result[1])
+        TitleKeyHandler(self.text, self.project, self.page, self.selection).handle_key(event)
     def _get_characters(self, editor):
         if self.project.is_open(self.page.id):
             token_type = TokenType.RLiterate.Strong
@@ -4173,11 +4202,7 @@ class PageDropPoint(object):
 class Title(TitleGui):
 
     def _handle_key(self, event):
-        result = edit_plain_text(self.page.title, self.selection.value, event)
-        if result:
-            with self.project.notify():
-                self.page.set_title(result[0])
-                self.project.selection = self.selection.create(result[1])
+        TitleKeyHandler(self.text, self.project, self.page, self.selection).handle_key(event)
     def _get_characters(self, editor):
         if self.page.title:
             return editor.create_characters(
@@ -4189,6 +4214,18 @@ class Title(TitleGui):
             return editor.create_missing_characters("Enter title...", 0)
     def _create_font(self):
         return create_font(**self.project.theme.title_font)
+class TitleKeyHandler(PlainTextKeyHandler):
+
+    def __init__(self, editor, project, page, selection):
+        PlainTextKeyHandler.__init__(self, editor, page.title, selection.value)
+        self.project = project
+        self.page = page
+        self.selection = selection
+
+    def save(self, text, index):
+        with self.project.notify():
+            self.page.set_title(text)
+            self.project.selection = self.selection.create(index)
 class Text(ParagraphBase):
 
     def CreateView(self):
@@ -4286,10 +4323,6 @@ class TextNew(TextGui):
 
     def _handle_key(self, event):
         return
-        result = edit_plain_text(self.page.title, self.selection.value, event)
-        if result:
-            with self.project.notify():
-                pass
     def _get_characters(self, editor):
         if self.paragraph.fragments:
             characters = []
@@ -5677,32 +5710,6 @@ def show_edit_in_progress_error(window):
     )
     dialog.ShowModal()
     dialog.Destroy()
-def edit_plain_text(text, selection, event):
-    if event.GetUnicodeKey() >= 32:
-        return (
-            text[:selection]+unichr(event.GetUnicodeKey())+text[selection:],
-            selection+1
-        )
-    elif event.GetKeyCode() == wx.WXK_BACK and selection > 0:
-        return (
-            text[:selection-1]+text[selection:],
-            selection-1
-        )
-    elif event.GetKeyCode() == wx.WXK_DELETE and selection < len(text):
-        return (
-            text[:selection]+text[selection+1:],
-            selection
-        )
-    elif event.GetKeyCode() == wx.WXK_LEFT and selection > 0:
-        return (
-            text,
-            selection-1
-        )
-    elif event.GetKeyCode() == wx.WXK_RIGHT and selection < len(text):
-        return (
-            text,
-            selection+1
-        )
 @contextlib.contextmanager
 def flicker_free_drawing(widget):
     if "wxMSW" in wx.PlatformInfo:
