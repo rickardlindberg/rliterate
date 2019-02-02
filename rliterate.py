@@ -534,13 +534,10 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['project'] = self.project
-        properties['selection'] = self.selection
-        properties['handle_key'] = self._handle_key
-        properties['get_characters'] = self._get_characters
+        properties['projection'] = TocTitleProjection(self.project, self.page, self.selection)
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.ALL
-        handlers.append(('ctrl_click', lambda event: self.text.Select(event.Position)))
+        handlers.append(('ctrl_click', lambda event: self.text.Select(self.project, event.Position)))
         handlers.append(('mouse_move', lambda event: self._set_cursor(event)))
         widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
         if parent.inside_loop:
@@ -997,7 +994,7 @@ class TitleGui(GuiFrameworkPanel):
         properties['tooltip'] = self.page.full_title
         handlers.append(('double_click', lambda event: self.text.Select(self.project, event.Position)))
         sizer["proportion"] = 1
-        widget = parent.add(TextProjectionEditor2, properties, handlers, sizer)
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
         if parent.inside_loop:
             parent.add_loop_var('text', widget.widget)
         else:
@@ -1132,82 +1129,6 @@ class Editable(VerticalBasePanel):
         self.edit.Save()
         self.project.active_editor = None
 class TextProjectionEditorGui(GuiFrameworkPanel):
-
-    def _get_derived(self):
-        return {
-        }
-
-    def _create_gui(self):
-        self._root_widget = GuiFrameworkWidgetInfo(self)
-        self._child_root(self._root_widget, first=True)
-
-    def _update_gui(self):
-        self._child_root(self._root_widget)
-
-    def _child_root(self, parent, loopvar=None, first=False):
-        parent.reset()
-        handlers = []
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._child1(parent, loopvar)
-        if first:
-            parent.listen(handlers)
-
-    def _child1(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['characters'] = self.get_characters(self)
-        properties['line_height'] = self.line_height
-        properties['max_width'] = self.max_width
-        properties['break_at_word'] = self.break_at_word
-        properties['font'] = self.font
-        properties['tooltip'] = self.tooltip
-        properties['focus'] = self.selection.present
-        handlers.append(('char', lambda event: self._on_char(event)))
-        widget = parent.add(TextProjection, properties, handlers, sizer)
-        if parent.inside_loop:
-            parent.add_loop_var('text', widget.widget)
-        else:
-            self.text = widget.widget
-        parent = widget
-        parent.reset()
-
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def selection(self):
-        return self.values["selection"]
-
-    @property
-    def handle_key(self):
-        return self.values["handle_key"]
-
-    @property
-    def get_characters(self):
-        return self.values["get_characters"]
-
-    @property
-    def line_height(self):
-        return self.values["line_height"]
-
-    @property
-    def max_width(self):
-        return self.values["max_width"]
-
-    @property
-    def break_at_word(self):
-        return self.values["break_at_word"]
-
-    @property
-    def font(self):
-        return self.values["font"]
-
-    @property
-    def tooltip(self):
-        return self.values["tooltip"]
-class TextProjectionEditor2Gui(GuiFrameworkPanel):
 
     def _get_derived(self):
         return {
@@ -1652,95 +1573,6 @@ class TextProjection(GuiUpdatePanel):
 class TextProjectionEditor(TextProjectionEditorGui):
 
     DEFAULTS = {
-        "characters": [],
-        "line_height": 1,
-        "max_width": None,
-        "break_at_word": True,
-        "font": None,
-        "tooltip": None,
-    }
-
-    @rltime("on char")
-    def _on_char(self, event):
-        if self.selection.present:
-            self.handle_key(event)
-
-    def Select(self, pos):
-        character, side = self.text.GetClosestCharacterWithSide(pos)
-        if character is None:
-            pass
-        elif side == wx.LEFT:
-            self.project.selection = character.extra["selection"].create(character.extra["indices"][0])
-        else:
-            self.project.selection = character.extra["selection"].create(character.extra["indices"][1])
-
-    def create_missing_characters(self, text, index):
-        return self.create_characters(
-            text,
-            self.project.get_style(TokenType.RLiterate.Empty),
-            selections=[0, len(text)],
-            extra_fn=lambda _: (index, index)
-        )
-
-    def create_characters(self, text, style, selections=None, selection=None, extra_fn=lambda index: (index, index+1)):
-        if not self.selection.present:
-            selections = []
-        characters = []
-        last_index = len(text) - 1
-        for index, character in enumerate(text):
-            if index == 0 and index in selections:
-                marker = "beam_left_flag"
-            elif index == last_index and (last_index+1) in selections:
-                marker = "beam_right_flag"
-            elif index in selections:
-                marker = "beam_left"
-            else:
-                marker = None
-            if selection is None:
-                selection = self.selection
-            characters.append(Character.create(
-                character,
-                style,
-                marker,
-                extra={"selection": selection, "indices": extra_fn(index)}
-            ))
-        return characters
-class PlainTextKeyHandler(object):
-
-    def __init__(self, editor, text, index):
-        self.editor = editor
-        self.text = text
-        self.index = index
-
-    def handle_key(self, event):
-        if event.GetUnicodeKey() >= 32:
-            self.save(
-                self.text[:self.index]+unichr(event.GetUnicodeKey())+self.text[self.index:],
-                self.index+1
-            )
-        elif event.GetKeyCode() == wx.WXK_BACK and self.index > 0:
-            self.save(
-                self.text[:self.index-1]+self.text[self.index:],
-                self.index-1
-            )
-        elif event.GetKeyCode() == wx.WXK_DELETE and self.index < len(self.text):
-            self.save(
-                self.text[:self.index]+self.text[self.index+1:],
-                self.index
-            )
-        elif event.GetKeyCode() == wx.WXK_LEFT and self.index > 0:
-            self.save(
-                self.text,
-                self.index-1
-            )
-        elif event.GetKeyCode() == wx.WXK_RIGHT and self.index < len(self.text):
-            self.save(
-                self.text,
-                self.index+1
-            )
-class TextProjectionEditor2(TextProjectionEditor2Gui):
-
-    DEFAULTS = {
         "line_height": 1,
         "max_width": None,
         "break_at_word": True,
@@ -1800,6 +1632,39 @@ class BaseProjection(object):
                 marker,
                 extra=extra
             ))
+class PlainTextKeyHandler(object):
+
+    def __init__(self, editor, text, index):
+        self.editor = editor
+        self.text = text
+        self.index = index
+
+    def handle_key(self, event):
+        if event.GetUnicodeKey() >= 32:
+            self.save(
+                self.text[:self.index]+unichr(event.GetUnicodeKey())+self.text[self.index:],
+                self.index+1
+            )
+        elif event.GetKeyCode() == wx.WXK_BACK and self.index > 0:
+            self.save(
+                self.text[:self.index-1]+self.text[self.index:],
+                self.index-1
+            )
+        elif event.GetKeyCode() == wx.WXK_DELETE and self.index < len(self.text):
+            self.save(
+                self.text[:self.index]+self.text[self.index+1:],
+                self.index
+            )
+        elif event.GetKeyCode() == wx.WXK_LEFT and self.index > 0:
+            self.save(
+                self.text,
+                self.index-1
+            )
+        elif event.GetKeyCode() == wx.WXK_RIGHT and self.index < len(self.text):
+            self.save(
+                self.text,
+                self.index+1
+            )
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -4064,21 +3929,6 @@ class TableOfContentsRow(TableOfContentsRowGui):
 
     def _indentation_size(self):
         return self.indentation*self.INDENTATION_SIZE
-    def _handle_key(self, event):
-        TitleKeyHandler(self.text, self.project, self.page, self.selection).handle_key(event)
-    def _get_characters(self, editor):
-        if self.project.is_open(self.page.id):
-            token_type = TokenType.RLiterate.Strong
-        else:
-            token_type = TokenType.RLiterate
-        if self.page.title:
-            return editor.create_characters(
-                self.page.title,
-                self.project.get_style(token_type),
-                selections=[self.selection.value]
-            )
-        else:
-            return editor.create_missing_characters("Enter title...", 0)
     def _set_cursor(self, event):
         if event.GetModifiers() == wx.MOD_CONTROL:
             self.text.UpdateGui(cursor="beam")
@@ -4097,6 +3947,38 @@ class TableOfContentsRow(TableOfContentsRowGui):
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+class TocTitleProjection(BaseProjection):
+
+    def __init__(self, project, page, selection):
+        self.project = project
+        self.page = page
+        self.selection = selection
+
+    def create_projection(self, editor):
+        if self.project.is_open(self.page.id):
+            token_type = TokenType.RLiterate.Strong
+        else:
+            token_type = TokenType.RLiterate
+        if self.page.title:
+            self.add(
+                self.page.title,
+                self.project.get_style(token_type),
+                self.selection.value,
+                self.selection
+            )
+        else:
+            self.add(
+                "Enter title",
+                self.project.get_style(TokenType.RLiterate.Empty),
+                self.selection.create(0)
+            )
+        if self.selection.present:
+            self._key_handler = TitleKeyHandler(
+                editor,
+                self.project,
+                self.page,
+                self.selection
+            )
 class TableOfContentsButton(TableOfContentsButtonGui):
 
     SIZE = 16
