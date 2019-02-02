@@ -1534,6 +1534,11 @@ class TextProjection(GuiUpdatePanel):
             if box.rect.Contains(position):
                 return box.char
 
+    def GetCharacterAtIndex(self, index):
+        if index < 0 or index >= len(self._boxes):
+            return None
+        return self._boxes[index].char
+
     def GetClosestCharacter(self, position):
         box = self._get_closest_box(position)
         if box is None:
@@ -1595,6 +1600,47 @@ class TextProjectionEditor(TextProjectionEditorGui):
             return character.extra["left_selection"]
         elif side == wx.RIGHT and "right_selection" in character.extra:
             return character.extra["right_selection"]
+
+    def FindClosestSelection(self, character_selection, direction):
+        if character_selection is None:
+            return
+        char_index, side = character_selection
+        return self._get_first_selection(char_index, side, direction)
+
+    def _get_first_selection(self, index, side, direction):
+        first_selection = None
+        for selection in self._yield_selections(index, side, direction):
+            if selection is not None:
+                if first_selection is None:
+                    first_selection = selection
+                elif selection != first_selection:
+                    return selection
+
+    def _yield_selections(self, index, side, direction):
+        first = True
+        while True:
+            char = self.text.GetCharacterAtIndex(index)
+            if char is None:
+                break
+            if direction == "left":
+                if first:
+                    if side == "right":
+                        yield char.extra.get("right_selection", None)
+                    yield char.extra.get("left_selection", None)
+                else:
+                    yield char.extra.get("right_selection", None)
+                    yield char.extra.get("left_selection", None)
+                index -= 1
+            else:
+                if first:
+                    if side == "left":
+                        yield char.extra.get("left_selection", None)
+                    yield char.extra.get("right_selection", None)
+                else:
+                    yield char.extra.get("left_selection", None)
+                    yield char.extra.get("right_selection", None)
+                index += 1
+            first = False
 class BaseProjection(object):
 
     @property
@@ -1606,6 +1652,7 @@ class BaseProjection(object):
 
     def get_characters(self, editor):
         self._key_handler = None
+        self._character_selection = None
         self.characters = []
         self.create_projection(editor)
         return self.characters
@@ -1616,12 +1663,15 @@ class BaseProjection(object):
                 marker = "beam_left"
                 if flag:
                     marker = "beam_left_flag"
+                self._character_selection = (len(self.characters), "left")
             elif index == len(text) - 1 and selection == index + 1:
                 marker = "beam_right"
                 if flag:
                     marker = "beam_right_flag"
+                self._character_selection = (len(self.characters), "right")
             elif index == selection:
                 marker = "beam_left"
+                self._character_selection = (len(self.characters), "left")
             else:
                 marker = None
             extra = dict(extra)
@@ -1667,6 +1717,21 @@ class PlainTextKeyHandler(object):
                 self.text,
                 self.index+1
             )
+class NavigationKeyHandler(object):
+
+    def __init__(self, editor, project, character_selection):
+        self.editor = editor
+        self.project = project
+        self.character_selection = character_selection
+
+    def handle_key(self, event):
+        selection = None
+        if event.GetKeyCode() == wx.WXK_LEFT:
+            selection = self.editor.FindClosestSelection(self.character_selection, "left")
+        if event.GetKeyCode() == wx.WXK_RIGHT:
+            selection = self.editor.FindClosestSelection(self.character_selection, "right")
+        if selection is not None:
+            self.project.selection = selection
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -3388,6 +3453,12 @@ class Selection(object):
         self.value = value
         self.trail = [] if trail is None else trail
 
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not (self == other)
+
     @property
     def present(self):
         return self.value is not None
@@ -4315,6 +4386,8 @@ class TextFragmentsProjection(BaseProjection):
                 flag=flag,
                 extra={"index": fragment_index}
             )
+        if self.selection.present:
+            self._key_handler = NavigationKeyHandler(editor, self.project, self._character_selection)
 class Quote(Text):
 
     INDENT = 20

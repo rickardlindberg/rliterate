@@ -6687,7 +6687,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self.trail = [] if trail is None else trail\n\n    @property\n    def ",
+"text":"\n        self.trail = [] if trail is None else trail\n\n    def __eq__(self, other):\n        return self.value == other.value\n\n    def __ne__(self, other):\n        return not (self == other)\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -6724,6 +6724,8 @@
 }
 ],
 "id":"67bd342465004467ac3222a38c50b6f2",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -10906,7 +10908,7 @@
 ],
 "fragments":[
 {
-"text":"class TextFragmentsProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def create_projection(self, editor):\n        fragments = self.paragraph.fragments\n        for fragment_index, fragment in enumerate(fragments):\n            fragment_selection = self.selection.get(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            self.add(\n                fragment.text,\n                self.project.get_style({\n                    \"strong\": TokenType.RLiterate.Strong,\n                    \"emphasis\": TokenType.RLiterate.Emphasis,\n                    \"code\": TokenType.RLiterate.Code,\n                    \"variable\": TokenType.RLiterate.Variable,\n                    \"reference\": TokenType.RLiterate.Reference,\n                    \"link\": TokenType.RLiterate.Link,\n                }.get(fragment.type, TokenType.RLiterate)),\n                fragment_selection.value,\n                fragment_selection,\n                flag=flag,\n                extra={\"index\": fragment_index}\n            )\n",
+"text":"class TextFragmentsProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def create_projection(self, editor):\n        fragments = self.paragraph.fragments\n        for fragment_index, fragment in enumerate(fragments):\n            fragment_selection = self.selection.get(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            self.add(\n                fragment.text,\n                self.project.get_style({\n                    \"strong\": TokenType.RLiterate.Strong,\n                    \"emphasis\": TokenType.RLiterate.Emphasis,\n                    \"code\": TokenType.RLiterate.Code,\n                    \"variable\": TokenType.RLiterate.Variable,\n                    \"reference\": TokenType.RLiterate.Reference,\n                    \"link\": TokenType.RLiterate.Link,\n                }.get(fragment.type, TokenType.RLiterate)),\n                fragment_selection.value,\n                fragment_selection,\n                flag=flag,\n                extra={\"index\": fragment_index}\n            )\n        if self.selection.present:\n            self._key_handler = NavigationKeyHandler(editor, self.project, self._character_selection)\n",
 "type":"code"
 }
 ],
@@ -14187,6 +14189,48 @@
 "type":"code"
 },
 {
+"id":"515c0cb47f3b43319cf0dfa5b525c0aa",
+"type":"variable"
+},
+{
+"text":"(self, index):\n    if index < 0 or index >= len(self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":"):\n        return None\n    return self.",
+"type":"code"
+},
+{
+"id":"ab468260e8344173a06b482194c9a6a4",
+"type":"variable"
+},
+{
+"text":"[index].char\n",
+"type":"code"
+}
+],
+"id":"7e016b4a4fbf44a6804a4f933b51c439",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjection"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def ",
+"type":"code"
+},
+{
 "id":"26a20a9b510d411fa6dd5834c9f1634b",
 "type":"variable"
 },
@@ -14435,6 +14479,33 @@
 },
 {
 "chunkpath":[
+"base classes",
+"TextProjectionEditor2"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def FindClosestSelection(self, character_selection, direction):\n    if character_selection is None:\n        return\n    char_index, side = character_selection\n    return self._get_first_selection(char_index, side, direction)\n\ndef _get_first_selection(self, index, side, direction):\n    first_selection = None\n    for selection in self._yield_selections(index, side, direction):\n        if selection is not None:\n            if first_selection is None:\n                first_selection = selection\n            elif selection != first_selection:\n                return selection\n\ndef _yield_selections(self, index, side, direction):\n    first = True\n    while True:\n        char = self.text.",
+"type":"code"
+},
+{
+"id":"515c0cb47f3b43319cf0dfa5b525c0aa",
+"type":"variable"
+},
+{
+"text":"(index)\n        if char is None:\n            break\n        if direction == \"left\":\n            if first:\n                if side == \"right\":\n                    yield char.extra.get(\"right_selection\", None)\n                yield char.extra.get(\"left_selection\", None)\n            else:\n                yield char.extra.get(\"right_selection\", None)\n                yield char.extra.get(\"left_selection\", None)\n            index -= 1\n        else:\n            if first:\n                if side == \"left\":\n                    yield char.extra.get(\"left_selection\", None)\n                yield char.extra.get(\"right_selection\", None)\n            else:\n                yield char.extra.get(\"left_selection\", None)\n                yield char.extra.get(\"right_selection\", None)\n            index += 1\n        first = False\n",
+"type":"code"
+}
+],
+"id":"01bea2f676d9484b943b97b4c9d59be7",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
 "base classes"
 ],
 "filepath":[
@@ -14442,7 +14513,7 @@
 ],
 "fragments":[
 {
-"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection, path=None, flag=False, extra={}):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n            elif index == selection:\n                marker = \"beam_left\"\n            else:\n                marker = None\n            extra = dict(extra)\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
+"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self._character_selection = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection, path=None, flag=False, extra={}):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n                self._character_selection = (len(self.characters), \"left\")\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n                self._character_selection = (len(self.characters), \"right\")\n            elif index == selection:\n                marker = \"beam_left\"\n                self._character_selection = (len(self.characters), \"left\")\n            else:\n                marker = None\n            extra = dict(extra)\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
 "type":"code"
 }
 ],
@@ -14465,6 +14536,24 @@
 }
 ],
 "id":"cfe42d2d36d14f83853d0f699bb67e0f",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class NavigationKeyHandler(object):\n\n    def __init__(self, editor, project, character_selection):\n        self.editor = editor\n        self.project = project\n        self.character_selection = character_selection\n\n    def handle_key(self, event):\n        selection = None\n        if event.GetKeyCode() == wx.WXK_LEFT:\n            selection = self.editor.FindClosestSelection(self.character_selection, \"left\")\n        if event.GetKeyCode() == wx.WXK_RIGHT:\n            selection = self.editor.FindClosestSelection(self.character_selection, \"right\")\n        if selection is not None:\n            self.project.selection = selection\n",
+"type":"code"
+}
+],
+"id":"4bba3b691e7942fc9b40456695d1cef7",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -19639,6 +19728,7 @@
 "507782d786b84d209eef461ecd0b4544":"fragments",
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
 "51198e87cf1944e49dea6e2a48938b8f":"chunk_delimiters",
+"515c0cb47f3b43319cf0dfa5b525c0aa":"GetCharacterAtIndex",
 "51708e28ba3245859e0554a504cc015c":"im_replace",
 "51d7ad6401584de9b61508e00d7fd770":"Text",
 "52a4cb0c44124d518647a92eb25a876d":"page_body_width",
