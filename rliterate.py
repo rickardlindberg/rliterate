@@ -1610,7 +1610,7 @@ class BaseProjection(object):
         self.create_projection(editor)
         return self.characters
 
-    def add(self, text, style, selection, path=None, flag=False, **kwargs):
+    def add(self, text, style, selection, path=None, flag=False, extra={}):
         for index, char in enumerate(text):
             if index == 0 and selection == 0:
                 marker = "beam_left"
@@ -1624,7 +1624,7 @@ class BaseProjection(object):
                 marker = "beam_left"
             else:
                 marker = None
-            extra = kwargs
+            extra = dict(extra)
             if path is not None:
                 extra["left_selection"] = path.create(index)
                 extra["right_selection"] = path.create(index+1)
@@ -4313,7 +4313,7 @@ class TextFragmentsProjection(BaseProjection):
                 fragment_selection.value,
                 fragment_selection,
                 flag=flag,
-                index=fragment_index
+                extra={"index": fragment_index}
             )
 class Quote(Text):
 
