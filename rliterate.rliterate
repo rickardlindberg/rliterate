@@ -10835,7 +10835,7 @@
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    TextProjectionEditor[text](\n        projection       = TextFragmentsProjection(self.project self.paragraph self.selection)\n        max_width        = self.project.theme.page_body_width\n        line_height      = self.LINE_HEIGHT\n        skip_extra_space = True\n        font             = self._create_font()\n        @double_click    = self.text.Select(self.project event.Position)\n        @drag            = self.DoDragDrop()\n        @mouse_move      = self._on_mouse_move(event)\n        @click           = self._on_click()\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    #indentation\n    TextProjectionEditor[text](\n        projection       = TextFragmentsProjection(self.project self.paragraph self.selection)\n        max_width        = self._get_max_width()\n        line_height      = self.LINE_HEIGHT\n        skip_extra_space = True\n        font             = self._create_font()\n        @double_click    = self.text.Select(self.project event.Position)\n        @drag            = self.DoDragDrop()\n        @mouse_move      = self._on_mouse_move(event)\n        @click           = self._on_click()\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
@@ -10880,7 +10880,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    LINE_HEIGHT = 1.2\n    token = None\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n\n",
+"text":"):\n\n    DEFAULTS = {\n        \"indentation\": 0\n    }\n    LINE_HEIGHT = 1.2\n    token = None\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n\n",
 "type":"code"
 },
 {
@@ -10907,7 +10907,7 @@
 ],
 "fragments":[
 {
-"text":"def _create_font(self):\n    return ",
+"text":"def _get_max_width(self):\n    return self.project.theme.page_body_width - self.indentation\n\ndef _create_font(self):\n    return ",
 "type":"code"
 },
 {

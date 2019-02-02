@@ -1040,7 +1040,7 @@ class TextGui(GuiFrameworkPanel):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['projection'] = TextFragmentsProjection(self.project, self.paragraph, self.selection)
-        properties['max_width'] = self.project.theme.page_body_width
+        properties['max_width'] = self._get_max_width()
         properties['line_height'] = self.LINE_HEIGHT
         properties['skip_extra_space'] = True
         properties['font'] = self._create_font()
@@ -1072,6 +1072,10 @@ class TextGui(GuiFrameworkPanel):
     @property
     def selection(self):
         return self.values["selection"]
+
+    @property
+    def indentation(self):
+        return self.values["indentation"]
 class Editable(VerticalBasePanel):
 
     @property
@@ -4338,6 +4342,9 @@ class TitleKeyHandler(PlainTextKeyHandler):
             self.project.selection = self.selection.create(index)
 class Text(TextGui, ParagraphBaseMixin):
 
+    DEFAULTS = {
+        "indentation": 0
+    }
     LINE_HEIGHT = 1.2
     token = None
 
@@ -4346,6 +4353,9 @@ class Text(TextGui, ParagraphBaseMixin):
             "To quote",
             lambda: self.paragraph.update({"type": "quote"})
         )
+
+    def _get_max_width(self):
+        return self.project.theme.page_body_width - self.indentation
 
     def _create_font(self):
         return create_font(**self.project.theme.text_font)
