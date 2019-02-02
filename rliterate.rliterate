@@ -11352,6 +11352,43 @@
 },
 {
 "chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"6a9ba1a85a8845b4b4f28b8b99c07f83",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    BoxSpace(20)\n    ",
+"type":"code"
+},
+{
+"id":"41eefd32459a4df99b5ebfb90f759c3b",
+"type":"variable"
+},
+{
+"text":"[text](\n        project     = self.project\n        paragraph   = self.paragraph\n        selection   = self.selection\n        indentation = 20\n        %proportion[1]\n    )\n    @drag        = self.DoDragDrop()\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
+}
+],
+"id":"2896c892480a4d439b1e37ff6339d52d",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
 "classes"
 ],
 "filepath":[
@@ -11359,52 +11396,29 @@
 ],
 "fragments":[
 {
-"text":"class Quote(Text):\n\n    INDENT = 20\n\n    def ",
+"text":"class Quote(",
 "type":"code"
 },
 {
-"id":"740055857bb244038c203cea23c1af69",
+"id":"6a9ba1a85a8845b4b4f28b8b99c07f83",
 "type":"variable"
 },
 {
-"text":"(self):\n        view = HorizontalPanel(self)\n        view.",
+"text":", ",
 "type":"code"
 },
 {
-"id":"31a17b208536469099ae5c084d35590d",
+"id":"912bfa09cb014fa7890b442c2aa7750a",
 "type":"variable"
 },
 {
-"text":"(self.INDENT)\n        self.text_view = view.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            TextView(\n                view,\n                self.project,\n                self._tokens(),\n                self,\n                indented=self.INDENT\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        return view\n\n    def ",
-"type":"code"
-},
-{
-"id":"a4ee3530a5f140f5bc70b87fca825372",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.text_view.",
-"type":"code"
-},
-{
-"id":"f9605031f42b4c37a170779d7ee7fe6e",
-"type":"variable"
-},
-{
-"text":"(\n            self.project,\n            self._tokens(),\n            self.project.theme.page_body_width-self.INDENT\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
+"text":"):\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To text\",\n            lambda: self.paragraph.update({\"type\": \"text\"})\n        )\n",
 "type":"code"
 }
 ],
 "id":"bd65127796664140bf2823ed50b27f87",
 "language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -20113,6 +20127,7 @@
 "67ebf8be121a46768936eec41e336f11":"language",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
 "6a754b8a39e24518b76e88d57a89eff6":"container_border",
+"6a9ba1a85a8845b4b4f28b8b99c07f83":"QuoteGui",
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
 "6f6cdf188e064952ba144f0cd1048562":"get_page",

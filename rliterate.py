@@ -1125,6 +1125,62 @@ class TextViewGui(GuiFrameworkPanel):
     @property
     def indentation(self):
         return self.values["indentation"]
+class QuoteGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        parent.add_space(20)
+        self._child1(parent, loopvar)
+        handlers.append(('drag', lambda event: self.DoDragDrop()))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['paragraph'] = self.paragraph
+        properties['selection'] = self.selection
+        properties['indentation'] = 20
+        sizer["proportion"] = 1
+        widget = parent.add(TextView, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('text', widget.widget)
+        else:
+            self.text = widget.widget
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 class Editable(VerticalBasePanel):
 
     @property
@@ -4554,32 +4610,7 @@ class FragmentKeyHandler(PlainTextKeyHandler):
         with self.project.notify():
             setattr(self.fragment, self.attr, text)
             self.project.selection = self.selection.create(index)
-class Quote(Text):
-
-    INDENT = 20
-
-    def CreateView(self):
-        view = HorizontalPanel(self)
-        view.AppendSpace(self.INDENT)
-        self.text_view = view.AppendChild(
-            TextView(
-                view,
-                self.project,
-                self._tokens(),
-                self,
-                indented=self.INDENT
-            ),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-        return view
-
-    def _update_paragraph_gui(self):
-        self.text_view.UpdateTokens(
-            self.project,
-            self._tokens(),
-            self.project.theme.page_body_width-self.INDENT
-        )
+class Quote(QuoteGui, ParagraphBaseMixin):
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
