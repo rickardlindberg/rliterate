@@ -1581,19 +1581,24 @@ class TextProjection(GuiUpdatePanel):
             CURVE_SIZE = 3
             dc.SetPen(wx.Pen(wx.Colour(255, 50, 0, 180), width=THICKNESS, style=wx.PENSTYLE_SOLID))
             for box in self._markers:
-                if box.char.marker == "beam_start":
+                if box.char.marker == "beam_left_flag":
                     dc.DrawLines([
                         box.rect.TopLeft    + (THICKNESS/2+CURVE_SIZE, 1  ),
                         box.rect.TopLeft    + (THICKNESS/2+0, 1+CURVE_SIZE),
                         box.rect.BottomLeft + (THICKNESS/2+0,  -CURVE_SIZE),
                         box.rect.BottomLeft + (THICKNESS/2+CURVE_SIZE, 0),
                     ])
-                elif box.char.marker == "beam_middle":
+                elif box.char.marker == "beam_left":
                     dc.DrawLines([
-                        box.rect.TopLeft,
-                        box.rect.BottomLeft,
+                        box.rect.TopLeft    + (THICKNESS/2, 0),
+                        box.rect.BottomLeft + (THICKNESS/2, 0),
                     ])
-                elif box.char.marker == "beam_end":
+                elif box.char.marker == "beam_right":
+                    dc.DrawLines([
+                        box.rect.TopRight    - (THICKNESS/2, 0),
+                        box.rect.BottomRight - (THICKNESS/2, 0),
+                    ])
+                elif box.char.marker == "beam_right_flag":
                     dc.DrawLines([
                         box.rect.TopRight    + (-THICKNESS/2-CURVE_SIZE, 1  ),
                         box.rect.TopRight    + (-THICKNESS/2+0, 1+CURVE_SIZE),
@@ -1684,11 +1689,11 @@ class TextProjectionEditor(TextProjectionEditorGui):
         last_index = len(text) - 1
         for index, character in enumerate(text):
             if index == 0 and index in selections:
-                marker = "beam_start"
+                marker = "beam_left_flag"
             elif index == last_index and (last_index+1) in selections:
-                marker = "beam_end"
+                marker = "beam_right_flag"
             elif index in selections:
-                marker = "beam_middle"
+                marker = "beam_left"
             else:
                 marker = None
             if selection is None:
@@ -1771,14 +1776,18 @@ class BaseProjection(object):
         self.create_projection(editor)
         return self.characters
 
-    def add(self, text, style, selection, path=None):
+    def add(self, text, style, selection, path=None, flag=False):
         for index, char in enumerate(text):
             if index == 0 and selection == 0:
-                marker = "beam_start"
+                marker = "beam_left"
+                if flag:
+                    marker = "beam_left_flag"
             elif index == len(text) - 1 and selection == index + 1:
-                marker = "beam_end"
+                marker = "beam_right"
+                if flag:
+                    marker = "beam_right_flag"
             elif index == selection:
-                marker = "beam_middle"
+                marker = "beam_left"
             else:
                 marker = None
             extra = {}

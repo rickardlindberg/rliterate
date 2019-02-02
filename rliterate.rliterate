@@ -14289,7 +14289,7 @@
 "type":"variable"
 },
 {
-"text":":\n            if box.char.marker == \"beam_start\":\n                dc.DrawLines([\n                    box.rect.TopLeft    + (THICKNESS/2+CURVE_SIZE, 1  ),\n                    box.rect.TopLeft    + (THICKNESS/2+0, 1+CURVE_SIZE),\n                    box.rect.BottomLeft + (THICKNESS/2+0,  -CURVE_SIZE),\n                    box.rect.BottomLeft + (THICKNESS/2+CURVE_SIZE, 0),\n                ])\n            elif box.char.marker == \"beam_middle\":\n                dc.DrawLines([\n                    box.rect.TopLeft,\n                    box.rect.BottomLeft,\n                ])\n            elif box.char.marker == \"beam_end\":\n                dc.DrawLines([\n                    box.rect.TopRight    + (-THICKNESS/2-CURVE_SIZE, 1  ),\n                    box.rect.TopRight    + (-THICKNESS/2+0, 1+CURVE_SIZE),\n                    box.rect.BottomRight + (-THICKNESS/2+0,  -CURVE_SIZE),\n                    box.rect.BottomRight + (-THICKNESS/2-CURVE_SIZE, 0),\n                ])\n",
+"text":":\n            if box.char.marker == \"beam_left_flag\":\n                dc.DrawLines([\n                    box.rect.TopLeft    + (THICKNESS/2+CURVE_SIZE, 1  ),\n                    box.rect.TopLeft    + (THICKNESS/2+0, 1+CURVE_SIZE),\n                    box.rect.BottomLeft + (THICKNESS/2+0,  -CURVE_SIZE),\n                    box.rect.BottomLeft + (THICKNESS/2+CURVE_SIZE, 0),\n                ])\n            elif box.char.marker == \"beam_left\":\n                dc.DrawLines([\n                    box.rect.TopLeft    + (THICKNESS/2, 0),\n                    box.rect.BottomLeft + (THICKNESS/2, 0),\n                ])\n            elif box.char.marker == \"beam_right\":\n                dc.DrawLines([\n                    box.rect.TopRight    - (THICKNESS/2, 0),\n                    box.rect.BottomRight - (THICKNESS/2, 0),\n                ])\n            elif box.char.marker == \"beam_right_flag\":\n                dc.DrawLines([\n                    box.rect.TopRight    + (-THICKNESS/2-CURVE_SIZE, 1  ),\n                    box.rect.TopRight    + (-THICKNESS/2+0, 1+CURVE_SIZE),\n                    box.rect.BottomRight + (-THICKNESS/2+0,  -CURVE_SIZE),\n                    box.rect.BottomRight + (-THICKNESS/2-CURVE_SIZE, 0),\n                ])\n",
 "type":"code"
 }
 ],
@@ -14616,7 +14616,7 @@
 ],
 "fragments":[
 {
-"text":"def create_characters(self, text, style, selections=None, selection=None, extra_fn=lambda index: (index, index+1)):\n    if not self.selection.present:\n        selections = []\n    characters = []\n    last_index = len(text) - 1\n    for index, character in enumerate(text):\n        if index == 0 and index in selections:\n            marker = \"beam_start\"\n        elif index == last_index and (last_index+1) in selections:\n            marker = \"beam_end\"\n        elif index in selections:\n            marker = \"beam_middle\"\n        else:\n            marker = None\n        if selection is None:\n            selection = self.selection\n        characters.append(",
+"text":"def create_characters(self, text, style, selections=None, selection=None, extra_fn=lambda index: (index, index+1)):\n    if not self.selection.present:\n        selections = []\n    characters = []\n    last_index = len(text) - 1\n    for index, character in enumerate(text):\n        if index == 0 and index in selections:\n            marker = \"beam_left_flag\"\n        elif index == last_index and (last_index+1) in selections:\n            marker = \"beam_right_flag\"\n        elif index in selections:\n            marker = \"beam_left\"\n        else:\n            marker = None\n        if selection is None:\n            selection = self.selection\n        characters.append(",
 "type":"code"
 },
 {
@@ -14638,6 +14638,7 @@
 ],
 "id":"9b28bb859fb14d77a3e5f0dc1214dec3",
 "language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -14799,7 +14800,7 @@
 ],
 "fragments":[
 {
-"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection, path=None):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_start\"\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_end\"\n            elif index == selection:\n                marker = \"beam_middle\"\n            else:\n                marker = None\n            extra = {}\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
+"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection, path=None, flag=False):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n            elif index == selection:\n                marker = \"beam_left\"\n            else:\n                marker = None\n            extra = {}\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
 "type":"code"
 }
 ],
