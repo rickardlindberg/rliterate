@@ -1039,14 +1039,15 @@ class TextGui(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['handle_key'] = self._handle_key
-        properties['project'] = self.project
-        properties['selection'] = self.selection
-        properties['get_characters'] = self._get_characters
+        properties['projection'] = TextFragmentsProjection(self.project, self.paragraph, self.selection)
         properties['max_width'] = self.project.theme.page_body_width
         properties['line_height'] = self.LINE_HEIGHT
         properties['skip_extra_space'] = True
-        handlers.append(('double_click', lambda event: self.text.Select(event.Position)))
+        properties['font'] = self._create_font()
+        handlers.append(('double_click', lambda event: self.text.Select(self.project, event.Position)))
+        handlers.append(('drag', lambda event: self.DoDragDrop()))
+        handlers.append(('mouse_move', lambda event: self._on_mouse_move(event)))
+        handlers.append(('click', lambda event: self._on_click()))
         sizer["proportion"] = 1
         widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
         if parent.inside_loop:
@@ -1267,27 +1268,7 @@ class Style(namedtuple("Style", "foreground background bold underlined italic mo
 
     def highlight(self):
         return self._replace(foreground="#fcf4df", background="#b58900")
-class ParagraphBase(Editable):
-
-    def BindMouse(self, widget, controls, **overrides):
-        def create_handler(name, fn):
-            def handler(*args, **kwargs):
-                if name in overrides:
-                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:
-                        return
-                fn(*args, **kwargs)
-            return handler
-        handlers = {
-            "double_click": lambda event: post_edit_start(widget),
-            "drag": self.DoDragDrop,
-            "right_click": lambda event: self.ShowContextMenu(),
-        }
-        for key in overrides.keys():
-            if key in handlers:
-                handlers[key] = create_handler(key, handlers[key])
-            else:
-                handlers[key] = overrides[key]
-        MouseEventHelper.bind(controls, **handlers)
+class ParagraphBaseMixin(object):
 
     def DoDragDrop(self):
         data = RliterateDataObject("paragraph", {
@@ -1338,6 +1319,27 @@ class ParagraphBase(Editable):
 
     def AddContextMenuItems(self, menu):
         pass
+class ParagraphBase(Editable, ParagraphBaseMixin):
+
+    def BindMouse(self, widget, controls, **overrides):
+        def create_handler(name, fn):
+            def handler(*args, **kwargs):
+                if name in overrides:
+                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:
+                        return
+                fn(*args, **kwargs)
+            return handler
+        handlers = {
+            "double_click": lambda event: post_edit_start(widget),
+            "drag": self.DoDragDrop,
+            "right_click": lambda event: self.ShowContextMenu(),
+        }
+        for key in overrides.keys():
+            if key in handlers:
+                handlers[key] = create_handler(key, handlers[key])
+            else:
+                handlers[key] = overrides[key]
+        MouseEventHelper.bind(controls, **handlers)
 class DropPointDropTarget(wx.DropTarget):
 
     def __init__(self, window, kind):
@@ -1608,7 +1610,7 @@ class BaseProjection(object):
         self.create_projection(editor)
         return self.characters
 
-    def add(self, text, style, selection, path=None, flag=False):
+    def add(self, text, style, selection, path=None, flag=False, **kwargs):
         for index, char in enumerate(text):
             if index == 0 and selection == 0:
                 marker = "beam_left"
@@ -1622,7 +1624,7 @@ class BaseProjection(object):
                 marker = "beam_left"
             else:
                 marker = None
-            extra = {}
+            extra = kwargs
             if path is not None:
                 extra["left_selection"] = path.create(index)
                 extra["right_selection"] = path.create(index+1)
@@ -4118,9 +4120,15 @@ class Column(ColumnGui):
             TokenType.RLiterate.Link,
             TokenType.RLiterate.Reference,
         ]:
-            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+            if hasattr(event.widget, "UpdateGui"):
+                event.widget.UpdateGui(cursor="hand")
+            else:
+                event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
         else:
-            event.widget.SetDefaultCursor()
+            if hasattr(event.widget, "UpdateGui"):
+                event.widget.UpdateGui(cursor=None)
+            else:
+                event.widget.SetDefaultCursor()
 
     def _on_token_click(self, event):
         if event.token.token_type == TokenType.RLiterate.Reference:
@@ -4253,124 +4261,60 @@ class TitleKeyHandler(PlainTextKeyHandler):
         with self.project.notify():
             self.page.set_title(text)
             self.project.selection = self.selection.create(index)
-class Text(ParagraphBase):
+class Text(TextGui, ParagraphBaseMixin):
 
-    def CreateView(self):
-        return TextView(
-            self,
-            self.project,
-            self._tokens(),
-            self
-        )
-
-    def _update_paragraph_gui(self):
-        self.view.UpdateTokens(
-            self.project,
-            self._tokens(),
-            self.project.theme.page_body_width
-        )
-
-    def _tokens(self):
-        return [
-            token.with_extra("text_index", (token.extra["fragment_index"],))
-            for token in self.paragraph.tokens
-        ]
-
-    def CreateEdit(self, extra):
-        return TextEdit(
-            self,
-            self.project,
-            self.paragraph,
-            self.view,
-            extra
-        )
+    LINE_HEIGHT = 1.2
+    token = None
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
             "To quote",
             lambda: self.paragraph.update({"type": "quote"})
         )
-class TextView(TokenView):
 
-    def __init__(self, parent, project, tokens, base, indented=0):
-        TokenView.__init__(
-            self,
-            parent,
-            project,
-            tokens,
-            line_height=1.2,
-            max_width=project.theme.page_body_width-indented,
-            skip_extra_space=True
-        )
-        MouseEventHelper.bind(
-            [self],
-            drag=base.DoDragDrop,
-            right_click=lambda event: base.ShowContextMenu(),
-            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),
-            move=self._on_mouse_move,
-            click=self._on_click
-        )
-        self.Font = create_font(**project.theme.text_font)
-        self.token = None
+    def _create_font(self):
+        return create_font(**self.project.theme.text_font)
 
     def _on_mouse_move(self, event):
-        token = self.GetToken(event.Position)
-        if token is not self.token:
+        char = self.text.text.GetClosestCharacter(event.Position)
+        if char is not None:
+            token = self.paragraph.fragments[char.extra["index"]].token
+            post_hovered_token_changed(self, token)
             self.token = token
-            post_hovered_token_changed(self, self.token)
 
     def _on_click(self):
         if self.token is not None:
             post_token_click(self, self.token)
-class TextEdit(MultilineTextCtrl):
+class TextFragmentsProjection(BaseProjection):
 
-    def __init__(self, parent, project, paragraph, view, extra):
-        MultilineTextCtrl.__init__(
-            self,
-            parent,
-            value=paragraph.text_version,
-            size=(-1, view.Size[1])
-        )
-        if extra.get("token", None) is None:
-            self.SetSelection(0, 0)
-        else:
-            index = paragraph.get_text_index(extra["token"].extra["text_index"])
-            start = index + extra["token"].index
-            end = start + len(extra["token"].text)
-            self.SetSelection(start, end)
-        self.Font = create_font(**project.theme.editor_font)
+    def __init__(self, project, paragraph, selection):
         self.project = project
         self.paragraph = paragraph
+        self.selection = selection
 
-    def Save(self):
-        self.paragraph.text_version = self.Value
-class TextNew(TextGui):
-
-    LINE_HEIGHT = 1.2
-
-    def _handle_key(self, event):
-        return
-    def _get_characters(self, editor):
-        if self.paragraph.fragments:
-            characters = []
-            for index, fragment in enumerate(self.paragraph.fragments):
-                selection = self.selection.get(index)
-                characters.extend(editor.create_characters(
-                    fragment.text,
-                    self.project.get_style({
-                        "strong": TokenType.RLiterate.Strong,
-                        "emphasis": TokenType.RLiterate.Emphasis,
-                        "code": TokenType.RLiterate.Code,
-                        "variable": TokenType.RLiterate.Variable,
-                        "reference": TokenType.RLiterate.Reference,
-                        "link": TokenType.RLiterate.Link,
-                    }.get(fragment.type, TokenType.RLiterate)),
-                    selections=[selection.value],
-                    selection=selection
-                ))
-            return characters
-        else:
-            return editor.create_missing_characters("Enter text...", 0)
+    def create_projection(self, editor):
+        fragments = self.paragraph.fragments
+        for fragment_index, fragment in enumerate(fragments):
+            fragment_selection = self.selection.get(fragment_index)
+            if fragment_index == 0 or fragment_index == len(fragments):
+                flag = False
+            else:
+                flag = True
+            self.add(
+                fragment.text,
+                self.project.get_style({
+                    "strong": TokenType.RLiterate.Strong,
+                    "emphasis": TokenType.RLiterate.Emphasis,
+                    "code": TokenType.RLiterate.Code,
+                    "variable": TokenType.RLiterate.Variable,
+                    "reference": TokenType.RLiterate.Reference,
+                    "link": TokenType.RLiterate.Link,
+                }.get(fragment.type, TokenType.RLiterate)),
+                fragment_selection.value,
+                fragment_selection,
+                flag=flag,
+                index=fragment_index
+            )
 class Quote(Text):
 
     INDENT = 20

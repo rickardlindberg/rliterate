@@ -10016,7 +10016,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n",
+"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=\"hand\")\n        else:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=None)\n        else:\n            event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n",
 "type":"code"
 }
 ],
@@ -10776,23 +10776,33 @@
 "id":"1688f5eee57645a68af81fa5f02a1560",
 "paragraphs":[
 {
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
 "fragments":[
 {
-"text":"This paragraph is of type ",
-"type":"text"
+"text":"panel ",
+"type":"code"
 },
 {
-"page_id":"2572c635a4c04bcc97905362edc3aba2",
-"text":"text",
-"type":"reference"
+"id":"61a4f35b1538441ebd2d17e8cc02a14a",
+"type":"variable"
 },
 {
-"text":".",
-"type":"text"
+"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    TextProjectionEditor[text](\n        projection       = TextFragmentsProjection(self.project self.paragraph self.selection)\n        max_width        = self.project.theme.page_body_width\n        line_height      = self.LINE_HEIGHT\n        skip_extra_space = True\n        font             = self._create_font()\n        @double_click    = self.text.Select(self.project event.Position)\n        @drag            = self.DoDragDrop()\n        @mouse_move      = self._on_mouse_move(event)\n        @click           = self._on_click()\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
 }
 ],
-"id":"ad7205c2fdf24c87886bd053bcc87dab",
-"type":"text"
+"id":"a95bd9901ed243fcbf2036c63db0d5d7",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
 },
 {
 "chunkpath":[
@@ -10803,106 +10813,58 @@
 ],
 "fragments":[
 {
-"text":"class Text(",
+"text":"class ",
 "type":"code"
 },
 {
-"id":"07b4671de05745a7bddd1eea74535277",
+"id":"51d7ad6401584de9b61508e00d7fd770",
 "type":"variable"
 },
 {
-"text":"):\n\n    def ",
+"text":"(",
 "type":"code"
 },
 {
-"id":"740055857bb244038c203cea23c1af69",
+"id":"61a4f35b1538441ebd2d17e8cc02a14a",
 "type":"variable"
 },
 {
-"text":"(self):\n        return TextView(\n            self,\n            self.project,\n            self._tokens(),\n            self\n        )\n\n    def ",
+"text":", ",
 "type":"code"
 },
 {
-"id":"a4ee3530a5f140f5bc70b87fca825372",
+"id":"912bfa09cb014fa7890b442c2aa7750a",
 "type":"variable"
 },
 {
-"text":"(self):\n        self.view.",
+"text":"):\n\n    LINE_HEIGHT = 1.2\n    token = None\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n\n",
 "type":"code"
 },
 {
-"id":"f9605031f42b4c37a170779d7ee7fe6e",
-"type":"variable"
-},
-{
-"text":"(\n            self.project,\n            self._tokens(),\n            self.project.theme.page_body_width\n        )\n\n    def _tokens(self):\n        return [\n            token.with_extra(\"text_index\", (token.extra[\"fragment_index\"],))\n            for token in self.paragraph.tokens\n        ]\n\n    def ",
-"type":"code"
-},
-{
-"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
-"type":"variable"
-},
-{
-"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
-"type":"code"
+"blank_lines_before":0,
+"path":[
+"Text"
+],
+"prefix":"    ",
+"type":"chunk"
 }
 ],
-"id":"7446201f4c6d46f3b33d94f4f36503d2",
+"id":"fef186169dfc47bfa84a120dce951389",
 "language":"",
+"post_process":[],
 "type":"code"
 },
 {
-"fragments":[
-{
-"text":"The view:",
-"type":"text"
-}
-],
-"id":"7771215ada52498a87873fe98b069d66",
-"type":"text"
-},
-{
 "chunkpath":[
-"classes"
+"classes",
+"Text"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"class TextView(",
-"type":"code"
-},
-{
-"id":"3060a3fbc04a4a708019d11f6efa737b",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, project, tokens, base, indented=0):\n        ",
-"type":"code"
-},
-{
-"id":"3060a3fbc04a4a708019d11f6efa737b",
-"type":"variable"
-},
-{
-"text":".__init__(\n            self,\n            parent,\n            project,\n            tokens,\n            line_height=1.2,\n            max_width=project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":"-indented,\n            skip_extra_space=True\n        )\n        MouseEventHelper.bind(\n            [self],\n            drag=base.DoDragDrop,\n            right_click=lambda event: base.ShowContextMenu(),\n            double_click=lambda event: post_edit_start(self, token=self.GetToken(event.Position)),\n            move=self._on_mouse_move,\n            click=self._on_click\n        )\n        self.Font = ",
+"text":"def _create_font(self):\n    return ",
 "type":"code"
 },
 {
@@ -10910,7 +10872,7 @@
 "type":"variable"
 },
 {
-"text":"(**project.",
+"text":"(**self.project.",
 "type":"code"
 },
 {
@@ -10926,11 +10888,31 @@
 "type":"variable"
 },
 {
-"text":")\n        self.token = None\n\n    def _on_mouse_move(self, event):\n        token = self.GetToken(event.Position)\n        if token is not self.token:\n            self.token = token\n            post_hovered_token_changed(self, self.token)\n\n    def _on_click(self):\n        if self.token is not None:\n            post_token_click(self, self.token)\n",
+"text":")\n\ndef _on_mouse_move(self, event):\n    char = self.text.text.GetClosestCharacter(event.Position)\n    if char is not None:\n        token = self.paragraph.fragments[char.extra[\"index\"]].token\n        post_hovered_token_changed(self, token)\n        self.token = token\n\ndef _on_click(self):\n    if self.token is not None:\n        post_token_click(self, self.token)\n",
 "type":"code"
 }
 ],
 "id":"bb3cb1f635d4476a9f796aa6d9f3845d",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class TextFragmentsProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def create_projection(self, editor):\n        fragments = self.paragraph.fragments\n        for fragment_index, fragment in enumerate(fragments):\n            fragment_selection = self.selection.get(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            self.add(\n                fragment.text,\n                self.project.get_style({\n                    \"strong\": TokenType.RLiterate.Strong,\n                    \"emphasis\": TokenType.RLiterate.Emphasis,\n                    \"code\": TokenType.RLiterate.Code,\n                    \"variable\": TokenType.RLiterate.Variable,\n                    \"reference\": TokenType.RLiterate.Reference,\n                    \"link\": TokenType.RLiterate.Link,\n                }.get(fragment.type, TokenType.RLiterate)),\n                fragment_selection.value,\n                fragment_selection,\n                flag=flag,\n                index=fragment_index\n            )\n",
+"type":"code"
+}
+],
+"id":"b04cadc043e143579bb4f6b7873959da",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -10996,175 +10978,9 @@
 ],
 "id":"b982737c98b04b04bca93dd079d3003c",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"The editor:",
-"type":"text"
-}
-],
-"id":"0dfb3ea73ab040ec9ce4a0c9eecaba27",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class TextEdit(MultilineTextCtrl):\n\n    def __init__(self, parent, project, paragraph, view, extra):\n        MultilineTextCtrl.__init__(\n            self,\n            parent,\n            value=paragraph.text_version,\n            size=(-1, view.Size[1])\n        )\n        if extra.get(\"token\", None) is None:\n            self.SetSelection(0, 0)\n        else:\n            index = paragraph.get_text_index(extra[\"token\"].extra[\"text_index\"])\n            start = index + extra[\"token\"].index\n            end = start + len(extra[\"token\"].text)\n            self.SetSelection(start, end)\n        self.Font = ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
-"type":"variable"
-},
-{
-"text":")\n        self.project = project\n        self.paragraph = paragraph\n\n    def Save(self):\n        self.paragraph.text_version = self.Value\n",
-"type":"code"
-}
-],
-"id":"7cc47c031e0242aa98658e84c51e5418",
-"type":"code"
 }
 ],
 "title":"Text"
-},
-{
-"children":[],
-"id":"9592721f763d45d1bf00007c8923d193",
-"paragraphs":[
-{
-"chunkpath":[
-"base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"panel ",
-"type":"code"
-},
-{
-"id":"61a4f35b1538441ebd2d17e8cc02a14a",
-"type":"variable"
-},
-{
-"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    TextProjectionEditor[text](\n        handle_key     = self._handle_key\n        project        = self.project\n        selection      = self.selection\n        get_characters = self._get_characters\n        max_width      = self.project.theme.page_body_width\n        line_height    = self.LINE_HEIGHT\n        skip_extra_space = True\n        @double_click  = self.text.Select(event.Position)\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
-"type":"code"
-}
-],
-"id":"a95bd9901ed243fcbf2036c63db0d5d7",
-"language":"rlgui",
-"post_process":[
-"python",
-"rlgui.py"
-],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"51d7ad6401584de9b61508e00d7fd770",
-"type":"variable"
-},
-{
-"text":"New(",
-"type":"code"
-},
-{
-"id":"61a4f35b1538441ebd2d17e8cc02a14a",
-"type":"variable"
-},
-{
-"text":"):\n\n    LINE_HEIGHT = 1.2\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"Text"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"fef186169dfc47bfa84a120dce951389",
-"language":"",
-"post_process":[],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Text"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _handle_key(self, event):\n    return\n",
-"type":"code"
-}
-],
-"id":"f77fb7101b5143a5bdbd5da17d16ce7a",
-"language":"",
-"post_process":[],
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Text"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _get_characters(self, editor):\n    if self.paragraph.fragments:\n        characters = []\n        for index, fragment in enumerate(self.paragraph.fragments):\n            selection = self.selection.get(index)\n            characters.extend(editor.create_characters(\n                fragment.text,\n                self.project.get_style({\n                    \"strong\": TokenType.RLiterate.Strong,\n                    \"emphasis\": TokenType.RLiterate.Emphasis,\n                    \"code\": TokenType.RLiterate.Code,\n                    \"variable\": TokenType.RLiterate.Variable,\n                    \"reference\": TokenType.RLiterate.Reference,\n                    \"link\": TokenType.RLiterate.Link,\n                }.get(fragment.type, TokenType.RLiterate)),\n                selections=[selection.value],\n                selection=selection\n            ))\n        return characters\n    else:\n        return editor.create_missing_characters(\"Enter text...\", 0)\n",
-"type":"code"
-}
-],
-"id":"e10a5290609641a0a03fff3df5c78d86",
-"language":"",
-"post_process":[],
-"type":"code"
-}
-],
-"title":"New Text"
 },
 {
 "children":[],
@@ -12677,37 +12493,31 @@
 "type":"code"
 },
 {
-"id":"07b4671de05745a7bddd1eea74535277",
+"id":"912bfa09cb014fa7890b442c2aa7750a",
 "type":"variable"
 },
 {
-"text":"(",
-"type":"code"
-},
-{
-"id":"e327d4d3650047bc9eedb2a21d4c2613",
-"type":"variable"
-},
-{
-"text":"):\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n",
+"text":"(object):\n\n    def DoDragDrop(self):\n        data = RliterateDataObject(\"paragraph\", {\n            \"page_id\": self.page_id,\n            \"paragraph_id\": self.paragraph.id,\n        })\n        drag_source = wx.DropSource(self)\n        drag_source.SetData(data)\n        result = drag_source.DoDragDrop(wx.Drag_DefaultMove)\n\n",
 "type":"code"
 },
 {
 "blank_lines_before":0,
 "path":[
-"ParagraphBase"
+"ParagraphBaseMixin"
 ],
 "prefix":"    ",
 "type":"chunk"
 }
 ],
-"id":"39ada32fde3245e7baac32cb839fb4e2",
+"id":"7a0a7800d9bd4f23addebdcd1023677a",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
 "chunkpath":[
 "base classes",
-"ParagraphBase"
+"ParagraphBaseMixin"
 ],
 "filepath":[
 "rliterate.py"
@@ -12768,6 +12578,49 @@
 ],
 "id":"3e32276889674d5cbc3d7b63e3f9ea11",
 "language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"07b4671de05745a7bddd1eea74535277",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"e327d4d3650047bc9eedb2a21d4c2613",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"912bfa09cb014fa7890b442c2aa7750a",
+"type":"variable"
+},
+{
+"text":"):\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n",
+"type":"code"
+}
+],
+"id":"39ada32fde3245e7baac32cb839fb4e2",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -14589,7 +14442,7 @@
 ],
 "fragments":[
 {
-"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection, path=None, flag=False):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n            elif index == selection:\n                marker = \"beam_left\"\n            else:\n                marker = None\n            extra = {}\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
+"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection, path=None, flag=False, **kwargs):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n            elif index == selection:\n                marker = \"beam_left\"\n            else:\n                marker = None\n            extra = kwargs\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
 "type":"code"
 }
 ],
@@ -19842,6 +19695,7 @@
 "8d6089b6cc0b499a9e165c9328139eab":"fragments",
 "8db58d842ac34e0aa51ea908cd841520":"theme",
 "90d6de1e6f714f1497872ca757b501b6":"value",
+"912bfa09cb014fa7890b442c2aa7750a":"ParagraphBaseMixin",
 "946dd579e2a94e49a5679094477fefd0":"GuiFrameworkPanel",
 "94ebdf2d279b424580629906ad32a461":"characters",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",
