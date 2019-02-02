@@ -3044,6 +3044,16 @@ class TextFragment(DocumentFragment):
     def text(self):
         return self._fragment["text"]
 
+    @text.setter
+    def text(self, value):
+        self._document.modify("Edit text", lambda document_dict:
+            im_modify(
+                document_dict,
+                self._path,
+                lambda fragment: dict(fragment, text=value)
+            )
+        )
+
     @property
     def token(self):
         return Token(self.text, fragment_index=self._index)
@@ -4372,11 +4382,24 @@ class TextFragmentsProjection(BaseProjection):
                 "variable": self._project_variable,
                 "reference": self._project_reference,
                 "link": self._project_link,
-            }.get(fragment.type, self._project_text)(fragment, fragment_index, fragment_selection)
-        if self.selection.present:
-            self._key_handler = NavigationKeyHandler(editor, self.project, self._character_selection)
+            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)
 
-    def _project_strong(self, fragment, index, selection):
+    def _add_markup(self, text):
+        if self.selection.present:
+            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))
+
+    def _set_key_handler(self, editor, fragment, attr, selection):
+        if selection.present:
+            self._key_handler = FragmentKeyHandler(
+                editor,
+                fragment,
+                self.project,
+                self._character_selection,
+                attr,
+                selection
+            )
+
+    def _project_strong(self, editor, fragment, index, selection):
         self._add_markup("**")
         self.add(
             fragment.text,
@@ -4385,9 +4408,9 @@ class TextFragmentsProjection(BaseProjection):
             selection,
             extra={"index": index}
         )
+        self._set_key_handler(editor, fragment, "text", selection)
         self._add_markup("**")
-
-    def _project_emphasis(self, fragment, index, selection):
+    def _project_emphasis(self, editor, fragment, index, selection):
         self._add_markup("*")
         self.add(
             fragment.text,
@@ -4396,9 +4419,9 @@ class TextFragmentsProjection(BaseProjection):
             selection,
             extra={"index": index}
         )
+        self._set_key_handler(editor, fragment, "text", selection)
         self._add_markup("*")
-
-    def _project_code(self, fragment, index, selection):
+    def _project_code(self, editor, fragment, index, selection):
         self._add_markup("`")
         self.add(
             fragment.text,
@@ -4407,9 +4430,9 @@ class TextFragmentsProjection(BaseProjection):
             selection,
             extra={"index": index}
         )
+        self._set_key_handler(editor, fragment, "text", selection)
         self._add_markup("`")
-
-    def _project_variable(self, fragment, index, selection):
+    def _project_variable(self, editor, fragment, index, selection):
         self._add_markup("``")
         self.add(
             fragment.name,
@@ -4418,9 +4441,9 @@ class TextFragmentsProjection(BaseProjection):
             selection,
             extra={"index": index}
         )
+        self._set_key_handler(editor, fragment, "text", selection)
         self._add_markup("``")
-
-    def _project_reference(self, fragment, index, selection):
+    def _project_reference(self, editor, fragment, index, selection):
         self._add_markup("[[")
         self.add(
             fragment.text,
@@ -4429,9 +4452,9 @@ class TextFragmentsProjection(BaseProjection):
             selection,
             extra={"index": index}
         )
+        self._set_key_handler(editor, fragment, "text", selection)
         self._add_markup("]]")
-
-    def _project_link(self, fragment, index, selection):
+    def _project_link(self, editor, fragment, index, selection):
         if self.selection.present:
             self._add_markup("[")
         self.add(
@@ -4441,6 +4464,8 @@ class TextFragmentsProjection(BaseProjection):
             selection,
             extra={"index": index}
         )
+        selection = selection.get("text")
+        self._set_key_handler(editor, fragment, "text", selection)
         if self.selection.present:
             self._add_markup("]")
             self._add_markup("(")
@@ -4451,9 +4476,9 @@ class TextFragmentsProjection(BaseProjection):
                 selection,
                 extra={"index": index}
             )
+            self._set_key_handler(editor, fragment, "text", selection)
             self._add_markup(")")
-
-    def _project_text(self, fragment, index, selection):
+    def _project_text(self, editor, fragment, index, selection):
         self.add(
             fragment.text,
             self.project.get_style(TokenType.RLiterate.Text),
@@ -4461,10 +4486,20 @@ class TextFragmentsProjection(BaseProjection):
             selection,
             extra={"index": index}
         )
+        self._set_key_handler(editor, fragment, "text", selection)
+class FragmentKeyHandler(PlainTextKeyHandler):
 
-    def _add_markup(self, text):
-        if self.selection.present:
-            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))
+    def __init__(self, editor, fragment, project, character_selection, attr, selection):
+        PlainTextKeyHandler.__init__(self, editor, project, character_selection, getattr(fragment, attr), selection.value)
+        self.project = project
+        self.fragment = fragment
+        self.attr = attr
+        self.selection = selection
+
+    def save(self, text, index):
+        with self.project.notify():
+            setattr(self.fragment, self.attr, text)
+            self.project.selection = self.selection.create(index)
 class Quote(Text):
 
     INDENT = 20
