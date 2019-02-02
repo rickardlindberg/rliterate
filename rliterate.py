@@ -1657,7 +1657,7 @@ class BaseProjection(object):
         self.create_projection(editor)
         return self.characters
 
-    def add(self, text, style, selection, path=None, flag=False, extra={}):
+    def add(self, text, style, selection=None, path=None, flag=False, extra={}):
         for index, char in enumerate(text):
             if index == 0 and selection == 0:
                 marker = "beam_left"
@@ -4365,23 +4365,106 @@ class TextFragmentsProjection(BaseProjection):
                 flag = False
             else:
                 flag = True
-            self.add(
-                fragment.text,
-                self.project.get_style({
-                    "strong": TokenType.RLiterate.Strong,
-                    "emphasis": TokenType.RLiterate.Emphasis,
-                    "code": TokenType.RLiterate.Code,
-                    "variable": TokenType.RLiterate.Variable,
-                    "reference": TokenType.RLiterate.Reference,
-                    "link": TokenType.RLiterate.Link,
-                }.get(fragment.type, TokenType.RLiterate)),
-                fragment_selection.value,
-                fragment_selection,
-                flag=flag,
-                extra={"index": fragment_index}
-            )
+            {
+                "strong": self._project_strong,
+                "emphasis": self._project_emphasis,
+                "code": self._project_code,
+                "variable": self._project_variable,
+                "reference": self._project_reference,
+                "link": self._project_link,
+            }.get(fragment.type, self._project_text)(fragment, fragment_index, fragment_selection)
         if self.selection.present:
             self._key_handler = NavigationKeyHandler(editor, self.project, self._character_selection)
+
+    def _project_strong(self, fragment, index, selection):
+        self._add_markup("**")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Strong),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._add_markup("**")
+
+    def _project_emphasis(self, fragment, index, selection):
+        self._add_markup("*")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Emphasis),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._add_markup("*")
+
+    def _project_code(self, fragment, index, selection):
+        self._add_markup("`")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Code),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._add_markup("`")
+
+    def _project_variable(self, fragment, index, selection):
+        self._add_markup("``")
+        self.add(
+            fragment.name,
+            self.project.get_style(TokenType.RLiterate.Variable),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._add_markup("``")
+
+    def _project_reference(self, fragment, index, selection):
+        self._add_markup("[[")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Reference),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._add_markup("]]")
+
+    def _project_link(self, fragment, index, selection):
+        if self.selection.present:
+            self._add_markup("[")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Link),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        if self.selection.present:
+            self._add_markup("]")
+            self._add_markup("(")
+            self.add(
+                fragment.url,
+                self.project.get_style(TokenType.RLiterate.Link),
+                selection.value,
+                selection,
+                extra={"index": index}
+            )
+            self._add_markup(")")
+
+    def _project_text(self, fragment, index, selection):
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Text),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+
+    def _add_markup(self, text):
+        if self.selection.present:
+            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))
 class Quote(Text):
 
     INDENT = 20
