@@ -1684,9 +1684,25 @@ class BaseProjection(object):
                 marker,
                 extra=extra
             ))
-class PlainTextKeyHandler(object):
+class NavigationKeyHandler(object):
 
-    def __init__(self, editor, text, index):
+    def __init__(self, editor, project, character_selection):
+        self.editor = editor
+        self.project = project
+        self.character_selection = character_selection
+
+    def handle_key(self, event):
+        selection = None
+        if event.GetKeyCode() == wx.WXK_LEFT:
+            selection = self.editor.FindClosestSelection(self.character_selection, "left")
+        if event.GetKeyCode() == wx.WXK_RIGHT:
+            selection = self.editor.FindClosestSelection(self.character_selection, "right")
+        if selection is not None:
+            self.project.selection = selection
+class PlainTextKeyHandler(NavigationKeyHandler):
+
+    def __init__(self, editor, project, character_selection, text, index):
+        NavigationKeyHandler.__init__(self, editor, project, character_selection)
         self.editor = editor
         self.text = text
         self.index = index
@@ -1707,31 +1723,8 @@ class PlainTextKeyHandler(object):
                 self.text[:self.index]+self.text[self.index+1:],
                 self.index
             )
-        elif event.GetKeyCode() == wx.WXK_LEFT and self.index > 0:
-            self.save(
-                self.text,
-                self.index-1
-            )
-        elif event.GetKeyCode() == wx.WXK_RIGHT and self.index < len(self.text):
-            self.save(
-                self.text,
-                self.index+1
-            )
-class NavigationKeyHandler(object):
-
-    def __init__(self, editor, project, character_selection):
-        self.editor = editor
-        self.project = project
-        self.character_selection = character_selection
-
-    def handle_key(self, event):
-        selection = None
-        if event.GetKeyCode() == wx.WXK_LEFT:
-            selection = self.editor.FindClosestSelection(self.character_selection, "left")
-        if event.GetKeyCode() == wx.WXK_RIGHT:
-            selection = self.editor.FindClosestSelection(self.character_selection, "right")
-        if selection is not None:
-            self.project.selection = selection
+        else:
+            NavigationKeyHandler.handle_key(self, event)
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -4317,13 +4310,14 @@ class TitleProjection(BaseProjection):
             self._key_handler = TitleKeyHandler(
                 editor,
                 self.project,
+                self._character_selection,
                 self.page,
                 self.selection
             )
 class TitleKeyHandler(PlainTextKeyHandler):
 
-    def __init__(self, editor, project, page, selection):
-        PlainTextKeyHandler.__init__(self, editor, page.title, selection.value)
+    def __init__(self, editor, project, character_selection, page, selection):
+        PlainTextKeyHandler.__init__(self, editor, project, character_selection, page.title, selection.value)
         self.project = project
         self.page = page
         self.selection = selection

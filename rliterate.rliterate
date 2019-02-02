@@ -10741,7 +10741,7 @@
 ],
 "fragments":[
 {
-"text":"class TitleProjection(BaseProjection):\n\n    def __init__(self, project, page, selection):\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.page.title:\n            self.add(\n                self.page.title,\n                self.project.get_style(TokenType.RLiterate),\n                self.selection.value,\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.present:\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self.page,\n                self.selection\n            )\n",
+"text":"class TitleProjection(BaseProjection):\n\n    def __init__(self, project, page, selection):\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.page.title:\n            self.add(\n                self.page.title,\n                self.project.get_style(TokenType.RLiterate),\n                self.selection.value,\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.present:\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self._character_selection,\n                self.page,\n                self.selection\n            )\n",
 "type":"code"
 }
 ],
@@ -10759,7 +10759,23 @@
 ],
 "fragments":[
 {
-"text":"class TitleKeyHandler(PlainTextKeyHandler):\n\n    def __init__(self, editor, project, page, selection):\n        PlainTextKeyHandler.__init__(self, editor, page.title, selection.value)\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.page.set_title(text)\n            self.project.selection = self.selection.create(index)\n",
+"text":"class TitleKeyHandler(",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, editor, project, character_selection, page, selection):\n        ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".__init__(self, editor, project, character_selection, page.title, selection.value)\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.page.set_title(text)\n            self.project.selection = self.selection.create(index)\n",
 "type":"code"
 }
 ],
@@ -14531,11 +14547,11 @@
 ],
 "fragments":[
 {
-"text":"class PlainTextKeyHandler(object):\n\n    def __init__(self, editor, text, index):\n        self.editor = editor\n        self.text = text\n        self.index = index\n\n    def handle_key(self, event):\n        if event.GetUnicodeKey() >= 32:\n            self.save(\n                self.text[:self.index]+unichr(event.GetUnicodeKey())+self.text[self.index:],\n                self.index+1\n            )\n        elif event.GetKeyCode() == wx.WXK_BACK and self.index > 0:\n            self.save(\n                self.text[:self.index-1]+self.text[self.index:],\n                self.index-1\n            )\n        elif event.GetKeyCode() == wx.WXK_DELETE and self.index < len(self.text):\n            self.save(\n                self.text[:self.index]+self.text[self.index+1:],\n                self.index\n            )\n        elif event.GetKeyCode() == wx.WXK_LEFT and self.index > 0:\n            self.save(\n                self.text,\n                self.index-1\n            )\n        elif event.GetKeyCode() == wx.WXK_RIGHT and self.index < len(self.text):\n            self.save(\n                self.text,\n                self.index+1\n            )\n",
+"text":"class NavigationKeyHandler(object):\n\n    def __init__(self, editor, project, character_selection):\n        self.editor = editor\n        self.project = project\n        self.character_selection = character_selection\n\n    def handle_key(self, event):\n        selection = None\n        if event.GetKeyCode() == wx.WXK_LEFT:\n            selection = self.editor.FindClosestSelection(self.character_selection, \"left\")\n        if event.GetKeyCode() == wx.WXK_RIGHT:\n            selection = self.editor.FindClosestSelection(self.character_selection, \"right\")\n        if selection is not None:\n            self.project.selection = selection\n",
 "type":"code"
 }
 ],
-"id":"cfe42d2d36d14f83853d0f699bb67e0f",
+"id":"4bba3b691e7942fc9b40456695d1cef7",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -14549,11 +14565,19 @@
 ],
 "fragments":[
 {
-"text":"class NavigationKeyHandler(object):\n\n    def __init__(self, editor, project, character_selection):\n        self.editor = editor\n        self.project = project\n        self.character_selection = character_selection\n\n    def handle_key(self, event):\n        selection = None\n        if event.GetKeyCode() == wx.WXK_LEFT:\n            selection = self.editor.FindClosestSelection(self.character_selection, \"left\")\n        if event.GetKeyCode() == wx.WXK_RIGHT:\n            selection = self.editor.FindClosestSelection(self.character_selection, \"right\")\n        if selection is not None:\n            self.project.selection = selection\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":"(NavigationKeyHandler):\n\n    def __init__(self, editor, project, character_selection, text, index):\n        NavigationKeyHandler.__init__(self, editor, project, character_selection)\n        self.editor = editor\n        self.text = text\n        self.index = index\n\n    def handle_key(self, event):\n        if event.GetUnicodeKey() >= 32:\n            self.save(\n                self.text[:self.index]+unichr(event.GetUnicodeKey())+self.text[self.index:],\n                self.index+1\n            )\n        elif event.GetKeyCode() == wx.WXK_BACK and self.index > 0:\n            self.save(\n                self.text[:self.index-1]+self.text[self.index:],\n                self.index-1\n            )\n        elif event.GetKeyCode() == wx.WXK_DELETE and self.index < len(self.text):\n            self.save(\n                self.text[:self.index]+self.text[self.index+1:],\n                self.index\n            )\n        else:\n            NavigationKeyHandler.handle_key(self, event)\n",
 "type":"code"
 }
 ],
-"id":"4bba3b691e7942fc9b40456695d1cef7",
+"id":"cfe42d2d36d14f83853d0f699bb67e0f",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -19876,6 +19900,7 @@
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
 "e4f044d70bf7427a8ddc1884b24fdf1f":"_calculate_lines",
 "e5e85527ddd849b293456d25540e6163":"8cc78ba335d744e7aaefde463d19c0b2Gui",
+"e66f30a35aa94847ac3321f6aa6e3786":"PlainTextKeyHandler",
 "e6cb5d6d0639494ebace6dcdef664d49":"multi_update",
 "e7f258e2b4ca4680b295e1daf618e0b4":"GlobalSettings",
 "eabbfafd8cdd492699b8e7ce47826142":"TextProjectionEditorGui",
