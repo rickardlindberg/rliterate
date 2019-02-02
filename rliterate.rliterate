@@ -10815,8 +10815,10 @@
 {
 "children":[
 {
+"children":[
+{
 "children":[],
-"id":"1688f5eee57645a68af81fa5f02a1560",
+"id":"57ac7096b5ea44e5b50de343289a1501",
 "paragraphs":[
 {
 "chunkpath":[
@@ -10831,15 +10833,15 @@
 "type":"code"
 },
 {
-"id":"61a4f35b1538441ebd2d17e8cc02a14a",
+"id":"774a87899c5d441b9bdb700a70421ebe",
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    TextProjectionEditor[text](\n        projection       = TextFragmentsProjection(self.project self.paragraph self.selection)\n        max_width        = self.project.theme.page_body_width\n        line_height      = self.LINE_HEIGHT\n        skip_extra_space = True\n        font             = self._create_font()\n        @double_click    = self.text.Select(self.project event.Position)\n        @drag            = self.DoDragDrop()\n        @mouse_move      = self._on_mouse_move(event)\n        @click           = self._on_click()\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"text":" %hbox {\n    #project\n    #paragraph\n    #selection\n    #indentation\n    TextProjectionEditor[text](\n        projection       = TextFragmentsProjection(self.project self.paragraph self.selection)\n        max_width        = self._get_max_width()\n        line_height      = self.LINE_HEIGHT\n        skip_extra_space = True\n        font             = self._create_font()\n        @double_click    = self.text.Select(self.project event.Position)\n        @mouse_move      = self._on_mouse_move(event)\n        @click           = self._on_click()\n        %proportion[1]\n    )\n}\n",
 "type":"code"
 }
 ],
-"id":"a95bd9901ed243fcbf2036c63db0d5d7",
+"id":"9fdd250615894b27937ad324d1194419",
 "language":"rlgui",
 "post_process":[
 "python",
@@ -10860,7 +10862,7 @@
 "type":"code"
 },
 {
-"id":"51d7ad6401584de9b61508e00d7fd770",
+"id":"41eefd32459a4df99b5ebfb90f759c3b",
 "type":"variable"
 },
 {
@@ -10868,31 +10870,23 @@
 "type":"code"
 },
 {
-"id":"61a4f35b1538441ebd2d17e8cc02a14a",
+"id":"774a87899c5d441b9bdb700a70421ebe",
 "type":"variable"
 },
 {
-"text":", ",
-"type":"code"
-},
-{
-"id":"912bfa09cb014fa7890b442c2aa7750a",
-"type":"variable"
-},
-{
-"text":"):\n\n    LINE_HEIGHT = 1.2\n    token = None\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n\n",
+"text":"):\n\n    LINE_HEIGHT = 1.2\n    token = None\n\n",
 "type":"code"
 },
 {
 "blank_lines_before":0,
 "path":[
-"Text"
+"TextView"
 ],
 "prefix":"    ",
 "type":"chunk"
 }
 ],
-"id":"fef186169dfc47bfa84a120dce951389",
+"id":"727f240e687b488fafc84b825a027b16",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -10900,7 +10894,26 @@
 {
 "chunkpath":[
 "classes",
-"Text"
+"TextView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _get_max_width(self):\n    return self.project.theme.page_body_width - self.indentation\n",
+"type":"code"
+}
+],
+"id":"632022f2dffa44af89b2a7aeb98efc0e",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TextView"
 ],
 "filepath":[
 "rliterate.py"
@@ -10931,11 +10944,49 @@
 "type":"variable"
 },
 {
-"text":")\n\ndef _on_mouse_move(self, event):\n    char = self.text.text.GetClosestCharacter(event.Position)\n    if char is not None and \"index\" in char.extra:\n        token = self.paragraph.fragments[char.extra[\"index\"]].token\n        post_hovered_token_changed(self, token)\n        self.token = token\n\ndef _on_click(self):\n    if self.token is not None:\n        post_token_click(self, self.token)\n",
+"text":")\n",
 "type":"code"
 }
 ],
 "id":"bb3cb1f635d4476a9f796aa6d9f3845d",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TextView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _on_mouse_move(self, event):\n    char = self.text.text.GetClosestCharacter(event.Position)\n    if char is not None and \"index\" in char.extra:\n        token = self.paragraph.fragments[char.extra[\"index\"]].token\n        post_hovered_token_changed(self, token)\n        self.token = token\n",
+"type":"code"
+}
+],
+"id":"c3338e889e7844eaaacf912f0cfcc781",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TextView"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _on_click(self):\n    if self.token is not None:\n        post_token_click(self, self.token)\n",
+"type":"code"
+}
+],
+"id":"82198fbbd38749519487a853d5088d9f",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -11195,6 +11246,91 @@
 }
 ],
 "id":"b982737c98b04b04bca93dd079d3003c",
+"type":"code"
+}
+],
+"title":"Text view"
+}
+],
+"id":"1688f5eee57645a68af81fa5f02a1560",
+"paragraphs":[
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"61a4f35b1538441ebd2d17e8cc02a14a",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    ",
+"type":"code"
+},
+{
+"id":"41eefd32459a4df99b5ebfb90f759c3b",
+"type":"variable"
+},
+{
+"text":"[text](\n        project     = self.project\n        paragraph   = self.paragraph\n        selection   = self.selection\n        indentation = 0\n        %proportion[1]\n    )\n    @drag        = self.DoDragDrop()\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
+}
+],
+"id":"a95bd9901ed243fcbf2036c63db0d5d7",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"51d7ad6401584de9b61508e00d7fd770",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"61a4f35b1538441ebd2d17e8cc02a14a",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"912bfa09cb014fa7890b442c2aa7750a",
+"type":"variable"
+},
+{
+"text":"):\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"To quote\",\n            lambda: self.paragraph.update({\"type\": \"quote\"})\n        )\n",
+"type":"code"
+}
+],
+"id":"fef186169dfc47bfa84a120dce951389",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -19941,6 +20077,7 @@
 "3f9918dd7b1f473880c3b2226dc46ee3":"_d4d8284a9d5f4e0abbbbc328581ef877",
 "404fcbff6a3d40fdab8f41fdaf8841d9":"target_index",
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
+"41eefd32459a4df99b5ebfb90f759c3b":"TextView",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
 "457a1dbf134c431881e590e7b7db9907":"_break_at_word",
 "45b2b281c8914428b601cd55f9d1c92f":"ColumnRow",
@@ -19986,6 +20123,7 @@
 "75d0d294fd5a4cc5beaf14009875e662":"_fragment",
 "7682e2b75c064afd96c7dde2a6830749":"insert_paragraph_before",
 "76b9d362e0714c1da27953dd46e8ef0b":"page_padding",
+"774a87899c5d441b9bdb700a70421ebe":"TextViewGui",
 "777225827647402d975279d0fa55c788":"next_paragraph_id",
 "78f04cb2a0ea4a8bac572d43487d2581":"post_process",
 "7a9fc5b110114e64b871a0f672c764c2":"_max_width",
