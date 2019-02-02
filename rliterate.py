@@ -991,16 +991,13 @@ class TitleGui(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['handle_key'] = self._handle_key
-        properties['project'] = self.project
-        properties['selection'] = self.selection
-        properties['get_characters'] = self._get_characters
+        properties['projection'] = TitleProjection(self.project, self.page, self.selection)
         properties['max_width'] = self.project.theme.page_body_width
         properties['font'] = self._create_font()
         properties['tooltip'] = self.page.full_title
-        handlers.append(('double_click', lambda event: self.text.Select(event.Position)))
+        handlers.append(('double_click', lambda event: self.text.Select(self.project, event.Position)))
         sizer["proportion"] = 1
-        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        widget = parent.add(TextProjectionEditor2, properties, handlers, sizer)
         if parent.inside_loop:
             parent.add_loop_var('text', widget.widget)
         else:
@@ -1190,6 +1187,70 @@ class TextProjectionEditorGui(GuiFrameworkPanel):
     @property
     def get_characters(self):
         return self.values["get_characters"]
+
+    @property
+    def line_height(self):
+        return self.values["line_height"]
+
+    @property
+    def max_width(self):
+        return self.values["max_width"]
+
+    @property
+    def break_at_word(self):
+        return self.values["break_at_word"]
+
+    @property
+    def font(self):
+        return self.values["font"]
+
+    @property
+    def tooltip(self):
+        return self.values["tooltip"]
+class TextProjectionEditor2Gui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child1(parent, loopvar)
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['characters'] = self.projection.get_characters(self)
+        properties['line_height'] = self.line_height
+        properties['max_width'] = self.max_width
+        properties['break_at_word'] = self.break_at_word
+        properties['font'] = self.font
+        properties['tooltip'] = self.tooltip
+        properties['focus'] = self.projection.expects_input
+        handlers.append(('char', lambda event: self.projection.handle_key(event)))
+        widget = parent.add(TextProjection, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('text', widget.widget)
+        else:
+            self.text = widget.widget
+        parent = widget
+        parent.reset()
+
+    @property
+    def projection(self):
+        return self.values["projection"]
 
     @property
     def line_height(self):
@@ -1672,6 +1733,64 @@ class PlainTextKeyHandler(object):
                 self.text,
                 self.index+1
             )
+class TextProjectionEditor2(TextProjectionEditor2Gui):
+
+    DEFAULTS = {
+        "line_height": 1,
+        "max_width": None,
+        "break_at_word": True,
+        "font": None,
+        "tooltip": None,
+    }
+
+    def Select(self, project, pos):
+        selection = self.GetClosestSelection(pos)
+        if selection:
+            project.selection = selection
+
+    def GetClosestSelection(self, pos):
+        character, side = self.text.GetClosestCharacterWithSide(pos)
+        if character is None:
+            pass
+        elif side == wx.LEFT and "left_selection" in character.extra:
+            return character.extra["left_selection"]
+        elif side == wx.RIGHT and "right_selection" in character.extra:
+            return character.extra["right_selection"]
+class BaseProjection(object):
+
+    @property
+    def expects_input(self):
+        return self._key_handler is not None
+
+    def handle_key(self, event):
+        return self._key_handler.handle_key(event)
+
+    def get_characters(self, editor):
+        self._key_handler = None
+        self.characters = []
+        self.create_projection(editor)
+        return self.characters
+
+    def add(self, text, style, selection, path=None):
+        for index, char in enumerate(text):
+            if index == 0 and selection == 0:
+                marker = "beam_start"
+            elif index == len(text) - 1 and selection == index + 1:
+                marker = "beam_end"
+            elif index == selection:
+                marker = "beam_middle"
+            else:
+                marker = None
+            extra = {}
+            if path is not None:
+                extra["left_selection"] = path.create(index)
+                extra["right_selection"] = path.create(index+1)
+            self.characters.append(Character.create(
+                char,
+                style,
+                marker,
+                extra=extra
+            ))
 class TokenView(TextProjection):
 
     def __init__(self, parent, project, tokens, **kwargs):
@@ -4201,19 +4320,36 @@ class PageDropPoint(object):
         self.divider_fn().Hide()
 class Title(TitleGui):
 
-    def _handle_key(self, event):
-        TitleKeyHandler(self.text, self.project, self.page, self.selection).handle_key(event)
-    def _get_characters(self, editor):
-        if self.page.title:
-            return editor.create_characters(
-                self.page.title,
-                self.project.get_style(TokenType.RLiterate),
-                selections=[self.selection.value]
-            )
-        else:
-            return editor.create_missing_characters("Enter title...", 0)
     def _create_font(self):
         return create_font(**self.project.theme.title_font)
+class TitleProjection(BaseProjection):
+
+    def __init__(self, project, page, selection):
+        self.project = project
+        self.page = page
+        self.selection = selection
+
+    def create_projection(self, editor):
+        if self.page.title:
+            self.add(
+                self.page.title,
+                self.project.get_style(TokenType.RLiterate),
+                self.selection.value,
+                self.selection
+            )
+        else:
+            self.add(
+                "Enter title",
+                self.project.get_style(TokenType.RLiterate.Empty),
+                self.selection.create(0)
+            )
+        if self.selection.present:
+            self._key_handler = TitleKeyHandler(
+                editor,
+                self.project,
+                self.page,
+                self.selection
+            )
 class TitleKeyHandler(PlainTextKeyHandler):
 
     def __init__(self, editor, project, page, selection):

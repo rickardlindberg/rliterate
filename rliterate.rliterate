@@ -7711,6 +7711,7 @@
 ],
 "id":"ecd0d38324a74c9ba453317c417e46ce",
 "language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -10637,7 +10638,15 @@
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    #page\n    #selection\n    TextProjectionEditor[text](\n        handle_key    = self._handle_key\n        project       = self.project\n        selection     = self.selection\n        get_characters= self._get_characters\n        max_width     = self.project.theme.page_body_width\n        font          = self._create_font()\n        tooltip       = self.page.full_title\n        @double_click = self.text.Select(event.Position)\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"text":" %hbox {\n    #project\n    #page\n    #selection\n    ",
+"type":"code"
+},
+{
+"id":"84f83f7012144146b77d3fdd168b2d61",
+"type":"variable"
+},
+{
+"text":"[text](\n        projection    = TitleProjection(self.project self.page self.selection)\n        max_width     = self.project.theme.page_body_width\n        font          = self._create_font()\n        tooltip       = self.page.full_title\n        @double_click = self.text.Select(self.project event.Position)\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
@@ -10700,42 +10709,6 @@
 ],
 "fragments":[
 {
-"text":"def _handle_key(self, event):\n    TitleKeyHandler(self.text, self.project, self.page, self.selection).handle_key(event)\n",
-"type":"code"
-}
-],
-"id":"ae52de5dd3b64b69b62331cec27136c2",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _get_characters(self, editor):\n    if self.page.title:\n        return editor.create_characters(\n            self.page.title,\n            self.project.get_style(TokenType.RLiterate),\n            selections=[self.selection.value]\n        )\n    else:\n        return editor.create_missing_characters(\"Enter title...\", 0)\n",
-"type":"code"
-}
-],
-"id":"0338dc6a39a243b194d97439bda905a5",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Title"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
 "text":"def _create_font(self):\n    return ",
 "type":"code"
 },
@@ -10766,6 +10739,24 @@
 ],
 "id":"7fd262c1472f49698d6cc46ddd20e997",
 "language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class TitleProjection(BaseProjection):\n\n    def __init__(self, project, page, selection):\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.page.title:\n            self.add(\n                self.page.title,\n                self.project.get_style(TokenType.RLiterate),\n                self.selection.value,\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.present:\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self.page,\n                self.selection\n            )\n",
+"type":"code"
+}
+],
+"id":"0338dc6a39a243b194d97439bda905a5",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -14669,6 +14660,156 @@
 }
 ],
 "title":"Text projection editor"
+},
+{
+"children":[],
+"id":"8e15908dbe144e66815470ec418c8c10",
+"paragraphs":[
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"eabbfafd8cdd492699b8e7ce47826142",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #projection\n    #line_height\n    #max_width\n    #break_at_word\n    #font\n    #tooltip\n    ",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":"[text](\n        characters    = self.projection.get_characters(self)\n        line_height   = self.line_height\n        max_width     = self.max_width\n        break_at_word = self.break_at_word\n        font          = self.font\n        tooltip       = self.tooltip\n        focus         = self.projection.expects_input\n        @char         = self.projection.handle_key(event)\n    )\n}\n",
+"type":"code"
+}
+],
+"id":"7fc7482c70c542b9bc43e2b88fa7b483",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"84f83f7012144146b77d3fdd168b2d61",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"eabbfafd8cdd492699b8e7ce47826142",
+"type":"variable"
+},
+{
+"text":"):\n\n    DEFAULTS = {\n        \"line_height\": 1,\n        \"max_width\": None,\n        \"break_at_word\": True,\n        \"font\": None,\n        \"tooltip\": None,\n    }\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":1,
+"path":[
+"TextProjectionEditor2"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"d60e0a5cfcb4445baba024331006380f",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor2"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def Select(self, project, pos):\n    selection = self.GetClosestSelection(pos)\n    if selection:\n        project.selection = selection\n",
+"type":"code"
+}
+],
+"id":"1ffc966b90ff47b2acbed5f53f2d960b",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor2"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def GetClosestSelection(self, pos):\n    character, side = self.text.",
+"type":"code"
+},
+{
+"id":"f4302d47ac784f8bbdbe3bc46c9316c6",
+"type":"variable"
+},
+{
+"text":"(pos)\n    if character is None:\n        pass\n    elif side == wx.LEFT and \"left_selection\" in character.extra:\n        return character.extra[\"left_selection\"]\n    elif side == wx.RIGHT and \"right_selection\" in character.extra:\n        return character.extra[\"right_selection\"]\n",
+"type":"code"
+}
+],
+"id":"a2085ff4c901420ea85ba0e30e54df0f",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection, path=None):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_start\"\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_end\"\n            elif index == selection:\n                marker = \"beam_middle\"\n            else:\n                marker = None\n            extra = {}\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
+"type":"code"
+}
+],
+"id":"5de393404fed4012badeba0a804b7fdd",
+"language":"",
+"post_process":[],
+"type":"code"
+}
+],
+"title":"Text projection editor 2"
 },
 {
 "children":[],
@@ -19877,6 +20018,7 @@
 "81e263c387054c5b926af1ca2dda72d2":"get_paragraph",
 "82902f4f6d91479f88d33e04619a3915":"chain",
 "84efae9f935b4926b3f8658d9d4f39c2":"GuiFrameworkWidgetInfo",
+"84f83f7012144146b77d3fdd168b2d61":"TextProjectionEditor2",
 "879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",
 "883ac73a999c403e8274442301acdbb3":"UpdateGui",
 "885085190cef47709dd3922b7c386fab":"fragments",
@@ -19984,6 +20126,7 @@
 "e5e85527ddd849b293456d25540e6163":"8cc78ba335d744e7aaefde463d19c0b2Gui",
 "e6cb5d6d0639494ebace6dcdef664d49":"multi_update",
 "e7f258e2b4ca4680b295e1daf618e0b4":"GlobalSettings",
+"eabbfafd8cdd492699b8e7ce47826142":"TextProjectionEditor2Gui",
 "eabcfbe8e6c349d497353e55ad0b3685":"Selection",
 "ebae45a29f8649beb10a7e3cab576552":"\", \"",
 "ec33a5e51ade4f3283c735e5afaf45d8":"TextProjection",
