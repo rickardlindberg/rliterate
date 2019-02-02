@@ -10906,7 +10906,7 @@
 "type":"variable"
 },
 {
-"text":")\n\ndef _on_mouse_move(self, event):\n    char = self.text.text.GetClosestCharacter(event.Position)\n    if char is not None:\n        token = self.paragraph.fragments[char.extra[\"index\"]].token\n        post_hovered_token_changed(self, token)\n        self.token = token\n\ndef _on_click(self):\n    if self.token is not None:\n        post_token_click(self, self.token)\n",
+"text":")\n\ndef _on_mouse_move(self, event):\n    char = self.text.text.GetClosestCharacter(event.Position)\n    if char is not None and \"index\" in char.extra:\n        token = self.paragraph.fragments[char.extra[\"index\"]].token\n        post_hovered_token_changed(self, token)\n        self.token = token\n\ndef _on_click(self):\n    if self.token is not None:\n        post_token_click(self, self.token)\n",
 "type":"code"
 }
 ],

@@ -4342,7 +4342,7 @@ class Text(TextGui, ParagraphBaseMixin):
 
     def _on_mouse_move(self, event):
         char = self.text.text.GetClosestCharacter(event.Position)
-        if char is not None:
+        if char is not None and "index" in char.extra:
             token = self.paragraph.fragments[char.extra["index"]].token
             post_hovered_token_changed(self, token)
             self.token = token
