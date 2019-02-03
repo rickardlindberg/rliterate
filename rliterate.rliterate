@@ -4618,11 +4618,37 @@
 "type":"variable"
 },
 {
-"text":"[\"url\"]\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"[\")\n        text_version.add_with_index(self.text, self._index)\n        text_version.add(\"]\")\n        text_version.add(\"(\")\n        text_version.add(self.url)\n        text_version.add(\")\")\n",
+"text":"[\"url\"]\n\n    @url.setter\n    def url(self, value):\n        self.",
+"type":"code"
+},
+{
+"id":"9184d2c001fc44b2b02b5a44d877fa7b",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"43d491078bba45c7a1a8f9909217de66",
+"type":"variable"
+},
+{
+"text":"(\"Edit url\", lambda document_dict:\n            ",
+"type":"code"
+},
+{
+"id":"81f20cc9341b426ba57d333bd45a2eee",
+"type":"variable"
+},
+{
+"text":"(\n                document_dict,\n                self._path,\n                lambda fragment: dict(fragment, url=value)\n            )\n        )\n\n    @property\n    def title(self):\n        if self.text:\n            return self.text\n        return self.url\n\n    @property\n    def token(self):\n        return Token(self.title, token_type=TokenType.RLiterate.Link, url=self.url, fragment_index=self._index)\n\n    def fill_text_version(self, text_version):\n        text_version.add(\"[\")\n        text_version.add_with_index(self.text, self._index)\n        text_version.add(\"]\")\n        text_version.add(\"(\")\n        text_version.add(self.url)\n        text_version.add(\")\")\n",
 "type":"code"
 }
 ],
 "id":"3b5cca7618a34a1f8dd87227da24643b",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -11122,7 +11148,7 @@
 ],
 "fragments":[
 {
-"text":"def _project_link(self, editor, fragment, index, selection):\n    if self.selection.present:\n        self._add_markup(\"[\")\n    self.add(\n        fragment.text,\n        self.project.get_style(TokenType.RLiterate.Link),\n        selection.value,\n        selection,\n        extra={\"index\": index}\n    )\n    selection = selection.get(\"text\")\n    self._set_key_handler(editor, fragment, \"text\", selection)\n    if self.selection.present:\n        self._add_markup(\"]\")\n        self._add_markup(\"(\")\n        self.add(\n            fragment.url,\n            self.project.get_style(TokenType.RLiterate.Link),\n            selection.value,\n            selection,\n            extra={\"index\": index}\n        )\n        self._set_key_handler(editor, fragment, \"text\", selection)\n        self._add_markup(\")\")\n",
+"text":"def _project_link(self, editor, fragment, index, selection):\n    if self.selection.present:\n        self._add_markup(\"[\")\n    text_selection = selection.get(\"text\")\n    self.add(\n        fragment.text,\n        self.project.get_style(TokenType.RLiterate.Link),\n        text_selection.value,\n        text_selection,\n        extra={\"index\": index}\n    )\n    self._set_key_handler(editor, fragment, \"text\", text_selection)\n    if self.selection.present:\n        url_selection = selection.get(\"url\")\n        self._add_markup(\"]\")\n        self._add_markup(\"(\")\n        self.add(\n            fragment.url,\n            self.project.get_style(TokenType.RLiterate.Link),\n            url_selection.value,\n            url_selection,\n            extra={\"index\": index}\n        )\n        self._set_key_handler(editor, fragment, \"url\", url_selection)\n        self._add_markup(\")\")\n",
 "type":"code"
 }
 ],
@@ -20097,6 +20123,7 @@
 "4156ce918f5d4d50aea214acc1a8fb1a":"LegacyInlineTextParser",
 "41eefd32459a4df99b5ebfb90f759c3b":"TextView",
 "42b5719c56424891a1bd62768e9762ad":"fragments",
+"43d491078bba45c7a1a8f9909217de66":"modify",
 "457a1dbf134c431881e590e7b7db9907":"_break_at_word",
 "45b2b281c8914428b601cd55f9d1c92f":"ColumnRow",
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
@@ -20150,6 +20177,7 @@
 "7de0449a51914343bdefb494a4287c6b":"_5e725316bce6426b88d46fe528e812ff",
 "80c88031ba2244b4b116f5b597e585d8":"CharChain",
 "81e263c387054c5b926af1ca2dda72d2":"get_paragraph",
+"81f20cc9341b426ba57d333bd45a2eee":"im_modify",
 "82902f4f6d91479f88d33e04619a3915":"chain",
 "84efae9f935b4926b3f8658d9d4f39c2":"GuiFrameworkWidgetInfo",
 "84f83f7012144146b77d3fdd168b2d61":"TextProjectionEditor",
@@ -20169,6 +20197,7 @@
 "8db58d842ac34e0aa51ea908cd841520":"theme",
 "90d6de1e6f714f1497872ca757b501b6":"value",
 "912bfa09cb014fa7890b442c2aa7750a":"ParagraphBaseMixin",
+"9184d2c001fc44b2b02b5a44d877fa7b":"_document",
 "946dd579e2a94e49a5679094477fefd0":"GuiFrameworkPanel",
 "94ebdf2d279b424580629906ad32a461":"characters",
 "95e03f26fa804fc5b33f0ea2e8bf012f":"active_editor",

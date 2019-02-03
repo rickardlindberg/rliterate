@@ -3254,6 +3254,16 @@ class LinkTextFragment(TextFragment):
     def url(self):
         return self._fragment["url"]
 
+    @url.setter
+    def url(self, value):
+        self._document.modify("Edit url", lambda document_dict:
+            im_modify(
+                document_dict,
+                self._path,
+                lambda fragment: dict(fragment, url=value)
+            )
+        )
+
     @property
     def title(self):
         if self.text:
@@ -4567,26 +4577,27 @@ class TextFragmentsProjection(BaseProjection):
     def _project_link(self, editor, fragment, index, selection):
         if self.selection.present:
             self._add_markup("[")
+        text_selection = selection.get("text")
         self.add(
             fragment.text,
             self.project.get_style(TokenType.RLiterate.Link),
-            selection.value,
-            selection,
+            text_selection.value,
+            text_selection,
             extra={"index": index}
         )
-        selection = selection.get("text")
-        self._set_key_handler(editor, fragment, "text", selection)
+        self._set_key_handler(editor, fragment, "text", text_selection)
         if self.selection.present:
+            url_selection = selection.get("url")
             self._add_markup("]")
             self._add_markup("(")
             self.add(
                 fragment.url,
                 self.project.get_style(TokenType.RLiterate.Link),
-                selection.value,
-                selection,
+                url_selection.value,
+                url_selection,
                 extra={"index": index}
             )
-            self._set_key_handler(editor, fragment, "text", selection)
+            self._set_key_handler(editor, fragment, "url", url_selection)
             self._add_markup(")")
     def _project_text(self, editor, fragment, index, selection):
         self.add(
