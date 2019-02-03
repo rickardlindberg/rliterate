@@ -11529,7 +11529,7 @@
 "type":"variable"
 },
 {
-"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def add_items(self, view, items, child_type, selection, indicies=[]):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*len(indicies), 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    project=self.project,\n                    paragraph=item,\n                    selection=selection,\n                    indentation=self.INDENT*len(indicies)+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            view.",
+"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def add_items(self, view, items, child_type, selection, indicies=[]):\n        for index, item in enumerate(items):\n            child_selection = selection.get(index)\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*len(indicies), 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    project=self.project,\n                    paragraph=item,\n                    selection=child_selection,\n                    indentation=self.INDENT*len(indicies)+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            view.",
 "type":"code"
 },
 {
@@ -11537,7 +11537,7 @@
 "type":"variable"
 },
 {
-"text":"(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, item.children, item.child_type, selection.get(index), indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return ",
+"text":"(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, item.children, item.child_type, child_selection, indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return ",
 "type":"code"
 },
 {

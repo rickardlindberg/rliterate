@@ -4649,6 +4649,7 @@ class List(ParagraphBase):
 
     def add_items(self, view, items, child_type, selection, indicies=[]):
         for index, item in enumerate(items):
+            child_selection = selection.get(index)
             inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
             inner_sizer.Add((self.INDENT*len(indicies), 1))
             bullet = self._create_bullet_widget(view, child_type, index)
@@ -4658,13 +4659,13 @@ class List(ParagraphBase):
                     view,
                     project=self.project,
                     paragraph=item,
-                    selection=selection,
+                    selection=child_selection,
                     indentation=self.INDENT*len(indicies)+bullet.GetMinSize()[0]
                 ),
                 proportion=1
             )
             view.AppendChild(inner_sizer, flag=wx.EXPAND)
-            self.add_items(view, item.children, item.child_type, selection.get(index), indicies+[index])
+            self.add_items(view, item.children, item.child_type, child_selection, indicies+[index])
 
     def _create_bullet_widget(self, view, list_type, index):
         return TokenView(
