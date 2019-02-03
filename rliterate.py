@@ -4624,7 +4624,7 @@ class List(ParagraphBase):
     def CreateView(self):
         view = VerticalPanel(self)
         view.Font = create_font(**self.project.theme.text_font)
-        self.add_items(view, self.paragraph.children, self.paragraph.child_type)
+        self.add_items(view, self.paragraph.children, self.paragraph.child_type, self.selection)
         return view
 
     def CreateEdit(self, extra):
@@ -4636,7 +4636,7 @@ class List(ParagraphBase):
             extra
         )
 
-    def add_items(self, view, items, child_type, indicies=[]):
+    def add_items(self, view, items, child_type, selection, indicies=[]):
         for index, item in enumerate(items):
             inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
             inner_sizer.Add((self.INDENT*len(indicies), 1))
@@ -4645,21 +4645,15 @@ class List(ParagraphBase):
             inner_sizer.Add(
                 TextView(
                     view,
-                    self.project,
-                    [
-                        token.with_extra(
-                            "text_index",
-                            tuple(indicies+[index]+[token.extra["fragment_index"]])
-                        )
-                        for token in item.tokens
-                    ],
-                    self,
-                    indented=self.INDENT*len(indicies)+bullet.GetMinSize()[0]
+                    project=self.project,
+                    paragraph=item,
+                    selection=selection,
+                    indentation=self.INDENT*len(indicies)+bullet.GetMinSize()[0]
                 ),
                 proportion=1
             )
             view.AppendChild(inner_sizer, flag=wx.EXPAND)
-            self.add_items(view, item.children, item.child_type, indicies+[index])
+            self.add_items(view, item.children, item.child_type, selection.get(index), indicies+[index])
 
     def _create_bullet_widget(self, view, list_type, index):
         return TokenView(
@@ -5066,10 +5060,10 @@ class Image(ParagraphBase):
         view.AppendChild(
             TextView(
                 view,
-                self.project,
-                self.paragraph.tokens,
-                self,
-                indented=2*self.PADDING
+                project=self.project,
+                paragraph=self.paragraph,
+                selection=self.selection,
+                indentation=2*self.PADDING
             ),
             flag=wx.ALIGN_CENTER
         )

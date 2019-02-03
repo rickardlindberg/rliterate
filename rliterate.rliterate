@@ -11495,7 +11495,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.add_items(view, self.paragraph.children, self.paragraph.child_type)\n        return view\n\n    def ",
+"text":")\n        self.add_items(view, self.paragraph.children, self.paragraph.child_type, self.selection)\n        return view\n\n    def ",
 "type":"code"
 },
 {
@@ -11503,7 +11503,7 @@
 "type":"variable"
 },
 {
-"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def add_items(self, view, items, child_type, indicies=[]):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*len(indicies), 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    self.project,\n                    [\n                        token.with_extra(\n                            \"text_index\",\n                            tuple(indicies+[index]+[token.extra[\"fragment_index\"]])\n                        )\n                        for token in item.tokens\n                    ],\n                    self,\n                    indented=self.INDENT*len(indicies)+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            view.",
+"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def add_items(self, view, items, child_type, selection, indicies=[]):\n        for index, item in enumerate(items):\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*len(indicies), 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    project=self.project,\n                    paragraph=item,\n                    selection=selection,\n                    indentation=self.INDENT*len(indicies)+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            view.",
 "type":"code"
 },
 {
@@ -11511,7 +11511,7 @@
 "type":"variable"
 },
 {
-"text":"(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, item.children, item.child_type, indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return ",
+"text":"(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, item.children, item.child_type, selection.get(index), indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return ",
 "type":"code"
 },
 {
@@ -11524,6 +11524,8 @@
 }
 ],
 "id":"8d490d7f70f74eea91eee4feb06f777c",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -12338,7 +12340,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            TextView(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                self,\n                indented=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def ",
+"text":"(\n            TextView(\n                view,\n                project=self.project,\n                paragraph=self.paragraph,\n                selection=self.selection,\n                indentation=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def ",
 "type":"code"
 },
 {
@@ -12351,6 +12353,8 @@
 }
 ],
 "id":"8856d2dc36b846f8a763ab7e2bdef323",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
