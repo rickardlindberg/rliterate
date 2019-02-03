@@ -10863,7 +10863,7 @@
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    #paragraph\n    #selection\n    #indentation\n    TextProjectionEditor[text](\n        projection       = TextFragmentsProjection(self.project self.paragraph self.selection)\n        max_width        = self._get_max_width()\n        line_height      = self.LINE_HEIGHT\n        skip_extra_space = True\n        font             = self._create_font()\n        @double_click    = self.text.Select(self.project event.Position)\n        @mouse_move      = self._on_mouse_move(event)\n        @click           = self._on_click()\n        %proportion[1]\n    )\n}\n",
+"text":" %hbox {\n    #project\n    #paragraph\n    #selection\n    #indentation\n    #prefix\n    TextProjectionEditor[text](\n        projection       = TextFragmentsProjection(self.project self.paragraph self.selection self.prefix)\n        max_width        = self._get_max_width()\n        line_height      = self.LINE_HEIGHT\n        skip_extra_space = True\n        font             = self._create_font()\n        @double_click    = self.text.Select(self.project event.Position)\n        @mouse_move      = self._on_mouse_move(event)\n        @click           = self._on_click()\n        %proportion[1]\n    )\n}\n",
 "type":"code"
 }
 ],
@@ -10900,7 +10900,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    LINE_HEIGHT = 1.2\n    token = None\n\n",
+"text":"):\n\n    LINE_HEIGHT = 1.2\n    DEFAULTS = {\n        \"prefix\": \"\",\n    }\n    token = None\n\n",
 "type":"code"
 },
 {
@@ -11026,7 +11026,7 @@
 ],
 "fragments":[
 {
-"text":"class TextFragmentsProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def create_projection(self, editor):\n        fragments = self.paragraph.fragments\n        for fragment_index, fragment in enumerate(fragments):\n            fragment_selection = self.selection.get(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            {\n                \"strong\": self._project_strong,\n                \"emphasis\": self._project_emphasis,\n                \"code\": self._project_code,\n                \"variable\": self._project_variable,\n                \"reference\": self._project_reference,\n                \"link\": self._project_link,\n            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)\n\n    def _add_markup(self, text):\n        if self.selection.present:\n            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))\n\n    def _set_key_handler(self, editor, fragment, attr, selection):\n        if selection.present:\n            self._key_handler = FragmentKeyHandler(\n                editor,\n                fragment,\n                self.project,\n                self._character_selection,\n                attr,\n                selection\n            )\n\n",
+"text":"class TextFragmentsProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection, prefix):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n        self.prefix = prefix\n\n    def create_projection(self, editor):\n        if self.prefix:\n            self.add(self.prefix, self.project.get_style(TokenType.RLiterate))\n        fragments = self.paragraph.fragments\n        for fragment_index, fragment in enumerate(fragments):\n            fragment_selection = self.selection.get(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            {\n                \"strong\": self._project_strong,\n                \"emphasis\": self._project_emphasis,\n                \"code\": self._project_code,\n                \"variable\": self._project_variable,\n                \"reference\": self._project_reference,\n                \"link\": self._project_link,\n            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)\n\n    def _add_markup(self, text):\n        if self.selection.present:\n            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))\n\n    def _set_key_handler(self, editor, fragment, attr, selection):\n        if selection.present:\n            self._key_handler = FragmentKeyHandler(\n                editor,\n                fragment,\n                self.project,\n                self._character_selection,\n                attr,\n                selection\n            )\n\n",
 "type":"code"
 },
 {
@@ -11455,14 +11455,41 @@
 "id":"f1a44b0e5e824e7baba3a2ca256b243b",
 "paragraphs":[
 {
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
 "fragments":[
 {
-"text":"A list paragraph is the same as a text paragraph but renders differently. With bullets and indentation.",
-"type":"text"
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"a3b92b83131e489a8903a1245a1c435b",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    for (self._get_rows()) {\n        panel() %hbox {\n            BoxSpace(loopvar.indentation)\n            ",
+"type":"code"
+},
+{
+"id":"41eefd32459a4df99b5ebfb90f759c3b",
+"type":"variable"
+},
+{
+"text":"(\n                project     = self.project\n                prefix      = loopvar.bullet_text\n                paragraph   = loopvar.item\n                selection   = loopvar.selection\n                indentation = loopvar.indentation\n                %proportion[1]\n            )\n        }\n    }\n    @drag        = self.DoDragDrop()\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
 }
 ],
-"id":"50911d0525dd4f38adc52e1108754007",
-"type":"text"
+"id":"d028b613bd164904ab10da6a2c872846",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
 },
 {
 "chunkpath":[
@@ -11473,31 +11500,39 @@
 ],
 "fragments":[
 {
-"text":"class List(",
+"text":"class ",
 "type":"code"
 },
 {
-"id":"07b4671de05745a7bddd1eea74535277",
+"id":"ddefcd1a98d34b1299850d2a93015803",
 "type":"variable"
 },
 {
-"text":"):\n\n    INDENT = 20\n\n    def ",
+"text":"(",
 "type":"code"
 },
 {
-"id":"740055857bb244038c203cea23c1af69",
+"id":"a3b92b83131e489a8903a1245a1c435b",
 "type":"variable"
 },
 {
-"text":"(self):\n        view = ",
+"text":", ",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"912bfa09cb014fa7890b442c2aa7750a",
 "type":"variable"
 },
 {
-"text":"(self)\n        view.Font = ",
+"text":"):\n\n    def _get_rows(self):\n        self.rows = []\n        self._add_items(self.paragraph.children, self.paragraph.child_type, self.selection)\n        return self.rows\n\n    def _add_items(self, items, child_type, selection, indentation=0):\n        for index, item in enumerate(items):\n            child_selection = selection.get(index)\n            self.rows.append(",
+"type":"code"
+},
+{
+"id":"2ce3414157e141f690befa786bfb1265",
+"type":"variable"
+},
+{
+"text":"(\n                item,\n                self._get_bullet_text(child_type, index),\n                20*indentation,\n                child_selection\n            ))\n            self._add_items(item.children, item.child_type, child_selection, indentation+1)\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n\n    def _create_font(self):\n        return ",
 "type":"code"
 },
 {
@@ -11509,7 +11544,7 @@
 "type":"code"
 },
 {
-"id":"ae8e603135854b1787ca652bf6304e9e",
+"id":"50b90631afd0405b852c804ecd4b96ea",
 "type":"variable"
 },
 {
@@ -11517,39 +11552,45 @@
 "type":"code"
 },
 {
-"id":"39e45626d4804403be92d31444a1281c",
+"id":"e552ad710c5d4d59830562da2b3501c8",
 "type":"variable"
 },
 {
-"text":")\n        self.add_items(view, self.paragraph.children, self.paragraph.child_type, self.selection)\n        return view\n\n    def ",
-"type":"code"
-},
-{
-"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
-"type":"variable"
-},
-{
-"text":"(self, extra):\n        return TextEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view,\n            extra\n        )\n\n    def add_items(self, view, items, child_type, selection, indicies=[]):\n        for index, item in enumerate(items):\n            child_selection = selection.get(index)\n            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)\n            inner_sizer.Add((self.INDENT*len(indicies), 1))\n            bullet = self._create_bullet_widget(view, child_type, index)\n            inner_sizer.Add(bullet)\n            inner_sizer.Add(\n                TextView(\n                    view,\n                    project=self.project,\n                    paragraph=item,\n                    selection=child_selection,\n                    indentation=self.INDENT*len(indicies)+bullet.GetMinSize()[0]\n                ),\n                proportion=1\n            )\n            view.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(inner_sizer, flag=wx.EXPAND)\n            self.add_items(view, item.children, item.child_type, child_selection, indicies+[index])\n\n    def _create_bullet_widget(self, view, list_type, index):\n        return ",
-"type":"code"
-},
-{
-"id":"3060a3fbc04a4a708019d11f6efa737b",
-"type":"variable"
-},
-{
-"text":"(\n            view,\n            self.project,\n            [Token(self._get_bullet_text(list_type, index))]\n        )\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n",
+"text":")\n",
 "type":"code"
 }
 ],
-"id":"8d490d7f70f74eea91eee4feb06f777c",
+"id":"83260fbb9d1b41e1a174f641588af703",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"id":"2ce3414157e141f690befa786bfb1265",
+"type":"variable"
+},
+{
+"text":" = namedtuple(\"",
+"type":"code"
+},
+{
+"id":"2ce3414157e141f690befa786bfb1265",
+"type":"variable"
+},
+{
+"text":"\", [\"item\", \"bullet_text\", \"indentation\", \"selection\"])\n",
+"type":"code"
+}
+],
+"id":"94dee837c0df436a835255591af8c486",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -20091,6 +20132,7 @@
 "29853bcfd5b84d949d4d17454f7a50de":"get_paragraph_index",
 "2c55e85463a84b59bd905c4737f29867":"CodeExpander",
 "2cce98597c264b5597564c1f9e51cb5f":"pairs",
+"2ce3414157e141f690befa786bfb1265":"ListRow",
 "2ecf3894ef4c4fc4a894d7001e6ddce5":"show_text_entry",
 "2f0a877612fe4295ac6ad4ef7309d965":"OnDataDropped",
 "3060a3fbc04a4a708019d11f6efa737b":"TokenView",
@@ -20134,6 +20176,7 @@
 "4b9ee6bd24a74475a73197299f60dd85":"im_modify",
 "4bb7b8ed322441f284c23879725bf1bf":"Button",
 "507782d786b84d209eef461ecd0b4544":"fragments",
+"50b90631afd0405b852c804ecd4b96ea":"theme",
 "50f1b4552c0340eab599c8bc578334de":"VerticalBasePanel",
 "51198e87cf1944e49dea6e2a48938b8f":"chunk_delimiters",
 "515c0cb47f3b43319cf0dfa5b525c0aa":"GetCharacterAtIndex",
@@ -20208,6 +20251,7 @@
 "9e987210a686490c823a44d09e783833":"_load",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
+"a3b92b83131e489a8903a1245a1c435b":"ListGui",
 "a4a6044855cf4256b657dc1d493346e9":"target_page",
 "a4ee3530a5f140f5bc70b87fca825372":"_update_paragraph_gui",
 "a5a0f92d74364068a5a5ab9e9140a00f":"add_paragraph",
@@ -20272,6 +20316,7 @@
 "dc235530a21f4f61bc79a447761fb07b":"_mark_for_saving",
 "dc8a412c8c27445f9eec17b55bd0b777":"_document",
 "dd8b5ece7fb24a94bc8e9adcb87c66ce":"_boxes",
+"ddefcd1a98d34b1299850d2a93015803":"List",
 "de16dfdd628d459ba5af528db2604934":"fragments",
 "de2a97b0705243c784e1cd7884873895":"_e2666ed6e8d5428e901fc58bfe11a45b",
 "deed113aeefa46e7a4ffdf2d0ceff136":"_iter_characters_with_style",
@@ -20288,6 +20333,7 @@
 "e4b9c7edfc9f4acfb16e557210be1d01":"theme",
 "e4e393ca4c6944fa8ebc24a3c67f3a54":"fragments",
 "e4f044d70bf7427a8ddc1884b24fdf1f":"_calculate_lines",
+"e552ad710c5d4d59830562da2b3501c8":"text_font",
 "e5e85527ddd849b293456d25540e6163":"8cc78ba335d744e7aaefde463d19c0b2Gui",
 "e66f30a35aa94847ac3321f6aa6e3786":"PlainTextKeyHandler",
 "e6cb5d6d0639494ebace6dcdef664d49":"multi_update",

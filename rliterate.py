@@ -1093,7 +1093,7 @@ class TextViewGui(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['projection'] = TextFragmentsProjection(self.project, self.paragraph, self.selection)
+        properties['projection'] = TextFragmentsProjection(self.project, self.paragraph, self.selection, self.prefix)
         properties['max_width'] = self._get_max_width()
         properties['line_height'] = self.LINE_HEIGHT
         properties['skip_extra_space'] = True
@@ -1125,6 +1125,10 @@ class TextViewGui(GuiFrameworkPanel):
     @property
     def indentation(self):
         return self.values["indentation"]
+
+    @property
+    def prefix(self):
+        return self.values["prefix"]
 class QuoteGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -1163,6 +1167,73 @@ class QuoteGui(GuiFrameworkPanel):
             parent.add_loop_var('text', widget.widget)
         else:
             self.text = widget.widget
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+class ListGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.loop_start()
+        for loopvar in self._get_rows():
+            pass
+            self._child1(parent, loopvar)
+        parent.loop_end(self)
+        handlers.append(('drag', lambda event: self.DoDragDrop()))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        parent.add_space(loopvar.indentation)
+        self._child3(parent, loopvar)
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['prefix'] = loopvar.bullet_text
+        properties['paragraph'] = loopvar.item
+        properties['selection'] = loopvar.selection
+        properties['indentation'] = loopvar.indentation
+        sizer["proportion"] = 1
+        widget = parent.add(TextView, properties, handlers, sizer)
         parent = widget
         parent.reset()
 
@@ -4465,6 +4536,9 @@ class Text(TextGui, ParagraphBaseMixin):
 class TextView(TextViewGui):
 
     LINE_HEIGHT = 1.2
+    DEFAULTS = {
+        "prefix": "",
+    }
     token = None
 
     def _get_max_width(self):
@@ -4482,12 +4556,15 @@ class TextView(TextViewGui):
             post_token_click(self, self.token)
 class TextFragmentsProjection(BaseProjection):
 
-    def __init__(self, project, paragraph, selection):
+    def __init__(self, project, paragraph, selection, prefix):
         self.project = project
         self.paragraph = paragraph
         self.selection = selection
+        self.prefix = prefix
 
     def create_projection(self, editor):
+        if self.prefix:
+            self.add(self.prefix, self.project.get_style(TokenType.RLiterate))
         fragments = self.paragraph.fragments
         for fragment_index, fragment in enumerate(fragments):
             fragment_selection = self.selection.get(fragment_index)
@@ -4628,57 +4705,33 @@ class Quote(QuoteGui, ParagraphBaseMixin):
             "To text",
             lambda: self.paragraph.update({"type": "text"})
         )
-class List(ParagraphBase):
+class List(ListGui, ParagraphBaseMixin):
 
-    INDENT = 20
+    def _get_rows(self):
+        self.rows = []
+        self._add_items(self.paragraph.children, self.paragraph.child_type, self.selection)
+        return self.rows
 
-    def CreateView(self):
-        view = VerticalPanel(self)
-        view.Font = create_font(**self.project.theme.text_font)
-        self.add_items(view, self.paragraph.children, self.paragraph.child_type, self.selection)
-        return view
-
-    def CreateEdit(self, extra):
-        return TextEdit(
-            self,
-            self.project,
-            self.paragraph,
-            self.view,
-            extra
-        )
-
-    def add_items(self, view, items, child_type, selection, indicies=[]):
+    def _add_items(self, items, child_type, selection, indentation=0):
         for index, item in enumerate(items):
             child_selection = selection.get(index)
-            inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            inner_sizer.Add((self.INDENT*len(indicies), 1))
-            bullet = self._create_bullet_widget(view, child_type, index)
-            inner_sizer.Add(bullet)
-            inner_sizer.Add(
-                TextView(
-                    view,
-                    project=self.project,
-                    paragraph=item,
-                    selection=child_selection,
-                    indentation=self.INDENT*len(indicies)+bullet.GetMinSize()[0]
-                ),
-                proportion=1
-            )
-            view.AppendChild(inner_sizer, flag=wx.EXPAND)
-            self.add_items(view, item.children, item.child_type, child_selection, indicies+[index])
-
-    def _create_bullet_widget(self, view, list_type, index):
-        return TokenView(
-            view,
-            self.project,
-            [Token(self._get_bullet_text(list_type, index))]
-        )
+            self.rows.append(ListRow(
+                item,
+                self._get_bullet_text(child_type, index),
+                20*indentation,
+                child_selection
+            ))
+            self._add_items(item.children, item.child_type, child_selection, indentation+1)
 
     def _get_bullet_text(self, list_type, index):
         if list_type == "ordered":
             return "{}. ".format(index + 1)
         else:
             return u"\u2022 "
+
+    def _create_font(self):
+        return create_font(**self.project.theme.text_font)
+ListRow = namedtuple("ListRow", ["item", "bullet_text", "indentation", "selection"])
 class Code(ParagraphBase):
 
     def CreateView(self):
