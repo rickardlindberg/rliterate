@@ -11129,7 +11129,7 @@
 ],
 "fragments":[
 {
-"text":"def _project_reference(self, editor, fragment, index, selection):\n    self._add_markup(\"[[\")\n    self.add(\n        fragment.text,\n        self.project.get_style(TokenType.RLiterate.Reference),\n        selection.value,\n        selection,\n        extra={\"index\": index}\n    )\n    self._set_key_handler(editor, fragment, \"text\", selection)\n    self._add_markup(\"]]\")\n",
+"text":"def _project_reference(self, editor, fragment, index, selection):\n    self._add_markup(\"[[\")\n    self.add(\n        fragment.title,\n        self.project.get_style(TokenType.RLiterate.Reference),\n        selection.value,\n        selection,\n        extra={\"index\": index}\n    )\n    self._set_key_handler(editor, fragment, \"text\", selection)\n    self._add_markup(\"]]\")\n",
 "type":"code"
 }
 ],

@@ -4566,7 +4566,7 @@ class TextFragmentsProjection(BaseProjection):
     def _project_reference(self, editor, fragment, index, selection):
         self._add_markup("[[")
         self.add(
-            fragment.text,
+            fragment.title,
             self.project.get_style(TokenType.RLiterate.Reference),
             selection.value,
             selection,
