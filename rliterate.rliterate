@@ -6311,12 +6311,21 @@
 "type":"variable"
 },
 {
+"text":".",
+"type":"code"
+},
+{
+"id":"57fdfcbc2bff420ebb99bb9275a79cea",
+"type":"variable"
+},
+{
 "text":"()\n",
 "type":"code"
 }
 ],
 "id":"a8697eb2058e418aa310a9dfbc11723c",
 "language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -6714,7 +6723,15 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, ",
+"text":"(namedtuple(\"",
+"type":"code"
+},
+{
+"id":"eabcfbe8e6c349d497353e55ad0b3685",
+"type":"variable"
+},
+{
+"text":"\", [\"",
 "type":"code"
 },
 {
@@ -6722,23 +6739,23 @@
 "type":"variable"
 },
 {
-"text":"=None, trail=None):\n        self.",
+"text":"\", \"trail\"])):\n\n    @classmethod\n    def ",
 "type":"code"
 },
 {
-"id":"90d6de1e6f714f1497872ca757b501b6",
+"id":"57fdfcbc2bff420ebb99bb9275a79cea",
 "type":"variable"
 },
 {
-"text":" = ",
+"text":"(self):\n        return ",
 "type":"code"
 },
 {
-"id":"90d6de1e6f714f1497872ca757b501b6",
+"id":"eabcfbe8e6c349d497353e55ad0b3685",
 "type":"variable"
 },
 {
-"text":"\n        self.trail = [] if trail is None else trail\n\n    def __eq__(self, other):\n        return self.value == other.value\n\n    def __ne__(self, other):\n        return not (self == other)\n\n    @property\n    def ",
+"text":"(None, [])\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -6754,7 +6771,15 @@
 "type":"variable"
 },
 {
-"text":" is not None\n\n    def get(self, key):\n        return Selection(\n            self.",
+"text":" is not None\n\n    def get(self, key):\n        return ",
+"type":"code"
+},
+{
+"id":"eabcfbe8e6c349d497353e55ad0b3685",
+"type":"variable"
+},
+{
+"text":"(\n            self.",
 "type":"code"
 },
 {
@@ -6770,7 +6795,15 @@
 "type":"variable"
 },
 {
-"text":" is not None else None,\n            trail=[key]+self.trail\n        )\n\n    def create(self, value):\n        for key in self.trail:\n            value = {key: value}\n        return Selection(value)\n",
+"text":" is not None else None,\n            trail=[key]+self.trail\n        )\n\n    def create(self, value):\n        for key in self.trail:\n            value = {key: value}\n        return ",
+"type":"code"
+},
+{
+"id":"eabcfbe8e6c349d497353e55ad0b3685",
+"type":"variable"
+},
+{
+"text":"(value, [])\n",
 "type":"code"
 }
 ],
@@ -20186,6 +20219,7 @@
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
 "54f99e72df0b4006b2bd90465c8558c4":"TableOfContentsButton",
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
+"57fdfcbc2bff420ebb99bb9275a79cea":"empty",
 "5a66414227d04b228db871fc070f0b19":"_line_height_pixels",
 "5affa32461a54d70a681332cbfbcac11":"SetParameters",
 "5bf37424f5634fcaaf91e43d607a41ca":"GuiUpdatePanel",
