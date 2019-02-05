@@ -6779,7 +6779,15 @@
 "type":"variable"
 },
 {
-"text":"(new_current, trail=self.trail+[key])\n\n    def create(self, value):\n        return ",
+"text":"(new_current, trail=self.trail+[key])\n\n    def ",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(self, value):\n        return ",
 "type":"code"
 },
 {
@@ -9308,7 +9316,15 @@
 "type":"variable"
 },
 {
-"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.",
+"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n            )\n        if self.selection.",
 "type":"code"
 },
 {
@@ -10953,7 +10969,15 @@
 "type":"variable"
 },
 {
-"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.",
+"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n            )\n        if self.selection.",
 "type":"code"
 },
 {
@@ -11003,7 +11027,15 @@
 "type":"variable"
 },
 {
-"text":")\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.page.set_title(text)\n            self.project.selection = self.selection.create(index)\n",
+"text":")\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.page.set_title(text)\n            self.project.selection = self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n",
 "type":"code"
 }
 ],
@@ -11506,7 +11538,15 @@
 "type":"variable"
 },
 {
-"text":")\n        self.project = project\n        self.fragment = fragment\n        self.attr = attr\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            setattr(self.fragment, self.attr, text)\n            self.project.selection = self.selection.create(index)\n",
+"text":")\n        self.project = project\n        self.fragment = fragment\n        self.attr = attr\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            setattr(self.fragment, self.attr, text)\n            self.project.selection = self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n",
 "type":"code"
 }
 ],
@@ -15263,7 +15303,23 @@
 ],
 "fragments":[
 {
-"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self._character_selection = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection=None, path=None, flag=False, extra={}):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n                self._character_selection = (len(self.characters), \"left\")\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n                self._character_selection = (len(self.characters), \"right\")\n            elif index == selection:\n                marker = \"beam_left\"\n                self._character_selection = (len(self.characters), \"left\")\n            else:\n                marker = None\n            extra = dict(extra)\n            if path is not None:\n                extra[\"left_selection\"] = path.create(index)\n                extra[\"right_selection\"] = path.create(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
+"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self._character_selection = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection=None, path=None, flag=False, extra={}):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n                self._character_selection = (len(self.characters), \"left\")\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n                self._character_selection = (len(self.characters), \"right\")\n            elif index == selection:\n                marker = \"beam_left\"\n                self._character_selection = (len(self.characters), \"left\")\n            else:\n                marker = None\n            extra = dict(extra)\n            if path is not None:\n                extra[\"left_selection\"] = path.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n                extra[\"right_selection\"] = path.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
 "type":"code"
 }
 ],
@@ -20427,6 +20483,7 @@
 "1644b9094da3457895ba66eb283b4a9f":"fragments",
 "1680a175cf4348e4ba5131efba2cb1c9":"line_height",
 "198e9171ef6745c9b01c3ad10c882f3b":"_font",
+"1b157d3f9e46428885021a3e3b3b2c15":"create",
 "1c7f69114ac14c80b2fb421ea7eda3a2":"notify",
 "1cb3a1fa40584378a449abf60a9e3e6c":"new_page_dict",
 "1d1c2a7d8f224b5aa30e0709f167a68e":"Cancel",
