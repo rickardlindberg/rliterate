@@ -12117,92 +12117,47 @@
 },
 {
 "chunkpath":[
-"classes"
+"base base classes"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"class Image(",
+"text":"panel ",
 "type":"code"
 },
 {
-"id":"07b4671de05745a7bddd1eea74535277",
+"id":"6f631ce82ca14586b46f270fb83c1b97",
 "type":"variable"
 },
 {
-"text":"):\n\n    PADDING = 30\n\n    def ",
+"text":" %vbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    ",
 "type":"code"
 },
 {
-"id":"740055857bb244038c203cea23c1af69",
+"id":"84d262d7705a405699ad48259d50482d",
 "type":"variable"
 },
 {
-"text":"(self):\n        view = ",
+"text":"(\n        bitmap    = self._get_bitmap()\n        selection = self.selection.get(\"image\")\n        %align_center\n    )\n    ",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"41eefd32459a4df99b5ebfb90f759c3b",
 "type":"variable"
 },
 {
-"text":"(self)\n        bitmap = view.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            wx.StaticBitmap(\n                view,\n                bitmap=",
-"type":"code"
-},
-{
-"id":"a6d32657c47b44f59594cd7d8030b0d6",
-"type":"variable"
-},
-{
-"text":"(\n                    self.paragraph.image_base64,\n                    self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":"\n                )\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        view.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            TextView(\n                view,\n                project=self.project,\n                paragraph=self.paragraph,\n                selection=self.selection,\n                indentation=2*self.PADDING\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        self.BindMouse(view, [view, bitmap])\n        return view\n\n    def ",
-"type":"code"
-},
-{
-"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
-"type":"variable"
-},
-{
-"text":"(self, extra):\n        return ImageEdit(\n            self,\n            self.project,\n            self.paragraph,\n            self.view\n        )\n",
+"text":"(\n        project     = self.project\n        paragraph   = self.paragraph\n        selection   = self.selection.get(\"text\")\n        indentation = 60\n        %align_center\n    )\n    @drag        = self.DoDragDrop()\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
-"id":"8856d2dc36b846f8a763ab7e2bdef323",
-"language":"",
-"post_process":[],
+"id":"ff1ddb3847cf432fafe5eab1a0b4164b",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
 "type":"code"
 },
 {
@@ -12214,55 +12169,23 @@
 ],
 "fragments":[
 {
-"text":"class ImageEdit(",
+"text":"class Image(",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"6f631ce82ca14586b46f270fb83c1b97",
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, project, paragraph, view):\n        ",
+"text":", ",
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"912bfa09cb014fa7890b442c2aa7750a",
 "type":"variable"
 },
 {
-"text":".__init__(self, parent)\n        self.Font = ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
-"type":"variable"
-},
-{
-"text":")\n        self.project = project\n        self.paragraph = paragraph\n        self.image = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            wx.StaticBitmap(\n                self,\n                bitmap=",
+"text":"):\n\n    def _get_bitmap(self):\n        return ",
 "type":"code"
 },
 {
@@ -12270,7 +12193,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                    paragraph.image_base64,\n                    self.project.",
+"text":"(\n            self.paragraph.image_base64,\n            self.project.",
 "type":"code"
 },
 {
@@ -12286,67 +12209,13 @@
 "type":"variable"
 },
 {
-"text":"\n                )\n            ),\n            flag=wx.ALIGN_CENTER\n        )\n        self.text = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            MultilineTextCtrl(self, value=fragments_to_text(paragraph.",
-"type":"code"
-},
-{
-"id":"fb8af53f33454166a0737b02b9413a0e",
-"type":"variable"
-},
-{
-"text":")),\n            flag=wx.EXPAND\n        )\n        paste_button = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            wx.Button(self, label=\"Paste\")\n        )\n        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)\n        self.image_base64 = None\n\n    def _on_paste(self, event):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            bitmap = image_data.GetBitmap()\n            self.image.SetBitmap(fit_image(\n                wx.ImageFromBitmap(bitmap),\n                self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":"\n            ).ConvertToBitmap())\n            self.image_base64 = bitmap_to_base64(bitmap)\n            self.GetTopLevelParent().ChildReRendered()\n\n    def Save(self):\n        value = {\"",
-"type":"code"
-},
-{
-"id":"34b80c8f13774f26984aa5c2d4969ecf",
-"type":"variable"
-},
-{
-"text":"\": ",
-"type":"code"
-},
-{
-"id":"74949da897df45e6862e45ffe667fc6e",
-"type":"variable"
-},
-{
-"text":"(self.text.Value)}\n        if self.image_base64:\n            value[\"image_base64\"] = self.image_base64\n        self.paragraph.update(value)\n",
+"text":"\n        )\n\n    def _get_paste(self):\n        image_data = wx.BitmapDataObject()\n        if wx.TheClipboard.Open():\n            success = wx.TheClipboard.GetData(image_data)\n            wx.TheClipboard.Close()\n        if success:\n            return bitmap_to_base64(image_data.GetBitmap())\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Paste image\",\n            lambda: self.paragraph.update({\"image_base64\": self._get_paste()})\n        )\n",
 "type":"code"
 }
 ],
-"id":"5615fbbaed2c4cffa7b87de2617c6c11",
+"id":"8856d2dc36b846f8a763ab7e2bdef323",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -12366,7 +12235,7 @@
 "type":"variable"
 },
 {
-"text":"(data, max_width):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), max_width)\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (16, 16)\n        )\n",
+"text":"(data, max_width):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), max_width)\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (64, 64)\n        )\n",
 "type":"code"
 }
 ],
@@ -17262,6 +17131,56 @@
 "type":"code"
 },
 {
+"id":"84d262d7705a405699ad48259d50482d",
+"type":"variable"
+},
+{
+"text":"(wx.StaticBitmap, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.StaticBitmap.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n\n    def _update_builtin(self):\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"._update_builtin(self)\n        if self.did_change(\"bitmap\"):\n            self.SetBitmap(self.values[\"bitmap\"])\n",
+"type":"code"
+}
+],
+"id":"578ad98f3f714d5c83a338a751db3671",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
 "id":"7bb593936bf64710a372c6ef49286159",
 "type":"variable"
 },
@@ -20609,6 +20528,7 @@
 "6a9ba1a85a8845b4b4f28b8b99c07f83":"QuoteGui",
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
+"6f631ce82ca14586b46f270fb83c1b97":"ImageGui",
 "6f6cdf188e064952ba144f0cd1048562":"get_page",
 "71666f5a2b04456783d9174a5e4c5128":"add_child",
 "72f25430d25e4a469bfa5e017370e0f2":"Document",
@@ -20627,6 +20547,7 @@
 "81e263c387054c5b926af1ca2dda72d2":"get_paragraph",
 "81f20cc9341b426ba57d333bd45a2eee":"im_modify",
 "82902f4f6d91479f88d33e04619a3915":"chain",
+"84d262d7705a405699ad48259d50482d":"Bitmap",
 "84efae9f935b4926b3f8658d9d4f39c2":"GuiFrameworkWidgetInfo",
 "84f83f7012144146b77d3fdd168b2d61":"TextProjectionEditor",
 "879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",

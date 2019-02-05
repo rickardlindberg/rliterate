@@ -311,6 +311,16 @@ class Label(wx.StaticText, GuiFrameworkBaseMixin):
     def __init__(self, parent, **kwargs):
         wx.StaticText.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
+class Bitmap(wx.StaticBitmap, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.StaticBitmap.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+
+    def _update_builtin(self):
+        GuiFrameworkBaseMixin._update_builtin(self)
+        if self.did_change("bitmap"):
+            self.SetBitmap(self.values["bitmap"])
 class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, **kwargs):
@@ -1177,6 +1187,69 @@ class ListGui(GuiFrameworkPanel):
         properties['selection'] = loopvar.selection
         properties['indentation'] = loopvar.indentation
         sizer["proportion"] = 1
+        widget = parent.add(TextView, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+class ImageGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        self._child1(parent, loopvar)
+        self._child2(parent, loopvar)
+        handlers.append(('drag', lambda event: self.DoDragDrop()))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['bitmap'] = self._get_bitmap()
+        properties['selection'] = self.selection.get('image')
+        sizer["flag"] |= wx.ALIGN_CENTER
+        widget = parent.add(Bitmap, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child2(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['paragraph'] = self.paragraph
+        properties['selection'] = self.selection.get('text')
+        properties['indentation'] = 60
+        sizer["flag"] |= wx.ALIGN_CENTER
         widget = parent.add(TextView, properties, handlers, sizer)
         parent = widget
         parent.reset()
@@ -5074,88 +5147,27 @@ class CodeEditor(VerticalPanel):
                 self.paragraph.post_process = self.post_process.Value.strip().split(" ")
             else:
                 self.paragraph.post_process = []
-class Image(ParagraphBase):
+class Image(ImageGui, ParagraphBaseMixin):
 
-    PADDING = 30
+    def _get_bitmap(self):
+        return base64_to_bitmap(
+            self.paragraph.image_base64,
+            self.project.theme.page_body_width
+        )
 
-    def CreateView(self):
-        view = VerticalPanel(self)
-        bitmap = view.AppendChild(
-            wx.StaticBitmap(
-                view,
-                bitmap=base64_to_bitmap(
-                    self.paragraph.image_base64,
-                    self.project.theme.page_body_width
-                )
-            ),
-            flag=wx.ALIGN_CENTER
-        )
-        view.AppendChild(
-            TextView(
-                view,
-                project=self.project,
-                paragraph=self.paragraph,
-                selection=self.selection,
-                indentation=2*self.PADDING
-            ),
-            flag=wx.ALIGN_CENTER
-        )
-        self.BindMouse(view, [view, bitmap])
-        return view
-
-    def CreateEdit(self, extra):
-        return ImageEdit(
-            self,
-            self.project,
-            self.paragraph,
-            self.view
-        )
-class ImageEdit(VerticalPanel):
-
-    def __init__(self, parent, project, paragraph, view):
-        VerticalPanel.__init__(self, parent)
-        self.Font = create_font(**project.theme.editor_font)
-        self.project = project
-        self.paragraph = paragraph
-        self.image = self.AppendChild(
-            wx.StaticBitmap(
-                self,
-                bitmap=base64_to_bitmap(
-                    paragraph.image_base64,
-                    self.project.theme.page_body_width
-                )
-            ),
-            flag=wx.ALIGN_CENTER
-        )
-        self.text = self.AppendChild(
-            MultilineTextCtrl(self, value=fragments_to_text(paragraph.fragments)),
-            flag=wx.EXPAND
-        )
-        paste_button = self.AppendChild(
-            wx.Button(self, label="Paste")
-        )
-        paste_button.Bind(wx.EVT_BUTTON, self._on_paste)
-        self.image_base64 = None
-
-    def _on_paste(self, event):
+    def _get_paste(self):
         image_data = wx.BitmapDataObject()
         if wx.TheClipboard.Open():
             success = wx.TheClipboard.GetData(image_data)
             wx.TheClipboard.Close()
         if success:
-            bitmap = image_data.GetBitmap()
-            self.image.SetBitmap(fit_image(
-                wx.ImageFromBitmap(bitmap),
-                self.project.theme.page_body_width
-            ).ConvertToBitmap())
-            self.image_base64 = bitmap_to_base64(bitmap)
-            self.GetTopLevelParent().ChildReRendered()
+            return bitmap_to_base64(image_data.GetBitmap())
 
-    def Save(self):
-        value = {"fragments": text_to_fragments(self.text.Value)}
-        if self.image_base64:
-            value["image_base64"] = self.image_base64
-        self.paragraph.update(value)
+    def AddContextMenuItems(self, menu):
+        menu.AppendItem(
+            "Paste image",
+            lambda: self.paragraph.update({"image_base64": self._get_paste()})
+        )
 class ExpandedCode(ParagraphBase):
 
     def CreateView(self):
@@ -6068,7 +6080,7 @@ def base64_to_bitmap(data, max_width):
         return wx.ArtProvider.GetBitmap(
             wx.ART_MISSING_IMAGE,
             wx.ART_BUTTON,
-            (16, 16)
+            (64, 64)
         )
 def bitmap_to_base64(bitmap):
     output = StringIO.StringIO()
