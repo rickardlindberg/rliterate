@@ -306,6 +306,11 @@ class Button(wx.Button, GuiFrameworkBaseMixin):
         wx.Button.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
+class Label(wx.StaticText, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, **kwargs):
+        wx.StaticText.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
 class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, **kwargs):
@@ -1234,6 +1239,134 @@ class ListGui(GuiFrameworkPanel):
         properties['indentation'] = loopvar.indentation
         sizer["proportion"] = 1
         widget = parent.add(TextView, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+class FactoryGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+            'background': '#f0f0f0',
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.add_space(self.project.theme.paragraph_space)
+        self._child1(parent, loopvar)
+        parent.add_space(self.project.theme.paragraph_space)
+        self._child2(parent, loopvar)
+        parent.add_space(self.project.theme.paragraph_space)
+        handlers.append(('drag', lambda event: self.DoDragDrop()))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.ALIGN_CENTER
+        properties['label'] = 'Factory'
+        widget = parent.add(Label, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child2(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.ALIGN_CENTER
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child4(parent, loopvar)
+        self._child5(parent, loopvar)
+        self._child6(parent, loopvar)
+        self._child7(parent, loopvar)
+        self._child8(parent, loopvar)
+
+    def _child4(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["border"] = 2
+        sizer["flag"] |= wx.ALL
+        handlers.append(('button', lambda event: self._add_text()))
+        properties['label'] = 'Text'
+        widget = parent.add(Button, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["border"] = 2
+        sizer["flag"] |= wx.ALL
+        handlers.append(('button', lambda event: self._add_quote()))
+        properties['label'] = 'Quote'
+        widget = parent.add(Button, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child6(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["border"] = 2
+        sizer["flag"] |= wx.ALL
+        handlers.append(('button', lambda event: self._add_list()))
+        properties['label'] = 'List'
+        widget = parent.add(Button, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child7(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["border"] = 2
+        sizer["flag"] |= wx.ALL
+        handlers.append(('button', lambda event: self._add_code()))
+        properties['label'] = 'Code'
+        widget = parent.add(Button, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child8(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["border"] = 2
+        sizer["flag"] |= wx.ALL
+        handlers.append(('button', lambda event: self._add_image()))
+        properties['label'] = 'Image'
+        widget = parent.add(Button, properties, handlers, sizer)
         parent = widget
         parent.reset()
 
@@ -5209,35 +5342,22 @@ class ExpandedCode(ParagraphBase):
         )
         view.SetBackgroundColour((240, 240, 240))
         return view
-class Factory(ParagraphBase):
+class Factory(FactoryGui, ParagraphBaseMixin):
 
-    def CreateView(self):
-        view = VerticalPanel(self)
-        MouseEventHelper.bind(
-            [view],
-            drag=self.DoDragDrop,
-            right_click=lambda event: self.ShowContextMenu()
-        )
-        view.SetBackgroundColour((240, 240, 240))
-        view.AppendChild(
-            wx.StaticText(view, label="Factory"),
-            flag=wx.TOP|wx.ALIGN_CENTER,
-            border=self.project.theme.paragraph_space
-        )
-        self.button_panel = view.AppendChild(
-            HorizontalPanel(view),
-            flag=wx.TOP|wx.ALIGN_CENTER,
-            border=self.project.theme.paragraph_space
-        )
-        self._add_button("Text", {
+    def _add_text(self):
+        self.paragraph.update({
             "type": "text",
             "fragments": [{"type": "text", "text": "Enter text here..."}],
         })
-        self._add_button("Quote", {
+
+    def _add_quote(self):
+        self.paragraph.update({
             "type": "quote",
             "fragments": [{"type": "text", "text": "Enter quote here..."}],
         })
-        self._add_button("List", {
+
+    def _add_list(self):
+        self.paragraph.update({
             "type": "list",
             "child_type": "unordered",
             "children": [{
@@ -5246,31 +5366,20 @@ class Factory(ParagraphBase):
                 "fragments": [{"type": "text", "text": "Enter list item here..."}],
             }],
         })
-        self._add_button("Code", {
+
+    def _add_code(self):
+        self.paragraph.update({
             "type": "code",
             "filepath": [],
             "chunkpath": [],
             "fragments": [{"type": "code", "text": "Enter code here..."}],
         })
-        self._add_button("Image", {
+
+    def _add_image(self):
+        self.paragraph.update({
             "type": "image",
             "fragments": [{"type": "text", "text": "Enter image text here..."}],
         })
-        view.AppendSpace(self.project.theme.paragraph_space)
-        return view
-
-    def _add_button(self, text, value):
-        def click_handler(event):
-            if self.project.active_editor is None:
-                self.paragraph.update(value)
-            else:
-                show_edit_in_progress_error(self)
-        button = self.button_panel.AppendChild(
-            wx.Button(self.button_panel, label=text),
-            flag=wx.ALL,
-            border=2
-        )
-        button.Bind(wx.EVT_BUTTON, click_handler)
 class SettingsDialog(wx.Dialog):
 
     def __init__(self, parent, project):

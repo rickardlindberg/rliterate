@@ -13088,14 +13088,33 @@
 "id":"e0ecf028bb904931882c2fe4694d87e2",
 "paragraphs":[
 {
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
 "fragments":[
 {
-"text":"A factory can not be edited, so only the view is provided.",
-"type":"text"
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"f78d857110704398ab4378f235a699a8",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    #background = \"#f0f0f0\"\n    BoxSpace(self.project.theme.paragraph_space)\n    Label(%align_center label=\"Factory\")\n    BoxSpace(self.project.theme.paragraph_space)\n    panel(%align_center) %hbox {\n        Button(%border[2,ALL] @button=self._add_text()  label=\"Text\")\n        Button(%border[2,ALL] @button=self._add_quote() label=\"Quote\")\n        Button(%border[2,ALL] @button=self._add_list()  label=\"List\")\n        Button(%border[2,ALL] @button=self._add_code()  label=\"Code\")\n        Button(%border[2,ALL] @button=self._add_image() label=\"Image\")\n    }\n    BoxSpace(self.project.theme.paragraph_space)\n    @drag        = self.DoDragDrop()\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
 }
 ],
-"id":"e36c95740f9840f09b3819aa281fedd6",
-"type":"text"
+"id":"da08352dff844b84b44eabce55bfd1e5",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
 },
 {
 "chunkpath":[
@@ -13110,75 +13129,19 @@
 "type":"code"
 },
 {
-"id":"07b4671de05745a7bddd1eea74535277",
+"id":"f78d857110704398ab4378f235a699a8",
 "type":"variable"
 },
 {
-"text":"):\n\n    def ",
+"text":", ",
 "type":"code"
 },
 {
-"id":"740055857bb244038c203cea23c1af69",
+"id":"912bfa09cb014fa7890b442c2aa7750a",
 "type":"variable"
 },
 {
-"text":"(self):\n        view = ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(self)\n        MouseEventHelper.bind(\n            [view],\n            drag=self.DoDragDrop,\n            right_click=lambda event: self.ShowContextMenu()\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        view.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            wx.StaticText(view, label=\"Factory\"),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"30eeb77f05c34590a6498edb391d0916",
-"type":"variable"
-},
-{
-"text":"\n        )\n        self.button_panel = view.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            HorizontalPanel(view),\n            flag=wx.TOP|wx.ALIGN_CENTER,\n            border=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"30eeb77f05c34590a6498edb391d0916",
-"type":"variable"
-},
-{
-"text":"\n        )\n        self._add_button(\"Text\", {\n            \"type\": \"text\",\n            \"",
+"text":"):\n\n    def _add_text(self):\n        self.paragraph.update({\n            \"type\": \"text\",\n            \"",
 "type":"code"
 },
 {
@@ -13186,7 +13149,7 @@
 "type":"variable"
 },
 {
-"text":"\": [{\"type\": \"text\", \"text\": \"Enter text here...\"}],\n        })\n        self._add_button(\"Quote\", {\n            \"type\": \"quote\",\n            \"",
+"text":"\": [{\"type\": \"text\", \"text\": \"Enter text here...\"}],\n        })\n\n    def _add_quote(self):\n        self.paragraph.update({\n            \"type\": \"quote\",\n            \"",
 "type":"code"
 },
 {
@@ -13194,7 +13157,7 @@
 "type":"variable"
 },
 {
-"text":"\": [{\"type\": \"text\", \"text\": \"Enter quote here...\"}],\n        })\n        self._add_button(\"List\", {\n            \"type\": \"list\",\n            \"child_type\": \"unordered\",\n            \"children\": [{\n                \"child_type\": None,\n                \"children\": [],\n                \"",
+"text":"\": [{\"type\": \"text\", \"text\": \"Enter quote here...\"}],\n        })\n\n    def _add_list(self):\n        self.paragraph.update({\n            \"type\": \"list\",\n            \"child_type\": \"unordered\",\n            \"children\": [{\n                \"child_type\": None,\n                \"children\": [],\n                \"",
 "type":"code"
 },
 {
@@ -13202,7 +13165,7 @@
 "type":"variable"
 },
 {
-"text":"\": [{\"type\": \"text\", \"text\": \"Enter list item here...\"}],\n            }],\n        })\n        self._add_button(\"Code\", {\n            \"type\": \"code\",\n            \"filepath\": [],\n            \"chunkpath\": [],\n            \"",
+"text":"\": [{\"type\": \"text\", \"text\": \"Enter list item here...\"}],\n            }],\n        })\n\n    def _add_code(self):\n        self.paragraph.update({\n            \"type\": \"code\",\n            \"filepath\": [],\n            \"chunkpath\": [],\n            \"",
 "type":"code"
 },
 {
@@ -13210,7 +13173,7 @@
 "type":"variable"
 },
 {
-"text":"\": [{\"type\": \"code\", \"text\": \"Enter code here...\"}],\n        })\n        self._add_button(\"Image\", {\n            \"type\": \"image\",\n            \"",
+"text":"\": [{\"type\": \"code\", \"text\": \"Enter code here...\"}],\n        })\n\n    def _add_image(self):\n        self.paragraph.update({\n            \"type\": \"image\",\n            \"",
 "type":"code"
 },
 {
@@ -13218,51 +13181,13 @@
 "type":"variable"
 },
 {
-"text":"\": [{\"type\": \"text\", \"text\": \"Enter image text here...\"}],\n        })\n        view.",
-"type":"code"
-},
-{
-"id":"31a17b208536469099ae5c084d35590d",
-"type":"variable"
-},
-{
-"text":"(self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"30eeb77f05c34590a6498edb391d0916",
-"type":"variable"
-},
-{
-"text":")\n        return view\n\n    def _add_button(self, text, value):\n        def click_handler(event):\n            if self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" is None:\n                self.paragraph.update(value)\n            else:\n                show_edit_in_progress_error(self)\n        button = self.button_panel.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            wx.Button(self.button_panel, label=text),\n            flag=wx.ALL,\n            border=2\n        )\n        button.Bind(wx.EVT_BUTTON, click_handler)\n",
+"text":"\": [{\"type\": \"text\", \"text\": \"Enter image text here...\"}],\n        })\n",
 "type":"code"
 }
 ],
 "id":"5e54a4dc1241440c84a432b13ff071d9",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -16308,7 +16233,15 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"sizerReserve\"]\n  borderSide =\n    | side:x (ws '|' side)*:xs ",
+"text":"-> [\"sizerReserve\"]\n    | ws '%align_center' !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"sizerAlignCenter\"]\n  borderSide =\n    | side:x (ws '|' side)*:xs ",
 "type":"code"
 },
 {
@@ -16665,7 +16598,7 @@
 "type":"variable"
 },
 {
-"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n| [\"derived\" .:x ast:y] -> {\n    @derived { repr(x) \": \" y \",\\n\" }\n  }\n| [\"string\" .:x] -> { repr(x) }\n| [\"int\" .:x] -> { repr(x) }\n| [\"list\" astList:x] -> { \"[\" x \"]\" }\n| [\"sizerBorder\" ast:x [border*:y]] -> { @child { \"sizer[\\\"border\\\"] = \" x \"\\n\" y } }\n| [\"sizerProportion\" ast:x]         -> { @child { \"sizer[\\\"proportion\\\"] = \" x \"\\n\" } }\n| [\"sizerExpand\"]                   -> { @child { \"sizer[\\\"flag\\\"] |= wx.EXPAND\\n\" } }\n| [\"sizerReserve\"]                  -> { @child { \"sizer[\\\"flag\\\"] |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n",
+"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n| [\"derived\" .:x ast:y] -> {\n    @derived { repr(x) \": \" y \",\\n\" }\n  }\n| [\"string\" .:x] -> { repr(x) }\n| [\"int\" .:x] -> { repr(x) }\n| [\"list\" astList:x] -> { \"[\" x \"]\" }\n| [\"sizerBorder\" ast:x [border*:y]] -> { @child { \"sizer[\\\"border\\\"] = \" x \"\\n\" y } }\n| [\"sizerProportion\" ast:x]         -> { @child { \"sizer[\\\"proportion\\\"] = \" x \"\\n\" } }\n| [\"sizerExpand\"]                   -> { @child { \"sizer[\\\"flag\\\"] |= wx.EXPAND\\n\" } }\n| [\"sizerReserve\"]                  -> { @child { \"sizer[\\\"flag\\\"] |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n| [\"sizerAlignCenter\"]              -> { @child { \"sizer[\\\"flag\\\"] |= wx.ALIGN_CENTER\\n\" } }\n",
 "type":"code"
 }
 ],
@@ -17271,6 +17204,48 @@
 }
 ],
 "id":"ad2732c68e4e4076a3a82ad201912e86",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"33e402848c7a42ebb3de4b2fe5b26ad2",
+"type":"variable"
+},
+{
+"text":"(wx.StaticText, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.StaticText.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n",
+"type":"code"
+}
+],
+"id":"078f210d1a43409c87e70ac8bf1aa7f3",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -20574,6 +20549,7 @@
 "31a17b208536469099ae5c084d35590d":"AppendSpace",
 "3208a1df72ac489b8ec6d2200e211220":"_boxes_by_style",
 "33a426d54550425b9af7aa62911343b8":"PageContainer",
+"33e402848c7a42ebb3de4b2fe5b26ad2":"Label",
 "3457c112c47c41a293d77cc79f99badf":"VerticalScrolledWindow",
 "34b80c8f13774f26984aa5c2d4969ecf":"fragments",
 "359755e756af4e708b237cd9753ae046":"AppendChild",
@@ -20783,6 +20759,7 @@
 "f63325de85e5449ab06aa46ef2d90278":"fragments",
 "f6b2d4f94b72424a88a47d636753a2b9":"min_or_none",
 "f7276b0256114e3999f63bdc6d7ec078":"StyledText",
+"f78d857110704398ab4378f235a699a8":"FactoryGui",
 "f7dfdb312fdc4b0faf3df092e7f58153":"present",
 "f88683cb708944e3bf47d9f8077840b0":"insert_child_at_index",
 "f9605031f42b4c37a170779d7ee7fe6e":"UpdateTokens",
