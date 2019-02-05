@@ -24,9 +24,9 @@ import wx
 import wx.richtext
 import wx.lib.newevent
 UNDO_BUFFER_SIZE = 10
+CONTINUE_PROCESSING = object()
 TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
 HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
-CONTINUE_PROCESSING = object()
 EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 def rltime(text):
     def wrap(fn):
@@ -1073,67 +1073,6 @@ class TextGui(GuiFrameworkPanel):
     @property
     def selection(self):
         return self.values["selection"]
-class TextViewGui(GuiFrameworkPanel):
-
-    def _get_derived(self):
-        return {
-        }
-
-    def _create_gui(self):
-        self._root_widget = GuiFrameworkWidgetInfo(self)
-        self._child_root(self._root_widget, first=True)
-
-    def _update_gui(self):
-        self._child_root(self._root_widget)
-
-    def _child_root(self, parent, loopvar=None, first=False):
-        parent.reset()
-        handlers = []
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._child1(parent, loopvar)
-        if first:
-            parent.listen(handlers)
-
-    def _child1(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['projection'] = TextFragmentsProjection(self.project, self.paragraph, self.selection, self.prefix)
-        properties['max_width'] = self._get_max_width()
-        properties['line_height'] = self.LINE_HEIGHT
-        properties['skip_extra_space'] = True
-        properties['font'] = self._create_font()
-        handlers.append(('double_click', lambda event: self.text.Select(self.project, event.Position)))
-        handlers.append(('mouse_move', lambda event: self._on_mouse_move(event)))
-        handlers.append(('click', lambda event: self._on_click()))
-        sizer["proportion"] = 1
-        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
-        if parent.inside_loop:
-            parent.add_loop_var('text', widget.widget)
-        else:
-            self.text = widget.widget
-        parent = widget
-        parent.reset()
-
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def paragraph(self):
-        return self.values["paragraph"]
-
-    @property
-    def selection(self):
-        return self.values["selection"]
-
-    @property
-    def indentation(self):
-        return self.values["indentation"]
-
-    @property
-    def prefix(self):
-        return self.values["prefix"]
 class QuoteGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -1385,6 +1324,67 @@ class FactoryGui(GuiFrameworkPanel):
     @property
     def selection(self):
         return self.values["selection"]
+class TextViewGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child1(parent, loopvar)
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['projection'] = TextFragmentsProjection(self.project, self.paragraph, self.selection, self.prefix)
+        properties['max_width'] = self._get_max_width()
+        properties['line_height'] = self.LINE_HEIGHT
+        properties['skip_extra_space'] = True
+        properties['font'] = self._create_font()
+        handlers.append(('double_click', lambda event: self.text.Select(self.project, event.Position)))
+        handlers.append(('mouse_move', lambda event: self._on_mouse_move(event)))
+        handlers.append(('click', lambda event: self._on_click()))
+        sizer["proportion"] = 1
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('text', widget.widget)
+        else:
+            self.text = widget.widget
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
+
+    @property
+    def indentation(self):
+        return self.values["indentation"]
+
+    @property
+    def prefix(self):
+        return self.values["prefix"]
 class Editable(VerticalBasePanel):
 
     @property
@@ -4666,171 +4666,6 @@ class Text(TextGui, ParagraphBaseMixin):
             "To quote",
             lambda: self.paragraph.update({"type": "quote"})
         )
-class TextView(TextViewGui):
-
-    LINE_HEIGHT = 1.2
-    DEFAULTS = {
-        "prefix": "",
-    }
-    token = None
-
-    def _get_max_width(self):
-        return self.project.theme.page_body_width - self.indentation
-    def _create_font(self):
-        return create_font(**self.project.theme.text_font)
-    def _on_mouse_move(self, event):
-        char = self.text.text.GetClosestCharacter(event.Position)
-        if char is not None and "index" in char.extra:
-            token = self.paragraph.fragments[char.extra["index"]].token
-            post_hovered_token_changed(self, token)
-            self.token = token
-    def _on_click(self):
-        if self.token is not None:
-            post_token_click(self, self.token)
-class TextFragmentsProjection(BaseProjection):
-
-    def __init__(self, project, paragraph, selection, prefix):
-        self.project = project
-        self.paragraph = paragraph
-        self.selection = selection
-        self.prefix = prefix
-
-    def create_projection(self, editor):
-        if self.prefix:
-            self.add(self.prefix, self.project.get_style(TokenType.RLiterate))
-        fragments = self.paragraph.fragments
-        for fragment_index, fragment in enumerate(fragments):
-            fragment_selection = self.selection.get(fragment_index)
-            if fragment_index == 0 or fragment_index == len(fragments):
-                flag = False
-            else:
-                flag = True
-            {
-                "strong": self._project_strong,
-                "emphasis": self._project_emphasis,
-                "code": self._project_code,
-                "variable": self._project_variable,
-                "reference": self._project_reference,
-                "link": self._project_link,
-            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)
-
-    def _add_markup(self, text):
-        if self.selection.present:
-            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))
-
-    def _set_key_handler(self, editor, fragment, attr, selection):
-        if selection.present:
-            self._key_handler = FragmentKeyHandler(
-                editor,
-                fragment,
-                self.project,
-                self._character_selection,
-                attr,
-                selection
-            )
-
-    def _project_strong(self, editor, fragment, index, selection):
-        self._add_markup("**")
-        self.add(
-            fragment.text,
-            self.project.get_style(TokenType.RLiterate.Strong),
-            selection.value,
-            selection,
-            extra={"index": index}
-        )
-        self._set_key_handler(editor, fragment, "text", selection)
-        self._add_markup("**")
-    def _project_emphasis(self, editor, fragment, index, selection):
-        self._add_markup("*")
-        self.add(
-            fragment.text,
-            self.project.get_style(TokenType.RLiterate.Emphasis),
-            selection.value,
-            selection,
-            extra={"index": index}
-        )
-        self._set_key_handler(editor, fragment, "text", selection)
-        self._add_markup("*")
-    def _project_code(self, editor, fragment, index, selection):
-        self._add_markup("`")
-        self.add(
-            fragment.text,
-            self.project.get_style(TokenType.RLiterate.Code),
-            selection.value,
-            selection,
-            extra={"index": index}
-        )
-        self._set_key_handler(editor, fragment, "text", selection)
-        self._add_markup("`")
-    def _project_variable(self, editor, fragment, index, selection):
-        self._add_markup("``")
-        self.add(
-            fragment.name,
-            self.project.get_style(TokenType.RLiterate.Variable),
-            selection.value,
-            selection,
-            extra={"index": index}
-        )
-        self._set_key_handler(editor, fragment, "text", selection)
-        self._add_markup("``")
-    def _project_reference(self, editor, fragment, index, selection):
-        self._add_markup("[[")
-        self.add(
-            fragment.title,
-            self.project.get_style(TokenType.RLiterate.Reference),
-            selection.value,
-            selection,
-            extra={"index": index}
-        )
-        self._set_key_handler(editor, fragment, "text", selection)
-        self._add_markup("]]")
-    def _project_link(self, editor, fragment, index, selection):
-        if self.selection.present:
-            self._add_markup("[")
-        text_selection = selection.get("text")
-        self.add(
-            fragment.text,
-            self.project.get_style(TokenType.RLiterate.Link),
-            text_selection.value,
-            text_selection,
-            extra={"index": index}
-        )
-        self._set_key_handler(editor, fragment, "text", text_selection)
-        if self.selection.present:
-            url_selection = selection.get("url")
-            self._add_markup("]")
-            self._add_markup("(")
-            self.add(
-                fragment.url,
-                self.project.get_style(TokenType.RLiterate.Link),
-                url_selection.value,
-                url_selection,
-                extra={"index": index}
-            )
-            self._set_key_handler(editor, fragment, "url", url_selection)
-            self._add_markup(")")
-    def _project_text(self, editor, fragment, index, selection):
-        self.add(
-            fragment.text,
-            self.project.get_style(TokenType.RLiterate.Text),
-            selection.value,
-            selection,
-            extra={"index": index}
-        )
-        self._set_key_handler(editor, fragment, "text", selection)
-class FragmentKeyHandler(PlainTextKeyHandler):
-
-    def __init__(self, editor, fragment, project, character_selection, attr, selection):
-        PlainTextKeyHandler.__init__(self, editor, project, character_selection, getattr(fragment, attr), selection.value)
-        self.project = project
-        self.fragment = fragment
-        self.attr = attr
-        self.selection = selection
-
-    def save(self, text, index):
-        with self.project.notify():
-            setattr(self.fragment, self.attr, text)
-            self.project.selection = self.selection.create(index)
 class Quote(QuoteGui, ParagraphBaseMixin):
 
     def AddContextMenuItems(self, menu):
@@ -5380,6 +5215,171 @@ class Factory(FactoryGui, ParagraphBaseMixin):
             "type": "image",
             "fragments": [{"type": "text", "text": "Enter image text here..."}],
         })
+class TextView(TextViewGui):
+
+    LINE_HEIGHT = 1.2
+    DEFAULTS = {
+        "prefix": "",
+    }
+    token = None
+
+    def _get_max_width(self):
+        return self.project.theme.page_body_width - self.indentation
+    def _create_font(self):
+        return create_font(**self.project.theme.text_font)
+    def _on_mouse_move(self, event):
+        char = self.text.text.GetClosestCharacter(event.Position)
+        if char is not None and "index" in char.extra:
+            token = self.paragraph.fragments[char.extra["index"]].token
+            post_hovered_token_changed(self, token)
+            self.token = token
+    def _on_click(self):
+        if self.token is not None:
+            post_token_click(self, self.token)
+class TextFragmentsProjection(BaseProjection):
+
+    def __init__(self, project, paragraph, selection, prefix):
+        self.project = project
+        self.paragraph = paragraph
+        self.selection = selection
+        self.prefix = prefix
+
+    def create_projection(self, editor):
+        if self.prefix:
+            self.add(self.prefix, self.project.get_style(TokenType.RLiterate))
+        fragments = self.paragraph.fragments
+        for fragment_index, fragment in enumerate(fragments):
+            fragment_selection = self.selection.get(fragment_index)
+            if fragment_index == 0 or fragment_index == len(fragments):
+                flag = False
+            else:
+                flag = True
+            {
+                "strong": self._project_strong,
+                "emphasis": self._project_emphasis,
+                "code": self._project_code,
+                "variable": self._project_variable,
+                "reference": self._project_reference,
+                "link": self._project_link,
+            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)
+
+    def _add_markup(self, text):
+        if self.selection.present:
+            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))
+
+    def _set_key_handler(self, editor, fragment, attr, selection):
+        if selection.present:
+            self._key_handler = FragmentKeyHandler(
+                editor,
+                fragment,
+                self.project,
+                self._character_selection,
+                attr,
+                selection
+            )
+
+    def _project_strong(self, editor, fragment, index, selection):
+        self._add_markup("**")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Strong),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._set_key_handler(editor, fragment, "text", selection)
+        self._add_markup("**")
+    def _project_emphasis(self, editor, fragment, index, selection):
+        self._add_markup("*")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Emphasis),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._set_key_handler(editor, fragment, "text", selection)
+        self._add_markup("*")
+    def _project_code(self, editor, fragment, index, selection):
+        self._add_markup("`")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Code),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._set_key_handler(editor, fragment, "text", selection)
+        self._add_markup("`")
+    def _project_variable(self, editor, fragment, index, selection):
+        self._add_markup("``")
+        self.add(
+            fragment.name,
+            self.project.get_style(TokenType.RLiterate.Variable),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._set_key_handler(editor, fragment, "text", selection)
+        self._add_markup("``")
+    def _project_reference(self, editor, fragment, index, selection):
+        self._add_markup("[[")
+        self.add(
+            fragment.title,
+            self.project.get_style(TokenType.RLiterate.Reference),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._set_key_handler(editor, fragment, "text", selection)
+        self._add_markup("]]")
+    def _project_link(self, editor, fragment, index, selection):
+        if self.selection.present:
+            self._add_markup("[")
+        text_selection = selection.get("text")
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Link),
+            text_selection.value,
+            text_selection,
+            extra={"index": index}
+        )
+        self._set_key_handler(editor, fragment, "text", text_selection)
+        if self.selection.present:
+            url_selection = selection.get("url")
+            self._add_markup("]")
+            self._add_markup("(")
+            self.add(
+                fragment.url,
+                self.project.get_style(TokenType.RLiterate.Link),
+                url_selection.value,
+                url_selection,
+                extra={"index": index}
+            )
+            self._set_key_handler(editor, fragment, "url", url_selection)
+            self._add_markup(")")
+    def _project_text(self, editor, fragment, index, selection):
+        self.add(
+            fragment.text,
+            self.project.get_style(TokenType.RLiterate.Text),
+            selection.value,
+            selection,
+            extra={"index": index}
+        )
+        self._set_key_handler(editor, fragment, "text", selection)
+class FragmentKeyHandler(PlainTextKeyHandler):
+
+    def __init__(self, editor, fragment, project, character_selection, attr, selection):
+        PlainTextKeyHandler.__init__(self, editor, project, character_selection, getattr(fragment, attr), selection.value)
+        self.project = project
+        self.fragment = fragment
+        self.attr = attr
+        self.selection = selection
+
+    def save(self, text, index):
+        with self.project.notify():
+            setattr(self.fragment, self.attr, text)
+            self.project.selection = self.selection.create(index)
 class SettingsDialog(wx.Dialog):
 
     def __init__(self, parent, project):
@@ -6057,10 +6057,6 @@ def min_or_none(items, key):
     if not items:
         return None
     return min(items, key=key)
-def post_token_click(widget, token):
-    wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
-def post_hovered_token_changed(widget, token):
-    wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
 def base64_to_bitmap(data, max_width):
     try:
         image = fit_image(wx.ImageFromStream(
@@ -6098,6 +6094,10 @@ def edit_in_gvim(text, filename):
             time.sleep(0.1)
         f.seek(0)
         return f.read()
+def post_token_click(widget, token):
+    wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
+def post_hovered_token_changed(widget, token):
+    wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
 def post_edit_start(control, **extra):
     wx.PostEvent(control, EditStart(0, extra=extra))
 def find_first(items, action):
