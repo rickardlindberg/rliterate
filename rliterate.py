@@ -3504,7 +3504,7 @@ class Project(Observable):
 
     def __init__(self, filepath):
         Observable.__init__(self)
-        self._selection = Path.empty()
+        self._selection = Selection.empty()
         self._active_editor = None
         self._highlighted_variable = None
         self._needs_saving = False
@@ -3640,18 +3640,18 @@ class Project(Observable):
                 self._needs_saving = False
 class EditInProgress(Exception):
     pass
-class Path(namedtuple("Path", ["value", "trail"])):
+class Selection(namedtuple("Selection", ["value", "trail"])):
 
     @classmethod
     def empty(self):
-        return Path(None, [])
+        return Selection(None, [])
 
     @property
     def present(self):
         return self.value is not None
 
     def get(self, key):
-        return Path(
+        return Selection(
             self.value.get(key) if self.value is not None else None,
             trail=[key]+self.trail
         )
@@ -3659,7 +3659,7 @@ class Path(namedtuple("Path", ["value", "trail"])):
     def create(self, value):
         for key in self.trail:
             value = {key: value}
-        return Path(value, [])
+        return Selection(value, [])
 class GlobalSettings(JsonSettings):
 
     page_body_width = JsonSettings.property(
