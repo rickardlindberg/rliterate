@@ -3640,7 +3640,7 @@ class Project(Observable):
                 self._needs_saving = False
 class EditInProgress(Exception):
     pass
-class Selection(namedtuple("Selection", ["value", "trail"])):
+class Selection(namedtuple("Selection", ["current", "trail"])):
 
     @classmethod
     def empty(self):
@@ -3648,18 +3648,24 @@ class Selection(namedtuple("Selection", ["value", "trail"])):
 
     @property
     def present(self):
-        return self.value is not None
+        return self.current is not None
+
+    @property
+    def value(self):
+        if self.current is not None and len(self.current) == 1:
+            return self.current[0]
+        else:
+            return self.current
 
     def get(self, key):
-        return Selection(
-            self.value.get(key) if self.value is not None else None,
-            trail=[key]+self.trail
-        )
+        if self.current is not None and self.current[0] == key:
+            new_current = self.current[1:]
+        else:
+            new_current = None
+        return Selection(new_current, trail=self.trail+[key])
 
     def create(self, value):
-        for key in self.trail:
-            value = {key: value}
-        return Selection(value, [])
+        return Selection(self.trail+[value], [])
 class GlobalSettings(JsonSettings):
 
     page_body_width = JsonSettings.property(

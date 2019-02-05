@@ -6731,15 +6731,7 @@
 "type":"variable"
 },
 {
-"text":"\", [\"",
-"type":"code"
-},
-{
-"id":"90d6de1e6f714f1497872ca757b501b6",
-"type":"variable"
-},
-{
-"text":"\", \"trail\"])):\n\n    @classmethod\n    def ",
+"text":"\", [\"current\", \"trail\"])):\n\n    @classmethod\n    def ",
 "type":"code"
 },
 {
@@ -6763,7 +6755,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return self.",
+"text":"(self):\n        return self.current is not None\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -6771,7 +6763,15 @@
 "type":"variable"
 },
 {
-"text":" is not None\n\n    def get(self, key):\n        return ",
+"text":"(self):\n        if self.current is not None and len(self.current) == 1:\n            return self.current[0]\n        else:\n            return self.current\n\n    def ",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(self, key):\n        if self.current is not None and self.current[0] == key:\n            new_current = self.current[1:]\n        else:\n            new_current = None\n        return ",
 "type":"code"
 },
 {
@@ -6779,23 +6779,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.",
-"type":"code"
-},
-{
-"id":"90d6de1e6f714f1497872ca757b501b6",
-"type":"variable"
-},
-{
-"text":".get(key) if self.",
-"type":"code"
-},
-{
-"id":"90d6de1e6f714f1497872ca757b501b6",
-"type":"variable"
-},
-{
-"text":" is not None else None,\n            trail=[key]+self.trail\n        )\n\n    def create(self, value):\n        for key in self.trail:\n            value = {key: value}\n        return ",
+"text":"(new_current, trail=self.trail+[key])\n\n    def create(self, value):\n        return ",
 "type":"code"
 },
 {
@@ -6803,7 +6787,7 @@
 "type":"variable"
 },
 {
-"text":"(value, [])\n",
+"text":"(self.trail+[value], [])\n",
 "type":"code"
 }
 ],
@@ -7707,7 +7691,23 @@
 "type":"variable"
 },
 {
-"text":"(\n            TableOfContents(\n                panel,\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"toc\")\n            ),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        self.workspace = panel.",
+"text":"(\n            TableOfContents(\n                panel,\n                project=self.project,\n                selection=self.project.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"main_frame\").",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"toc\")\n            ),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        self.workspace = panel.",
 "type":"code"
 },
 {
@@ -7715,7 +7715,23 @@
 "type":"variable"
 },
 {
-"text":"(\n            Workspace(\n                panel,\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"workspace\")\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self._focus_panel.SetFocus()\n        self.project.listen(self.",
+"text":"(\n            Workspace(\n                panel,\n                project=self.project,\n                selection=self.project.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"main_frame\").",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"workspace\")\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self._focus_panel.SetFocus()\n        self.project.listen(self.",
 "type":"code"
 },
 {
@@ -7747,7 +7763,23 @@
 "type":"variable"
 },
 {
-"text":"(\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"toc\")\n            )\n            self.workspace.",
+"text":"(\n                project=self.project,\n                selection=self.project.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"main_frame\").",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"toc\")\n            )\n            self.workspace.",
 "type":"code"
 },
 {
@@ -7755,7 +7787,23 @@
 "type":"variable"
 },
 {
-"text":"(\n                project=self.project,\n                selection=self.project.selection.get(\"main_frame\").get(\"workspace\")\n            )\n            self.ChildReRendered()\n\n",
+"text":"(\n                project=self.project,\n                selection=self.project.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"main_frame\").",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"workspace\")\n            )\n            self.ChildReRendered()\n\n",
 "type":"code"
 },
 {
@@ -8422,7 +8470,15 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.get(loopvar.page.id)\n                indentation = loopvar.indentation\n                %expand\n            )\n            Divider[dividers](\n                padding = 0\n                height  = 2\n                row     = loopvar\n                %expand\n            )\n        }\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(loopvar.page.id)\n                indentation = loopvar.indentation\n                %expand\n            )\n            Divider[dividers](\n                padding = 0\n                height  = 2\n                row     = loopvar\n                %expand\n            )\n        }\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -9492,7 +9548,15 @@
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    #selection\n    #background = self.project.theme.workspace_background\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_columns()) {\n        Column[columns](\n            project   = self.project\n            index     = loopvar.index\n            page_ids  = loopvar.page_ids\n            selection = self.selection.get(loopvar.index)\n            %expand\n        )\n    }\n}\n",
+"text":" %hbox {\n    #project\n    #selection\n    #background = self.project.theme.workspace_background\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_columns()) {\n        Column[columns](\n            project   = self.project\n            index     = loopvar.index\n            page_ids  = loopvar.page_ids\n            selection = self.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(loopvar.index)\n            %expand\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -9856,7 +9920,23 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #page_ids\n    #index\n    #min_size = self._get_size()\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_rows()) {\n        PageContainer[containers](\n            project   = self.project\n            page      = loopvar.page\n            selection = self.selection.get(loopvar.index).get(loopvar.page.id)\n            %border[self.project.theme.page_padding, RIGHT|BOTTOM]\n            %expand\n        )\n    }\n}\n",
+"text":" %vbox {\n    #project\n    #selection\n    #page_ids\n    #index\n    #min_size = self._get_size()\n    BoxSpace(self.project.theme.page_padding)\n    for (self._get_rows()) {\n        PageContainer[containers](\n            project   = self.project\n            page      = loopvar.page\n            selection = self.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(loopvar.index).",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(loopvar.page.id)\n            %border[self.project.theme.page_padding, RIGHT|BOTTOM]\n            %expand\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -10333,7 +10413,31 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #page\n    #selection\n    #min_size = tuple([self.project.theme.page_body_width -1])\n    Title(\n        project   = self.project\n        page      = self.page\n        selection = self.selection.get(\"title\")\n        %expand\n    )\n    Divider[top_divider](\n        padding = self.divider_padding()\n        height  = 3\n        %expand\n    )\n    for (self._get_paragraphs()) {\n      loopvar.widget_cls(\n        project   = self.project\n        page_id   = self.page.id\n        paragraph = loopvar.paragraph\n        selection = self.selection.get(\"paragraph\").get(loopvar.paragraph.id)\n        %expand\n      )\n      Divider[dividers](\n          padding = self.divider_padding()\n          height  = 3\n          %expand\n      )\n    }\n    panel(%expand) %hbox {\n        panel(%proportion[1]) %hbox {}\n        IconButton(\n            icon = \"add\"\n            @button = self.project.add_paragraph(self.page.id)\n        )\n    }\n    @richt_click = SimpleContextMenu.ShowRecursive(slef)\n}\n",
+"text":" %vbox {\n    #project\n    #page\n    #selection\n    #min_size = tuple([self.project.theme.page_body_width -1])\n    Title(\n        project   = self.project\n        page      = self.page\n        selection = self.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"title\")\n        %expand\n    )\n    Divider[top_divider](\n        padding = self.divider_padding()\n        height  = 3\n        %expand\n    )\n    for (self._get_paragraphs()) {\n      loopvar.widget_cls(\n        project   = self.project\n        page_id   = self.page.id\n        paragraph = loopvar.paragraph\n        selection = self.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"paragraph\").",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(loopvar.paragraph.id)\n        %expand\n      )\n      Divider[dividers](\n          padding = self.divider_padding()\n          height  = 3\n          %expand\n      )\n    }\n    panel(%expand) %hbox {\n        panel(%proportion[1]) %hbox {}\n        IconButton(\n            icon = \"add\"\n            @button = self.project.add_paragraph(self.page.id)\n        )\n    }\n    @richt_click = SimpleContextMenu.ShowRecursive(slef)\n}\n",
 "type":"code"
 }
 ],
@@ -11059,7 +11163,15 @@
 ],
 "fragments":[
 {
-"text":"class TextFragmentsProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection, prefix):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n        self.prefix = prefix\n\n    def create_projection(self, editor):\n        if self.prefix:\n            self.add(self.prefix, self.project.get_style(TokenType.RLiterate))\n        fragments = self.paragraph.fragments\n        for fragment_index, fragment in enumerate(fragments):\n            fragment_selection = self.selection.get(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            {\n                \"strong\": self._project_strong,\n                \"emphasis\": self._project_emphasis,\n                \"code\": self._project_code,\n                \"variable\": self._project_variable,\n                \"reference\": self._project_reference,\n                \"link\": self._project_link,\n            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)\n\n    def _add_markup(self, text):\n        if self.selection.present:\n            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))\n\n    def _set_key_handler(self, editor, fragment, attr, selection):\n        if selection.present:\n            self._key_handler = FragmentKeyHandler(\n                editor,\n                fragment,\n                self.project,\n                self._character_selection,\n                attr,\n                selection\n            )\n\n",
+"text":"class TextFragmentsProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection, prefix):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n        self.prefix = prefix\n\n    def create_projection(self, editor):\n        if self.prefix:\n            self.add(self.prefix, self.project.get_style(TokenType.RLiterate))\n        fragments = self.paragraph.fragments\n        for fragment_index, fragment in enumerate(fragments):\n            fragment_selection = self.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            {\n                \"strong\": self._project_strong,\n                \"emphasis\": self._project_emphasis,\n                \"code\": self._project_code,\n                \"variable\": self._project_variable,\n                \"reference\": self._project_reference,\n                \"link\": self._project_link,\n            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)\n\n    def _add_markup(self, text):\n        if self.selection.present:\n            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))\n\n    def _set_key_handler(self, editor, fragment, attr, selection):\n        if selection.present:\n            self._key_handler = FragmentKeyHandler(\n                editor,\n                fragment,\n                self.project,\n                self._character_selection,\n                attr,\n                selection\n            )\n\n",
 "type":"code"
 },
 {
@@ -11181,7 +11293,23 @@
 ],
 "fragments":[
 {
-"text":"def _project_link(self, editor, fragment, index, selection):\n    if self.selection.present:\n        self._add_markup(\"[\")\n    text_selection = selection.get(\"text\")\n    self.add(\n        fragment.text,\n        self.project.get_style(TokenType.RLiterate.Link),\n        text_selection.value,\n        text_selection,\n        extra={\"index\": index}\n    )\n    self._set_key_handler(editor, fragment, \"text\", text_selection)\n    if self.selection.present:\n        url_selection = selection.get(\"url\")\n        self._add_markup(\"]\")\n        self._add_markup(\"(\")\n        self.add(\n            fragment.url,\n            self.project.get_style(TokenType.RLiterate.Link),\n            url_selection.value,\n            url_selection,\n            extra={\"index\": index}\n        )\n        self._set_key_handler(editor, fragment, \"url\", url_selection)\n        self._add_markup(\")\")\n",
+"text":"def _project_link(self, editor, fragment, index, selection):\n    if self.selection.present:\n        self._add_markup(\"[\")\n    text_selection = selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"text\")\n    self.add(\n        fragment.text,\n        self.project.get_style(TokenType.RLiterate.Link),\n        text_selection.value,\n        text_selection,\n        extra={\"index\": index}\n    )\n    self._set_key_handler(editor, fragment, \"text\", text_selection)\n    if self.selection.present:\n        url_selection = selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"url\")\n        self._add_markup(\"]\")\n        self._add_markup(\"(\")\n        self.add(\n            fragment.url,\n            self.project.get_style(TokenType.RLiterate.Link),\n            url_selection.value,\n            url_selection,\n            extra={\"index\": index}\n        )\n        self._set_key_handler(editor, fragment, \"url\", url_selection)\n        self._add_markup(\")\")\n",
 "type":"code"
 }
 ],
@@ -11557,7 +11685,15 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def _get_rows(self):\n        self.rows = []\n        self._add_items(self.paragraph.children, self.paragraph.child_type, self.selection)\n        return self.rows\n\n    def _add_items(self, items, child_type, selection, indentation=0):\n        for index, item in enumerate(items):\n            child_selection = selection.get(index)\n            self.rows.append(",
+"text":"):\n\n    def _get_rows(self):\n        self.rows = []\n        self._add_items(self.paragraph.children, self.paragraph.child_type, self.selection)\n        return self.rows\n\n    def _add_items(self, items, child_type, selection, indentation=0):\n        for index, item in enumerate(items):\n            child_selection = selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(index)\n            self.rows.append(",
 "type":"code"
 },
 {
@@ -20281,6 +20417,7 @@
 "985e71100d1344daba62a309a21872aa":"insert_paragraph_before",
 "99872a7e246e4fc38f9e0029f076e120":"Character",
 "9afba42827fd435dab58673210d03785":"AppendChild",
+"9cd62437dee84216bb799a829550ec60":"get",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
 "9e987210a686490c823a44d09e783833":"_load",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
