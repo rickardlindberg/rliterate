@@ -19027,16 +19027,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Extract page container component",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Can only scroll in one direction with mouse wheel",
 "type":"text"
 }
@@ -19976,27 +19966,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Speed up by drawing only once to bg image?",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"TokenView is slow for code now that many tokens are generated",
-"type":"text"
-}
-]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Figure out language by shebang",
 "type":"text"
 }
@@ -20309,32 +20278,11 @@
 "child_type":"unordered",
 "children":[
 {
-"child_type":"unordered",
-"children":[
-{
 "child_type":null,
 "children":[],
 "fragments":[
 {
-"text":"How to handle undo?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Periodic automatic save?",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Editors should have no modes? (Improve mode by removing it.)",
+"text":"How to handle undo? Periodic automatic save?",
 "type":"text"
 }
 ]
@@ -20402,11 +20350,122 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Focus is not set to page title vertically (only horizontally)",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Goal: remove all logic related to active_editor",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Toolbar button to clear selection?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Clear selection automatically when opening pages, etc ...",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
 {
-"text":"No modes experiment",
+"text":"No modes",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Workspace no longer scrolls. Implement again?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Include RLMeta in RLiterate?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Creating expanded view calls post processing twice. Investigate why.",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Cache post processed output? Conditions? Force?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Optimizations",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Only care about font for text extend calculations?",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Empty chunks in code fragments seems to generate error when file is written",
 "type":"text"
 }
 ]
