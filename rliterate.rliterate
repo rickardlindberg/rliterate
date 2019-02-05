@@ -9300,7 +9300,15 @@
 ],
 "fragments":[
 {
-"text":"class TocTitleProjection(BaseProjection):\n\n    def __init__(self, project, page, selection):\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.project.is_open(self.page.id):\n            token_type = TokenType.RLiterate.Strong\n        else:\n            token_type = TokenType.RLiterate\n        if self.page.title:\n            self.add(\n                self.page.title,\n                self.project.get_style(token_type),\n                self.selection.value,\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.present:\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self.page,\n                self.selection\n            )\n",
+"text":"class TocTitleProjection(BaseProjection):\n\n    def __init__(self, project, page, selection):\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.project.is_open(self.page.id):\n            token_type = TokenType.RLiterate.Strong\n        else:\n            token_type = TokenType.RLiterate\n        if self.page.title:\n            self.add(\n                self.page.title,\n                self.project.get_style(token_type),\n                self.selection.value,\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.",
+"type":"code"
+},
+{
+"id":"f7dfdb312fdc4b0faf3df092e7f58153",
+"type":"variable"
+},
+{
+"text":":\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self.page,\n                self.selection\n            )\n",
 "type":"code"
 }
 ],
@@ -10929,7 +10937,15 @@
 ],
 "fragments":[
 {
-"text":"class TitleProjection(BaseProjection):\n\n    def __init__(self, project, page, selection):\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.page.title:\n            self.add(\n                self.page.title,\n                self.project.get_style(TokenType.RLiterate),\n                self.selection.value,\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.present:\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self._character_selection,\n                self.page,\n                self.selection\n            )\n",
+"text":"class TitleProjection(BaseProjection):\n\n    def __init__(self, project, page, selection):\n        self.project = project\n        self.page = page\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.page.title:\n            self.add(\n                self.page.title,\n                self.project.get_style(TokenType.RLiterate),\n                self.selection.value,\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.create(0)\n            )\n        if self.selection.",
+"type":"code"
+},
+{
+"id":"f7dfdb312fdc4b0faf3df092e7f58153",
+"type":"variable"
+},
+{
+"text":":\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self._character_selection,\n                self.page,\n                self.selection\n            )\n",
 "type":"code"
 }
 ],
@@ -11171,7 +11187,23 @@
 "type":"variable"
 },
 {
-"text":"(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            {\n                \"strong\": self._project_strong,\n                \"emphasis\": self._project_emphasis,\n                \"code\": self._project_code,\n                \"variable\": self._project_variable,\n                \"reference\": self._project_reference,\n                \"link\": self._project_link,\n            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)\n\n    def _add_markup(self, text):\n        if self.selection.present:\n            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))\n\n    def _set_key_handler(self, editor, fragment, attr, selection):\n        if selection.present:\n            self._key_handler = FragmentKeyHandler(\n                editor,\n                fragment,\n                self.project,\n                self._character_selection,\n                attr,\n                selection\n            )\n\n",
+"text":"(fragment_index)\n            if fragment_index == 0 or fragment_index == len(fragments):\n                flag = False\n            else:\n                flag = True\n            {\n                \"strong\": self._project_strong,\n                \"emphasis\": self._project_emphasis,\n                \"code\": self._project_code,\n                \"variable\": self._project_variable,\n                \"reference\": self._project_reference,\n                \"link\": self._project_link,\n            }.get(fragment.type, self._project_text)(editor, fragment, fragment_index, fragment_selection)\n\n    def _add_markup(self, text):\n        if self.selection.",
+"type":"code"
+},
+{
+"id":"f7dfdb312fdc4b0faf3df092e7f58153",
+"type":"variable"
+},
+{
+"text":":\n            self.add(text, self.project.get_style(TokenType.RLiterate.Empty))\n\n    def _set_key_handler(self, editor, fragment, attr, selection):\n        if selection.",
+"type":"code"
+},
+{
+"id":"f7dfdb312fdc4b0faf3df092e7f58153",
+"type":"variable"
+},
+{
+"text":":\n            self._key_handler = FragmentKeyHandler(\n                editor,\n                fragment,\n                self.project,\n                self._character_selection,\n                attr,\n                selection\n            )\n\n",
 "type":"code"
 },
 {
@@ -11293,7 +11325,15 @@
 ],
 "fragments":[
 {
-"text":"def _project_link(self, editor, fragment, index, selection):\n    if self.selection.present:\n        self._add_markup(\"[\")\n    text_selection = selection.",
+"text":"def _project_link(self, editor, fragment, index, selection):\n    if self.selection.",
+"type":"code"
+},
+{
+"id":"f7dfdb312fdc4b0faf3df092e7f58153",
+"type":"variable"
+},
+{
+"text":":\n        self._add_markup(\"[\")\n    text_selection = selection.",
 "type":"code"
 },
 {
@@ -11301,7 +11341,15 @@
 "type":"variable"
 },
 {
-"text":"(\"text\")\n    self.add(\n        fragment.text,\n        self.project.get_style(TokenType.RLiterate.Link),\n        text_selection.value,\n        text_selection,\n        extra={\"index\": index}\n    )\n    self._set_key_handler(editor, fragment, \"text\", text_selection)\n    if self.selection.present:\n        url_selection = selection.",
+"text":"(\"text\")\n    self.add(\n        fragment.text,\n        self.project.get_style(TokenType.RLiterate.Link),\n        text_selection.value,\n        text_selection,\n        extra={\"index\": index}\n    )\n    self._set_key_handler(editor, fragment, \"text\", text_selection)\n    if self.selection.",
+"type":"code"
+},
+{
+"id":"f7dfdb312fdc4b0faf3df092e7f58153",
+"type":"variable"
+},
+{
+"text":":\n        url_selection = selection.",
 "type":"code"
 },
 {
