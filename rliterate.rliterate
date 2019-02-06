@@ -12283,6 +12283,35 @@
 "paragraphs":[
 {
 "chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"a06246c10a774985a26641cdb8aa2a3b",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    #background = \"#f0f0f0\"\n    TokenView(\n        %expand\n        project   = self.project\n        tokens    = self.paragraph.tokens\n        max_width = self.project.theme.page_body_width\n        font      = self._create_font()\n    )\n    @drag        = self.DoDragDrop()\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
+}
+],
+"id":"2514414f17054f7382b6a8ab41e17775",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
 "classes"
 ],
 "filepath":[
@@ -12294,19 +12323,19 @@
 "type":"code"
 },
 {
-"id":"07b4671de05745a7bddd1eea74535277",
+"id":"a06246c10a774985a26641cdb8aa2a3b",
 "type":"variable"
 },
 {
-"text":"):\n\n    def ",
+"text":", ",
 "type":"code"
 },
 {
-"id":"740055857bb244038c203cea23c1af69",
+"id":"912bfa09cb014fa7890b442c2aa7750a",
 "type":"variable"
 },
 {
-"text":"(self):\n        self.Font = ",
+"text":"):\n\n    def _create_font(self):\n        return ",
 "type":"code"
 },
 {
@@ -12330,51 +12359,13 @@
 "type":"variable"
 },
 {
-"text":")\n        view = ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(self)\n        token_view = view.",
-"type":"code"
-},
-{
-"id":"9afba42827fd435dab58673210d03785",
-"type":"variable"
-},
-{
-"text":"(\n            ",
-"type":"code"
-},
-{
-"id":"12498e6198354c2dad6246bc385b954d",
-"type":"variable"
-},
-{
-"text":"(\n                view,\n                self.project,\n                self.paragraph.tokens,\n                max_width=self.project.",
-"type":"code"
-},
-{
-"id":"8db58d842ac34e0aa51ea908cd841520",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"c40079514300441c8c7aa16123045f9a",
-"type":"variable"
-},
-{
-"text":"\n            ),\n            flag=wx.ALL|wx.EXPAND\n        )\n        MouseEventHelper.bind(\n            [view, token_view],\n            drag=self.DoDragDrop,\n            right_click=lambda event: self.ShowContextMenu()\n        )\n        view.SetBackgroundColour((240, 240, 240))\n        return view\n",
+"text":")\n",
 "type":"code"
 }
 ],
 "id":"43f859652aa54f44b5e579f74be69a96",
+"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -15263,7 +15254,7 @@
 "type":"variable"
 },
 {
-"text":"=kwargs.get(\"skip_extra_space\", False)\n        )\n        self.last_tokens = []\n",
+"text":"=kwargs.get(\"skip_extra_space\", False),\n            font=kwargs.get(\"font\")\n        )\n        self.last_tokens = []\n",
 "type":"code"
 },
 {
@@ -20576,6 +20567,7 @@
 "9cd62437dee84216bb799a829550ec60":"get",
 "9cdf53db70b34f98acfa5c58cfca8880":"tmpfile",
 "9e987210a686490c823a44d09e783833":"_load",
+"a06246c10a774985a26641cdb8aa2a3b":"ExpandedCodeGui",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a3b92b83131e489a8903a1245a1c435b":"ListGui",

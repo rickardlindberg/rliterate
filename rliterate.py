@@ -1269,6 +1269,58 @@ class ImageGui(GuiFrameworkPanel):
     @property
     def selection(self):
         return self.values["selection"]
+class ExpandedCodeGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+            'background': '#f0f0f0',
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        self._child1(parent, loopvar)
+        handlers.append(('drag', lambda event: self.DoDragDrop()))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        properties['project'] = self.project
+        properties['tokens'] = self.paragraph.tokens
+        properties['max_width'] = self.project.theme.page_body_width
+        properties['font'] = self._create_font()
+        widget = parent.add(TokenView, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 class FactoryGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -2120,7 +2172,8 @@ class TokenView(TextProjection):
             characters=self._generate_characters(project, tokens),
             line_height=kwargs.get("line_height", 1),
             max_width=kwargs.get("max_width", 100),
-            break_at_word=kwargs.get("skip_extra_space", False)
+            break_at_word=kwargs.get("skip_extra_space", False),
+            font=kwargs.get("font")
         )
         self.last_tokens = []
         self._default_cursor = self.GetCursor()
@@ -5168,27 +5221,10 @@ class Image(ImageGui, ParagraphBaseMixin):
             "Paste image",
             lambda: self.paragraph.update({"image_base64": self._get_paste()})
         )
-class ExpandedCode(ParagraphBase):
+class ExpandedCode(ExpandedCodeGui, ParagraphBaseMixin):
 
-    def CreateView(self):
-        self.Font = create_font(**self.project.theme.code_font)
-        view = VerticalPanel(self)
-        token_view = view.AppendChild(
-            TokenView(
-                view,
-                self.project,
-                self.paragraph.tokens,
-                max_width=self.project.theme.page_body_width
-            ),
-            flag=wx.ALL|wx.EXPAND
-        )
-        MouseEventHelper.bind(
-            [view, token_view],
-            drag=self.DoDragDrop,
-            right_click=lambda event: self.ShowContextMenu()
-        )
-        view.SetBackgroundColour((240, 240, 240))
-        return view
+    def _create_font(self):
+        return create_font(**self.project.theme.code_font)
 class Factory(FactoryGui, ParagraphBaseMixin):
 
     def _add_text(self):
