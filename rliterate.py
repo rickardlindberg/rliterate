@@ -4813,7 +4813,7 @@ class List(ListGui, ParagraphBaseMixin):
                 item,
                 self._get_bullet_text(child_type, index),
                 20*indentation,
-                child_selection
+                child_selection.get("body")
             ))
             self._add_items(item.children, item.child_type, child_selection, indentation+1)
 

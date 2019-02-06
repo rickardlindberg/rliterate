@@ -11313,7 +11313,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                item,\n                self._get_bullet_text(child_type, index),\n                20*indentation,\n                child_selection\n            ))\n            self._add_items(item.children, item.child_type, child_selection, indentation+1)\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n\n    def _create_font(self):\n        return ",
+"text":"(\n                item,\n                self._get_bullet_text(child_type, index),\n                20*indentation,\n                child_selection.get(\"body\")\n            ))\n            self._add_items(item.children, item.child_type, child_selection, indentation+1)\n\n    def _get_bullet_text(self, list_type, index):\n        if list_type == \"ordered\":\n            return \"{}. \".format(index + 1)\n        else:\n            return u\"\\u2022 \"\n\n    def _create_font(self):\n        return ",
 "type":"code"
 },
 {
