@@ -205,6 +205,9 @@ class GuiFrameworkBaseMixin(object):
             self._handlers[name](event)
         elif propagate and isinstance(self.Parent, GuiFrameworkBaseMixin):
             self.Parent._call_handler(name, event, propagate=propagate)
+
+    def CallHandler(self, name, event):
+        self._call_handler(name, event, propagate=True)
 class GuiFrameworkWidgetInfo(object):
 
     def __init__(self, widget):
@@ -669,6 +672,7 @@ class ColumnGui(GuiFrameworkVScroll):
             pass
             self._child1(parent, loopvar)
         parent.loop_end(self)
+        handlers.append(('page_open_request', lambda event: self.OpenPage(event)))
         if first:
             parent.listen(handlers)
 
@@ -5060,7 +5064,7 @@ class Code(CodeGui, ParagraphBaseMixin):
             menu.AppendSeparator()
             menu.AppendItem("Usages:", lambda: None)
             def create_open_page_handler(page):
-                return lambda: self.Parent.Parent.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)
+                return lambda: self.CallHandler("page_open_request", page.id)
             for page in self._find_variable_usages(token.extra["variable"]):
                 menu.AppendItem(
                     "{}".format(page.full_title),

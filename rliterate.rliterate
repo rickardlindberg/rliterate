@@ -9696,7 +9696,15 @@
 "type":"variable"
 },
 {
-"text":"(loopvar.page.id)\n            %border[self.project.theme.page_padding, RIGHT|BOTTOM]\n            %expand\n        )\n    }\n}\n",
+"text":"(loopvar.page.id)\n            %border[self.project.theme.page_padding, RIGHT|BOTTOM]\n            %expand\n        )\n    }\n    @",
+"type":"code"
+},
+{
+"id":"fc83fb6dfa184151906f35e02925dc96",
+"type":"variable"
+},
+{
+"text":" = self.OpenPage(event)\n}\n",
 "type":"code"
 }
 ],
@@ -11852,7 +11860,15 @@
 "type":"variable"
 },
 {
-"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Usages:\", lambda: None)\n        def create_open_page_handler(page):\n            return lambda: self.Parent.Parent.Parent.Parent.Parent.Parent.Parent.OpenPage(page.id)\n        for page in self._find_variable_usages(token.extra[\"variable\"]):\n            menu.AppendItem(\n                \"{}\".format(page.",
+"text":"\", token.extra[\"variable\"])\n        )\n        menu.AppendSeparator()\n        menu.AppendItem(\"Usages:\", lambda: None)\n        def create_open_page_handler(page):\n            return lambda: self.CallHandler(\"",
+"type":"code"
+},
+{
+"id":"fc83fb6dfa184151906f35e02925dc96",
+"type":"variable"
+},
+{
+"text":"\", page.id)\n        for page in self._find_variable_usages(token.extra[\"variable\"]):\n            menu.AppendItem(\n                \"{}\".format(page.",
 "type":"code"
 },
 {
@@ -16101,7 +16117,7 @@
 "type":"variable"
 },
 {
-"text":"):\n            self.Parent._call_handler(name, event, propagate=propagate)\n",
+"text":"):\n            self.Parent._call_handler(name, event, propagate=propagate)\n\n    def CallHandler(self, name, event):\n        self._call_handler(name, event, propagate=True)\n",
 "type":"code"
 }
 ],
@@ -18769,33 +18785,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Fix extremely hacky ",
-"type":"text"
-},
-{
-"text":"OpenPage",
-"type":"code"
-},
-{
-"text":" call in ",
-"type":"text"
-},
-{
-"page_id":"c2e755bb14d441e18f3f64a7e1ff69ae",
-"text":"code view",
-"type":"reference"
-},
-{
-"text":" context menu",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Highlight possible variables on a page",
 "type":"text"
 }
@@ -19559,6 +19548,7 @@
 "fb6f0e06980d41798bee1182f28eb513":"PageGui",
 "fb8af53f33454166a0737b02b9413a0e":"fragments",
 "fc1f325e626046aead62192c2c25413f":"NewDivider",
+"fc83fb6dfa184151906f35e02925dc96":"page_open_request",
 "fd0b723e1c31414e92fab6bb72b0ecf5":"_create_gui",
 "fdd751029b984545a69a3570683a2b4a":"break_at_word",
 "fe5fe3f1bdad48b0841dbdc9aa677bf9":"flicker_free_drawing",
