@@ -7696,71 +7696,7 @@
 "type":"variable"
 },
 {
-"text":")\n        return panel\n\n    @rltime(\"update main frame\")\n    def ",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(self):\n        with ",
-"type":"code"
-},
-{
-"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
-"type":"variable"
-},
-{
-"text":"(self):\n            self._focus_panel.SetFocus()\n            self.toolbar.UpdateGui()\n            self.toc.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n                project=self.project,\n                selection=self.project.selection.",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"main_frame\").",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"toc\")\n            )\n            self.workspace.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n                project=self.project,\n                selection=self.project.selection.",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"main_frame\").",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"workspace\")\n            )\n            self.ChildReRendered()\n\n",
+"text":")\n        return panel\n\n",
 "type":"code"
 },
 {
@@ -7779,7 +7715,7 @@
 {
 "fragments":[
 {
-"text":"When a child control re-renders itself, the current focus can be lost. If we don't re-focus something, no window will have focus and keyboard shortcuts will not work. (This one took me a few hours to figure out.) Setting focus to items in a scrolling container will cause automatic scroll when focused. We therefore use a dummy focus panel of zero size that gains focus. But if an editor is shown, it has already been given focus, and we don't need to do anything.",
+"text":"When the main frame re-renders itself, the current focus can be lost. If we don't re-focus something, no window will have focus and keyboard shortcuts will not work. (This one took me a few hours to figure out.) Setting focus to items in a scrolling container will cause automatic scroll when focused. We therefore use a dummy focus panel of zero size that gains focus. But if a selection is present somehwere, it will set focus to that control.",
 "type":"text"
 }
 ],
@@ -7796,13 +7732,76 @@
 ],
 "fragments":[
 {
-"text":"def ChildReRendered(self):\n    self.Layout()\n    self.Update()\n",
+"text":"@rltime(\"update main frame\")\ndef ",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(self):\n    with ",
+"type":"code"
+},
+{
+"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
+"type":"variable"
+},
+{
+"text":"(self):\n        self._focus_panel.SetFocus()\n        self.toolbar.UpdateGui()\n        self.toc.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(\n            project=self.project,\n            selection=self.project.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"main_frame\").",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"toc\")\n        )\n        self.workspace.",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(\n            project=self.project,\n            selection=self.project.selection.",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"main_frame\").",
+"type":"code"
+},
+{
+"id":"9cd62437dee84216bb799a829550ec60",
+"type":"variable"
+},
+{
+"text":"(\"workspace\")\n        )\n        self.Layout()\n        self.Update()\n\n",
 "type":"code"
 }
 ],
-"id":"ecd0d38324a74c9ba453317c417e46ce",
+"id":"a7fa13db227840368a426c8d2b512b04",
 "language":"",
-"post_process":[],
 "type":"code"
 }
 ],
@@ -19497,24 +19496,6 @@
 "fragments":[
 {
 "text":"'&' in page title is not rendered correctly in context menu.",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Can ",
-"type":"text"
-},
-{
-"text":"ChildReRendered",
-"type":"code"
-},
-{
-"text":" be moved up the stack?",
 "type":"text"
 }
 ]

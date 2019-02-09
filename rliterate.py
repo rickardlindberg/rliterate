@@ -4256,11 +4256,9 @@ class MainFrame(wx.Frame, BoxSizerMixin):
                 project=self.project,
                 selection=self.project.selection.get("main_frame").get("workspace")
             )
-            self.ChildReRendered()
+            self.Layout()
+            self.Update()
 
-    def ChildReRendered(self):
-        self.Layout()
-        self.Update()
 class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
