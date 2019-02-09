@@ -9950,7 +9950,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=\"hand\")\n        else:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=None)\n        else:\n            event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    self.project.open_pages(\n        [page_id],\n        column_index=self.index+1\n    )\n",
+"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        event.widget.UpdateGui(cursor=\"hand\")\n    else:\n        event.widget.UpdateGui(cursor=None)\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    self.project.open_pages(\n        [page_id],\n        column_index=self.index+1\n    )\n",
 "type":"code"
 }
 ],
@@ -14674,20 +14674,7 @@
 "type":"variable"
 },
 {
-"text":"=kwargs.get(\"skip_extra_space\", False),\n            font=kwargs.get(\"font\")\n        )\n        self.last_tokens = []\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"TokenView",
-"__init__"
-],
-"prefix":"        ",
-"type":"chunk"
-},
-{
-"text":"\n    def ",
+"text":"=kwargs.get(\"skip_extra_space\", False),\n            font=kwargs.get(\"font\")\n        )\n        self.last_tokens = []\n\n    def ",
 "type":"code"
 },
 {
@@ -14719,79 +14706,7 @@
 "type":"variable"
 },
 {
-"text":"(self, **kwargs)\n\n    def ",
-"type":"code"
-},
-{
-"id":"f9605031f42b4c37a170779d7ee7fe6e",
-"type":"variable"
-},
-{
-"text":"(self, project, tokens, ",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"):\n        if tokens != self.last_tokens:\n            self.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n                ",
-"type":"code"
-},
-{
-"id":"94ebdf2d279b424580629906ad32a461",
-"type":"variable"
-},
-{
-"text":"=self._generate_characters(project, tokens),\n                ",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"=",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"\n            )\n            self.last_tokens = tokens\n        else:\n            self.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n                ",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"=",
-"type":"code"
-},
-{
-"id":"b3ef449947274fc597372ebb7fa1eaf7",
-"type":"variable"
-},
-{
-"text":"\n            )\n\n    def _generate_characters(self, project, tokens):\n        characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    characters.append(",
+"text":"(self, **kwargs)\n\n    def _generate_characters(self, project, tokens):\n        characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    characters.append(",
 "type":"code"
 },
 {
@@ -14859,16 +14774,6 @@
 "type":"code"
 },
 {
-"fragments":[
-{
-"text":"Some mouse move action:",
-"type":"text"
-}
-],
-"id":"388ab47120904655b45e8bab8c924eb2",
-"type":"text"
-},
-{
 "chunkpath":[
 "base classes",
 "TokenView"
@@ -14892,76 +14797,6 @@
 ],
 "id":"4e27995451fd479f8a9528093ff49b0b",
 "language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes",
-"TokenView"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def GetClosestToken(self, position):\n    character = self.",
-"type":"code"
-},
-{
-"id":"26a20a9b510d411fa6dd5834c9f1634b",
-"type":"variable"
-},
-{
-"text":"(position)\n    if character is not None:\n        return (0, character.extra)\n",
-"type":"code"
-}
-],
-"id":"2bfe590937df48d28415661a9a20f5b2",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Cursor utilities:",
-"type":"text"
-}
-],
-"id":"c9b07488909047c68bf66ce3173af78a",
-"type":"text"
-},
-{
-"chunkpath":[
-"base classes",
-"TokenView",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self._default_cursor = self.GetCursor()\n",
-"type":"code"
-}
-],
-"id":"ffc127ce05f14ea9924baad5d1009908",
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes",
-"TokenView"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def SetDefaultCursor(self):\n    self.SetCursor(self._default_cursor)\n",
-"type":"code"
-}
-],
-"id":"1fa26d5bfc6040fd9cca7ebb87073987",
 "type":"code"
 }
 ],

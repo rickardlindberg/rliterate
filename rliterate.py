@@ -2383,23 +2383,10 @@ class TokenView(TextProjection):
             font=kwargs.get("font")
         )
         self.last_tokens = []
-        self._default_cursor = self.GetCursor()
 
     def UpdateGui(self, **kwargs):
         kwargs["characters"] = self._generate_characters(kwargs["project"], kwargs["tokens"])
         TextProjection.UpdateGui(self, **kwargs)
-
-    def UpdateTokens(self, project, tokens, max_width):
-        if tokens != self.last_tokens:
-            self.UpdateGui(
-                characters=self._generate_characters(project, tokens),
-                max_width=max_width
-            )
-            self.last_tokens = tokens
-        else:
-            self.UpdateGui(
-                max_width=max_width
-            )
 
     def _generate_characters(self, project, tokens):
         characters = []
@@ -2420,12 +2407,6 @@ class TokenView(TextProjection):
         character = self.GetCharacterAt(position)
         if character is not None:
             return character.extra
-    def GetClosestToken(self, position):
-        character = self.GetClosestCharacter(position)
-        if character is not None:
-            return (0, character.extra)
-    def SetDefaultCursor(self):
-        self.SetCursor(self._default_cursor)
 class SimpleContextMenu(wx.Menu):
 
     def __init__(self, name):
@@ -4777,15 +4758,9 @@ class Column(ColumnGui):
             TokenType.RLiterate.Link,
             TokenType.RLiterate.Reference,
         ]:
-            if hasattr(event.widget, "UpdateGui"):
-                event.widget.UpdateGui(cursor="hand")
-            else:
-                event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+            event.widget.UpdateGui(cursor="hand")
         else:
-            if hasattr(event.widget, "UpdateGui"):
-                event.widget.UpdateGui(cursor=None)
-            else:
-                event.widget.SetDefaultCursor()
+            event.widget.UpdateGui(cursor=None)
 
     def _on_token_click(self, event):
         if event.token.token_type == TokenType.RLiterate.Reference:
