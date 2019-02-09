@@ -18366,53 +18366,11 @@
 "child_type":"unordered",
 "children":[
 {
-"child_type":"unordered",
-"children":[
-{
 "child_type":null,
 "children":[],
 "fragments":[
 {
-"text":"Factory should drop right into edit mode when button is clicked?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Save when clicking outside editor text field? How to do this?",
-"type":"text"
-}
-]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Can do edits through context menu even though edit is in progress",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Can check if editor opened be more isolated?",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Edit mode improvements",
+"text":"Factory should drop right into selection mode when button is clicked?",
 "type":"text"
 }
 ]
@@ -18568,63 +18526,11 @@
 "type":"text"
 }
 ]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Only open code body editor when double clicked?",
-"type":"text"
-}
-]
 }
 ],
 "fragments":[
 {
 "text":"Code editor",
-"type":"text"
-}
-]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"This is partially done",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Needs completion and clean up",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Highlight the word/fragment that is double clicked?",
-"type":"text"
-}
-]
-}
-],
-"fragments":[
-{
-"text":"Editors",
 "type":"text"
 }
 ]
@@ -18769,16 +18675,6 @@
 "fragments":[
 {
 "text":"Constants for border calculations are tricky. Especially calculation of page width. How to make simpler?",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Create more wx utility widgets to remove cruft.",
 "type":"text"
 }
 ]
@@ -19351,16 +19247,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Editor eats last newline character",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Context menu for path should have option \"Add to chunk\"",
 "type":"text"
 }
@@ -19608,16 +19494,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Text control should ensure selected text is visible in view (scroll if needed)",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Multiple instances of rliterate overwrites each other's settings",
 "type":"text"
 }
@@ -19724,47 +19600,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Find a solution to the focus hack ",
-"type":"text"
-},
-{
-"page_id":"8ab608f28a5046548963649371cab5fe",
-"text":null,
-"type":"reference"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"page_id":"56b835fee5b24f8a8e59156506ac6464",
-"text":null,
-"type":"reference"
-},
-{
-"text":" was slow",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Marker does not show at correct position",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Optimize TOC further by reusing rows to prevent re-render on expand/collapse?",
+"text":"Marker does not show at correct position (because of font kerning)",
 "type":"text"
 }
 ]
@@ -19784,7 +19620,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Goal: remove all logic related to active_editor",
+"text":"Is focus set correctly in large code block? If cursor is far down?",
 "type":"text"
 }
 ]
@@ -19873,7 +19709,7 @@
 "children":[],
 "fragments":[
 {
-"text":"Only care about font for text extend calculations?",
+"text":"Only care about font for text extent calculations?",
 "type":"text"
 }
 ]
@@ -19884,6 +19720,66 @@
 "fragments":[
 {
 "text":"Empty chunks in code fragments seems to generate error when file is written",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Names assigned in panel inside loop is still set as ",
+"type":"text"
+},
+{
+"text":"self.name",
+"type":"code"
+},
+{
+"text":". Correct?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"GUI framework",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Write back as soon as file changes",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Fail if the paragraph no longer exists",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"GVim should run in thread",
 "type":"text"
 }
 ]
