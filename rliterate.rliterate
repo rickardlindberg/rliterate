@@ -10661,7 +10661,7 @@
 "type":"variable"
 },
 {
-"text":"[text](\n        projection    = TitleProjection(self.project self.page self.selection)\n        max_width     = self.project.theme.page_body_width\n        font          = self._create_font()\n        tooltip       = self.page.full_title\n        @double_click = self.text.Select(self.project event.Position)\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"text":"[text](\n        projection    = TitleProjection(self.project self.page self.selection.get(\"title\"))\n        max_width     = self.project.theme.page_body_width\n        font          = self._create_font()\n        tooltip       = self.page.full_title\n        @double_click = self.text.Select(self.project event.Position)\n        %proportion[1]\n    )\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
@@ -10773,15 +10773,7 @@
 "type":"variable"
 },
 {
-"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.",
-"type":"code"
-},
-{
-"id":"1b157d3f9e46428885021a3e3b3b2c15",
-"type":"variable"
-},
-{
-"text":"(0)\n            )\n        if self.selection.",
+"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                0 if self.selection is None else self.selection.value,\n                one_selection=self.selection.create(0)\n            )\n        if self.selection.",
 "type":"code"
 },
 {

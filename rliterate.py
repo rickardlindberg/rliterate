@@ -1001,7 +1001,7 @@ class TitleGui(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['projection'] = TitleProjection(self.project, self.page, self.selection)
+        properties['projection'] = TitleProjection(self.project, self.page, self.selection.get('title'))
         properties['max_width'] = self.project.theme.page_body_width
         properties['font'] = self._create_font()
         properties['tooltip'] = self.page.full_title
@@ -4855,7 +4855,8 @@ class TitleProjection(BaseProjection):
             self.add(
                 "Enter title",
                 self.project.get_style(TokenType.RLiterate.Empty),
-                self.selection.create(0)
+                0 if self.selection is None else self.selection.value,
+                one_selection=self.selection.create(0)
             )
         if self.selection.present:
             self._key_handler = TitleKeyHandler(
