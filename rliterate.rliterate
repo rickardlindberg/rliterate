@@ -1232,9 +1232,7 @@
 ],
 "id":"5550ad9d761e447982bd863a238f9ac8",
 "language":"",
-"post_process":[
-""
-],
+"post_process":[],
 "type":"code"
 },
 {
@@ -3820,7 +3818,7 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef has_post_process(self):\n    return len(\" \".join(self.post_process)) > 0\n\n@property\ndef ",
+"text":"@property\ndef ",
 "type":"code"
 },
 {
@@ -3850,6 +3848,7 @@
 ],
 "id":"fc1c88aee87c474cab4df461126c5ad3",
 "language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -11667,7 +11666,7 @@
 "type":"variable"
 },
 {
-"text":")\n\n    def _max_width(self, adjust_for_filetype=False):\n        if adjust_for_filetype:\n            x = self.FILETYPE_WIDTH + self.PADDING\n        else:\n            x = 0\n        return self.project.theme.page_body_width-2*self.PADDING-x\n\n    def _header(self):\n        return self._path() or self._filetype()\n\n    def _path(self):\n        if not self.paragraph.path.is_empty or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def _filetype(self):\n        if self.paragraph.raw_language or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def _post_process(self):\n        if self.paragraph.has_post_process or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.paragraph.",
+"text":")\n\n    def _max_width(self, adjust_for_filetype=False):\n        if adjust_for_filetype:\n            x = self.FILETYPE_WIDTH + self.PADDING\n        else:\n            x = 0\n        return self.project.theme.page_body_width-2*self.PADDING-x\n\n    def _header(self):\n        return self._path() or self._filetype()\n\n    def _path(self):\n        if not self.paragraph.path.is_empty or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def _filetype(self):\n        if self.paragraph.raw_language or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def _post_process(self):\n        if self.paragraph.post_process or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.paragraph.",
 "type":"code"
 },
 {
@@ -16034,9 +16033,7 @@
 ],
 "id":"6f70dce877674117b2ca4a80264d34ee",
 "language":"",
-"post_process":[
-""
-],
+"post_process":[],
 "type":"code"
 },
 {
@@ -16385,9 +16382,7 @@
 ],
 "id":"c488f8ce4ecf468d8039d241103648ab",
 "language":"",
-"post_process":[
-""
-],
+"post_process":[],
 "type":"code"
 },
 {
@@ -16615,7 +16610,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._render(chain, paragraphs, [], post_process=post_process)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, tabstops, post_process, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix, tabstops)\n            if paragraph.has_post_process and post_process:\n                try:\n                    value = subprocess.Popen(\n                        paragraph.post_process,\n                        stdin=subprocess.PIPE,\n                        stdout=subprocess.PIPE\n                    ).communicate(\n                        \"\".join(\n                            char.value for\n                            char in self.expand_id(paragraph.id, post_process=False)[1]\n                        )\n                    )[0]\n                except Exception as e:\n                    value = str(e)\n                    sys.stderr.write(\"Command {} failed: {}\".format(paragraph.post_process, value))\n                self._add_text_to_chain(value, chain, prefix, tabstops)\n            else:\n                for fragment in paragraph.",
+"text":"()\n        self._render(chain, paragraphs, [], post_process=post_process)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, tabstops, post_process, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix, tabstops)\n            if paragraph.post_process and post_process:\n                try:\n                    value = subprocess.Popen(\n                        paragraph.post_process,\n                        stdin=subprocess.PIPE,\n                        stdout=subprocess.PIPE\n                    ).communicate(\n                        \"\".join(\n                            char.value for\n                            char in self.expand_id(paragraph.id, post_process=False)[1]\n                        )\n                    )[0]\n                except Exception as e:\n                    value = str(e)\n                    sys.stderr.write(\"Command {} failed: {}\".format(paragraph.post_process, value))\n                self._add_text_to_chain(value, chain, prefix, tabstops)\n            else:\n                for fragment in paragraph.",
 "type":"code"
 },
 {
@@ -17269,9 +17264,7 @@
 ],
 "id":"0fe8dfc503a54cde9df4de6a2cf65b7a",
 "language":"",
-"post_process":[
-""
-],
+"post_process":[],
 "type":"code"
 },
 {

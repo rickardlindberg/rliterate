@@ -3301,10 +3301,6 @@ class CodeParagraph(Paragraph):
             "__"
         )
     @property
-    def has_post_process(self):
-        return len(" ".join(self.post_process)) > 0
-
-    @property
     def post_process(self):
         return self._fragment.get("post_process", [])
 
@@ -4967,7 +4963,7 @@ class Code(CodeGui, ParagraphBaseMixin):
             return []
 
     def _post_process(self):
-        if self.paragraph.has_post_process or self.selection.present:
+        if self.paragraph.post_process or self.selection.present:
             return [None]
         else:
             return []
@@ -5787,7 +5783,7 @@ class CodeExpander(object):
         for index, paragraph in enumerate(paragraphs):
             if index > 0:
                 self._add_text_to_chain("\n"*blank_lines_before, chain, prefix, tabstops)
-            if paragraph.has_post_process and post_process:
+            if paragraph.post_process and post_process:
                 try:
                     value = subprocess.Popen(
                         paragraph.post_process,
