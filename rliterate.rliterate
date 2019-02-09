@@ -10204,7 +10204,7 @@
 "type":"variable"
 },
 {
-"text":"(loopvar.paragraph.id)\n        %expand\n      )\n      Divider[dividers](\n          padding = self.divider_padding()\n          height  = 3\n          %expand\n      )\n    }\n    panel(%expand) %hbox {\n        panel(%proportion[1]) %hbox {}\n        IconButton(\n            icon = \"add\"\n            @button = self.project.add_paragraph(self.page.id)\n        )\n    }\n    @richt_click = SimpleContextMenu.ShowRecursive(slef)\n}\n",
+"text":"(loopvar.paragraph.id)\n        %expand\n      )\n      Divider[dividers](\n          padding = self.divider_padding()\n          height  = 3\n          %expand\n      )\n    }\n    panel(%expand) %hbox {\n        panel(%proportion[1]) %hbox {}\n        IconButton(\n            icon = \"add\"\n            @button = self.project.add_paragraph(self.page.id)\n        )\n    }\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
 "type":"code"
 }
 ],
@@ -19004,6 +19004,16 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Add 'if' construct",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
@@ -19040,6 +19050,16 @@
 "fragments":[
 {
 "text":"GVim should run in thread",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Introduce base class for page items that can show selection border to left?",
 "type":"text"
 }
 ]

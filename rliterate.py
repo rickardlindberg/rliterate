@@ -864,7 +864,7 @@ class PageGui(GuiFrameworkPanel):
             self._child4(parent, loopvar)
         parent.loop_end(self)
         self._child5(parent, loopvar)
-        handlers.append(('richt_click', lambda event: SimpleContextMenu.ShowRecursive(slef)))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
         if first:
             parent.listen(handlers)
 
