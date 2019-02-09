@@ -9120,7 +9120,7 @@
 "type":"variable"
 },
 {
-"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.",
+"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                \"Enter title\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                0 if self.selection.present else self.selection.value,\n                one_selection=self.selection.",
 "type":"code"
 },
 {
@@ -9136,7 +9136,7 @@
 "type":"variable"
 },
 {
-"text":":\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self.page,\n                self.selection\n            )\n",
+"text":":\n            self._key_handler = TitleKeyHandler(\n                editor,\n                self.project,\n                self._character_selection,\n                self.page,\n                self.selection\n            )\n",
 "type":"code"
 }
 ],

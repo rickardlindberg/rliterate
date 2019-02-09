@@ -4589,12 +4589,14 @@ class TocTitleProjection(BaseProjection):
             self.add(
                 "Enter title",
                 self.project.get_style(TokenType.RLiterate.Empty),
-                self.selection.create(0)
+                0 if self.selection.present else self.selection.value,
+                one_selection=self.selection.create(0)
             )
         if self.selection.present:
             self._key_handler = TitleKeyHandler(
                 editor,
                 self.project,
+                self._character_selection,
                 self.page,
                 self.selection
             )
