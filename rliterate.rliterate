@@ -18940,14 +18940,6 @@
 "type":"text"
 }
 ]
-}
-],
-"fragments":[
-{
-"text":"Optimizations",
-"type":"text"
-}
-]
 },
 {
 "child_type":null,
@@ -18955,6 +18947,14 @@
 "fragments":[
 {
 "text":"Only care about font for text extent calculations?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"Optimizations",
 "type":"text"
 }
 ]
