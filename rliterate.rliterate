@@ -15030,6 +15030,50 @@
 "title":"Text entry helper"
 },
 {
+"children":[],
+"id":"ef774bbbf4594cadafa3dac5d64f9d19",
+"paragraphs":[
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":"(wx.Menu):\n\n    def __init__(self, name):\n        wx.Menu.__init__(self)\n        self._name = name\n\n    def AppendItem(self, text, fn):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: fn(),\n            self.Append(wx.NewId(), text)\n        )\n\n    def AddToMenu(self, menu):\n        menu.AppendSubMenu(self, self._name)\n\n    def Popup(self, widget):\n        self._append_parents(widget)\n        widget.PopupMenu(self)\n        self.Destroy()\n\n    def _append_parents(self, widget):\n        parent = widget.Parent\n        sub_menus = []\n        while parent is not None:\n            if hasattr(parent, \"CreateContextMenu\"):\n                sub_menus.append(parent.CreateContextMenu())\n            parent = parent.Parent\n        if sub_menus:\n            self.AppendSeparator()\n            for x in sub_menus:\n                x.AddToMenu(self)\n\n    @staticmethod\n    def ",
+"type":"code"
+},
+{
+"id":"b0201e824c464356aa706a0440192e5c",
+"type":"variable"
+},
+{
+"text":"(widget):\n        while widget is not None:\n            if hasattr(widget, \"CreateContextMenu\"):\n                widget.CreateContextMenu().Popup(widget)\n                return\n            widget = widget.Parent\n",
+"type":"code"
+}
+],
+"id":"e054ba1012de4fb9af5685d26f2682b8",
+"type":"code"
+}
+],
+"title":"Menu helpers"
+}
+],
+"id":"5c3647a616b8495f8bebd268be84377d",
+"paragraphs":[],
+"title":"wxPython utilities"
+},
+{
 "children":[
 {
 "children":[],
@@ -15043,32 +15087,6 @@
 }
 ],
 "id":"2a0caf7b69bb4e73806a44d43dba2c27",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"The ",
-"type":"text"
-},
-{
-"text":"_render",
-"type":"code"
-},
-{
-"text":" method sets up things one time. The ",
-"type":"text"
-},
-{
-"text":"_re_render",
-"type":"code"
-},
-{
-"text":" method then figures out the optimal way to change itself.",
-"type":"text"
-}
-],
-"id":"519e9c8a5dc44bce9188ce2c507ae3f3",
 "type":"text"
 }
 ],
@@ -16473,52 +16491,19 @@
 }
 ],
 "id":"4a5f39dbce724c2ba0f7f2ca4f298659",
-"paragraphs":[],
-"title":"GUI language framework"
-},
-{
-"children":[],
-"id":"ef774bbbf4594cadafa3dac5d64f9d19",
 "paragraphs":[
 {
-"chunkpath":[
-"base classes"
-],
-"filepath":[
-"rliterate.py"
-],
 "fragments":[
 {
-"text":"class ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":"(wx.Menu):\n\n    def __init__(self, name):\n        wx.Menu.__init__(self)\n        self._name = name\n\n    def AppendItem(self, text, fn):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: fn(),\n            self.Append(wx.NewId(), text)\n        )\n\n    def AddToMenu(self, menu):\n        menu.AppendSubMenu(self, self._name)\n\n    def Popup(self, widget):\n        self._append_parents(widget)\n        widget.PopupMenu(self)\n        self.Destroy()\n\n    def _append_parents(self, widget):\n        parent = widget.Parent\n        sub_menus = []\n        while parent is not None:\n            if hasattr(parent, \"CreateContextMenu\"):\n                sub_menus.append(parent.CreateContextMenu())\n            parent = parent.Parent\n        if sub_menus:\n            self.AppendSeparator()\n            for x in sub_menus:\n                x.AddToMenu(self)\n\n    @staticmethod\n    def ",
-"type":"code"
-},
-{
-"id":"b0201e824c464356aa706a0440192e5c",
-"type":"variable"
-},
-{
-"text":"(widget):\n        while widget is not None:\n            if hasattr(widget, \"CreateContextMenu\"):\n                widget.CreateContextMenu().Popup(widget)\n                return\n            widget = widget.Parent\n",
-"type":"code"
+"text":"All GUI widgets are (or should be) written in a custom language. That is compiled to Python code for a specific GUI framework. In this case it is wxPython.",
+"type":"text"
 }
 ],
-"id":"e054ba1012de4fb9af5685d26f2682b8",
-"type":"code"
+"id":"bbe4efed11464729b17882773ba5a80d",
+"type":"text"
 }
 ],
-"title":"Menu helpers"
-}
-],
-"id":"5c3647a616b8495f8bebd268be84377d",
-"paragraphs":[],
-"title":"wxPython utilities"
+"title":"GUI language"
 }
 ],
 "id":"e418766e480b41b1844c8d754b3746fc",
@@ -16561,7 +16546,7 @@
 "type":"list"
 }
 ],
-"title":"wxPython GUI"
+"title":"GUI"
 },
 {
 "children":[
