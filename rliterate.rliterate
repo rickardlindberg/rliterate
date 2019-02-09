@@ -7609,6 +7609,35 @@
 },
 {
 "chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"022b19461779432dacb8005e42acdd77",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #project\n    panel(\n        focus     = True\n    ) %hbox {}\n    TableOfContents(\n        project   = self.project\n        selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n        %expand\n    )\n    Workspace(\n        project   = self.project\n        selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n        %expand\n        %proportion[1]\n    )\n}\n",
+"type":"code"
+}
+],
+"id":"00f0366f3f634c5cb3ceb2ef6c098255",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
 "classes"
 ],
 "filepath":[
@@ -7624,71 +7653,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Frame, BoxSizerMixin):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n        self.project = project\n        self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(self._create_main_panel(), flag=wx.EXPAND, proportion=1)\n\n    def _create_main_panel(self):\n        panel = HorizontalPanel(self)\n        self.toolbar = ToolBar(panel, self.project)\n        self.SetToolBar(self.toolbar)\n        self._focus_panel = panel.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            wx.Panel(self)\n        )\n        self.toc = panel.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            TableOfContents(\n                panel,\n                project=self.project,\n                selection=self.project.selection.",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"main_frame\").",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"toc\")\n            ),\n            flag=wx.EXPAND,\n            proportion=0\n        )\n        self.workspace = panel.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            Workspace(\n                panel,\n                project=self.project,\n                selection=self.project.selection.",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"main_frame\").",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"workspace\")\n            ),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self._focus_panel.SetFocus()\n        self.project.listen(self.",
+"text":"(wx.Frame):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        self.project = project\n        self.main_panel = MainFramePanel(self, project=self.project)\n        self.toolbar = ToolBar(self.main_panel, self.project)\n        self.SetToolBar(self.toolbar)\n        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)\n        self.project.listen(self.",
 "type":"code"
 },
 {
@@ -7696,7 +7661,7 @@
 "type":"variable"
 },
 {
-"text":")\n        return panel\n\n",
+"text":")\n\n",
 "type":"code"
 },
 {
@@ -7748,7 +7713,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self._focus_panel.SetFocus()\n        self.toolbar.UpdateGui()\n        self.toc.",
+"text":"(self):\n        self.toolbar.UpdateGui()\n        self.main_panel.",
 "type":"code"
 },
 {
@@ -7756,47 +7721,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            project=self.project,\n            selection=self.project.selection.",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"main_frame\").",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"toc\")\n        )\n        self.workspace.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n            project=self.project,\n            selection=self.project.selection.",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"main_frame\").",
-"type":"code"
-},
-{
-"id":"9cd62437dee84216bb799a829550ec60",
-"type":"variable"
-},
-{
-"text":"(\"workspace\")\n        )\n        self.Layout()\n        self.Update()\n\n",
+"text":"(\n            project=self.project,\n        )\n        self.Layout()\n        self.Update()\n\n",
 "type":"code"
 }
 ],
@@ -15136,56 +15061,6 @@
 "language":"",
 "post_process":[],
 "type":"code"
-},
-{
-"chunkpath":[
-"base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"3457c112c47c41a293d77cc79f99badf",
-"type":"variable"
-},
-{
-"text":"(CompactScrolledWindow, BoxSizerMixin):\n\n    def __init__(self, *args, **kwargs):\n        CompactScrolledWindow.__init__(self, *args, **kwargs)\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n",
-"type":"code"
-}
-],
-"id":"41f34229e34943af88852b4f07e305d2",
-"language":"",
-"post_process":[],
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"8d2b6dc31cdb4b2dba29488fa3263c53",
-"type":"variable"
-},
-{
-"text":"(CompactScrolledWindow, BoxSizerMixin):\n\n    def __init__(self, *args, **kwargs):\n        CompactScrolledWindow.__init__(self, *args, **kwargs)\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
-"type":"code"
-}
-],
-"id":"34f09878975845e0a1154b13334f84b4",
-"type":"code"
 }
 ],
 "title":"Scrolling containers"
@@ -16880,96 +16755,6 @@
 "children":[],
 "id":"d4d8a1cf36f74de6b7ead5b43e5660b8",
 "paragraphs":[
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class BoxSizerMixin(object):\n\n    def __init__(self, orientation):\n        self.Sizer = wx.BoxSizer(orientation)\n\n    def ",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(self, window, **kwargs):\n        return self.",
-"type":"code"
-},
-{
-"id":"30ba4e602df545be8fa892a31e88c6ce",
-"type":"variable"
-},
-{
-"text":"(window, **kwargs)[0]\n\n    def ",
-"type":"code"
-},
-{
-"id":"30ba4e602df545be8fa892a31e88c6ce",
-"type":"variable"
-},
-{
-"text":"(self, window, **kwargs):\n        return window, self.Sizer.Add(window, **kwargs)\n\n    def ",
-"type":"code"
-},
-{
-"id":"64ef4d70610f452d83e90f00a07a45f1",
-"type":"variable"
-},
-{
-"text":"(self, position, window, **kwargs):\n        self.Sizer.Insert(position, window, **kwargs)\n        return window\n\n    def ",
-"type":"code"
-},
-{
-"id":"31a17b208536469099ae5c084d35590d",
-"type":"variable"
-},
-{
-"text":"(self, size=0):\n        return SizeWrapper(\n            self.Sizer.Orientation,\n            self.Sizer.Add((0, 0))\n        ).WithSize(size)\n\n    def ",
-"type":"code"
-},
-{
-"id":"45fc59620058445d8bca860964dbb850",
-"type":"variable"
-},
-{
-"text":"(self, proportion):\n        self.Sizer.AddStretchSpacer(proportion)\n\n    def ",
-"type":"code"
-},
-{
-"id":"898556fcc0094d959568f97b261a5f5c",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.Sizer.Clear(True)\n",
-"type":"code"
-}
-],
-"id":"e607df295e134d2fbbd03923b5f8862f",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class HorizontalPanel(wx.Panel, BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent, **kwargs)\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
-"type":"code"
-}
-],
-"id":"72985f3cbb2a4fbda2f876beec564231",
-"language":"",
-"type":"code"
-},
 {
 "chunkpath":[
 "base base base classes"
@@ -19639,6 +19424,7 @@
 },
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
+"022b19461779432dacb8005e42acdd77":"MainFramePanel",
 "038ab2c5a2e54a9eb8e136640f3694c6":"DividerGui",
 "0397a216ff674867aa422a0778df2f44":"transaction",
 "03cf450743e9447da0a9becadacd7dda":"active_editor",

@@ -338,37 +338,6 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
         )
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
-class BoxSizerMixin(object):
-
-    def __init__(self, orientation):
-        self.Sizer = wx.BoxSizer(orientation)
-
-    def AppendChild(self, window, **kwargs):
-        return self.AppendChildWithSizer(window, **kwargs)[0]
-
-    def AppendChildWithSizer(self, window, **kwargs):
-        return window, self.Sizer.Add(window, **kwargs)
-
-    def InsertChild(self, position, window, **kwargs):
-        self.Sizer.Insert(position, window, **kwargs)
-        return window
-
-    def AppendSpace(self, size=0):
-        return SizeWrapper(
-            self.Sizer.Orientation,
-            self.Sizer.Add((0, 0))
-        ).WithSize(size)
-
-    def AppendStretch(self, proportion):
-        self.Sizer.AddStretchSpacer(proportion)
-
-    def RemoveChildren(self):
-        self.Sizer.Clear(True)
-class HorizontalPanel(wx.Panel, BoxSizerMixin):
-
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent, **kwargs)
-        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
 class SizeWrapper(object):
 
     def __init__(self, orientation, sizer_item):
@@ -384,6 +353,65 @@ class SizeWrapper(object):
     def WithSize(self, size):
         self.SetSize(size)
         return self
+class MainFramePanel(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child1(parent, loopvar)
+        self._child3(parent, loopvar)
+        self._child4(parent, loopvar)
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['focus'] = True
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['selection'] = self.project.selection.get('main_frame').get('toc')
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(TableOfContents, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child4(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['selection'] = self.project.selection.get('main_frame').get('workspace')
+        sizer["flag"] |= wx.EXPAND
+        sizer["proportion"] = 1
+        widget = parent.add(Workspace, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
 class TableOfContentsGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -2409,16 +2437,6 @@ class TokenView(TextProjection):
             return (0, character.extra)
     def SetDefaultCursor(self):
         self.SetCursor(self._default_cursor)
-class VerticalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):
-
-    def __init__(self, *args, **kwargs):
-        CompactScrolledWindow.__init__(self, *args, **kwargs)
-        BoxSizerMixin.__init__(self, wx.VERTICAL)
-class HorizontalScrolledWindow(CompactScrolledWindow, BoxSizerMixin):
-
-    def __init__(self, *args, **kwargs):
-        CompactScrolledWindow.__init__(self, *args, **kwargs)
-        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
 class MultilineTextCtrl(wx.richtext.RichTextCtrl):
 
     MIN_HEIGHT = 50
@@ -4281,7 +4299,7 @@ class SolarizedTheme(BaseTheme):
         TokenType.RLiterate.Chunk:     Style.create(foreground=magenta, bold=True),
         TokenType.RLiterate.Sep:       Style.create(foreground=base1),
     }
-class MainFrame(wx.Frame, BoxSizerMixin):
+class MainFrame(wx.Frame):
 
     def __init__(self, project):
         wx.Frame.__init__(
@@ -4290,51 +4308,20 @@ class MainFrame(wx.Frame, BoxSizerMixin):
             size=(920, 500),
             title="{} - RLiterate".format(project.title)
         )
-        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
         self.project = project
-        self.AppendChild(self._create_main_panel(), flag=wx.EXPAND, proportion=1)
-
-    def _create_main_panel(self):
-        panel = HorizontalPanel(self)
-        self.toolbar = ToolBar(panel, self.project)
+        self.main_panel = MainFramePanel(self, project=self.project)
+        self.toolbar = ToolBar(self.main_panel, self.project)
         self.SetToolBar(self.toolbar)
-        self._focus_panel = panel.AppendChild(
-            wx.Panel(self)
-        )
-        self.toc = panel.AppendChild(
-            TableOfContents(
-                panel,
-                project=self.project,
-                selection=self.project.selection.get("main_frame").get("toc")
-            ),
-            flag=wx.EXPAND,
-            proportion=0
-        )
-        self.workspace = panel.AppendChild(
-            Workspace(
-                panel,
-                project=self.project,
-                selection=self.project.selection.get("main_frame").get("workspace")
-            ),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-        self._focus_panel.SetFocus()
+        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)
         self.project.listen(self.UpdateGui)
-        return panel
 
     @rltime("update main frame")
     def UpdateGui(self):
         with flicker_free_drawing(self):
-            self._focus_panel.SetFocus()
             self.toolbar.UpdateGui()
-            self.toc.UpdateGui(
+            self.main_panel.UpdateGui(
                 project=self.project,
-                selection=self.project.selection.get("main_frame").get("toc")
-            )
-            self.workspace.UpdateGui(
-                project=self.project,
-                selection=self.project.selection.get("main_frame").get("workspace")
             )
             self.Layout()
             self.Update()
