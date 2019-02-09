@@ -3127,7 +3127,23 @@
 "type":"variable"
 },
 {
-"text":"[\"chunkpath\"] if x]\n    )\n\n@path.setter\ndef path(self, path):\n    self.update({\n        \"filepath\": copy.deepcopy(path.filepath),\n        \"chunkpath\": copy.deepcopy(path.chunkpath),\n    })\n",
+"text":"[\"chunkpath\"] if x]\n    )\n\n@path.setter\ndef path(self, path):\n    self.update({\n        \"filepath\": copy.deepcopy(path.filepath),\n        \"chunkpath\": copy.deepcopy(path.chunkpath),\n    })\n\n@property\ndef filepath(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"filepath\"]\n\n@filepath.setter\ndef filepath(self, filepath):\n    self.update({\n        \"filepath\": filepath,\n    })\n\n@property\ndef chunkpath(self):\n    return self.",
+"type":"code"
+},
+{
+"id":"75d0d294fd5a4cc5beaf14009875e662",
+"type":"variable"
+},
+{
+"text":"[\"chunkpath\"]\n\n@chunkpath.setter\ndef chunkpath(self, chunkpath):\n    self.update({\n        \"chunkpath\": chunkpath,\n    })\n",
 "type":"code"
 }
 ],
@@ -6771,7 +6787,7 @@
 "type":"variable"
 },
 {
-"text":"(self, key):\n        if self.current is not None and self.current[0] == key:\n            new_current = self.current[1:]\n        else:\n            new_current = None\n        return ",
+"text":"(self, key):\n        if self.current is not None and len(self.current) > 0 and self.current[0] == key:\n            new_current = self.current[1:]\n        else:\n            new_current = None\n        return ",
 "type":"code"
 },
 {
@@ -6795,7 +6811,23 @@
 "type":"variable"
 },
 {
-"text":"(self.trail+[value], [])\n",
+"text":"(self.trail+[value], [])\n\n    def ",
+"type":"code"
+},
+{
+"id":"66079af187674e5db05ed5e19fa8b891",
+"type":"variable"
+},
+{
+"text":"(self):\n        return ",
+"type":"code"
+},
+{
+"id":"eabcfbe8e6c349d497353e55ad0b3685",
+"type":"variable"
+},
+{
+"text":"(self.trail, [])\n",
 "type":"code"
 }
 ],
@@ -11383,7 +11415,7 @@
 "children":[
 {
 "children":[],
-"id":"c2e755bb14d441e18f3f64a7e1ff69ae",
+"id":"2a953d7ca5f94cc2826a2ec31adfc695",
 "paragraphs":[
 {
 "chunkpath":[
@@ -11394,53 +11426,532 @@
 ],
 "fragments":[
 {
-"text":"class CodeView(",
+"text":"class CodePathProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def create_projection(self, editor):\n        self.path = {\n            \"filepath\": [],\n            \"chunkpath\": []\n        }\n        self._project_path(\n            editor,\n            \"filepath\",\n            TokenType.RLiterate.Path\n        )\n        if self.characters:\n            self.add(\n                \" \",\n                self.project.get_style(TokenType.RLiterate.Sep),\n            )\n        self._project_path(\n            editor,\n            \"chunkpath\",\n            TokenType.RLiterate.Chunk\n        )\n\n    def _project_path(self, editor, name, token_type):\n        path_selection = self.selection.get(name)\n        items = getattr(self.paragraph, name)\n        if len(items) > 0:\n            for index, path in enumerate(items):\n                self.path[name].append(path)\n                part_selection = path_selection.get(index)\n                if index > 0:\n                    self.add(\n                        \"/\",\n                        self.project.get_style(TokenType.RLiterate.Sep),\n                    )\n                if path:\n                    self.add(\n                        path,\n                        self.project.get_style(token_type),\n                        part_selection.value,\n                        part_selection,\n                        extra={\n                            \"subpath\": Path(\n                                list(self.path[\"filepath\"]),\n                                list(self.path[\"chunkpath\"])\n                            )\n                        }\n                    )\n                else:\n                    self.add(\n                        \"<>\",\n                        self.project.get_style(TokenType.RLiterate.Empty),\n                        None if part_selection.value is None else 1,\n                        one_selection=part_selection.create(0)\n                    )\n                if part_selection.present:\n                    self._key_handler = CodePathElementKeyHandler(\n                        editor,\n                        self.project,\n                        self._character_selection,\n                        self.paragraph,\n                        name,\n                        index,\n                        path_selection\n                    )\n        elif self.selection.present:\n            self.add(\n                \"Add {}\".format(name),\n                self.project.get_style(TokenType.RLiterate.Empty),\n                None if path_selection.value is None else 0,\n                one_selection=path_selection.create(0)\n            )\n            if path_selection.present:\n                self._key_handler = CodePathEmptyKeyHandler(\n                    editor,\n                    self.project,\n                    self._character_selection,\n                    self.paragraph,\n                    name,\n                    path_selection\n                )\n",
 "type":"code"
-},
-{
-"id":"50f1b4552c0340eab599c8bc578334de",
-"type":"variable"
-},
-{
-"text":"):\n\n    BORDER = 0\n    PADDING = 5\n\n    @property\n    def project(self):\n        return self.values[\"project\"]\n\n    @property\n    def paragraph(self):\n        return self.values[\"paragraph\"]\n\n    @property\n    def base(self):\n        return self.values[\"base\"]\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"CodeView"
-],
-"prefix":"    ",
-"type":"chunk"
 }
 ],
-"id":"397eb97b4763418c9e8e4a8cbcb75a72",
+"id":"4f13519ab2f04a5c8791ca94c99f4e75",
 "language":"",
+"post_process":[],
 "type":"code"
 },
 {
 "chunkpath":[
-"classes",
-"CodeView"
+"classes"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"def ",
+"text":"class CodePathElementKeyHandler(",
 "type":"code"
 },
 {
-"id":"887acc7e530b4d98933d11e223d58c42",
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
 "type":"variable"
 },
 {
-"text":"(self):\n    self.Font = ",
+"text":"):\n\n    def __init__(self, editor, project, character_selection, paragraph, which_path, path_index, selection):\n        ",
 "type":"code"
 },
 {
-"id":"b425fa2a021340e0be02f8c7a152ba19",
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".__init__(\n            self,\n            editor,\n            project,\n            character_selection,\n            getattr(paragraph, which_path)[path_index],\n            selection.get(path_index).",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":"\n        )\n        self.project = project\n        self.paragraph = paragraph\n        self.which_path = which_path\n        self.path_index = path_index\n        self.selection = selection\n\n    def handle_key(self, event):\n        if event.GetKeyCode() == wx.WXK_BACK and not getattr(self.paragraph, self.which_path)[self.path_index]:\n            with self.project.notify():\n                old = getattr(self.paragraph, self.which_path)\n                new = old[:self.path_index]+old[self.path_index+1:]\n                setattr(self.paragraph, self.which_path, new)\n                if len(new) > 0:\n                    self.project.selection = self.selection.get(self.path_index-1).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n                else:\n                    self.project.selection = self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n        elif event.GetKeyCode() == 47:\n            with self.project.notify():\n                old = getattr(self.paragraph, self.which_path)\n                split = [\n                    old[self.path_index][:self.index],\n                    old[self.path_index][self.index:],\n                ]\n                new = old[:self.path_index]+split+old[self.path_index+1:]\n                setattr(self.paragraph, self.which_path, new)\n                self.project.selection = self.selection.get(self.path_index+1).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n        else:\n            ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".handle_key(self, event)\n\n\n    def save(self, text, index):\n        with self.project.notify():\n            setattr(\n                self.paragraph,\n                self.which_path,\n                im_replace(\n                    getattr(self.paragraph, self.which_path),\n                    [self.path_index],\n                    text\n                )\n            )\n            self.project.selection = self.selection.get(self.path_index).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n",
+"type":"code"
+}
+],
+"id":"e05fe79d4ee84445b873400e544ee228",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class CodePathEmptyKeyHandler(",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, editor, project, character_selection, paragraph, which_path, selection):\n        ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".__init__(self, editor, project, character_selection, \"\", selection.",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":")\n        self.project = project\n        self.paragraph = paragraph\n        self.which_path = which_path\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            setattr(self.paragraph, self.which_path, [text])\n            self.project.selection = self.selection.get(0).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n",
+"type":"code"
+}
+],
+"id":"c45ebbe3b45349c895f82bb0589c0db7",
+"language":"",
+"post_process":[],
+"type":"code"
+}
+],
+"title":"Path"
+},
+{
+"children":[],
+"id":"dea6c8b3571d452ea61438d78882da9b",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class CodeRawLanguageProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def create_projection(self, editor):\n        if self.paragraph.raw_language:\n            self.add(\n                self.paragraph.raw_language,\n                self.project.get_style(TokenType.RLiterate),\n                self.selection.",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":",\n                self.selection\n            )\n        else:\n            self.add(\n                self.paragraph.language or \"n/a\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.value,\n                one_selection=self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n            )\n        if self.selection.",
+"type":"code"
+},
+{
+"id":"f7dfdb312fdc4b0faf3df092e7f58153",
+"type":"variable"
+},
+{
+"text":":\n            self._key_handler = CodeRawLanguageKeyHandler(\n                editor,\n                self.project,\n                self._character_selection,\n                self.paragraph,\n                self.selection\n            )\n",
+"type":"code"
+}
+],
+"id":"6bc1bc69f9074ff39276f16d46432dec",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class CodeRawLanguageKeyHandler(",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, editor, project, character_selection, paragraph, selection):\n        ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".__init__(self, editor, project, character_selection, paragraph.raw_language, selection.",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":")\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.paragraph.raw_language = text\n            self.project.selection = self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n",
+"type":"code"
+}
+],
+"id":"67e60d4c594a46d6a7628ef397094b1e",
+"language":"",
+"post_process":[],
+"type":"code"
+}
+],
+"title":"Raw language"
+},
+{
+"children":[],
+"id":"12488aace7f4488884248cd40ada78d3",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class CodePostProcessingProjection(BaseProjection):\n\n    def __init__(self, project, paragraph, selection):\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def create_projection(self, editor):\n        self.add(\n            \"> \",\n            self.project.get_style(TokenType.RLiterate),\n        )\n        if len(self.paragraph.post_process) > 0:\n            for index, part in enumerate(self.paragraph.post_process):\n                part_selection = self.selection.get(index)\n                if index > 0:\n                    self.add(\n                        \" \",\n                        self.project.get_style(TokenType.RLiterate.Empty),\n                    )\n                if part:\n                    self.add(\n                        part,\n                        self.project.get_style(TokenType.RLiterate),\n                        part_selection.",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":",\n                        part_selection\n                    )\n                else:\n                    self.add(\n                        \"\\\"\\\"\",\n                        self.project.get_style(TokenType.RLiterate.Empty),\n                        None if part_selection.",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":" is None else 1,\n                        one_selection=part_selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n                    )\n                if part_selection.present:\n                    self._key_handler = CodePostProcessElementKeyHandler(\n                        editor,\n                        self.project,\n                        self._character_selection,\n                        self.paragraph,\n                        index,\n                        self.selection\n                    )\n        else:\n            self.add(\n                \"Enter post processing command\",\n                self.project.get_style(TokenType.RLiterate.Empty),\n                self.selection.value,\n                one_selection=self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n            )\n            if self.selection.present:\n                self._key_handler = CodePostProcessEmptyKeyHandler(\n                    editor,\n                    self.project,\n                    self._character_selection,\n                    self.paragraph,\n                    self.selection\n                )\n",
+"type":"code"
+}
+],
+"id":"612bbde169934f74b1e729c9ada0d757",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class CodePostProcessElementKeyHandler(",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, editor, project, character_selection, paragraph, post_process_index, selection):\n        ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".__init__(\n            self,\n            editor,\n            project,\n            character_selection,\n            paragraph.post_process[post_process_index],\n            selection.get(post_process_index).",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":"\n        )\n        self.project = project\n        self.paragraph = paragraph\n        self.post_process_index = post_process_index\n        self.selection = selection\n\n    def handle_key(self, event):\n        if event.GetKeyCode() == wx.WXK_BACK and not self.paragraph.post_process[self.post_process_index]:\n            with self.project.notify():\n                old = self.paragraph.post_process\n                new = old[:self.post_process_index]+old[self.post_process_index+1:]\n                self.paragraph.post_process = new\n                if len(new) > 0:\n                    self.project.selection = self.selection.get(self.post_process_index-1).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n                else:\n                    self.project.selection = self.selection.",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n        elif event.GetKeyCode() == 32:\n            with self.project.notify():\n                old = self.paragraph.post_process\n                split = [\n                    old[self.post_process_index][:self.index],\n                    old[self.post_process_index][self.index:],\n                ]\n                new = old[:self.post_process_index]+split+old[self.post_process_index+1:]\n                self.paragraph.post_process = new\n                self.project.selection = self.selection.get(self.post_process_index+1).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(0)\n        else:\n            ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".handle_key(self, event)\n\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.paragraph.post_process = im_replace(self.paragraph.post_process, [self.post_process_index], text)\n            self.project.selection = self.selection.get(self.post_process_index).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n",
+"type":"code"
+}
+],
+"id":"9c7f299e47f948059c8444bb8e400108",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class CodePostProcessEmptyKeyHandler(",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, editor, project, character_selection, paragraph, selection):\n        ",
+"type":"code"
+},
+{
+"id":"e66f30a35aa94847ac3321f6aa6e3786",
+"type":"variable"
+},
+{
+"text":".__init__(self, editor, project, character_selection, \"\", selection.",
+"type":"code"
+},
+{
+"id":"90d6de1e6f714f1497872ca757b501b6",
+"type":"variable"
+},
+{
+"text":")\n        self.project = project\n        self.paragraph = paragraph\n        self.selection = selection\n\n    def save(self, text, index):\n        with self.project.notify():\n            self.paragraph.post_process = [text]\n            self.project.selection = self.selection.get(0).",
+"type":"code"
+},
+{
+"id":"1b157d3f9e46428885021a3e3b3b2c15",
+"type":"variable"
+},
+{
+"text":"(index)\n",
+"type":"code"
+}
+],
+"id":"27e8d310a8af4cb5ab28d21abd811f21",
+"language":"",
+"post_process":[],
+"type":"code"
+}
+],
+"title":"Post process"
+}
+],
+"id":"91969238a9d24673aec5bc1c8bc8bd7b",
+"paragraphs":[
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"4660d6f071d048fba0904e5dc1bce3c5",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #page_id\n    #paragraph\n    #selection\n    #background = \"#fdf6e3\"\n    for (self._header()) {\n        panel(background=\"#f8f1df\" %expand) %hbox {\n            ",
+"type":"code"
+},
+{
+"id":"84f83f7012144146b77d3fdd168b2d61",
+"type":"variable"
+},
+{
+"text":"[path](\n                projection   = CodePathProjection(self.project self.paragraph self.selection)\n                max_width    = self._max_width(self._filetype())\n                font         = self._create_font()\n                cursor       = \"beam\"\n                @click       = self.path.Select(self.project event.Position)\n                @right_click = self._path_right_click(event)\n                %border[self.PADDING, ALL]\n                %proportion[1]\n            )\n            for (self._filetype()) {\n                panel(\n                    min_size=tuple([self.FILETYPE_WIDTH -1])\n                    %border[self.PADDING, TOP|RIGHT|BOTTOM]\n                    %expand\n                ) %hbox {\n                    ",
+"type":"code"
+},
+{
+"id":"84f83f7012144146b77d3fdd168b2d61",
+"type":"variable"
+},
+{
+"text":"[raw_language](\n                        projection = CodeRawLanguageProjection(self.project self.paragraph self.selection.get(\"raw_language\"))\n                        max_width  = self.FILETYPE_WIDTH\n                        font       = self._create_font()\n                        cursor     = \"beam\"\n                        @click     = self.raw_language.Select(self.project event.Position)\n                    )\n                }\n            }\n        }\n    }\n    panel(%expand) %hbox {\n        TokenView[code](\n            project      = self.project\n            tokens       = self._highlight_variables(self.paragraph.tokens)\n            max_width    = self._max_width()\n            font         = self._create_font()\n            @right_click = self._code_right_click(event)\n            %border[self.PADDING, ALL]\n        )\n    }\n    for (self._post_process()) {\n        panel(background=\"#f8f1df\" %expand %border[self.PADDING, ALL]) %hbox {\n            ",
+"type":"code"
+},
+{
+"id":"84f83f7012144146b77d3fdd168b2d61",
+"type":"variable"
+},
+{
+"text":"[post_process](\n                projection = CodePostProcessingProjection(self.project self.paragraph self.selection.get(\"post_process\"))\n                max_width  = self._max_width()\n                font       = self._create_font()\n                cursor     = \"beam\"\n                @click     = self.post_process.Select(self.project event.Position)\n            )\n        }\n    }\n    @drag        = self.DoDragDrop()\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n    @click       = setattr(self.project \"selection\" self.selection.",
+"type":"code"
+},
+{
+"id":"66079af187674e5db05ed5e19fa8b891",
+"type":"variable"
+},
+{
+"text":"())\n}\n",
+"type":"code"
+}
+],
+"id":"a6f3df34afa1415480de044d1a5b6da5",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class Code(",
+"type":"code"
+},
+{
+"id":"4660d6f071d048fba0904e5dc1bce3c5",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"912bfa09cb014fa7890b442c2aa7750a",
+"type":"variable"
+},
+{
+"text":"):\n\n    PADDING = 5\n    FILETYPE_WIDTH = 100\n\n    def _create_font(self):\n        return ",
+"type":"code"
+},
+{
+"id":"a29da8b06afb474dbef1b70fba3db24e",
 "type":"variable"
 },
 {
@@ -11448,7 +11959,7 @@
 "type":"code"
 },
 {
-"id":"ae8e603135854b1787ca652bf6304e9e",
+"id":"8db58d842ac34e0aa51ea908cd841520",
 "type":"variable"
 },
 {
@@ -11456,215 +11967,46 @@
 "type":"code"
 },
 {
-"id":"aa80683234dc421f81d21fbda0b91758",
+"id":"1f8f14208d274d0cbab10d21ec300882",
 "type":"variable"
 },
 {
-"text":")\n    self.path = self.",
+"text":")\n\n    def _max_width(self, adjust_for_filetype=False):\n        if adjust_for_filetype:\n            x = self.FILETYPE_WIDTH + self.PADDING\n        else:\n            x = 0\n        return self.project.theme.page_body_width-2*self.PADDING-x\n\n    def _header(self):\n        return self._path() or self._filetype()\n\n    def _path(self):\n        if not self.paragraph.path.is_empty or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def _filetype(self):\n        if self.paragraph.raw_language or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def _post_process(self):\n        if self.paragraph.has_post_process or self.selection.present:\n            return [None]\n        else:\n            return []\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.paragraph.",
 "type":"code"
 },
 {
-"id":"359755e756af4e708b237cd9753ae046",
+"id":"f1921d7ea3ca45398940ad6977a30819",
 "type":"variable"
 },
 {
-"text":"(\n        self._create_path(),\n        flag=wx.ALL|wx.EXPAND, border=self.BORDER\n    )\n    self.code = self.",
+"text":"(\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n",
 "type":"code"
 },
 {
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        self._create_code(),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER\n    )\n    self.SetBackgroundColour((243, 236, 219))\n    self.last_body_data = None\n\ndef ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n    self.path.Show(not self.paragraph.path.is_empty)\n    self.path_token_view.",
-"type":"code"
-},
-{
-"id":"f9605031f42b4c37a170779d7ee7fe6e",
-"type":"variable"
-},
-{
-"text":"(\n        self.project,\n        self._create_path_tokens(self.paragraph.path),\n        self.project.theme.page_body_width-2*self.PADDING\n    )\n    if self.paragraph.body_data != self.last_body_data:\n        self.body_token_view.",
-"type":"code"
-},
-{
-"id":"f9605031f42b4c37a170779d7ee7fe6e",
-"type":"variable"
-},
-{
-"text":"(\n            self.project,\n            self._highlight_variables(self.paragraph.tokens),\n            self.project.theme.page_body_width-2*self.PADDING\n        )\n        self.last_body_data = self.paragraph.body_data\n",
-"type":"code"
+"blank_lines_before":0,
+"path":[
+"Code"
+],
+"prefix":"    ",
+"type":"chunk"
 }
 ],
-"id":"2d17b1adc0b149b1b05374fb065578b0",
+"id":"1e77735cb0fe409683695b5339204a23",
 "language":"",
+"post_process":[],
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"The path widget:",
-"type":"text"
-}
-],
-"id":"0fb237b9f38c4480885e6d54a13748e7",
-"type":"text"
 },
 {
 "chunkpath":[
 "classes",
-"CodeView"
+"Code"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"def _create_path(self):\n    panel = HorizontalPanel(self)\n    panel.SetBackgroundColour((248, 241, 223))\n    self.path_token_view = panel.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"3060a3fbc04a4a708019d11f6efa737b",
-"type":"variable"
-},
-{
-"text":"(\n            panel,\n            self.project,\n            self._create_path_tokens(self.paragraph.path),\n            max_width=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":"-2*self.PADDING\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        border=self.PADDING\n    )\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, subpath=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.path_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._path_double_click\n    )\n    return panel\n\ndef _create_path_tokens(self, path):\n    tokens = []\n    last_subpath = None\n    for (index, (name, subpath)) in enumerate(path.filepaths):\n        if index > 0:\n            tokens.append(Token(\n                \"/\",\n                token_type=TokenType.RLiterate.Sep,\n                prev_subpath=last_subpath,\n                next_subpath=subpath\n            ))\n        tokens.append(Token(\n            name,\n            token_type=TokenType.RLiterate.Path,\n            subpath=subpath\n        ))\n        last_subpath = subpath\n    if path.has_both():\n        tokens.append(Token(\n            \" \",\n            token_type=TokenType.RLiterate.Sep,\n            prev_subpath=last_subpath,\n            next_subpath=list(path.chunkpaths)[0][1]\n        ))\n        for (index, (name, subpath)) in enumerate(path.chunkpaths):\n            if index > 0:\n                tokens.append(Token(\n                    \"/\",\n                    token_type=TokenType.RLiterate.Sep,\n                    prev_subpath=last_subpath,\n                    next_subpath=subpath\n                ))\n            tokens.append(Token(\n                name,\n                token_type=TokenType.RLiterate.Chunk,\n                subpath=subpath\n            ))\n            last_subpath = subpath\n    return tokens\n",
-"type":"code"
-}
-],
-"id":"ef115efcd2a949e3ba341fca036af050",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"The code widget:",
-"type":"text"
-}
-],
-"id":"fc505fae111b45968e378157fedcc5a8",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"CodeView"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _create_code(self):\n    panel = HorizontalPanel(self)\n    panel.SetBackgroundColour((253, 246, 227))\n    self.body_token_view = panel.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        ",
-"type":"code"
-},
-{
-"id":"3060a3fbc04a4a708019d11f6efa737b",
-"type":"variable"
-},
-{
-"text":"(\n            panel,\n            self.project,\n            self._highlight_variables(self.paragraph.tokens),\n            max_width=self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"52a4cb0c44124d518647a92eb25a876d",
-"type":"variable"
-},
-{
-"text":"-2*self.PADDING\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        border=self.PADDING,\n        proportion=1\n    )\n    self.base.BindMouse(\n        self,\n        [panel],\n        double_click=lambda event: post_edit_start(self, body_token=None)\n    )\n    self.base.BindMouse(\n        self,\n        [self.body_token_view],\n        move=self._token_move,\n        right_click=self._token_right_click,\n        double_click=self._body_double_click\n    )\n    return panel\n\ndef _highlight_variables(self, tokens):\n    def foo(token):\n        if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get(\"variable\"):\n            return token.with_extra(\"",
-"type":"code"
-},
-{
-"id":"d102ad411943476d9d432a286f9cbe55",
-"type":"variable"
-},
-{
-"text":"\", True)\n        return token\n    return [foo(token) for token in tokens]\n",
-"type":"code"
-}
-],
-"id":"b103c45c567a4e8e9c2c79adabec6fdc",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Event handlers:",
-"type":"text"
-}
-],
-"id":"2103b7da1b7548ec979ef366b5eb7b8a",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"When double clicking somewhere in the path, we want to send a post event with the subpath that we double clicked, and which edge was clicked. That way the editor can select the correct text.",
-"type":"text"
-}
-],
-"id":"b2ab7945bd4e4031a5c83b62d0b68682",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"CodeView"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _token_move(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        event.EventObject.SetDefaultCursor()\n    return CONTINUE_PROCESSING\n\ndef _token_right_click(self, event):\n    token = event.EventObject.GetToken(event.Position)\n    if token is not None and token.extra.get(\"subpath\") is not None:\n        menu = ",
+"text":"def _path_right_click(self, event):\n    extra = self.path.GetExtraAt(event.Position)\n    if extra is not None and extra.get(\"subpath\") is not None:\n        menu = ",
 "type":"code"
 },
 {
@@ -11672,7 +12014,7 @@
 "type":"variable"
 },
 {
-"text":"(\"Path\")\n        menu.AppendItem(\n            \"Rename '{}'\".format(token.extra[\"subpath\"].last),\n            lambda: ",
+"text":"(\"Path\")\n        menu.AppendItem(\n            \"Rename '{}'\".format(extra[\"subpath\"].last),\n            lambda: ",
 "type":"code"
 },
 {
@@ -11696,7 +12038,7 @@
 "type":"variable"
 },
 {
-"text":"=\"Rename '{}'\".format(token.extra[\"subpath\"].last),\n                ",
+"text":"=\"Rename '{}'\".format(extra[\"subpath\"].last),\n                ",
 "type":"code"
 },
 {
@@ -11704,7 +12046,7 @@
 "type":"variable"
 },
 {
-"text":"=token.extra[\"subpath\"].last,\n                ",
+"text":"=extra[\"subpath\"].last,\n                ",
 "type":"code"
 },
 {
@@ -11712,7 +12054,61 @@
 "type":"variable"
 },
 {
-"text":"=lambda value: self.project.rename_path(\n                    token.extra[\"subpath\"],\n                    value\n                )\n            )\n        )\n        menu.Popup(self)\n    elif token is not None and token.extra.get(\"variable\") is not None:\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ",
+"text":"=lambda value: self.project.rename_path(\n                    extra[\"subpath\"],\n                    value\n                )\n            )\n        )\n        menu.Popup(self)\n    else:\n        ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".ShowRecursive(self)\n",
+"type":"code"
+}
+],
+"id":"921fd238859c479194a2fc32d9796f62",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Code"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _highlight_variables(self, tokens):\n    def foo(token):\n        if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get(\"variable\"):\n            return token.with_extra(\"",
+"type":"code"
+},
+{
+"id":"d102ad411943476d9d432a286f9cbe55",
+"type":"variable"
+},
+{
+"text":"\", True)\n        return token\n    return [foo(token) for token in tokens]\n",
+"type":"code"
+}
+],
+"id":"b103c45c567a4e8e9c2c79adabec6fdc",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"Code"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _code_right_click(self, event):\n    token = self.code.GetToken(event.Position)\n    if token is not None and token.extra.get(\"variable\") is not None:\n        rename_value = self.project.lookup_variable(token.extra[\"variable\"]) or token.extra[\"variable\"]\n        rename_message = \"Rename '{}'\".format(rename_value)\n        menu = ",
 "type":"code"
 },
 {
@@ -11784,309 +12180,21 @@
 "type":"variable"
 },
 {
-"text":"),\n                create_open_page_handler(page)\n            )\n        menu.Popup(self)\n    else:\n        return CONTINUE_PROCESSING\n\ndef _find_variable_pages(self, name):\n    for page in self.project.iter_pages():\n        if self._page_has_variable(page, name):\n            yield page\n\ndef _find_variable_usages(self, variable_id):\n    for page in self.project.iter_pages():\n        if self._page_uses_variable(page, variable_id):\n            yield page\n\ndef _page_has_variable(self, page, name):\n    pattern = re.compile(r\"\\b{}\\b\".format(re.escape(name)))\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"code\":\n            if pattern.search(text_fragment.text):\n                return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"code\":\n            if pattern.search(code_fragment.text):\n                return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"variable\" and text_fragment.id == variable_id:\n            return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"variable\" and code_fragment.id == variable_id:\n            return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
+"text":"),\n                create_open_page_handler(page)\n            )\n        menu.Popup(self)\n    else:\n        ",
+"type":"code"
+},
+{
+"id":"e3f662313fd1489c9fc8347b0d24ca9d",
+"type":"variable"
+},
+{
+"text":".ShowRecursive(self)\n\ndef _find_variable_pages(self, name):\n    for page in self.project.iter_pages():\n        if self._page_has_variable(page, name):\n            yield page\n\ndef _find_variable_usages(self, variable_id):\n    for page in self.project.iter_pages():\n        if self._page_uses_variable(page, variable_id):\n            yield page\n\ndef _page_has_variable(self, page, name):\n    pattern = re.compile(r\"\\b{}\\b\".format(re.escape(name)))\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"code\":\n            if pattern.search(text_fragment.text):\n                return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"code\":\n            if pattern.search(code_fragment.text):\n                return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"variable\" and text_fragment.id == variable_id:\n            return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"variable\" and code_fragment.id == variable_id:\n            return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
 "type":"code"
 }
 ],
 "id":"237d1ae77cc548e293f18bbb0668dbce",
-"type":"code"
-}
-],
-"title":"View"
-},
-{
-"children":[],
-"id":"1e1d7c6464a840079f59f8f9d3ebea0e",
-"paragraphs":[
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class CodeEditor(",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, project, paragraph, view, extra):\n        ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, size=(-1, max(150, view.Size[1])))\n        self.project = project\n        self.paragraph = paragraph\n        self.view = view\n        self.extra = extra\n        self._create_gui()\n        self._focus()\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"CodeEditor"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"f7d289a713724b6a94edb96f4d823e90",
 "language":"",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Setting up the gui:",
-"type":"text"
-}
-],
-"id":"3e1c637ed86c40d992a4ba5851877303",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"CodeEditor"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _create_gui(self):\n    self.Font = ",
-"type":"code"
-},
-{
-"id":"b425fa2a021340e0be02f8c7a152ba19",
-"type":"variable"
-},
-{
-"text":"(**self.project.",
-"type":"code"
-},
-{
-"id":"ae8e603135854b1787ca652bf6304e9e",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"c56b4a82a7d4441ab6ceb5610217a3c5",
-"type":"variable"
-},
-{
-"text":")\n    self.header = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        HorizontalPanel(self),\n        flag=wx.ALL|wx.EXPAND\n    )\n    self.path = self.header.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        SelectionableTextCtrl(\n            self.header,\n            value=self.paragraph.path.text_version\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=1\n    )\n    self.language = self.header.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        SelectionableTextCtrl(\n            self.header,\n            value=self.paragraph.raw_language\n        ),\n        flag=wx.ALL,\n        proportion=0\n    )\n    self.text = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        MultilineTextCtrl(\n            self,\n            value=self.paragraph.text_version\n        ),\n        flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,\n        proportion=1\n    )\n    self.post_process = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n        SelectionableTextCtrl(\n            self,\n            value=\" \".join(self.paragraph.",
-"type":"code"
-},
-{
-"id":"78f04cb2a0ea4a8bac572d43487d2581",
-"type":"variable"
-},
-{
-"text":")\n        ),\n        flag=wx.ALL|wx.EXPAND,\n        proportion=0\n    )\n",
-"type":"code"
-}
-],
-"id":"15f5a394dc9148d3a3f4c92355f64909",
-"language":"",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Setting focus:",
-"type":"text"
-}
-],
-"id":"60c2df70fda04e1297e13f27b4380d5b",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"CodeEditor"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def _focus(self):\n    if \"subpath\" in self.extra:\n        self._focus_path(self.extra[\"subpath\"], self.extra.get(\"edge\"))\n    elif \"body_token\" in self.extra:\n        self._focus_body(self.extra[\"body_token\"])\n    else:\n        self._focus_body(None)\n\ndef _focus_path(self, subpath, edge):\n    self.path.SetFocus()\n    if subpath is None:\n        end = len(self.path.Value)\n        self.path.SetSelection(end, end)\n    elif edge < 0:\n        self.path.SetSelection(subpath.text_start, subpath.text_start)\n    elif edge > 0:\n        self.path.SetSelection(subpath.text_end, subpath.text_end)\n    else:\n        self.path.SetSelection(subpath.text_start, subpath.text_end)\n\ndef _focus_body(self, body_token):\n    self.text.SetFocus()\n",
-"type":"code"
-}
-],
-"id":"a89fb073438249a9a24146a17bb53f34",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Saving:",
-"type":"text"
-}
-],
-"id":"fa1f52c6f307485b9b58ec204828f824",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"CodeEditor"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def Save(self):\n    with self.paragraph.",
-"type":"code"
-},
-{
-"id":"e6cb5d6d0639494ebace6dcdef664d49",
-"type":"variable"
-},
-{
-"text":"():\n        self.paragraph.path = Path.from_text_version(self.path.Value)\n        self.paragraph.text_version = self.text.Value\n        self.paragraph.raw_language = self.language.Value\n        if self.post_process.Value.strip():\n            self.paragraph.",
-"type":"code"
-},
-{
-"id":"78f04cb2a0ea4a8bac572d43487d2581",
-"type":"variable"
-},
-{
-"text":" = self.post_process.Value.strip().split(\" \")\n        else:\n            self.paragraph.",
-"type":"code"
-},
-{
-"id":"78f04cb2a0ea4a8bac572d43487d2581",
-"type":"variable"
-},
-{
-"text":" = []\n",
-"type":"code"
-}
-],
-"id":"ae6a7f5f8561427f97117eceeff352b7",
-"language":"",
-"type":"code"
-}
-],
-"title":"Editor"
-}
-],
-"id":"91969238a9d24673aec5bc1c8bc8bd7b",
-"paragraphs":[
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class Code(",
-"type":"code"
-},
-{
-"id":"07b4671de05745a7bddd1eea74535277",
-"type":"variable"
-},
-{
-"text":"):\n\n    def ",
-"type":"code"
-},
-{
-"id":"740055857bb244038c203cea23c1af69",
-"type":"variable"
-},
-{
-"text":"(self):\n        return CodeView(\n            self,\n            project=self.project,\n            paragraph=self.paragraph,\n            base=self\n        )\n\n    def ",
-"type":"code"
-},
-{
-"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
-"type":"variable"
-},
-{
-"text":"(self, extra):\n        return CodeEditor(self, self.project, self.paragraph, self.view, extra)\n\n    def AddContextMenuItems(self, menu):\n        menu.AppendItem(\n            \"Create expanded view\",\n            lambda: self.paragraph.",
-"type":"code"
-},
-{
-"id":"f1921d7ea3ca45398940ad6977a30819",
-"type":"variable"
-},
-{
-"text":"(\n                paragraph_dict={\n                    \"type\": \"expanded_code\",\n                    \"code_id\": self.paragraph.id,\n                }\n            )\n        )\n\n    def ",
-"type":"code"
-},
-{
-"id":"a4ee3530a5f140f5bc70b87fca825372",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.view.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n            project=self.project,\n            paragraph=self.paragraph,\n            base=self\n        )\n",
-"type":"code"
-}
-],
-"id":"1e77735cb0fe409683695b5339204a23",
-"language":"",
+"post_process":[],
 "type":"code"
 }
 ],
@@ -15061,6 +15169,25 @@
 ],
 "fragments":[
 {
+"text":"def GetExtraAt(self, pos):\n    character = self.text.GetClosestCharacter(pos)\n    if character is not None:\n        return character.extra\n",
+"type":"code"
+}
+],
+"id":"bbd1ab3981b84417bb9c1df4d7686449",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes",
+"TextProjectionEditor2"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
 "text":"def FindClosestSelection(self, character_selection, direction):\n    if character_selection is None:\n        return\n    char_index, side = character_selection\n    return self._get_first_selection(char_index, side, direction)\n\ndef _get_first_selection(self, index, side, direction):\n    first_selection = None\n    for selection in self._yield_selections(index, side, direction):\n        if selection is not None:\n            if first_selection is None:\n                first_selection = selection\n            elif selection != first_selection:\n                return selection\n\ndef _yield_selections(self, index, side, direction):\n    first = True\n    while True:\n        char = self.text.",
 "type":"code"
 },
@@ -15087,7 +15214,7 @@
 ],
 "fragments":[
 {
-"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self._character_selection = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection=None, path=None, flag=False, extra={}):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n                self._character_selection = (len(self.characters), \"left\")\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n                self._character_selection = (len(self.characters), \"right\")\n            elif index == selection:\n                marker = \"beam_left\"\n                self._character_selection = (len(self.characters), \"left\")\n            else:\n                marker = None\n            extra = dict(extra)\n            if path is not None:\n                extra[\"left_selection\"] = path.",
+"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self._character_selection = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    def add(self, text, style, selection=None, path=None, one_selection=None, flag=False, extra={}):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n                self._character_selection = (len(self.characters), \"left\")\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n                self._character_selection = (len(self.characters), \"right\")\n            elif index == selection:\n                marker = \"beam_left\"\n                self._character_selection = (len(self.characters), \"left\")\n            else:\n                marker = None\n            extra = dict(extra)\n            if path is not None:\n                extra[\"left_selection\"] = path.",
 "type":"code"
 },
 {
@@ -15103,7 +15230,7 @@
 "type":"variable"
 },
 {
-"text":"(index+1)\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
+"text":"(index+1)\n            elif one_selection is not None:\n                extra[\"left_selection\"] = one_selection\n                extra[\"right_selection\"] = one_selection\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
 "type":"code"
 }
 ],
@@ -15271,6 +15398,38 @@
 "type":"code"
 },
 {
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(self, **kwargs):\n        kwargs[\"",
+"type":"code"
+},
+{
+"id":"94ebdf2d279b424580629906ad32a461",
+"type":"variable"
+},
+{
+"text":"\"] = self._generate_characters(kwargs[\"project\"], kwargs[\"tokens\"])\n        ",
+"type":"code"
+},
+{
+"id":"ec33a5e51ade4f3283c735e5afaf45d8",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"883ac73a999c403e8274442301acdbb3",
+"type":"variable"
+},
+{
+"text":"(self, **kwargs)\n\n    def ",
+"type":"code"
+},
+{
 "id":"f9605031f42b4c37a170779d7ee7fe6e",
 "type":"variable"
 },
@@ -15369,6 +15528,7 @@
 ],
 "id":"5569510f0ba84a3c8c970fd81304964a",
 "language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -20483,6 +20643,7 @@
 "457a1dbf134c431881e590e7b7db9907":"_break_at_word",
 "45b2b281c8914428b601cd55f9d1c92f":"ColumnRow",
 "45fc59620058445d8bca860964dbb850":"AppendStretch",
+"4660d6f071d048fba0904e5dc1bce3c5":"CodeGui",
 "49916c3d2ee1468e9cbcb40d6b37bed6":"did_change",
 "49f91cc97f054fcca58f40b97d79b15b":"JsonSettings",
 "4a4e06b5e3e644548062e01d0f107cf4":"ColumnGui",
@@ -20512,6 +20673,7 @@
 "60c633345528443da9cc98eedc41685e":"replace_child_at_index",
 "61a4f35b1538441ebd2d17e8cc02a14a":"TextGui",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
+"66079af187674e5db05ed5e19fa8b891":"create_this",
 "66ac3230cd674a0b9218fee28b51be5d":"WorkspaceColumn",
 "67ebf8be121a46768936eec41e336f11":"language",
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
@@ -20569,6 +20731,7 @@
 "9e987210a686490c823a44d09e783833":"_load",
 "a06246c10a774985a26641cdb8aa2a3b":"ExpandedCodeGui",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
+"a29da8b06afb474dbef1b70fba3db24e":"create_font",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a3b92b83131e489a8903a1245a1c435b":"ListGui",
 "a4a6044855cf4256b657dc1d493346e9":"target_page",

@@ -1206,6 +1206,188 @@ class ListGui(GuiFrameworkPanel):
     @property
     def selection(self):
         return self.values["selection"]
+class CodeGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+            'background': '#fdf6e3',
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.loop_start()
+        for loopvar in self._header():
+            pass
+            self._child1(parent, loopvar)
+        parent.loop_end(self)
+        self._child7(parent, loopvar)
+        parent.loop_start()
+        for loopvar in self._post_process():
+            pass
+            self._child10(parent, loopvar)
+        parent.loop_end(self)
+        handlers.append(('drag', lambda event: self.DoDragDrop()))
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        handlers.append(('click', lambda event: setattr(self.project, 'selection', self.selection.create_this())))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['background'] = '#f8f1df'
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child3(parent, loopvar)
+        parent.loop_start()
+        for loopvar in self._filetype():
+            pass
+            self._child4(parent, loopvar)
+        parent.loop_end(self)
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['projection'] = CodePathProjection(self.project, self.paragraph, self.selection)
+        properties['max_width'] = self._max_width(self._filetype())
+        properties['font'] = self._create_font()
+        properties['cursor'] = 'beam'
+        handlers.append(('click', lambda event: self.path.Select(self.project, event.Position)))
+        handlers.append(('right_click', lambda event: self._path_right_click(event)))
+        sizer["border"] = self.PADDING
+        sizer["flag"] |= wx.ALL
+        sizer["proportion"] = 1
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('path', widget.widget)
+        else:
+            self.path = widget.widget
+        parent = widget
+        parent.reset()
+
+    def _child4(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['min_size'] = tuple([self.FILETYPE_WIDTH, -1])
+        sizer["border"] = self.PADDING
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child6(parent, loopvar)
+
+    def _child6(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['projection'] = CodeRawLanguageProjection(self.project, self.paragraph, self.selection.get('raw_language'))
+        properties['max_width'] = self.FILETYPE_WIDTH
+        properties['font'] = self._create_font()
+        properties['cursor'] = 'beam'
+        handlers.append(('click', lambda event: self.raw_language.Select(self.project, event.Position)))
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('raw_language', widget.widget)
+        else:
+            self.raw_language = widget.widget
+        parent = widget
+        parent.reset()
+
+    def _child7(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child9(parent, loopvar)
+
+    def _child9(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        properties['tokens'] = self._highlight_variables(self.paragraph.tokens)
+        properties['max_width'] = self._max_width()
+        properties['font'] = self._create_font()
+        handlers.append(('right_click', lambda event: self._code_right_click(event)))
+        sizer["border"] = self.PADDING
+        sizer["flag"] |= wx.ALL
+        widget = parent.add(TokenView, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('code', widget.widget)
+        else:
+            self.code = widget.widget
+        parent = widget
+        parent.reset()
+
+    def _child10(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['background'] = '#f8f1df'
+        sizer["flag"] |= wx.EXPAND
+        sizer["border"] = self.PADDING
+        sizer["flag"] |= wx.ALL
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child12(parent, loopvar)
+
+    def _child12(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['projection'] = CodePostProcessingProjection(self.project, self.paragraph, self.selection.get('post_process'))
+        properties['max_width'] = self._max_width()
+        properties['font'] = self._create_font()
+        properties['cursor'] = 'beam'
+        handlers.append(('click', lambda event: self.post_process.Select(self.project, event.Position)))
+        widget = parent.add(TextProjectionEditor, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('post_process', widget.widget)
+        else:
+            self.post_process = widget.widget
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def page_id(self):
+        return self.values["page_id"]
+
+    @property
+    def paragraph(self):
+        return self.values["paragraph"]
+
+    @property
+    def selection(self):
+        return self.values["selection"]
 class ImageGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -2039,6 +2221,11 @@ class TextProjectionEditor(TextProjectionEditorGui):
         elif side == wx.RIGHT and "right_selection" in character.extra:
             return character.extra["right_selection"]
 
+    def GetExtraAt(self, pos):
+        character = self.text.GetClosestCharacter(pos)
+        if character is not None:
+            return character.extra
+
     def FindClosestSelection(self, character_selection, direction):
         if character_selection is None:
             return
@@ -2095,7 +2282,7 @@ class BaseProjection(object):
         self.create_projection(editor)
         return self.characters
 
-    def add(self, text, style, selection=None, path=None, flag=False, extra={}):
+    def add(self, text, style, selection=None, path=None, one_selection=None, flag=False, extra={}):
         for index, char in enumerate(text):
             if index == 0 and selection == 0:
                 marker = "beam_left"
@@ -2116,6 +2303,9 @@ class BaseProjection(object):
             if path is not None:
                 extra["left_selection"] = path.create(index)
                 extra["right_selection"] = path.create(index+1)
+            elif one_selection is not None:
+                extra["left_selection"] = one_selection
+                extra["right_selection"] = one_selection
             self.characters.append(Character.create(
                 char,
                 style,
@@ -2177,6 +2367,10 @@ class TokenView(TextProjection):
         )
         self.last_tokens = []
         self._default_cursor = self.GetCursor()
+
+    def UpdateGui(self, **kwargs):
+        kwargs["characters"] = self._generate_characters(kwargs["project"], kwargs["tokens"])
+        TextProjection.UpdateGui(self, **kwargs)
 
     def UpdateTokens(self, project, tokens, max_width):
         if tokens != self.last_tokens:
@@ -2935,6 +3129,26 @@ class CodeParagraph(Paragraph):
         self.update({
             "filepath": copy.deepcopy(path.filepath),
             "chunkpath": copy.deepcopy(path.chunkpath),
+        })
+
+    @property
+    def filepath(self):
+        return self._fragment["filepath"]
+
+    @filepath.setter
+    def filepath(self, filepath):
+        self.update({
+            "filepath": filepath,
+        })
+
+    @property
+    def chunkpath(self):
+        return self._fragment["chunkpath"]
+
+    @chunkpath.setter
+    def chunkpath(self, chunkpath):
+        self.update({
+            "chunkpath": chunkpath,
         })
     @property
     def filename(self):
@@ -3917,7 +4131,7 @@ class Selection(namedtuple("Selection", ["current", "trail"])):
             return self.current
 
     def get(self, key):
-        if self.current is not None and self.current[0] == key:
+        if self.current is not None and len(self.current) > 0 and self.current[0] == key:
             new_current = self.current[1:]
         else:
             new_current = None
@@ -3925,6 +4139,9 @@ class Selection(namedtuple("Selection", ["current", "trail"])):
 
     def create(self, value):
         return Selection(self.trail+[value], [])
+
+    def create_this(self):
+        return Selection(self.trail, [])
 class GlobalSettings(JsonSettings):
 
     page_body_width = JsonSettings.property(
@@ -4826,18 +5043,41 @@ class List(ListGui, ParagraphBaseMixin):
     def _create_font(self):
         return create_font(**self.project.theme.text_font)
 ListRow = namedtuple("ListRow", ["item", "bullet_text", "indentation", "selection"])
-class Code(ParagraphBase):
+class Code(CodeGui, ParagraphBaseMixin):
 
-    def CreateView(self):
-        return CodeView(
-            self,
-            project=self.project,
-            paragraph=self.paragraph,
-            base=self
-        )
+    PADDING = 5
+    FILETYPE_WIDTH = 100
 
-    def CreateEdit(self, extra):
-        return CodeEditor(self, self.project, self.paragraph, self.view, extra)
+    def _create_font(self):
+        return create_font(**self.project.theme.code_font)
+
+    def _max_width(self, adjust_for_filetype=False):
+        if adjust_for_filetype:
+            x = self.FILETYPE_WIDTH + self.PADDING
+        else:
+            x = 0
+        return self.project.theme.page_body_width-2*self.PADDING-x
+
+    def _header(self):
+        return self._path() or self._filetype()
+
+    def _path(self):
+        if not self.paragraph.path.is_empty or self.selection.present:
+            return [None]
+        else:
+            return []
+
+    def _filetype(self):
+        if self.paragraph.raw_language or self.selection.present:
+            return [None]
+        else:
+            return []
+
+    def _post_process(self):
+        if self.paragraph.has_post_process or self.selection.present:
+            return [None]
+        else:
+            return []
 
     def AddContextMenuItems(self, menu):
         menu.AppendItem(
@@ -4850,185 +5090,35 @@ class Code(ParagraphBase):
             )
         )
 
-    def _update_paragraph_gui(self):
-        self.view.UpdateGui(
-            project=self.project,
-            paragraph=self.paragraph,
-            base=self
-        )
-class CodeView(VerticalBasePanel):
-
-    BORDER = 0
-    PADDING = 5
-
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def paragraph(self):
-        return self.values["paragraph"]
-
-    @property
-    def base(self):
-        return self.values["base"]
-
-    def _create_gui(self):
-        self.Font = create_font(**self.project.theme.code_font)
-        self.path = self.AppendChild(
-            self._create_path(),
-            flag=wx.ALL|wx.EXPAND, border=self.BORDER
-        )
-        self.code = self.AppendChild(
-            self._create_code(),
-            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND, border=self.BORDER
-        )
-        self.SetBackgroundColour((243, 236, 219))
-        self.last_body_data = None
-
-    def _update_gui(self):
-        self.path.Show(not self.paragraph.path.is_empty)
-        self.path_token_view.UpdateTokens(
-            self.project,
-            self._create_path_tokens(self.paragraph.path),
-            self.project.theme.page_body_width-2*self.PADDING
-        )
-        if self.paragraph.body_data != self.last_body_data:
-            self.body_token_view.UpdateTokens(
-                self.project,
-                self._highlight_variables(self.paragraph.tokens),
-                self.project.theme.page_body_width-2*self.PADDING
+    def _path_right_click(self, event):
+        extra = self.path.GetExtraAt(event.Position)
+        if extra is not None and extra.get("subpath") is not None:
+            menu = SimpleContextMenu("Path")
+            menu.AppendItem(
+                "Rename '{}'".format(extra["subpath"].last),
+                lambda: show_text_entry(
+                    self,
+                    title="Rename path",
+                    body="Rename '{}'".format(extra["subpath"].last),
+                    value=extra["subpath"].last,
+                    ok_fn=lambda value: self.project.rename_path(
+                        extra["subpath"],
+                        value
+                    )
+                )
             )
-            self.last_body_data = self.paragraph.body_data
-    def _create_path(self):
-        panel = HorizontalPanel(self)
-        panel.SetBackgroundColour((248, 241, 223))
-        self.path_token_view = panel.AppendChild(
-            TokenView(
-                panel,
-                self.project,
-                self._create_path_tokens(self.paragraph.path),
-                max_width=self.project.theme.page_body_width-2*self.PADDING
-            ),
-            flag=wx.ALL|wx.EXPAND,
-            border=self.PADDING
-        )
-        self.base.BindMouse(
-            self,
-            [panel],
-            double_click=lambda event: post_edit_start(self, subpath=None)
-        )
-        self.base.BindMouse(
-            self,
-            [self.path_token_view],
-            move=self._token_move,
-            right_click=self._token_right_click,
-            double_click=self._path_double_click
-        )
-        return panel
-
-    def _create_path_tokens(self, path):
-        tokens = []
-        last_subpath = None
-        for (index, (name, subpath)) in enumerate(path.filepaths):
-            if index > 0:
-                tokens.append(Token(
-                    "/",
-                    token_type=TokenType.RLiterate.Sep,
-                    prev_subpath=last_subpath,
-                    next_subpath=subpath
-                ))
-            tokens.append(Token(
-                name,
-                token_type=TokenType.RLiterate.Path,
-                subpath=subpath
-            ))
-            last_subpath = subpath
-        if path.has_both():
-            tokens.append(Token(
-                " ",
-                token_type=TokenType.RLiterate.Sep,
-                prev_subpath=last_subpath,
-                next_subpath=list(path.chunkpaths)[0][1]
-            ))
-            for (index, (name, subpath)) in enumerate(path.chunkpaths):
-                if index > 0:
-                    tokens.append(Token(
-                        "/",
-                        token_type=TokenType.RLiterate.Sep,
-                        prev_subpath=last_subpath,
-                        next_subpath=subpath
-                    ))
-                tokens.append(Token(
-                    name,
-                    token_type=TokenType.RLiterate.Chunk,
-                    subpath=subpath
-                ))
-                last_subpath = subpath
-        return tokens
-    def _create_code(self):
-        panel = HorizontalPanel(self)
-        panel.SetBackgroundColour((253, 246, 227))
-        self.body_token_view = panel.AppendChild(
-            TokenView(
-                panel,
-                self.project,
-                self._highlight_variables(self.paragraph.tokens),
-                max_width=self.project.theme.page_body_width-2*self.PADDING
-            ),
-            flag=wx.ALL|wx.EXPAND,
-            border=self.PADDING,
-            proportion=1
-        )
-        self.base.BindMouse(
-            self,
-            [panel],
-            double_click=lambda event: post_edit_start(self, body_token=None)
-        )
-        self.base.BindMouse(
-            self,
-            [self.body_token_view],
-            move=self._token_move,
-            right_click=self._token_right_click,
-            double_click=self._body_double_click
-        )
-        return panel
-
+            menu.Popup(self)
+        else:
+            SimpleContextMenu.ShowRecursive(self)
     def _highlight_variables(self, tokens):
         def foo(token):
             if self.project.highlighted_variable is not None and self.project.highlighted_variable == token.extra.get("variable"):
                 return token.with_extra("highlight", True)
             return token
         return [foo(token) for token in tokens]
-    def _token_move(self, event):
-        token = event.EventObject.GetToken(event.Position)
-        if token is not None and token.extra.get("subpath") is not None:
-            event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-        elif token is not None and token.extra.get("variable") is not None:
-            event.EventObject.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-        else:
-            event.EventObject.SetDefaultCursor()
-        return CONTINUE_PROCESSING
-
-    def _token_right_click(self, event):
-        token = event.EventObject.GetToken(event.Position)
-        if token is not None and token.extra.get("subpath") is not None:
-            menu = SimpleContextMenu("Path")
-            menu.AppendItem(
-                "Rename '{}'".format(token.extra["subpath"].last),
-                lambda: show_text_entry(
-                    self,
-                    title="Rename path",
-                    body="Rename '{}'".format(token.extra["subpath"].last),
-                    value=token.extra["subpath"].last,
-                    ok_fn=lambda value: self.project.rename_path(
-                        token.extra["subpath"],
-                        value
-                    )
-                )
-            )
-            menu.Popup(self)
-        elif token is not None and token.extra.get("variable") is not None:
+    def _code_right_click(self, event):
+        token = self.code.GetToken(event.Position)
+        if token is not None and token.extra.get("variable") is not None:
             rename_value = self.project.lookup_variable(token.extra["variable"]) or token.extra["variable"]
             rename_message = "Rename '{}'".format(rename_value)
             menu = SimpleContextMenu("Variable")
@@ -5071,7 +5161,7 @@ class CodeView(VerticalBasePanel):
                 )
             menu.Popup(self)
         else:
-            return CONTINUE_PROCESSING
+            SimpleContextMenu.ShowRecursive(self)
 
     def _find_variable_pages(self, name):
         for page in self.project.iter_pages():
@@ -5120,86 +5210,314 @@ class CodeView(VerticalBasePanel):
             self,
             body_token=event.EventObject.GetToken(event.Position)
         )
-class CodeEditor(VerticalPanel):
+class CodePathProjection(BaseProjection):
 
-    def __init__(self, parent, project, paragraph, view, extra):
-        VerticalPanel.__init__(self, parent, size=(-1, max(150, view.Size[1])))
+    def __init__(self, project, paragraph, selection):
         self.project = project
         self.paragraph = paragraph
-        self.view = view
-        self.extra = extra
-        self._create_gui()
-        self._focus()
+        self.selection = selection
 
-    def _create_gui(self):
-        self.Font = create_font(**self.project.theme.editor_font)
-        self.header = self.AppendChild(
-            HorizontalPanel(self),
-            flag=wx.ALL|wx.EXPAND
+    def create_projection(self, editor):
+        self.path = {
+            "filepath": [],
+            "chunkpath": []
+        }
+        self._project_path(
+            editor,
+            "filepath",
+            TokenType.RLiterate.Path
         )
-        self.path = self.header.AppendChild(
-            SelectionableTextCtrl(
-                self.header,
-                value=self.paragraph.path.text_version
-            ),
-            flag=wx.ALL|wx.EXPAND,
-            proportion=1
+        if self.characters:
+            self.add(
+                " ",
+                self.project.get_style(TokenType.RLiterate.Sep),
+            )
+        self._project_path(
+            editor,
+            "chunkpath",
+            TokenType.RLiterate.Chunk
         )
-        self.language = self.header.AppendChild(
-            SelectionableTextCtrl(
-                self.header,
-                value=self.paragraph.raw_language
-            ),
-            flag=wx.ALL,
-            proportion=0
+
+    def _project_path(self, editor, name, token_type):
+        path_selection = self.selection.get(name)
+        items = getattr(self.paragraph, name)
+        if len(items) > 0:
+            for index, path in enumerate(items):
+                self.path[name].append(path)
+                part_selection = path_selection.get(index)
+                if index > 0:
+                    self.add(
+                        "/",
+                        self.project.get_style(TokenType.RLiterate.Sep),
+                    )
+                if path:
+                    self.add(
+                        path,
+                        self.project.get_style(token_type),
+                        part_selection.value,
+                        part_selection,
+                        extra={
+                            "subpath": Path(
+                                list(self.path["filepath"]),
+                                list(self.path["chunkpath"])
+                            )
+                        }
+                    )
+                else:
+                    self.add(
+                        "<>",
+                        self.project.get_style(TokenType.RLiterate.Empty),
+                        None if part_selection.value is None else 1,
+                        one_selection=part_selection.create(0)
+                    )
+                if part_selection.present:
+                    self._key_handler = CodePathElementKeyHandler(
+                        editor,
+                        self.project,
+                        self._character_selection,
+                        self.paragraph,
+                        name,
+                        index,
+                        path_selection
+                    )
+        elif self.selection.present:
+            self.add(
+                "Add {}".format(name),
+                self.project.get_style(TokenType.RLiterate.Empty),
+                None if path_selection.value is None else 0,
+                one_selection=path_selection.create(0)
+            )
+            if path_selection.present:
+                self._key_handler = CodePathEmptyKeyHandler(
+                    editor,
+                    self.project,
+                    self._character_selection,
+                    self.paragraph,
+                    name,
+                    path_selection
+                )
+class CodePathElementKeyHandler(PlainTextKeyHandler):
+
+    def __init__(self, editor, project, character_selection, paragraph, which_path, path_index, selection):
+        PlainTextKeyHandler.__init__(
+            self,
+            editor,
+            project,
+            character_selection,
+            getattr(paragraph, which_path)[path_index],
+            selection.get(path_index).value
         )
-        self.text = self.AppendChild(
-            MultilineTextCtrl(
-                self,
-                value=self.paragraph.text_version
-            ),
-            flag=wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND,
-            proportion=1
-        )
-        self.post_process = self.AppendChild(
-            SelectionableTextCtrl(
-                self,
-                value=" ".join(self.paragraph.post_process)
-            ),
-            flag=wx.ALL|wx.EXPAND,
-            proportion=0
-        )
-    def _focus(self):
-        if "subpath" in self.extra:
-            self._focus_path(self.extra["subpath"], self.extra.get("edge"))
-        elif "body_token" in self.extra:
-            self._focus_body(self.extra["body_token"])
+        self.project = project
+        self.paragraph = paragraph
+        self.which_path = which_path
+        self.path_index = path_index
+        self.selection = selection
+
+    def handle_key(self, event):
+        if event.GetKeyCode() == wx.WXK_BACK and not getattr(self.paragraph, self.which_path)[self.path_index]:
+            with self.project.notify():
+                old = getattr(self.paragraph, self.which_path)
+                new = old[:self.path_index]+old[self.path_index+1:]
+                setattr(self.paragraph, self.which_path, new)
+                if len(new) > 0:
+                    self.project.selection = self.selection.get(self.path_index-1).create(0)
+                else:
+                    self.project.selection = self.selection.create(0)
+        elif event.GetKeyCode() == 47:
+            with self.project.notify():
+                old = getattr(self.paragraph, self.which_path)
+                split = [
+                    old[self.path_index][:self.index],
+                    old[self.path_index][self.index:],
+                ]
+                new = old[:self.path_index]+split+old[self.path_index+1:]
+                setattr(self.paragraph, self.which_path, new)
+                self.project.selection = self.selection.get(self.path_index+1).create(0)
         else:
-            self._focus_body(None)
+            PlainTextKeyHandler.handle_key(self, event)
 
-    def _focus_path(self, subpath, edge):
-        self.path.SetFocus()
-        if subpath is None:
-            end = len(self.path.Value)
-            self.path.SetSelection(end, end)
-        elif edge < 0:
-            self.path.SetSelection(subpath.text_start, subpath.text_start)
-        elif edge > 0:
-            self.path.SetSelection(subpath.text_end, subpath.text_end)
+
+    def save(self, text, index):
+        with self.project.notify():
+            setattr(
+                self.paragraph,
+                self.which_path,
+                im_replace(
+                    getattr(self.paragraph, self.which_path),
+                    [self.path_index],
+                    text
+                )
+            )
+            self.project.selection = self.selection.get(self.path_index).create(index)
+class CodePathEmptyKeyHandler(PlainTextKeyHandler):
+
+    def __init__(self, editor, project, character_selection, paragraph, which_path, selection):
+        PlainTextKeyHandler.__init__(self, editor, project, character_selection, "", selection.value)
+        self.project = project
+        self.paragraph = paragraph
+        self.which_path = which_path
+        self.selection = selection
+
+    def save(self, text, index):
+        with self.project.notify():
+            setattr(self.paragraph, self.which_path, [text])
+            self.project.selection = self.selection.get(0).create(index)
+class CodeRawLanguageProjection(BaseProjection):
+
+    def __init__(self, project, paragraph, selection):
+        self.project = project
+        self.paragraph = paragraph
+        self.selection = selection
+
+    def create_projection(self, editor):
+        if self.paragraph.raw_language:
+            self.add(
+                self.paragraph.raw_language,
+                self.project.get_style(TokenType.RLiterate),
+                self.selection.value,
+                self.selection
+            )
         else:
-            self.path.SetSelection(subpath.text_start, subpath.text_end)
+            self.add(
+                self.paragraph.language or "n/a",
+                self.project.get_style(TokenType.RLiterate.Empty),
+                self.selection.value,
+                one_selection=self.selection.create(0)
+            )
+        if self.selection.present:
+            self._key_handler = CodeRawLanguageKeyHandler(
+                editor,
+                self.project,
+                self._character_selection,
+                self.paragraph,
+                self.selection
+            )
+class CodeRawLanguageKeyHandler(PlainTextKeyHandler):
 
-    def _focus_body(self, body_token):
-        self.text.SetFocus()
-    def Save(self):
-        with self.paragraph.multi_update():
-            self.paragraph.path = Path.from_text_version(self.path.Value)
-            self.paragraph.text_version = self.text.Value
-            self.paragraph.raw_language = self.language.Value
-            if self.post_process.Value.strip():
-                self.paragraph.post_process = self.post_process.Value.strip().split(" ")
-            else:
-                self.paragraph.post_process = []
+    def __init__(self, editor, project, character_selection, paragraph, selection):
+        PlainTextKeyHandler.__init__(self, editor, project, character_selection, paragraph.raw_language, selection.value)
+        self.project = project
+        self.paragraph = paragraph
+        self.selection = selection
+
+    def save(self, text, index):
+        with self.project.notify():
+            self.paragraph.raw_language = text
+            self.project.selection = self.selection.create(index)
+class CodePostProcessingProjection(BaseProjection):
+
+    def __init__(self, project, paragraph, selection):
+        self.project = project
+        self.paragraph = paragraph
+        self.selection = selection
+
+    def create_projection(self, editor):
+        self.add(
+            "> ",
+            self.project.get_style(TokenType.RLiterate),
+        )
+        if len(self.paragraph.post_process) > 0:
+            for index, part in enumerate(self.paragraph.post_process):
+                part_selection = self.selection.get(index)
+                if index > 0:
+                    self.add(
+                        " ",
+                        self.project.get_style(TokenType.RLiterate.Empty),
+                    )
+                if part:
+                    self.add(
+                        part,
+                        self.project.get_style(TokenType.RLiterate),
+                        part_selection.value,
+                        part_selection
+                    )
+                else:
+                    self.add(
+                        "\"\"",
+                        self.project.get_style(TokenType.RLiterate.Empty),
+                        None if part_selection.value is None else 1,
+                        one_selection=part_selection.create(0)
+                    )
+                if part_selection.present:
+                    self._key_handler = CodePostProcessElementKeyHandler(
+                        editor,
+                        self.project,
+                        self._character_selection,
+                        self.paragraph,
+                        index,
+                        self.selection
+                    )
+        else:
+            self.add(
+                "Enter post processing command",
+                self.project.get_style(TokenType.RLiterate.Empty),
+                self.selection.value,
+                one_selection=self.selection.create(0)
+            )
+            if self.selection.present:
+                self._key_handler = CodePostProcessEmptyKeyHandler(
+                    editor,
+                    self.project,
+                    self._character_selection,
+                    self.paragraph,
+                    self.selection
+                )
+class CodePostProcessElementKeyHandler(PlainTextKeyHandler):
+
+    def __init__(self, editor, project, character_selection, paragraph, post_process_index, selection):
+        PlainTextKeyHandler.__init__(
+            self,
+            editor,
+            project,
+            character_selection,
+            paragraph.post_process[post_process_index],
+            selection.get(post_process_index).value
+        )
+        self.project = project
+        self.paragraph = paragraph
+        self.post_process_index = post_process_index
+        self.selection = selection
+
+    def handle_key(self, event):
+        if event.GetKeyCode() == wx.WXK_BACK and not self.paragraph.post_process[self.post_process_index]:
+            with self.project.notify():
+                old = self.paragraph.post_process
+                new = old[:self.post_process_index]+old[self.post_process_index+1:]
+                self.paragraph.post_process = new
+                if len(new) > 0:
+                    self.project.selection = self.selection.get(self.post_process_index-1).create(0)
+                else:
+                    self.project.selection = self.selection.create(0)
+        elif event.GetKeyCode() == 32:
+            with self.project.notify():
+                old = self.paragraph.post_process
+                split = [
+                    old[self.post_process_index][:self.index],
+                    old[self.post_process_index][self.index:],
+                ]
+                new = old[:self.post_process_index]+split+old[self.post_process_index+1:]
+                self.paragraph.post_process = new
+                self.project.selection = self.selection.get(self.post_process_index+1).create(0)
+        else:
+            PlainTextKeyHandler.handle_key(self, event)
+
+
+    def save(self, text, index):
+        with self.project.notify():
+            self.paragraph.post_process = im_replace(self.paragraph.post_process, [self.post_process_index], text)
+            self.project.selection = self.selection.get(self.post_process_index).create(index)
+class CodePostProcessEmptyKeyHandler(PlainTextKeyHandler):
+
+    def __init__(self, editor, project, character_selection, paragraph, selection):
+        PlainTextKeyHandler.__init__(self, editor, project, character_selection, "", selection.value)
+        self.project = project
+        self.paragraph = paragraph
+        self.selection = selection
+
+    def save(self, text, index):
+        with self.project.notify():
+            self.paragraph.post_process = [text]
+            self.project.selection = self.selection.get(0).create(index)
 class Image(ImageGui, ParagraphBaseMixin):
 
     def _get_bitmap(self):
