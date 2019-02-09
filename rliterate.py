@@ -16,6 +16,8 @@ import xml.sax.saxutils
 import StringIO
 import base64
 import copy
+import Queue
+import threading
 
 import pygments.lexers
 import pygments.token
@@ -333,6 +335,7 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
             bitmap=wx.ArtProvider.GetBitmap(
                 {
                     "add": wx.ART_ADD_BOOKMARK,
+                    "save": wx.ART_FILE_SAVE,
                 }[kwargs["icon"]],
                 wx.ART_BUTTON,
                 (16, 16)
@@ -357,10 +360,10 @@ class MainFramePanel(GuiFrameworkPanel):
     def _child_root(self, parent, loopvar=None, first=False):
         parent.reset()
         handlers = []
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
         self._child1(parent, loopvar)
         self._child3(parent, loopvar)
-        self._child4(parent, loopvar)
+        self._child7(parent, loopvar)
         if first:
             parent.listen(handlers)
 
@@ -378,6 +381,19 @@ class MainFramePanel(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["flag"] |= wx.EXPAND
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child5(parent, loopvar)
+        self._child6(parent, loopvar)
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
         properties['selection'] = self.project.selection.get('main_frame').get('toc')
         sizer["flag"] |= wx.EXPAND
@@ -385,7 +401,7 @@ class MainFramePanel(GuiFrameworkPanel):
         parent = widget
         parent.reset()
 
-    def _child4(self, parent, loopvar):
+    def _child6(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -394,6 +410,16 @@ class MainFramePanel(GuiFrameworkPanel):
         sizer["flag"] |= wx.EXPAND
         sizer["proportion"] = 1
         widget = parent.add(Workspace, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child7(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(StatusBar, properties, handlers, sizer)
         parent = widget
         parent.reset()
 
@@ -3949,13 +3975,14 @@ class Project(Observable):
         Observable.__init__(self)
         self._selection = Selection.empty()
         self._highlighted_variable = None
-        self._needs_saving = False
+        self._save_status = {"text": "", "working": False}
+        self._save_thread = SavingThread(self)
         self.title="{} ({})".format(
             os.path.basename(filepath),
             os.path.dirname(os.path.abspath(filepath))
         )
         self.document = Document.from_file(filepath)
-        self.document.listen(self._mark_for_saving)
+        self.document.listen(self.save)
         self.document.listen(self.notify_forwarder())
         self.layout = Layout.from_file(os.path.join(
             os.path.dirname(filepath),
@@ -4055,17 +4082,56 @@ class Project(Observable):
     def highlighted_variable(self, variable_id):
         with self.notify():
             self._highlighted_variable = variable_id
-    def _mark_for_saving(self):
-        self._needs_saving = True
-    @property
-    def needs_saving(self):
-        return self._needs_saving
     def save(self):
-        if self._needs_saving:
-            with self.notify():
-                self.document.save()
-                CodeExpander(self.document).generate_files()
-                self._needs_saving = False
+        self._save_thread.queue_save(self.document)
+    def wait_for_save(self):
+        self._save_thread.wait_until_done()
+    @property
+    def save_status(self):
+        return self._save_status
+
+    @save_status.setter
+    def save_status(self, value):
+        with self.notify():
+            self._save_status = value
+class SavingThread(threading.Thread):
+
+    def __init__(self, project):
+        threading.Thread.__init__(self)
+        self.project = project
+        self.daemon = True
+        self.queue = Queue.Queue()
+        self.start()
+
+    def queue_save(self, document):
+        self.queue.put_nowait((document.path, document.document_dict))
+
+    def wait_until_done(self):
+        self.queue.join()
+
+    def run(self):
+        while True:
+            self._report("All saved!", working=False)
+            path, document_dict = self.queue.get()
+            self._report("Waiting...")
+            while True:
+                try:
+                    path, document_dict = self.queue.get(timeout=3)
+                    self.queue.task_done()
+                except Queue.Empty:
+                    break
+            self._report("Saving document...")
+            document = Document(path, document_dict)
+            document.save()
+            self._report("Saving files...")
+            CodeExpander(document).generate_files()
+            self.queue.task_done()
+
+    def _report(self, text, working=True):
+        wx.CallAfter(
+            setattr,
+            self.project, "save_status", {"text": text, "working": working}
+        )
 class Selection(namedtuple("Selection", ["current", "trail"])):
 
     @classmethod
@@ -4247,6 +4313,8 @@ class SolarizedTheme(BaseTheme):
         TokenType.RLiterate.Path:      Style.create(foreground=text, italic=True, bold=True),
         TokenType.RLiterate.Chunk:     Style.create(foreground=magenta, bold=True),
         TokenType.RLiterate.Sep:       Style.create(foreground=base1),
+        TokenType.RLiterate.Working:   Style.create(foreground=yellow),
+        TokenType.RLiterate.Success:   Style.create(foreground=green),
     }
 class MainFrame(wx.Frame):
 
@@ -4288,16 +4356,6 @@ class ToolBar(wx.ToolBar):
     def _init_tools(self):
         main_frame = self.GetTopLevelParent()
         self._tool_groups = ToolGroups(main_frame)
-        save_group = self._tool_groups.add_group()
-        save_group.add_tool(
-            wx.ART_FILE_SAVE,
-            lambda: self.project.save(),
-            short_help="Save",
-            shortcuts=[
-                (wx.ACCEL_CTRL, ord('S')),
-            ],
-            enabled_fn=lambda: self.project.needs_saving
-        )
         navigation_group = self._tool_groups.add_group()
         navigation_group.add_tool(
             wx.ART_GO_BACK,
@@ -4329,7 +4387,6 @@ class ToolBar(wx.ToolBar):
         )
         quit_group = self._tool_groups.add_group()
         def quit():
-            self.project.save()
             main_frame.Close()
         quit_group.add_tool(
             wx.ART_QUIT,
@@ -5613,6 +5670,92 @@ class FragmentKeyHandler(PlainTextKeyHandler):
         with self.project.notify():
             setattr(self.fragment, self.attr, text)
             self.project.selection = self.selection.create(index)
+class StatusBarGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child1(parent, loopvar)
+        self._child3(parent, loopvar)
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["border"] = 3
+        sizer["flag"] |= wx.ALL
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child5(parent, loopvar)
+        self._child6(parent, loopvar)
+        parent.add_space(10)
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'save'
+        handlers.append(('button', lambda event: self.project.save()))
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child6(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['characters'] = self._get_save_characters()
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(TextProjection, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+class StatusBar(StatusBarGui):
+
+    def _get_save_characters(self):
+        status = self.project.save_status
+        return [
+            Character.create(
+                x,
+                self.project.get_style(
+                    TokenType.RLiterate.Working
+                    if status["working"]
+                    else
+                    TokenType.RLiterate.Success
+                )
+            )
+            for x in status["text"]
+        ]
 class SettingsDialog(wx.Dialog):
 
     def __init__(self, parent, project):
@@ -6299,6 +6442,8 @@ if __name__ == "__main__":
         sys.stdout.write(DiffBuilder(Document.from_file(sys.argv[1])).build())
     else:
         app = wx.App()
-        main_frame = MainFrame(Project(sys.argv[1]))
+        project = Project(sys.argv[1])
+        main_frame = MainFrame(project)
         main_frame.Show()
         app.MainLoop()
+        project.wait_for_save()

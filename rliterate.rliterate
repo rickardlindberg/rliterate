@@ -6037,7 +6037,7 @@
 "type":"variable"
 },
 {
-"text":" = False\n",
+"text":" = {\"text\": \"\", \"working\": False}\nself._save_thread = SavingThread(self)\n",
 "type":"code"
 }
 ],
@@ -6059,23 +6059,15 @@
 "type":"code"
 },
 {
-"id":"dc235530a21f4f61bc79a447761fb07b",
+"id":"aed0c1af151440d889b3890fa971fb59",
 "type":"variable"
 },
 {
-"text":"(self):\n    self.",
-"type":"code"
-},
-{
-"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
-"type":"variable"
-},
-{
-"text":" = True\n",
+"text":"(self):\n    self._save_thread.queue_save(self.document)\n",
 "type":"code"
 }
 ],
-"id":"14a32f743fef461f9d804d49123a0c5b",
+"id":"272fc0d8bcdb4d38bca3659862f56dbd",
 "language":"",
 "type":"code"
 },
@@ -6089,27 +6081,12 @@
 ],
 "fragments":[
 {
-"text":"@property\ndef ",
-"type":"code"
-},
-{
-"id":"ccd9655841fb4311bad581f979730e47",
-"type":"variable"
-},
-{
-"text":"(self):\n    return self.",
-"type":"code"
-},
-{
-"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
-"type":"variable"
-},
-{
-"text":"\n",
+"text":"def wait_for_save(self):\n    self._save_thread.wait_until_done()\n",
 "type":"code"
 }
 ],
-"id":"e6c4bcca200c408fa3563dd9f947239a",
+"id":"913a766508b544f6ba922f141cca1cab",
+"language":"",
 "type":"code"
 },
 {
@@ -6122,43 +6099,28 @@
 ],
 "fragments":[
 {
-"text":"def ",
-"type":"code"
-},
-{
-"id":"aed0c1af151440d889b3890fa971fb59",
-"type":"variable"
-},
-{
-"text":"(self):\n    if self.",
-"type":"code"
-},
-{
-"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
-"type":"variable"
-},
-{
-"text":":\n        with self.notify():\n            self.document.save()\n            ",
-"type":"code"
-},
-{
-"id":"2c55e85463a84b59bd905c4737f29867",
-"type":"variable"
-},
-{
-"text":"(self.document).generate_files()\n            self.",
-"type":"code"
-},
-{
-"id":"b7d3ecae71fd4c3ead275b008cfc71e8",
-"type":"variable"
-},
-{
-"text":" = False\n",
+"text":"@property\ndef save_status(self):\n    return self._save_status\n\n@save_status.setter\ndef save_status(self, value):\n    with self.notify():\n        self._save_status = value\n",
 "type":"code"
 }
 ],
-"id":"272fc0d8bcdb4d38bca3659862f56dbd",
+"id":"f52f38dccf074ac0b2b768b5376050a8",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class SavingThread(threading.Thread):\n\n    def __init__(self, project):\n        threading.Thread.__init__(self)\n        self.project = project\n        self.daemon = True\n        self.queue = Queue.Queue()\n        self.start()\n\n    def queue_save(self, document):\n        self.queue.put_nowait((document.path, document.document_dict))\n\n    def wait_until_done(self):\n        self.queue.join()\n\n    def run(self):\n        while True:\n            self._report(\"All saved!\", working=False)\n            path, document_dict = self.queue.get()\n            self._report(\"Waiting...\")\n            while True:\n                try:\n                    path, document_dict = self.queue.get(timeout=3)\n                    self.queue.task_done()\n                except Queue.Empty:\n                    break\n            self._report(\"Saving document...\")\n            document = Document(path, document_dict)\n            document.save()\n            self._report(\"Saving files...\")\n            CodeExpander(document).generate_files()\n            self.queue.task_done()\n\n    def _report(self, text, working=True):\n        wx.CallAfter(\n            setattr,\n            self.project, \"save_status\", {\"text\": text, \"working\": working}\n        )\n",
+"type":"code"
+}
+],
+"id":"13c4ff092be74673a46b6a49e2f0aee5",
 "language":"",
 "type":"code"
 }
@@ -6216,15 +6178,7 @@
 "type":"variable"
 },
 {
-"text":"(filepath)\n        self.document.listen(self.",
-"type":"code"
-},
-{
-"id":"dc235530a21f4f61bc79a447761fb07b",
-"type":"variable"
-},
-{
-"text":")\n        self.document.",
+"text":"(filepath)\n        self.document.listen(self.save)\n        self.document.",
 "type":"code"
 },
 {
@@ -7536,7 +7490,23 @@
 "type":"variable"
 },
 {
-"text":".create(foreground=base1),\n    }\n",
+"text":".create(foreground=base1),\n        TokenType.RLiterate.Working:   ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=yellow),\n        TokenType.RLiterate.Success:   ",
+"type":"code"
+},
+{
+"id":"35fc9d123bbc4572b1d559ec7f013016",
+"type":"variable"
+},
+{
+"text":".create(foreground=green),\n    }\n",
 "type":"code"
 }
 ],
@@ -7623,7 +7593,15 @@
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    panel(\n        focus     = True\n    ) %hbox {}\n    TableOfContents(\n        project   = self.project\n        selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n        %expand\n    )\n    Workspace(\n        project   = self.project\n        selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n        %expand\n        %proportion[1]\n    )\n}\n",
+"text":" %vbox {\n    #project\n    panel(\n        focus     = True\n    ) %hbox {}\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n    ",
+"type":"code"
+},
+{
+"id":"53fd9d03a6974dd3b3194efdb0ad5427",
+"type":"variable"
+},
+{
+"text":"(\n        project   = self.project\n        %expand\n    )\n}\n",
 "type":"code"
 }
 ],
@@ -7733,59 +7711,6 @@
 },
 {
 "children":[
-{
-"children":[],
-"id":"91368c7e71a248a6bf7f949e53dc67c9",
-"paragraphs":[
-{
-"chunkpath":[
-"classes",
-"ToolBar",
-"init tools"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"save_group = self._tool_groups.add_group()\n",
-"type":"code"
-}
-],
-"id":"58fdf0c401b44feb9a4752ee76c2562f",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"ToolBar",
-"init tools"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"save_group.add_tool(\n    wx.ART_FILE_SAVE,\n    lambda: self.project.save(),\n    short_help=\"Save\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('S')),\n    ],\n    enabled_fn=lambda: self.project.",
-"type":"code"
-},
-{
-"id":"ccd9655841fb4311bad581f979730e47",
-"type":"variable"
-},
-{
-"text":"\n)\n",
-"type":"code"
-}
-],
-"id":"582e9b811e75482da648ba7cb52c8152",
-"language":"",
-"type":"code"
-}
-],
-"title":"Saving"
-},
 {
 "children":[],
 "id":"75b0b360e86f4160bf1187d9cdb8787e",
@@ -7982,7 +7907,7 @@
 ],
 "fragments":[
 {
-"text":"def quit():\n    self.project.save()\n    main_frame.Close()\nquit_group.add_tool(\n    wx.ART_QUIT,\n    quit,\n    short_help=\"Quit\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('Q')),\n    ]\n)\n",
+"text":"def quit():\n    main_frame.Close()\nquit_group.add_tool(\n    wx.ART_QUIT,\n    quit,\n    short_help=\"Quit\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('Q')),\n    ]\n)\n",
 "type":"code"
 }
 ],
@@ -13069,6 +12994,76 @@
 },
 {
 "children":[],
+"id":"384a0262a34046959c1762a1276ed2ca",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"b4434572c6644fd1875382eeade819fc",
+"type":"variable"
+},
+{
+"text":" %hbox {\n    #project\n    panel(%proportion[1]) %hbox {}\n    panel(%border[3, ALL]) %hbox {\n        IconButton(\n            icon    = \"save\"\n            @button = self.project.save()\n            %align_center_vertical\n        )\n        TextProjection(\n            characters = self._get_save_characters()\n            %align_center_vertical\n        )\n        BoxSpace(10)\n    }\n}\n",
+"type":"code"
+}
+],
+"id":"598939650f4d4c468bd8e5299a3f4277",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"53fd9d03a6974dd3b3194efdb0ad5427",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"b4434572c6644fd1875382eeade819fc",
+"type":"variable"
+},
+{
+"text":"):\n\n    def _get_save_characters(self):\n        status = self.project.save_status\n        return [\n            Character.create(\n                x,\n                self.project.get_style(\n                    TokenType.RLiterate.Working\n                    if status[\"working\"]\n                    else\n                    TokenType.RLiterate.Success\n                )\n            )\n            for x in status[\"text\"]\n        ]\n",
+"type":"code"
+}
+],
+"id":"e324f184a07f49c3a686413c58a54420",
+"language":"",
+"post_process":[],
+"type":"code"
+}
+],
+"title":"Status bar"
+},
+{
+"children":[],
 "id":"5abfd32519c646ef8682281de9980786",
 "paragraphs":[
 {
@@ -15257,7 +15252,15 @@
 "type":"tabstop"
 },
 {
-"text":"-> [\"sizerAlignCenter\"]\n  borderSide =\n    | side:x (ws '|' side)*:xs ",
+"text":"-> [\"sizerAlignCenter\"]\n    | ws '%align_center_vertical' !nameChar ",
+"type":"code"
+},
+{
+"index":20,
+"type":"tabstop"
+},
+{
+"text":"-> [\"sizerAlignCenterVertical\"]\n  borderSide =\n    | side:x (ws '|' side)*:xs ",
 "type":"code"
 },
 {
@@ -15614,7 +15617,7 @@
 "type":"variable"
 },
 {
-"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n| [\"derived\" .:x ast:y] -> {\n    @derived { repr(x) \": \" y \",\\n\" }\n  }\n| [\"string\" .:x] -> { repr(x) }\n| [\"int\" .:x] -> { repr(x) }\n| [\"list\" astList:x] -> { \"[\" x \"]\" }\n| [\"sizerBorder\" ast:x [border*:y]] -> { @child { \"sizer[\\\"border\\\"] = \" x \"\\n\" y } }\n| [\"sizerProportion\" ast:x]         -> { @child { \"sizer[\\\"proportion\\\"] = \" x \"\\n\" } }\n| [\"sizerExpand\"]                   -> { @child { \"sizer[\\\"flag\\\"] |= wx.EXPAND\\n\" } }\n| [\"sizerReserve\"]                  -> { @child { \"sizer[\\\"flag\\\"] |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n| [\"sizerAlignCenter\"]              -> { @child { \"sizer[\\\"flag\\\"] |= wx.ALIGN_CENTER\\n\" } }\n",
+"text":"[\\\"\" x \"\\\"]\\n\"\n    <\n  }\n| [\"derived\" .:x ast:y] -> {\n    @derived { repr(x) \": \" y \",\\n\" }\n  }\n| [\"string\" .:x] -> { repr(x) }\n| [\"int\" .:x] -> { repr(x) }\n| [\"list\" astList:x] -> { \"[\" x \"]\" }\n| [\"sizerBorder\" ast:x [border*:y]] -> { @child { \"sizer[\\\"border\\\"] = \" x \"\\n\" y } }\n| [\"sizerProportion\" ast:x]         -> { @child { \"sizer[\\\"proportion\\\"] = \" x \"\\n\" } }\n| [\"sizerExpand\"]                   -> { @child { \"sizer[\\\"flag\\\"] |= wx.EXPAND\\n\" } }\n| [\"sizerReserve\"]                  -> { @child { \"sizer[\\\"flag\\\"] |= wx.RESERVE_SPACE_EVEN_IF_HIDDEN\\n\" } }\n| [\"sizerAlignCenter\"]              -> { @child { \"sizer[\\\"flag\\\"] |= wx.ALIGN_CENTER\\n\" } }\n| [\"sizerAlignCenterVertical\"]      -> { @child { \"sizer[\\\"flag\\\"] |= wx.ALIGN_CENTER_VERTICAL\\n\" } }\n",
 "type":"code"
 }
 ],
@@ -16339,7 +16342,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.BitmapButton.__init__(\n            self,\n            parent,\n            bitmap=wx.ArtProvider.GetBitmap(\n                {\n                    \"add\": wx.ART_ADD_BOOKMARK,\n                }[kwargs[\"icon\"]],\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        )\n        ",
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.BitmapButton.__init__(\n            self,\n            parent,\n            bitmap=wx.ArtProvider.GetBitmap(\n                {\n                    \"add\": wx.ART_ADD_BOOKMARK,\n                    \"save\": wx.ART_FILE_SAVE,\n                }[kwargs[\"icon\"]],\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        )\n        ",
 "type":"code"
 },
 {
@@ -17138,7 +17141,7 @@
 "type":"variable"
 },
 {
-"text":"(sys.argv[1])).build())\nelse:\n    app = wx.App()\n    main_frame = ",
+"text":"(sys.argv[1])).build())\nelse:\n    app = wx.App()\n    project = Project(sys.argv[1])\n    main_frame = ",
 "type":"code"
 },
 {
@@ -17146,7 +17149,7 @@
 "type":"variable"
 },
 {
-"text":"(Project(sys.argv[1]))\n    main_frame.Show()\n    app.MainLoop()\n",
+"text":"(project)\n    main_frame.Show()\n    app.MainLoop()\n    project.wait_for_save()\n",
 "type":"code"
 }
 ],
@@ -17243,7 +17246,7 @@
 ],
 "fragments":[
 {
-"text":"from collections import defaultdict, namedtuple, OrderedDict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
+"text":"from collections import defaultdict, namedtuple, OrderedDict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\nimport Queue\nimport threading\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
 "type":"code"
 }
 ],
@@ -19196,6 +19199,7 @@
 "51d7ad6401584de9b61508e00d7fd770":"Text",
 "52a4cb0c44124d518647a92eb25a876d":"page_body_width",
 "536483b5a3d64ef5981b4c77a3df6f71":"body",
+"53fd9d03a6974dd3b3194efdb0ad5427":"StatusBar",
 "54f99e72df0b4006b2bd90465c8558c4":"TableOfContentsButton",
 "553573ef13bd4f7a8713699b743e494a":"apply_to_wx_dc",
 "57fdfcbc2bff420ebb99bb9275a79cea":"empty",
@@ -19299,7 +19303,8 @@
 "b38a44dcc29f4cf790cd83a506b653c8":"fragments",
 "b3ef449947274fc597372ebb7fa1eaf7":"max_width",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
-"b7d3ecae71fd4c3ead275b008cfc71e8":"_needs_saving",
+"b4434572c6644fd1875382eeade819fc":"StatusBarGui",
+"b7d3ecae71fd4c3ead275b008cfc71e8":"_save_status",
 "b7da0c1f7b7845c8a2c816963948740d":"document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
 "ba63198235bb4716a96649f32f1f4ac4":"_layout",
