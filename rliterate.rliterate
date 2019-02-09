@@ -6436,7 +6436,7 @@
 "type":"variable"
 },
 {
-"text":"(*args, **kwargs)\n\ndef add_page(self, *args, **kwargs):\n    return self.document.add_page(*args, **kwargs)\n\ndef ",
+"text":"(*args, **kwargs)\n\ndef ",
 "type":"code"
 },
 {

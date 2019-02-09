@@ -3993,9 +3993,6 @@ class Project(Observable):
     def get_paragraph(self, *args, **kwargs):
         return self.document.get_paragraph(*args, **kwargs)
 
-    def add_page(self, *args, **kwargs):
-        return self.document.add_page(*args, **kwargs)
-
     def add_paragraph(self, *args, **kwargs):
         return self.document.add_paragraph(*args, **kwargs)
 
