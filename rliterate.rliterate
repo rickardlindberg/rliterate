@@ -6481,7 +6481,7 @@
 ],
 "fragments":[
 {
-"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    if self.active_editor is None:\n        return self.layout.open_pages(*args, **kwargs)\n    else:\n        raise EditInProgress()\n\ndef can_back(self, *args, **kwargs):\n    return self.layout.can_back(*args, **kwargs)\n\ndef back(self, *args, **kwargs):\n    return self.layout.back(*args, **kwargs)\n\ndef can_forward(self, *args, **kwargs):\n    return self.layout.can_forward(*args, **kwargs)\n\ndef forward(self, *args, **kwargs):\n    return self.layout.forward(*args, **kwargs)\n\n@property\ndef hoisted_page(self):\n    return self.layout.hoisted_page\n\n@hoisted_page.setter\ndef hoisted_page(self, value):\n    self.layout.hoisted_page = value\n",
+"text":"def toggle_collapsed(self, *args, **kwargs):\n    return self.layout.toggle_collapsed(*args, **kwargs)\n\ndef is_collapsed(self, *args, **kwargs):\n    return self.layout.is_collapsed(*args, **kwargs)\n\n@property\ndef columns(self):\n    return self.layout.columns\n\ndef is_open(self, *args, **kwargs):\n    return self.layout.is_open(*args, **kwargs)\n\ndef open_pages(self, *args, **kwargs):\n    return self.layout.open_pages(*args, **kwargs)\n\ndef can_back(self, *args, **kwargs):\n    return self.layout.can_back(*args, **kwargs)\n\ndef back(self, *args, **kwargs):\n    return self.layout.back(*args, **kwargs)\n\ndef can_forward(self, *args, **kwargs):\n    return self.layout.can_forward(*args, **kwargs)\n\ndef forward(self, *args, **kwargs):\n    return self.layout.forward(*args, **kwargs)\n\n@property\ndef hoisted_page(self):\n    return self.layout.hoisted_page\n\n@hoisted_page.setter\ndef hoisted_page(self, value):\n    self.layout.hoisted_page = value\n",
 "type":"code"
 }
 ],
@@ -6540,73 +6540,6 @@
 ],
 "id":"41eddf3dbbad490391013abb3fbd0b47",
 "type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"Project",
-"__init__"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"self._active_editor = None\n",
-"type":"code"
-}
-],
-"id":"7a29a8ad844f4068982cdd210b654d26",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"Project"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@property\ndef ",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":"(self):\n    return self._active_editor\n\n@",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":".setter\ndef ",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":"(self, editor):\n    with self.",
-"type":"code"
-},
-{
-"id":"1c7f69114ac14c80b2fb421ea7eda3a2",
-"type":"variable"
-},
-{
-"text":"():\n        self._active_editor = editor\n",
-"type":"code"
-}
-],
-"id":"d18b28ee44ea4fffbd9c2ecf75f0e938",
-"type":"code"
 },
 {
 "chunkpath":[
@@ -6697,22 +6630,6 @@
 }
 ],
 "id":"5e9d1e7020f4474da7e6788380c57d7e",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class EditInProgress(Exception):\n    pass\n",
-"type":"code"
-}
-],
-"id":"38c74c6da2a549778e32f4dba67151ac",
 "type":"code"
 }
 ],
@@ -7908,15 +7825,7 @@
 ],
 "fragments":[
 {
-"text":"save_group = self._tool_groups.add_group(\n    lambda: self.project.",
-"type":"code"
-},
-{
-"id":"03cf450743e9447da0a9becadacd7dda",
-"type":"variable"
-},
-{
-"text":" is None\n)\n",
+"text":"save_group = self._tool_groups.add_group()\n",
 "type":"code"
 }
 ],
@@ -7956,119 +7865,6 @@
 },
 {
 "children":[],
-"id":"6cefdf62f0ca4cd38d051513d753a614",
-"paragraphs":[
-{
-"chunkpath":[
-"classes",
-"ToolBar",
-"init tools"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"editor_group = self._tool_groups.add_group(\n    lambda: self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" is not None\n)\n",
-"type":"code"
-}
-],
-"id":"01064e87235e4715acfe9bc33b7c36b2",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Save:",
-"type":"text"
-}
-],
-"id":"90bf51ecb4d8486fa50b4f516ac0a25b",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"ToolBar",
-"init tools"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"editor_group.add_tool(\n    wx.ART_FILE_SAVE,\n    lambda: self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":".Save(),\n    short_help=\"Save\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('S')),\n        (wx.ACCEL_CTRL, wx.WXK_RETURN),\n    ]\n)\n",
-"type":"code"
-}
-],
-"id":"52cd0083225f42ce94a0676e17e99cd5",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Cancel:",
-"type":"text"
-}
-],
-"id":"905e31bff5d24a6da6311cd9178ab95a",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"ToolBar",
-"init tools"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"editor_group.add_tool(\n    wx.ART_CROSS_MARK,\n    lambda: self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"1d1c2a7d8f224b5aa30e0709f167a68e",
-"type":"variable"
-},
-{
-"text":"(),\n    short_help=\"Cancel\",\n    shortcuts=[\n        (wx.ACCEL_CTRL, ord('G')),\n        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),\n    ]\n)\n",
-"type":"code"
-}
-],
-"id":"9b79b890a7d04820897952a5fcd33df4",
-"type":"code"
-}
-],
-"title":"Editor"
-},
-{
-"children":[],
 "id":"75b0b360e86f4160bf1187d9cdb8787e",
 "paragraphs":[
 {
@@ -8082,15 +7878,7 @@
 ],
 "fragments":[
 {
-"text":"navigation_group = self._tool_groups.add_group(\n    lambda: self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" is None\n)\n",
+"text":"navigation_group = self._tool_groups.add_group()\n",
 "type":"code"
 }
 ],
@@ -8171,15 +7959,7 @@
 ],
 "fragments":[
 {
-"text":"undo_group = self._tool_groups.add_group(\n    lambda: self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" is None\n)\n",
+"text":"undo_group = self._tool_groups.add_group()\n",
 "type":"code"
 }
 ],
@@ -8260,15 +8040,7 @@
 ],
 "fragments":[
 {
-"text":"quit_group = self._tool_groups.add_group(\n    lambda: self.project.",
-"type":"code"
-},
-{
-"id":"c65bff398b4a49af945b1c154a660687",
-"type":"variable"
-},
-{
-"text":" is None\n)\n",
+"text":"quit_group = self._tool_groups.add_group()\n",
 "type":"code"
 }
 ],
@@ -9287,7 +9059,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_click_old(self, event):\n    open_pages_gui(self, self.project, [self.page.id], column_index=0)\n",
+"text":"def _on_click_old(self, event):\n    self.project.open_pages([self.page.id], column_index=0)\n",
 "type":"code"
 }
 ],
@@ -9512,7 +9284,7 @@
 ],
 "fragments":[
 {
-"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page = page\n        self.child_ids = [page.id]+[child.id for child in page.children]\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id], column_index=0),\n            self.Append(wx.NewId(), \"Open\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, [self.page.id]),\n            self.Append(wx.NewId(), \"Open append\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids, column_index=0),\n            self.Append(wx.NewId(), \"Open with children\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: open_pages_gui(self, self.project, self.child_ids),\n            self.Append(wx.NewId(), \"Open with children append\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.",
+"text":"class PageContextMenu(wx.Menu):\n\n    def __init__(self, project, page):\n        wx.Menu.__init__(self)\n        self.project = project\n        self.page = page\n        self.child_ids = [page.id]+[child.id for child in page.children]\n        self._create_menu()\n\n    def _create_menu(self):\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages([self.page.id], column_index=0),\n            self.Append(wx.NewId(), \"Open\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages([self.page.id]),\n            self.Append(wx.NewId(), \"Open append\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages(self.child_ids, column_index=0),\n            self.Append(wx.NewId(), \"Open with children\")\n        )\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.open_pages(self.child_ids),\n            self.Append(wx.NewId(), \"Open with children append\")\n        )\n        self.AppendSeparator()\n        self.Bind(\n            wx.EVT_MENU,\n            lambda event: self.project.",
 "type":"code"
 },
 {
@@ -9779,7 +9551,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    if self.project.active_editor is not None:\n        return\n    WorkspaceGui.",
+"text":"(self):\n    WorkspaceGui.",
 "type":"code"
 },
 {
@@ -10246,7 +10018,7 @@
 ],
 "fragments":[
 {
-"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=\"hand\")\n        else:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=None)\n        else:\n            event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    open_pages_gui(self, self.project,\n        [page_id],\n        column_index=self.index+1\n    )\n",
+"text":"def _on_hovered_token_changed(self, event):\n    if event.token is not None and event.token.token_type in [\n        TokenType.RLiterate.Link,\n        TokenType.RLiterate.Reference,\n    ]:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=\"hand\")\n        else:\n            event.widget.SetCursor(wx.StockCursor(wx.CURSOR_HAND))\n    else:\n        if hasattr(event.widget, \"UpdateGui\"):\n            event.widget.UpdateGui(cursor=None)\n        else:\n            event.widget.SetDefaultCursor()\n\ndef _on_token_click(self, event):\n    if event.token.token_type == TokenType.RLiterate.Reference:\n        self.OpenPage(event.token.extra[\"page_id\"])\n    elif event.token.token_type == TokenType.RLiterate.Link:\n        webbrowser.open(event.token.extra[\"url\"])\n\ndef OpenPage(self, page_id):\n    self.project.open_pages(\n        [page_id],\n        column_index=self.index+1\n    )\n",
 "type":"code"
 }
 ],
@@ -12188,7 +11960,7 @@
 "type":"variable"
 },
 {
-"text":".ShowRecursive(self)\n\ndef _find_variable_pages(self, name):\n    for page in self.project.iter_pages():\n        if self._page_has_variable(page, name):\n            yield page\n\ndef _find_variable_usages(self, variable_id):\n    for page in self.project.iter_pages():\n        if self._page_uses_variable(page, variable_id):\n            yield page\n\ndef _page_has_variable(self, page, name):\n    pattern = re.compile(r\"\\b{}\\b\".format(re.escape(name)))\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"code\":\n            if pattern.search(text_fragment.text):\n                return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"code\":\n            if pattern.search(code_fragment.text):\n                return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"variable\" and text_fragment.id == variable_id:\n            return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"variable\" and code_fragment.id == variable_id:\n            return True\n\ndef _path_double_click(self, event):\n    edge_token = event.EventObject.GetClosestToken(event.Position)\n    if edge_token is None:\n        post_edit_start(self, subpath=None)\n    else:\n        edge, token = edge_token\n        if \"subpath\" in token.extra:\n            post_edit_start(self, subpath=token.extra[\"subpath\"], edge=edge)\n        elif edge < 0:\n            post_edit_start(self, subpath=token.extra[\"prev_subpath\"], edge=1)\n        else:\n            post_edit_start(self, subpath=token.extra[\"next_subpath\"], edge=-1)\n\ndef _body_double_click(self, event):\n    post_edit_start(\n        self,\n        body_token=event.EventObject.GetToken(event.Position)\n    )\n",
+"text":".ShowRecursive(self)\n\ndef _find_variable_pages(self, name):\n    for page in self.project.iter_pages():\n        if self._page_has_variable(page, name):\n            yield page\n\ndef _find_variable_usages(self, variable_id):\n    for page in self.project.iter_pages():\n        if self._page_uses_variable(page, variable_id):\n            yield page\n\ndef _page_has_variable(self, page, name):\n    pattern = re.compile(r\"\\b{}\\b\".format(re.escape(name)))\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"code\":\n            if pattern.search(text_fragment.text):\n                return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"code\":\n            if pattern.search(code_fragment.text):\n                return True\n\ndef _page_uses_variable(self, page, variable_id):\n    for text_fragment in page.iter_text_fragments():\n        if text_fragment.type == \"variable\" and text_fragment.id == variable_id:\n            return True\n    for code_fragment in page.iter_code_fragments():\n        if code_fragment.type == \"variable\" and code_fragment.id == variable_id:\n            return True\n",
 "type":"code"
 }
 ],
@@ -12692,64 +12464,6 @@
 "id":"3e32276889674d5cbc3d7b63e3f9ea11",
 "language":"",
 "post_process":[],
-"type":"code"
-},
-{
-"chunkpath":[
-"base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"07b4671de05745a7bddd1eea74535277",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"e327d4d3650047bc9eedb2a21d4c2613",
-"type":"variable"
-},
-{
-"text":", ",
-"type":"code"
-},
-{
-"id":"912bfa09cb014fa7890b442c2aa7750a",
-"type":"variable"
-},
-{
-"text":"):\n\n    def BindMouse(self, widget, controls, **overrides):\n        def create_handler(name, fn):\n            def handler(*args, **kwargs):\n                if name in overrides:\n                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:\n                        return\n                fn(*args, **kwargs)\n            return handler\n        handlers = {\n            \"double_click\": lambda event: post_edit_start(widget),\n            \"drag\": self.DoDragDrop,\n            \"right_click\": lambda event: self.ShowContextMenu(),\n        }\n        for key in overrides.keys():\n            if key in handlers:\n                handlers[key] = create_handler(key, handlers[key])\n            else:\n                handlers[key] = overrides[key]\n        MouseEventHelper.bind(controls, **handlers)\n",
-"type":"code"
-}
-],
-"id":"39ada32fde3245e7baac32cb839fb4e2",
-"language":"",
-"post_process":[],
-"type":"code"
-},
-{
-"chunkpath":[
-"constants"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"CONTINUE_PROCESSING = object()\n",
-"type":"code"
-}
-],
-"id":"9c9bba2323704bb28100ee92625238cb",
 "type":"code"
 },
 {
@@ -13377,307 +13091,6 @@
 },
 {
 "children":[],
-"id":"33398a32e9c0460d98d0ada485f19067",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"Editables are widgets that contain a view and an editor. When the editor is opened, the view is hidden and the editor is shown in its place. The editor is opened by posting an ",
-"type":"text"
-},
-{
-"text":"EditStart",
-"type":"code"
-},
-{
-"text":" event from the view. This is typically done from a double click event handler.",
-"type":"text"
-}
-],
-"id":"e8f297cc43c84f3589a18191088fd308",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"This class should be inherited, and the ",
-"type":"text"
-},
-{
-"text":"CreateView",
-"type":"code"
-},
-{
-"text":" method should be implemented. ",
-"type":"text"
-},
-{
-"text":"CreateEdit",
-"type":"code"
-},
-{
-"text":" must also be inherited if ",
-"type":"text"
-},
-{
-"text":"EditStart",
-"type":"code"
-},
-{
-"text":" events are expected.",
-"type":"text"
-}
-],
-"id":"615380bc2ce240ada8493970597c68c8",
-"type":"text"
-},
-{
-"chunkpath":[
-"base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"e327d4d3650047bc9eedb2a21d4c2613",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"50f1b4552c0340eab599c8bc578334de",
-"type":"variable"
-},
-{
-"text":"):\n\n    @property\n    def project(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"project\"]\n\n    @property\n    def page_id(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"page_id\"]\n\n    @property\n    def paragraph(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"paragraph\"]\n\n    @property\n    def selection(self):\n        return self.",
-"type":"code"
-},
-{
-"id":"e2666ed6e8d5428e901fc58bfe11a45b",
-"type":"variable"
-},
-{
-"text":"[\"selection\"]\n\n    def ",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.view = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            self.",
-"type":"code"
-},
-{
-"id":"740055857bb244038c203cea23c1af69",
-"type":"variable"
-},
-{
-"text":"(),\n            flag=wx.EXPAND,\n            proportion=1\n        )\n        self.view.Bind(EVT_EDIT_START, self.OnEditStart)\n\n    def ",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
-"type":"variable"
-},
-{
-"text":"(self):\n        if hasattr(self, \"edit\"):\n            self.edit.Destroy()\n            del self.edit\n            self.view.Destroy()\n            self.",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"()\n        else:\n            self.",
-"type":"code"
-},
-{
-"id":"a4ee3530a5f140f5bc70b87fca825372",
-"type":"variable"
-},
-{
-"text":"()\n\n    def ",
-"type":"code"
-},
-{
-"id":"a4ee3530a5f140f5bc70b87fca825372",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.view.Destroy()\n        self.",
-"type":"code"
-},
-{
-"id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"()\n\n    def OnEditStart(self, event):\n        if self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" is not None:\n            show_edit_in_progress_error(self)\n            return\n        with ",
-"type":"code"
-},
-{
-"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
-"type":"variable"
-},
-{
-"text":"(self):\n            self.edit = self.",
-"type":"code"
-},
-{
-"id":"6df9f93cf2db4cecb5effb2ad31fb7fb",
-"type":"variable"
-},
-{
-"text":"(event.extra)\n            self.edit.SetFocus()\n            self.GetSizer().Add(self.edit, flag=wx.EXPAND, proportion=1)\n            self.GetSizer().Hide(self.view)\n            self.GetTopLevelParent().Layout()\n            self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" = self\n\n    def ",
-"type":"code"
-},
-{
-"id":"1d1c2a7d8f224b5aa30e0709f167a68e",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" = None\n\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"Editable"
-],
-"prefix":"    ",
-"type":"chunk"
-}
-],
-"id":"79cd58077311436295ce672e07703388",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base base classes",
-"Editable"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def Save(self):\n    self.edit.Save()\n    self.project.",
-"type":"code"
-},
-{
-"id":"95e03f26fa804fc5b33f0ea2e8bf012f",
-"type":"variable"
-},
-{
-"text":" = None\n",
-"type":"code"
-}
-],
-"id":"0c9a855becd6478fb28ef113fff99f5b",
-"type":"code"
-},
-{
-"chunkpath":[
-"constants"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()\n",
-"type":"code"
-}
-],
-"id":"3e66b8a4eb5d4aba9fbfa7b6c4c025d5",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def post_edit_start(control, **extra):\n    wx.PostEvent(control, EditStart(0, extra=extra))\n",
-"type":"code"
-}
-],
-"id":"cbf3b69a55b14a9ba8a1543e153dba86",
-"type":"code"
-}
-],
-"title":"Editables"
-},
-{
-"children":[],
 "id":"1b1ad038b0b7493da32f42a8261323b9",
 "paragraphs":[
 {
@@ -14003,45 +13416,6 @@
 "id":"a6e8ca0aa83d4829b15c0424be259022",
 "paragraphs":[],
 "title":"Drag & drop"
-},
-{
-"children":[],
-"id":"03a31fd01d22449da2450c36ede331c1",
-"paragraphs":[
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def open_pages_gui(window, project, *args, **kwargs):\n    try:\n        project.open_pages(*args, **kwargs)\n    except EditInProgress:\n        show_edit_in_progress_error(window)\n",
-"type":"code"
-}
-],
-"id":"15f128565382486187e8699ba13fcb14",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def show_edit_in_progress_error(window):\n    dialog = wx.MessageDialog(\n        window,\n        \"An edit is already in progress.\",\n        style=wx.CENTRE|wx.ICON_ERROR|wx.OK\n    )\n    dialog.ShowModal()\n    dialog.Destroy()\n",
-"type":"code"
-}
-],
-"id":"858941606e864431bb785f32f3d6a590",
-"type":"code"
-}
-],
-"title":"Edit in progress utilities"
 },
 {
 "children":[

@@ -24,10 +24,8 @@ import wx
 import wx.richtext
 import wx.lib.newevent
 UNDO_BUFFER_SIZE = 10
-CONTINUE_PROCESSING = object()
 TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
 HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
-EditStart, EVT_EDIT_START = wx.lib.newevent.NewCommandEvent()
 def rltime(text):
     def wrap(fn):
         def fn_with_timing(*args, **kwargs):
@@ -1692,63 +1690,6 @@ class TextViewGui(GuiFrameworkPanel):
     @property
     def prefix(self):
         return self.values["prefix"]
-class Editable(VerticalBasePanel):
-
-    @property
-    def project(self):
-        return self.values["project"]
-
-    @property
-    def page_id(self):
-        return self.values["page_id"]
-
-    @property
-    def paragraph(self):
-        return self.values["paragraph"]
-
-    @property
-    def selection(self):
-        return self.values["selection"]
-
-    def _create_gui(self):
-        self.view = self.AppendChild(
-            self.CreateView(),
-            flag=wx.EXPAND,
-            proportion=1
-        )
-        self.view.Bind(EVT_EDIT_START, self.OnEditStart)
-
-    def _update_gui(self):
-        if hasattr(self, "edit"):
-            self.edit.Destroy()
-            del self.edit
-            self.view.Destroy()
-            self._create_gui()
-        else:
-            self._update_paragraph_gui()
-
-    def _update_paragraph_gui(self):
-        self.view.Destroy()
-        self._create_gui()
-
-    def OnEditStart(self, event):
-        if self.project.active_editor is not None:
-            show_edit_in_progress_error(self)
-            return
-        with flicker_free_drawing(self):
-            self.edit = self.CreateEdit(event.extra)
-            self.edit.SetFocus()
-            self.GetSizer().Add(self.edit, flag=wx.EXPAND, proportion=1)
-            self.GetSizer().Hide(self.view)
-            self.GetTopLevelParent().Layout()
-            self.project.active_editor = self
-
-    def Cancel(self):
-        self.project.active_editor = None
-
-    def Save(self):
-        self.edit.Save()
-        self.project.active_editor = None
 class TextProjectionEditorGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -1939,27 +1880,6 @@ class ParagraphBaseMixin(object):
 
     def AddContextMenuItems(self, menu):
         pass
-class ParagraphBase(Editable, ParagraphBaseMixin):
-
-    def BindMouse(self, widget, controls, **overrides):
-        def create_handler(name, fn):
-            def handler(*args, **kwargs):
-                if name in overrides:
-                    if overrides[name](*args, **kwargs) is not CONTINUE_PROCESSING:
-                        return
-                fn(*args, **kwargs)
-            return handler
-        handlers = {
-            "double_click": lambda event: post_edit_start(widget),
-            "drag": self.DoDragDrop,
-            "right_click": lambda event: self.ShowContextMenu(),
-        }
-        for key in overrides.keys():
-            if key in handlers:
-                handlers[key] = create_handler(key, handlers[key])
-            else:
-                handlers[key] = overrides[key]
-        MouseEventHelper.bind(controls, **handlers)
 class DropPointDropTarget(wx.DropTarget):
 
     def __init__(self, window, kind):
@@ -3978,7 +3898,6 @@ class Project(Observable):
     def __init__(self, filepath):
         Observable.__init__(self)
         self._selection = Selection.empty()
-        self._active_editor = None
         self._highlighted_variable = None
         self._needs_saving = False
         self.title="{} ({})".format(
@@ -4058,10 +3977,7 @@ class Project(Observable):
         return self.layout.is_open(*args, **kwargs)
 
     def open_pages(self, *args, **kwargs):
-        if self.active_editor is None:
-            return self.layout.open_pages(*args, **kwargs)
-        else:
-            raise EditInProgress()
+        return self.layout.open_pages(*args, **kwargs)
 
     def can_back(self, *args, **kwargs):
         return self.layout.can_back(*args, **kwargs)
@@ -4085,14 +4001,6 @@ class Project(Observable):
     def get_style(self, *args, **kwargs):
         return SolarizedTheme().get_style(*args, **kwargs)
     @property
-    def active_editor(self):
-        return self._active_editor
-
-    @active_editor.setter
-    def active_editor(self, editor):
-        with self.notify():
-            self._active_editor = editor
-    @property
     def highlighted_variable(self):
         return self._highlighted_variable
 
@@ -4111,8 +4019,6 @@ class Project(Observable):
                 self.document.save()
                 CodeExpander(self.document).generate_files()
                 self._needs_saving = False
-class EditInProgress(Exception):
-    pass
 class Selection(namedtuple("Selection", ["current", "trail"])):
 
     @classmethod
@@ -4368,9 +4274,7 @@ class ToolBar(wx.ToolBar):
     def _init_tools(self):
         main_frame = self.GetTopLevelParent()
         self._tool_groups = ToolGroups(main_frame)
-        save_group = self._tool_groups.add_group(
-            lambda: self.project.active_editor is None
-        )
+        save_group = self._tool_groups.add_group()
         save_group.add_tool(
             wx.ART_FILE_SAVE,
             lambda: self.project.save(),
@@ -4380,30 +4284,7 @@ class ToolBar(wx.ToolBar):
             ],
             enabled_fn=lambda: self.project.needs_saving
         )
-        editor_group = self._tool_groups.add_group(
-            lambda: self.project.active_editor is not None
-        )
-        editor_group.add_tool(
-            wx.ART_FILE_SAVE,
-            lambda: self.project.active_editor.Save(),
-            short_help="Save",
-            shortcuts=[
-                (wx.ACCEL_CTRL, ord('S')),
-                (wx.ACCEL_CTRL, wx.WXK_RETURN),
-            ]
-        )
-        editor_group.add_tool(
-            wx.ART_CROSS_MARK,
-            lambda: self.project.active_editor.Cancel(),
-            short_help="Cancel",
-            shortcuts=[
-                (wx.ACCEL_CTRL, ord('G')),
-                (wx.ACCEL_NORMAL, wx.WXK_ESCAPE),
-            ]
-        )
-        navigation_group = self._tool_groups.add_group(
-            lambda: self.project.active_editor is None
-        )
+        navigation_group = self._tool_groups.add_group()
         navigation_group.add_tool(
             wx.ART_GO_BACK,
             lambda: self.project.back(),
@@ -4416,9 +4297,7 @@ class ToolBar(wx.ToolBar):
             short_help="Go forward",
             enabled_fn=lambda: self.project.can_forward()
         )
-        undo_group = self._tool_groups.add_group(
-            lambda: self.project.active_editor is None
-        )
+        undo_group = self._tool_groups.add_group()
         undo_group.add_tool(
             wx.ART_UNDO,
             lambda: self.project.get_undo_operation()[1](),
@@ -4434,9 +4313,7 @@ class ToolBar(wx.ToolBar):
             short_help=lambda: "Redo" if self.project.get_redo_operation() is None else "Redo '{}'".format(self.project.get_redo_operation()[0]),
             enabled_fn=lambda: self.project.get_redo_operation() is not None
         )
-        quit_group = self._tool_groups.add_group(
-            lambda: self.project.active_editor is None
-        )
+        quit_group = self._tool_groups.add_group()
         def quit():
             self.project.save()
             main_frame.Close()
@@ -4677,7 +4554,7 @@ class TableOfContentsRow(TableOfContentsRowGui):
         else:
             self.text.UpdateGui(cursor=None)
     def _on_click_old(self, event):
-        open_pages_gui(self, self.project, [self.page.id], column_index=0)
+        self.project.open_pages([self.page.id], column_index=0)
     def _on_right_click_old(self, event):
         menu = PageContextMenu(self.project, self.page)
         self.PopupMenu(menu)
@@ -4750,22 +4627,22 @@ class PageContextMenu(wx.Menu):
     def _create_menu(self):
         self.Bind(
             wx.EVT_MENU,
-            lambda event: open_pages_gui(self, self.project, [self.page.id], column_index=0),
+            lambda event: self.project.open_pages([self.page.id], column_index=0),
             self.Append(wx.NewId(), "Open")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: open_pages_gui(self, self.project, [self.page.id]),
+            lambda event: self.project.open_pages([self.page.id]),
             self.Append(wx.NewId(), "Open append")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: open_pages_gui(self, self.project, self.child_ids, column_index=0),
+            lambda event: self.project.open_pages(self.child_ids, column_index=0),
             self.Append(wx.NewId(), "Open with children")
         )
         self.Bind(
             wx.EVT_MENU,
-            lambda event: open_pages_gui(self, self.project, self.child_ids),
+            lambda event: self.project.open_pages(self.child_ids),
             self.Append(wx.NewId(), "Open with children append")
         )
         self.AppendSeparator()
@@ -4806,8 +4683,6 @@ class Workspace(WorkspaceGui):
         WorkspaceGui._create_gui(self)
     @rltime("update workspace")
     def _update_gui(self):
-        if self.project.active_editor is not None:
-            return
         WorkspaceGui._update_gui(self)
     def FindClosestDropPoint(self, screen_pos):
         return find_first(
@@ -4877,7 +4752,7 @@ class Column(ColumnGui):
             webbrowser.open(event.token.extra["url"])
 
     def OpenPage(self, page_id):
-        open_pages_gui(self, self.project,
+        self.project.open_pages(
             [page_id],
             column_index=self.index+1
         )
@@ -5191,25 +5066,6 @@ class Code(CodeGui, ParagraphBaseMixin):
         for code_fragment in page.iter_code_fragments():
             if code_fragment.type == "variable" and code_fragment.id == variable_id:
                 return True
-
-    def _path_double_click(self, event):
-        edge_token = event.EventObject.GetClosestToken(event.Position)
-        if edge_token is None:
-            post_edit_start(self, subpath=None)
-        else:
-            edge, token = edge_token
-            if "subpath" in token.extra:
-                post_edit_start(self, subpath=token.extra["subpath"], edge=edge)
-            elif edge < 0:
-                post_edit_start(self, subpath=token.extra["prev_subpath"], edge=1)
-            else:
-                post_edit_start(self, subpath=token.extra["next_subpath"], edge=-1)
-
-    def _body_double_click(self, event):
-        post_edit_start(
-            self,
-            body_token=event.EventObject.GetToken(event.Position)
-        )
 class CodePathProjection(BaseProjection):
 
     def __init__(self, project, paragraph, selection):
@@ -6464,27 +6320,12 @@ def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):
     wx.PostEvent(widget, HoveredTokenChanged(0, widget=widget, token=token))
-def post_edit_start(control, **extra):
-    wx.PostEvent(control, EditStart(0, extra=extra))
 def find_first(items, action):
     for item in items:
         result = action(item)
         if result is not None:
             return result
     return None
-def open_pages_gui(window, project, *args, **kwargs):
-    try:
-        project.open_pages(*args, **kwargs)
-    except EditInProgress:
-        show_edit_in_progress_error(window)
-def show_edit_in_progress_error(window):
-    dialog = wx.MessageDialog(
-        window,
-        "An edit is already in progress.",
-        style=wx.CENTRE|wx.ICON_ERROR|wx.OK
-    )
-    dialog.ShowModal()
-    dialog.Destroy()
 @contextlib.contextmanager
 def flicker_free_drawing(widget):
     if "wxMSW" in wx.PlatformInfo:
