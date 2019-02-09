@@ -13296,6 +13296,35 @@
 "paragraphs":[
 {
 "chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"038ab2c5a2e54a9eb8e136640f3694c6",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #padding\n    #height\n    #left_space\n    #active\n    BoxSpace(self.padding)\n    panel(min_size=tuple([-1 self.height]) %expand) %hbox {\n        BoxSpace(self.left_space)\n        panel(\n            background = \"#ff6400\"\n            visible    = self.active\n            %expand\n            %proportion[1]\n        ) %hbox {}\n    }\n    BoxSpace(self.padding)\n    @right_click = SimpleContextMenu.ShowRecursive(self)\n}\n",
+"type":"code"
+}
+],
+"id":"64a178306e6046c98e8914dc74d75cda",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
 "classes"
 ],
 "filepath":[
@@ -13307,91 +13336,11 @@
 "type":"code"
 },
 {
-"id":"1566854b9f4240408d4a8b17ae305740",
+"id":"038ab2c5a2e54a9eb8e136640f3694c6",
 "type":"variable"
 },
 {
-"text":", ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, padding=0, height=1, **kwargs):\n        ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, size=(-1, height+2*padding))\n        ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":".__init__(self, **kwargs)\n        self.line = wx.Panel(self, size=(-1, height))\n        self.line.SetBackgroundColour((255, 100, 0))\n        self.line.Hide()\n        self.",
-"type":"code"
-},
-{
-"id":"45fc59620058445d8bca860964dbb850",
-"type":"variable"
-},
-{
-"text":"(1)\n        self.hsizer = self.",
-"type":"code"
-},
-{
-"id":"359755e756af4e708b237cd9753ae046",
-"type":"variable"
-},
-{
-"text":"(\n            wx.BoxSizer(wx.HORIZONTAL),\n            flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN\n        )\n        self.",
-"type":"code"
-},
-{
-"id":"45fc59620058445d8bca860964dbb850",
-"type":"variable"
-},
-{
-"text":"(1)\n        MouseEventHelper.bind(\n            [self, self.line],\n            right_click=lambda event:\n                ",
-"type":"code"
-},
-{
-"id":"e3f662313fd1489c9fc8347b0d24ca9d",
-"type":"variable"
-},
-{
-"text":".",
-"type":"code"
-},
-{
-"id":"b0201e824c464356aa706a0440192e5c",
-"type":"variable"
-},
-{
-"text":"(self)\n        )\n\n    def Show(self, left_space=0):\n        with ",
-"type":"code"
-},
-{
-"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
-"type":"variable"
-},
-{
-"text":"(self):\n            self.line.Show()\n            self.hsizer.Clear(False)\n            self.hsizer.Add((left_space, 1))\n            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)\n            self.Layout()\n\n    def Hide(self):\n        with ",
-"type":"code"
-},
-{
-"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
-"type":"variable"
-},
-{
-"text":"(self):\n            self.line.Hide()\n            self.Layout()\n",
+"text":"):\n\n    DEFAULTS = {\n        \"padding\": 0,\n        \"height\": 1,\n        \"left_space\": 0,\n        \"active\": False,\n    }\n\n    def Show(self, left_space=0):\n        self.UpdateGui(left_space=left_space, active=True)\n        self.Layout()\n\n    def Hide(self):\n        self.UpdateGui(active=False)\n        self.Layout()\n",
 "type":"code"
 }
 ],
@@ -17009,134 +16958,11 @@
 ],
 "fragments":[
 {
-"text":"class ",
-"type":"code"
-},
-{
-"id":"1566854b9f4240408d4a8b17ae305740",
-"type":"variable"
-},
-{
-"text":"(wx.Panel, BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent, **kwargs)\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n",
-"type":"code"
-}
-],
-"id":"5d77e54d14d8476d9ac9f81fc6f91ccf",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
 "text":"class HorizontalPanel(wx.Panel, BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent, **kwargs)\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
 "type":"code"
 }
 ],
 "id":"72985f3cbb2a4fbda2f876beec564231",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"36204f60f46444b6ae7da695dcd1a7c2",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
-"type":"variable"
-},
-{
-"text":", BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        ",
-"type":"code"
-},
-{
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, **kwargs)\n\n    def ",
-"type":"code"
-},
-{
-"id":"0e6dba8d1c3848478224db0b9019da60",
-"type":"variable"
-},
-{
-"text":"(self):\n        BoxSizerMixin.__init__(self, wx.HORIZONTAL)\n",
-"type":"code"
-}
-],
-"id":"8e538763ecab4e4e97faf48f34aadfaf",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"50f1b4552c0340eab599c8bc578334de",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
-"type":"variable"
-},
-{
-"text":", BoxSizerMixin):\n\n    def __init__(self, parent, **kwargs):\n        ",
-"type":"code"
-},
-{
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
-"type":"variable"
-},
-{
-"text":".__init__(self, parent, **kwargs)\n\n    def ",
-"type":"code"
-},
-{
-"id":"0e6dba8d1c3848478224db0b9019da60",
-"type":"variable"
-},
-{
-"text":"(self):\n        BoxSizerMixin.__init__(self, wx.VERTICAL)\n",
-"type":"code"
-}
-],
-"id":"7e0481c7387a407e884c643d54a272b0",
 "language":"",
 "type":"code"
 },
@@ -19809,6 +19635,7 @@
 },
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
+"038ab2c5a2e54a9eb8e136640f3694c6":"DividerGui",
 "0397a216ff674867aa422a0778df2f44":"transaction",
 "03cf450743e9447da0a9becadacd7dda":"active_editor",
 "061d6d65c74242e38e3203aa0a3cf22d":"GetCharacterAt",

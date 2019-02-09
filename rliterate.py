@@ -371,30 +371,11 @@ class GuiUpdatePanel(wx.Panel, GuiFrameworkBaseMixin):
 
     def _init_mixins(self):
         pass
-class VerticalPanel(wx.Panel, BoxSizerMixin):
-
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent, **kwargs)
-        BoxSizerMixin.__init__(self, wx.VERTICAL)
 class HorizontalPanel(wx.Panel, BoxSizerMixin):
 
     def __init__(self, parent, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         BoxSizerMixin.__init__(self, wx.HORIZONTAL)
-class HorizontalBasePanel(GuiUpdatePanel, BoxSizerMixin):
-
-    def __init__(self, parent, **kwargs):
-        GuiUpdatePanel.__init__(self, parent, **kwargs)
-
-    def _init_mixins(self):
-        BoxSizerMixin.__init__(self, wx.HORIZONTAL)
-class VerticalBasePanel(GuiUpdatePanel, BoxSizerMixin):
-
-    def __init__(self, parent, **kwargs):
-        GuiUpdatePanel.__init__(self, parent, **kwargs)
-
-    def _init_mixins(self):
-        BoxSizerMixin.__init__(self, wx.VERTICAL)
 class SizeWrapper(object):
 
     def __init__(self, orientation, sizer_item):
@@ -1690,6 +1671,71 @@ class TextViewGui(GuiFrameworkPanel):
     @property
     def prefix(self):
         return self.values["prefix"]
+class DividerGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.add_space(self.padding)
+        self._child1(parent, loopvar)
+        parent.add_space(self.padding)
+        handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['min_size'] = tuple([-1, self.height])
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        parent.add_space(self.left_space)
+        self._child3(parent, loopvar)
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['background'] = '#ff6400'
+        properties['visible'] = self.active
+        sizer["flag"] |= wx.EXPAND
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    @property
+    def padding(self):
+        return self.values["padding"]
+
+    @property
+    def height(self):
+        return self.values["height"]
+
+    @property
+    def left_space(self):
+        return self.values["left_space"]
+
+    @property
+    def active(self):
+        return self.values["active"]
 class TextProjectionEditorGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -5637,38 +5683,22 @@ class RliterateDataObject(wx.CustomDataObject):
 
     def get_json(self):
         return json.loads(self.GetData())
-class Divider(VerticalPanel, GuiFrameworkBaseMixin):
+class Divider(DividerGui):
 
-    def __init__(self, parent, padding=0, height=1, **kwargs):
-        VerticalPanel.__init__(self, parent, size=(-1, height+2*padding))
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
-        self.line = wx.Panel(self, size=(-1, height))
-        self.line.SetBackgroundColour((255, 100, 0))
-        self.line.Hide()
-        self.AppendStretch(1)
-        self.hsizer = self.AppendChild(
-            wx.BoxSizer(wx.HORIZONTAL),
-            flag=wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN
-        )
-        self.AppendStretch(1)
-        MouseEventHelper.bind(
-            [self, self.line],
-            right_click=lambda event:
-                SimpleContextMenu.ShowRecursive(self)
-        )
+    DEFAULTS = {
+        "padding": 0,
+        "height": 1,
+        "left_space": 0,
+        "active": False,
+    }
 
     def Show(self, left_space=0):
-        with flicker_free_drawing(self):
-            self.line.Show()
-            self.hsizer.Clear(False)
-            self.hsizer.Add((left_space, 1))
-            self.hsizer.Add(self.line, flag=wx.EXPAND, proportion=1)
-            self.Layout()
+        self.UpdateGui(left_space=left_space, active=True)
+        self.Layout()
 
     def Hide(self):
-        with flicker_free_drawing(self):
-            self.line.Hide()
-            self.Layout()
+        self.UpdateGui(active=False)
+        self.Layout()
 class MouseEventHelper(object):
 
     @classmethod
