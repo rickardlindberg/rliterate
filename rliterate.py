@@ -338,21 +338,6 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
         )
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
-class SizeWrapper(object):
-
-    def __init__(self, orientation, sizer_item):
-        self._orientation = orientation
-        self._sizer_item = sizer_item
-
-    def SetSize(self, size):
-        if self._orientation == wx.HORIZONTAL:
-            self._sizer_item.SetMinSize((size, 1))
-        else:
-            self._sizer_item.SetMinSize((1, size))
-
-    def WithSize(self, size):
-        self.SetSize(size)
-        return self
 class MainFramePanel(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -2437,20 +2422,6 @@ class TokenView(TextProjection):
             return (0, character.extra)
     def SetDefaultCursor(self):
         self.SetCursor(self._default_cursor)
-class MultilineTextCtrl(wx.richtext.RichTextCtrl):
-
-    MIN_HEIGHT = 50
-
-    def __init__(self, parent, value, size=wx.DefaultSize):
-        w, h = size
-        size = (w, max(h, self.MIN_HEIGHT))
-        wx.richtext.RichTextCtrl.__init__(
-            self,
-            parent,
-            style=wx.richtext.RE_MULTILINE|wx.BORDER_SIMPLE,
-            value=value,
-            size=size
-        )
 class SimpleContextMenu(wx.Menu):
 
     def __init__(self, name):
@@ -5720,76 +5691,6 @@ class Divider(DividerGui):
     def Hide(self):
         self.UpdateGui(active=False)
         self.Layout()
-class MouseEventHelper(object):
-
-    @classmethod
-    def bind(cls, windows, drag=None, click=None, right_click=None,
-             double_click=None, move=None):
-        for window in windows:
-            mouse_event_helper = cls(window)
-            if drag is not None:
-                mouse_event_helper.OnDrag = drag
-            if click is not None:
-                mouse_event_helper.OnClick = click
-            if right_click is not None:
-                mouse_event_helper.OnRightClick = right_click
-            if double_click is not None:
-                mouse_event_helper.OnDoubleClick = double_click
-            if move is not None:
-                mouse_event_helper.OnMove = move
-
-    def __init__(self, window):
-        self.down_pos = None
-        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
-        window.Bind(wx.EVT_MOTION, self._on_motion)
-        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)
-        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
-        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
-
-    def OnDrag(self):
-        pass
-
-    def OnClick(self):
-        pass
-
-    def OnRightClick(self, event):
-        pass
-
-    def OnDoubleClick(self, event):
-        pass
-
-    def OnMove(self, event):
-        pass
-
-    def _on_left_down(self, event):
-        self.down_pos = event.Position
-
-    def _on_motion(self, event):
-        if self.down_pos is None:
-            self.OnMove(event)
-        if self._should_drag(event.Position):
-            self.down_pos = None
-            self.OnDrag()
-
-    def _should_drag(self, pos):
-        if self.down_pos is not None:
-            diff = self.down_pos - pos
-            if abs(diff.x) > 2:
-                return True
-            if abs(diff.y) > 2:
-                return True
-        return False
-
-    def _on_left_up(self, event):
-        if self.down_pos is not None:
-            self.OnClick()
-        self.down_pos = None
-
-    def _on_left_dclick(self, event):
-        self.OnDoubleClick(event)
-
-    def _on_right_up(self, event):
-        self.OnRightClick(event)
 class Character(namedtuple("Character", "text style marker extra")):
 
     @classmethod
@@ -5856,10 +5757,6 @@ class Token(object):
             index=index,
             **self.extra
         )
-class SelectionableTextCtrl(wx.TextCtrl):
-
-    def SetSelection(self, start, end):
-        wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)
 class CodeExpander(object):
 
     def __init__(self, document):

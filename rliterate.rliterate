@@ -13286,29 +13286,6 @@
 "children":[
 {
 "children":[],
-"id":"68bd8a9e595b4c84b10d25865d1377ff",
-"paragraphs":[
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class MouseEventHelper(object):\n\n    @classmethod\n    def bind(cls, windows, drag=None, click=None, right_click=None,\n             double_click=None, move=None):\n        for window in windows:\n            mouse_event_helper = cls(window)\n            if drag is not None:\n                mouse_event_helper.OnDrag = drag\n            if click is not None:\n                mouse_event_helper.OnClick = click\n            if right_click is not None:\n                mouse_event_helper.OnRightClick = right_click\n            if double_click is not None:\n                mouse_event_helper.OnDoubleClick = double_click\n            if move is not None:\n                mouse_event_helper.OnMove = move\n\n    def __init__(self, window):\n        self.down_pos = None\n        window.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        window.Bind(wx.EVT_MOTION, self._on_motion)\n        window.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        window.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        window.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n\n    def OnDrag(self):\n        pass\n\n    def OnClick(self):\n        pass\n\n    def OnRightClick(self, event):\n        pass\n\n    def OnDoubleClick(self, event):\n        pass\n\n    def OnMove(self, event):\n        pass\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self.OnMove(event)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self.OnDrag()\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            self.OnClick()\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self.OnDoubleClick(event)\n\n    def _on_right_up(self, event):\n        self.OnRightClick(event)\n",
-"type":"code"
-}
-],
-"id":"b888370be9654c4bb270014d549139db",
-"type":"code"
-}
-],
-"title":"Mouse event helper"
-},
-{
-"children":[],
 "id":"3df948b8b1054006983a5e518344ee7c",
 "paragraphs":[
 {
@@ -15067,67 +15044,6 @@
 },
 {
 "children":[],
-"id":"44395045b3cc4dbbbf9c7b2bb20447ed",
-"paragraphs":[
-{
-"chunkpath":[
-"base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class MultilineTextCtrl(wx.richtext.RichTextCtrl):\n\n    MIN_HEIGHT = 50\n\n    def __init__(self, parent, value, size=wx.DefaultSize):\n        w, h = size\n        size = (w, max(h, self.MIN_HEIGHT))\n        wx.richtext.RichTextCtrl.__init__(\n            self,\n            parent,\n            style=wx.richtext.RE_MULTILINE|wx.BORDER_SIMPLE,\n            value=value,\n            size=size\n        )\n",
-"type":"code"
-}
-],
-"id":"178d81fd815d441080144e48eb3176c3",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"The minimum height is set to prevent the following error:",
-"type":"text"
-}
-],
-"id":"341dcda05dc442cea21d7dd6089318ad",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"Gtk-CRITICAL **: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkScrollbar",
-"type":"text"
-}
-],
-"id":"3576819cf1444641a6f721127c50e4aa",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"The regular multiline text control does not seem to support ",
-"type":"text"
-},
-{
-"text":"SetSelection",
-"type":"code"
-},
-{
-"text":" very well, so we use the rich text control instead.",
-"type":"text"
-}
-],
-"id":"f84e15a551d74aad88ddb54893097ed1",
-"type":"text"
-}
-],
-"title":"Multiline text control"
-},
-{
-"children":[],
 "id":"32b95f00956d4ea08e09d4a7d7fd4bb2",
 "paragraphs":[
 {
@@ -15167,43 +15083,6 @@
 }
 ],
 "title":"Flicker free drawing"
-},
-{
-"children":[],
-"id":"6926dd56ddad4bceb337da92d19644c1",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"wx.CallAfter",
-"type":"code"
-},
-{
-"text":" seems to be needed for the selection to actually be set. No idea why.",
-"type":"text"
-}
-],
-"id":"2f38ae9584e74c4ca6a18bcf9467dc76",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class SelectionableTextCtrl(wx.TextCtrl):\n\n    def SetSelection(self, start, end):\n        wx.CallAfter(wx.TextCtrl.SetSelection, self, start, end)\n",
-"type":"code"
-}
-],
-"id":"117f39c2d18b4fccb3c959899b646103",
-"type":"code"
-}
-],
-"title":"Selectionable text control"
 },
 {
 "children":[],
@@ -16750,30 +16629,6 @@
 "id":"4a5f39dbce724c2ba0f7f2ca4f298659",
 "paragraphs":[],
 "title":"GUI language framework"
-},
-{
-"children":[],
-"id":"d4d8a1cf36f74de6b7ead5b43e5660b8",
-"paragraphs":[
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class SizeWrapper(object):\n\n    def __init__(self, orientation, sizer_item):\n        self._orientation = orientation\n        self._sizer_item = sizer_item\n\n    def SetSize(self, size):\n        if self._orientation == wx.HORIZONTAL:\n            self._sizer_item.SetMinSize((size, 1))\n        else:\n            self._sizer_item.SetMinSize((1, size))\n\n    def WithSize(self, size):\n        self.SetSize(size)\n        return self\n",
-"type":"code"
-}
-],
-"id":"525d67e5706f4c74b484ea4f1355d9ec",
-"language":"",
-"type":"code"
-}
-],
-"title":"Sizer utilities"
 },
 {
 "children":[],
