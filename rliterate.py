@@ -107,6 +107,8 @@ class GuiFrameworkBaseMixin(object):
             self.Bind(wx.EVT_CHAR, lambda event: self._call_handler("char", event))
         elif event == "paint":
             self.Bind(wx.EVT_PAINT, lambda event: self._call_handler("paint", event))
+        elif event == "timer":
+            self.Bind(wx.EVT_TIMER, lambda event: self._call_handler("timer", event))
 
     @property
     def has_changes(self):
@@ -362,15 +364,6 @@ class BoxSizerMixin(object):
 
     def RemoveChildren(self):
         self.Sizer.Clear(True)
-class GuiUpdatePanel(wx.Panel, GuiFrameworkBaseMixin):
-
-    def __init__(self, parent, **kwargs):
-        wx.Panel.__init__(self, parent)
-        self._init_mixins()
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
-
-    def _init_mixins(self):
-        pass
 class HorizontalPanel(wx.Panel, BoxSizerMixin):
 
     def __init__(self, parent, **kwargs):
@@ -1736,6 +1729,47 @@ class DividerGui(GuiFrameworkPanel):
     @property
     def active(self):
         return self.values["active"]
+class TextProjectionGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        handlers.append(('paint', lambda event: self._on_paint(event)))
+        handlers.append(('timer', lambda event: self._on_timer(event)))
+        if first:
+            parent.listen(handlers)
+
+    @property
+    def characters(self):
+        return self.values["characters"]
+
+    @property
+    def line_height(self):
+        return self.values["line_height"]
+
+    @property
+    def max_width(self):
+        return self.values["max_width"]
+
+    @property
+    def break_at_word(self):
+        return self.values["break_at_word"]
+
+    @property
+    def font(self):
+        return self.values["font"]
 class TextProjectionEditorGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -1963,7 +1997,7 @@ class DropPointDropTarget(wx.DropTarget):
         if self.last_drop_point is not None:
             self.last_drop_point.Hide()
             self.last_drop_point = None
-class TextProjection(GuiUpdatePanel):
+class TextProjection(TextProjectionGui):
 
     DEFAULTS = {
         "characters": [],
@@ -1974,12 +2008,12 @@ class TextProjection(GuiUpdatePanel):
     }
 
     def _create_gui(self):
-        self.Bind(wx.EVT_PAINT, self._on_paint)
-        self.Bind(wx.EVT_TIMER, self._on_timer)
+        TextProjectionGui._create_gui(self)
         self.timer = wx.Timer(self)
         self._show_beams = True
 
     def _update_gui(self):
+        TextProjectionGui._update_gui(self)
         if self.has_changes:
             self._show_beams = True
             self._layout()
@@ -2135,7 +2169,7 @@ class TextProjection(GuiUpdatePanel):
     def GetFont(self):
         font = self.values["font"]
         if font is None:
-            return GuiUpdatePanel.GetFont(self)
+            return TextProjectionGui.GetFont(self)
         else:
             return font
 
@@ -2351,19 +2385,19 @@ class TokenView(TextProjection):
             )
 
     def _generate_characters(self, project, tokens):
-        self.characters = []
+        characters = []
         for token in tokens:
             style = project.get_style(token.token_type)
             if token.extra.get("highlight"):
                 style = style.highlight()
             for subtoken in token.split():
                 for char in subtoken.text:
-                    self.characters.append(Character.create(
+                    characters.append(Character.create(
                         char,
                         style,
                         extra=subtoken
                     ))
-        return self.characters
+        return characters
 
     def GetToken(self, position):
         character = self.GetCharacterAt(position)

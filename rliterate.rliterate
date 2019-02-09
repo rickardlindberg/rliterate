@@ -13398,6 +13398,35 @@
 },
 {
 "chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"e7cecaa802994199bddc0af6a1ce5209",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #characters\n    #line_height\n    #max_width\n    #break_at_word\n    #font\n    @paint = self._on_paint(event)\n    @timer = self._on_timer(event)\n}\n",
+"type":"code"
+}
+],
+"id":"e32957f37ea14e3d8879090bf848b2c4",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
 "classes"
 ],
 "filepath":[
@@ -13483,7 +13512,7 @@
 "type":"code"
 },
 {
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"id":"e7cecaa802994199bddc0af6a1ce5209",
 "type":"variable"
 },
 {
@@ -13561,7 +13590,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    self.Bind(wx.EVT_PAINT, self._on_paint)\n    self.Bind(wx.EVT_TIMER, self._on_timer)\n    self.timer = wx.Timer(self)\n    self.",
+"text":"(self):\n    ",
+"type":"code"
+},
+{
+"id":"e7cecaa802994199bddc0af6a1ce5209",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"887acc7e530b4d98933d11e223d58c42",
+"type":"variable"
+},
+{
+"text":"(self)\n    self.timer = wx.Timer(self)\n    self.",
 "type":"code"
 },
 {
@@ -13577,7 +13622,23 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    if self.",
+"text":"(self):\n    ",
+"type":"code"
+},
+{
+"id":"e7cecaa802994199bddc0af6a1ce5209",
+"type":"variable"
+},
+{
+"text":".",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"(self)\n    if self.",
 "type":"code"
 },
 {
@@ -14269,7 +14330,7 @@
 "type":"code"
 },
 {
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
+"id":"e7cecaa802994199bddc0af6a1ce5209",
 "type":"variable"
 },
 {
@@ -14812,7 +14873,7 @@
 "type":"variable"
 },
 {
-"text":"\n            )\n\n    def _generate_characters(self, project, tokens):\n        self.characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    self.characters.append(",
+"text":"\n            )\n\n    def _generate_characters(self, project, tokens):\n        characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    characters.append(",
 "type":"code"
 },
 {
@@ -14828,7 +14889,7 @@
 "type":"variable"
 },
 {
-"text":"(\n                        char,\n                        style,\n                        extra=subtoken\n                    ))\n        return self.characters\n\n",
+"text":"(\n                        char,\n                        style,\n                        extra=subtoken\n                    ))\n        return characters\n\n",
 "type":"code"
 },
 {
@@ -16086,7 +16147,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n\n    @property\n    def ",
+"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n        elif event == \"timer\":\n            self.Bind(wx.EVT_TIMER, lambda event: self._call_handler(\"timer\", event))\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -16889,63 +16950,6 @@
 }
 ],
 "id":"e607df295e134d2fbbd03923b5f8862f",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"base base base classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ",
-"type":"code"
-},
-{
-"id":"5bf37424f5634fcaaf91e43d607a41ca",
-"type":"variable"
-},
-{
-"text":"(wx.Panel, ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.Panel.__init__(self, parent)\n        self.",
-"type":"code"
-},
-{
-"id":"0e6dba8d1c3848478224db0b9019da60",
-"type":"variable"
-},
-{
-"text":"()\n        ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":".__init__(self, **kwargs)\n\n    def ",
-"type":"code"
-},
-{
-"id":"0e6dba8d1c3848478224db0b9019da60",
-"type":"variable"
-},
-{
-"text":"(self):\n        pass\n",
-"type":"code"
-}
-],
-"id":"89f9b24e3116491386dcd43fa78fbb07",
 "language":"",
 "type":"code"
 },
@@ -19889,6 +19893,7 @@
 "e5e85527ddd849b293456d25540e6163":"8cc78ba335d744e7aaefde463d19c0b2Gui",
 "e66f30a35aa94847ac3321f6aa6e3786":"PlainTextKeyHandler",
 "e6cb5d6d0639494ebace6dcdef664d49":"multi_update",
+"e7cecaa802994199bddc0af6a1ce5209":"TextProjectionGui",
 "e7f258e2b4ca4680b295e1daf618e0b4":"GlobalSettings",
 "eabbfafd8cdd492699b8e7ce47826142":"TextProjectionEditorGui",
 "eabcfbe8e6c349d497353e55ad0b3685":"Selection",
