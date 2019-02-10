@@ -336,7 +336,7 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
                 {
                     "add": wx.ART_ADD_BOOKMARK,
                     "save": wx.ART_FILE_SAVE,
-                }[kwargs["icon"]],
+                }.get(kwargs["icon"], wx.ART_QUESTION),
                 wx.ART_BUTTON,
                 (16, 16)
             ),
@@ -384,7 +384,7 @@ class MainFramePanel(GuiFrameworkPanel):
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
         sizer["flag"] |= wx.EXPAND
-        widget = parent.add(StatusBar, properties, handlers, sizer)
+        widget = parent.add(Toolbar, properties, handlers, sizer)
         parent = widget
         parent.reset()
 
@@ -4537,6 +4537,196 @@ class Tool(object):
 
     def get_state(self):
         return self._is_enabled()
+class ToolbarGui(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        parent.add_space(self.BORDER)
+        self._child1(parent, loopvar)
+        self._child2(parent, loopvar)
+        self._child3(parent, loopvar)
+        self._child4(parent, loopvar)
+        self._child5(parent, loopvar)
+        self._child6(parent, loopvar)
+        self._child7(parent, loopvar)
+        self._child8(parent, loopvar)
+        self._child10(parent, loopvar)
+        self._child11(parent, loopvar)
+        parent.add_space(10)
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'back'
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child2(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'forward'
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child3(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(VBorder, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child4(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'undo'
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'reod'
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child6(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(VBorder, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child7(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'quit'
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child8(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        sizer["proportion"] = 1
+        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+    def _child10(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['icon'] = 'save'
+        properties['tooltip'] = 'Force save'
+        handlers.append(('button', lambda event: self.project.save()))
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(IconButton, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child11(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['characters'] = self._get_save_characters()
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
+        widget = parent.add(TextProjection, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+class Toolbar(ToolbarGui):
+
+    BORDER = 4
+
+    def _get_save_characters(self):
+        status = self.project.save_status
+        return [
+            Character.create(
+                x,
+                self.project.get_style(
+                    TokenType.RLiterate.Working
+                    if status["working"]
+                    else
+                    TokenType.RLiterate.Success
+                )
+            )
+            for x in status["text"]
+        ]
 class TableOfContents(TableOfContentsGui):
 
     def _create_gui(self):
@@ -5697,92 +5887,6 @@ class FragmentKeyHandler(PlainTextKeyHandler):
         with self.project.notify():
             setattr(self.fragment, self.attr, text)
             self.project.selection = self.selection.create(index)
-class StatusBarGui(GuiFrameworkPanel):
-
-    def _get_derived(self):
-        return {
-        }
-
-    def _create_gui(self):
-        self._root_widget = GuiFrameworkWidgetInfo(self)
-        self._child_root(self._root_widget, first=True)
-
-    def _update_gui(self):
-        self._child_root(self._root_widget)
-
-    def _child_root(self, parent, loopvar=None, first=False):
-        parent.reset()
-        handlers = []
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._child1(parent, loopvar)
-        self._child3(parent, loopvar)
-        if first:
-            parent.listen(handlers)
-
-    def _child1(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        sizer["proportion"] = 1
-        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
-        parent = widget
-        parent.reset()
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-
-    def _child3(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        sizer["border"] = 3
-        sizer["flag"] |= wx.ALL
-        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
-        parent = widget
-        parent.reset()
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._child5(parent, loopvar)
-        self._child6(parent, loopvar)
-        parent.add_space(10)
-
-    def _child5(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['icon'] = 'save'
-        handlers.append(('button', lambda event: self.project.save()))
-        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
-        widget = parent.add(IconButton, properties, handlers, sizer)
-        parent = widget
-        parent.reset()
-
-    def _child6(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['characters'] = self._get_save_characters()
-        sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
-        widget = parent.add(TextProjection, properties, handlers, sizer)
-        parent = widget
-        parent.reset()
-
-    @property
-    def project(self):
-        return self.values["project"]
-class StatusBar(StatusBarGui):
-
-    def _get_save_characters(self):
-        status = self.project.save_status
-        return [
-            Character.create(
-                x,
-                self.project.get_style(
-                    TokenType.RLiterate.Working
-                    if status["working"]
-                    else
-                    TokenType.RLiterate.Success
-                )
-            )
-            for x in status["text"]
-        ]
 class HBorder(GuiFrameworkPanel):
 
     def _get_derived(self):
