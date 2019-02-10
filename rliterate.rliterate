@@ -6826,7 +6826,7 @@
 "type":"variable"
 },
 {
-"text":" = JsonSettings.property(\n        \"theme.workspace.background\", \"#cccccc\"\n    )\n",
+"text":" = JsonSettings.property(\n        \"theme.workspace.background\", \"#cccccc\"\n    )\n    border_color = JsonSettings.property(\n        \"theme.border_color\", \"#aaaaaa\"\n    )\n",
 "type":"code"
 }
 ],
@@ -7593,7 +7593,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    panel(\n        focus     = True\n    ) %hbox {}\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n    ",
+"text":" %vbox {\n    #project\n    panel(\n        focus     = True\n    ) %hbox {}\n    ",
 "type":"code"
 },
 {
@@ -7601,7 +7601,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        project   = self.project\n        %expand\n    )\n}\n",
+"text":"(\n        project   = self.project\n        %expand\n    )\n    HBorder(project=self.project %expand)\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        VBorder(project=self.project %expand)\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -8130,7 +8130,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.",
+"text":" %vbox {\n    #project\n    #selection\n    #min_size   = tuple([250 -1])\n    #background = \"#ffffff\"\n    Button(\n        visible = self._has_hoisted_page()\n        label   = \"unhoist\"\n        %expand\n        %border[3,ALL]\n        @button = setattr(self.project \"hoisted_page\" None)\n    )\n    vscroll[page_container](%expand %proportion[1]) %vbox {\n        for (self._get_rows()) {\n            TableOfContentsRow(\n                project     = self.project\n                page        = loopvar.page\n                selection   = self.selection.",
 "type":"code"
 },
 {
@@ -13061,6 +13061,71 @@
 }
 ],
 "title":"Status bar"
+},
+{
+"children":[],
+"id":"f8235a05de1f4ec3a7d89a139a42f0cc",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"0f9af6459be74362be6b1858ddb83404",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #background = self.project.theme.border_color\n    #min_size   = tuple([-1 1])\n}\n",
+"type":"code"
+}
+],
+"id":"5c8dfef1861544b8b2443eeb16dd6ac0",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"panel ",
+"type":"code"
+},
+{
+"id":"d0e5af8ddf3c48e883b10fe50c386d04",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #background = self.project.theme.border_color\n    #min_size   = tuple([1 -1])\n}\n",
+"type":"code"
+}
+],
+"id":"36e0c9457451452c83667ccc76736608",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+}
+],
+"title":"Borders"
 },
 {
 "children":[],
@@ -19117,6 +19182,7 @@
 "0b9a1815cd8e4d9fa585ab8bd8479bb5":"TocRow",
 "0c81b6ab4f7a4542ad9a27332f932a69":"TableOfContentsGui",
 "0e6dba8d1c3848478224db0b9019da60":"_init_mixins",
+"0f9af6459be74362be6b1858ddb83404":"HBorder",
 "10d0077dd6454d79a892bbcbebe5d438":"ParagraphBase",
 "12498e6198354c2dad6246bc385b954d":"TokenView",
 "12c0e05b4e4d4219b9685b4d44bb7b25":"get_child_index",
@@ -19325,6 +19391,7 @@
 "ca88dc4d189c4ce1b5237450bd76bad6":"target_index",
 "ccd9655841fb4311bad581f979730e47":"needs_saving",
 "ccfadc7f9fb14a8e8fd927e994ecf8e1":"TextProjectionEditorGui",
+"d0e5af8ddf3c48e883b10fe50c386d04":"VBorder",
 "d102ad411943476d9d432a286f9cbe55":"highlight",
 "d126e525b923499f9c0176206b3e886c":"ReRender",
 "d1585d1e348b4c7cb99a21220ce16ce6":"paragraph_space",

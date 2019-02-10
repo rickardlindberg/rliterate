@@ -363,7 +363,8 @@ class MainFramePanel(GuiFrameworkPanel):
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         self._child1(parent, loopvar)
         self._child3(parent, loopvar)
-        self._child7(parent, loopvar)
+        self._child4(parent, loopvar)
+        self._child5(parent, loopvar)
         if first:
             parent.listen(handlers)
 
@@ -381,16 +382,37 @@ class MainFramePanel(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(StatusBar, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child4(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(HBorder, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child5(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
         sizer["flag"] |= wx.EXPAND
         sizer["proportion"] = 1
         widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
         parent = widget
         parent.reset()
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._child5(parent, loopvar)
-        self._child6(parent, loopvar)
+        self._child7(parent, loopvar)
+        self._child8(parent, loopvar)
+        self._child9(parent, loopvar)
 
-    def _child5(self, parent, loopvar):
+    def _child7(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -401,7 +423,17 @@ class MainFramePanel(GuiFrameworkPanel):
         parent = widget
         parent.reset()
 
-    def _child6(self, parent, loopvar):
+    def _child8(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['project'] = self.project
+        sizer["flag"] |= wx.EXPAND
+        widget = parent.add(VBorder, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child9(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -410,16 +442,6 @@ class MainFramePanel(GuiFrameworkPanel):
         sizer["flag"] |= wx.EXPAND
         sizer["proportion"] = 1
         widget = parent.add(Workspace, properties, handlers, sizer)
-        parent = widget
-        parent.reset()
-
-    def _child7(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['project'] = self.project
-        sizer["flag"] |= wx.EXPAND
-        widget = parent.add(StatusBar, properties, handlers, sizer)
         parent = widget
         parent.reset()
 
@@ -457,6 +479,8 @@ class TableOfContentsGui(GuiFrameworkPanel):
         properties['visible'] = self._has_hoisted_page()
         properties['label'] = 'unhoist'
         sizer["flag"] |= wx.EXPAND
+        sizer["border"] = 3
+        sizer["flag"] |= wx.ALL
         handlers.append(('button', lambda event: setattr(self.project, 'hoisted_page', None)))
         widget = parent.add(Button, properties, handlers, sizer)
         parent = widget
@@ -4196,6 +4220,9 @@ class GlobalSettings(JsonSettings):
     workspace_background = JsonSettings.property(
         "theme.workspace.background", "#cccccc"
     )
+    border_color = JsonSettings.property(
+        "theme.border_color", "#aaaaaa"
+    )
 class Layout(JsonSettings):
 
     def __init__(self, *args, **kwargs):
@@ -5756,6 +5783,56 @@ class StatusBar(StatusBarGui):
             )
             for x in status["text"]
         ]
+class HBorder(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+            'background': self.project.theme.border_color,
+            'min_size': tuple([-1, 1]),
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        if first:
+            parent.listen(handlers)
+
+    @property
+    def project(self):
+        return self.values["project"]
+class VBorder(GuiFrameworkPanel):
+
+    def _get_derived(self):
+        return {
+            'background': self.project.theme.border_color,
+            'min_size': tuple([1, -1]),
+        }
+
+    def _create_gui(self):
+        self._root_widget = GuiFrameworkWidgetInfo(self)
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        if first:
+            parent.listen(handlers)
+
+    @property
+    def project(self):
+        return self.values["project"]
 class SettingsDialog(wx.Dialog):
 
     def __init__(self, parent, project):
