@@ -345,7 +345,7 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
                     "save": wx.ART_FILE_SAVE,
                 }.get(kwargs["icon"], wx.ART_QUESTION),
                 wx.ART_BUTTON,
-                (16, 16)
+                (24, 24)
             ),
             style=wx.NO_BORDER
         )
@@ -4599,6 +4599,7 @@ class ToolbarGui(GuiFrameworkPanel):
         handlers.append(('button', lambda event: self.project.save()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
+        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(IconButton, properties, handlers, sizer)
