@@ -83,10 +83,10 @@ class GuiFrameworkBaseMixin(object):
 
     DEFAULTS = {}
 
-    def __init__(self, **kwargs):
+    def __init__(self, values={}):
         self.values = {}
         self.values.update(self.DEFAULTS)
-        self.values.update(kwargs)
+        self.values.update(values)
         self.values.update(self._get_derived())
         self.changed = None
         self._handlers = {}
@@ -116,9 +116,9 @@ class GuiFrameworkBaseMixin(object):
     def has_changes(self):
         return self.changed is None or len(self.changed) > 0
 
-    def UpdateGui(self, **kwargs):
+    def UpdateGui(self, values={}):
         self.changed = []
-        self._update(kwargs)
+        self._update(values)
         self._update(self._get_derived())
         self._update_gui()
         self._update_builtin()
@@ -257,14 +257,14 @@ class GuiFrameworkWidgetInfo(object):
 
     def add(self, widget_cls, properties, handlers, sizer):
         if self.child_index >= len(self.children) or (self.inside_loop and type(self.children[self.child_index].widget) != widget_cls):
-            widget = widget_cls(self.widget, **properties)
+            widget = widget_cls(self.widget, properties)
             self.sizer.Insert(self.sizer_index, widget, **sizer)
             widget_info = GuiFrameworkWidgetInfo(widget)
             widget_info.listen(handlers)
             self.children.insert(self.child_index, widget_info)
         else:
             widget_info = self.children[self.child_index]
-            widget_info.widget.UpdateGui(**properties)
+            widget_info.widget.UpdateGui(properties)
         self.child_index += 1
         self.sizer_index += 1
         return widget_info
@@ -289,9 +289,9 @@ class GuiFrameworkWidgetInfo(object):
             self.widget.listen(*event_handler)
 class GuiFrameworkFrame(wx.Frame, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, parent, values):
         wx.Frame.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
 
     def _update_builtin(self):
         GuiFrameworkBaseMixin._update_builtin(self)
@@ -326,40 +326,40 @@ class GuiFrameworkFrame(wx.Frame, GuiFrameworkBaseMixin):
         self.SetAcceleratorTable(wx.AcceleratorTable(entries))
 class GuiFrameworkPanel(wx.Panel, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         wx.Panel.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
 class GuiFrameworkScroll(CompactScrolledWindow, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         CompactScrolledWindow.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
 class GuiFrameworkVScroll(CompactScrolledWindow, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         CompactScrolledWindow.__init__(self, parent, wx.VERTICAL)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
 class GuiFrameworkHScroll(CompactScrolledWindow, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         CompactScrolledWindow.__init__(self, parent, wx.HORIZONTAL)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
 class Button(wx.Button, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         wx.Button.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
 class Label(wx.StaticText, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         wx.StaticText.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
 class Bitmap(wx.StaticBitmap, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         wx.StaticBitmap.__init__(self, parent)
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
 
     def _update_builtin(self):
         GuiFrameworkBaseMixin._update_builtin(self)
@@ -367,7 +367,7 @@ class Bitmap(wx.StaticBitmap, GuiFrameworkBaseMixin):
             self.SetBitmap(self.values["bitmap"])
 class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, values):
         wx.BitmapButton.__init__(
             self,
             parent,
@@ -380,13 +380,13 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
                     "redo": wx.ART_REDO,
                     "quit": wx.ART_QUIT,
                     "save": wx.ART_FILE_SAVE,
-                }.get(kwargs["icon"], wx.ART_QUESTION),
+                }.get(values.get("icon"), wx.ART_QUESTION),
                 wx.ART_BUTTON,
                 (24, 24)
             ),
             style=wx.NO_BORDER
         )
-        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+        GuiFrameworkBaseMixin.__init__(self, values)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
 class MainFrameGui(GuiFrameworkFrame):
 
@@ -397,7 +397,7 @@ class MainFrameGui(GuiFrameworkFrame):
         }
 
     def _create_gui(self):
-        self._root_panel = GuiFrameworkPanel(self)
+        self._root_panel = GuiFrameworkPanel(self, {})
         self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.Sizer.Add(self._root_panel, flag=wx.EXPAND, proportion=1)
         self._root_widget = GuiFrameworkWidgetInfo(self._root_panel)
@@ -2466,21 +2466,23 @@ class PlainTextKeyHandler(NavigationKeyHandler):
             NavigationKeyHandler.handle_key(self, event)
 class TokenView(TextProjection):
 
-    def __init__(self, parent, project, tokens, **kwargs):
+    def __init__(self, parent, values):
         TextProjection.__init__(
             self,
             parent,
-            characters=self._generate_characters(project, tokens),
-            line_height=kwargs.get("line_height", 1),
-            max_width=kwargs.get("max_width", 100),
-            break_at_word=kwargs.get("skip_extra_space", False),
-            font=kwargs.get("font")
+            {
+                "characters": self._generate_characters(values["project"], values["tokens"]),
+                "line_height": values.get("line_height", 1),
+                "max_width": values.get("max_width", 100),
+                "break_at_word": values.get("skip_extra_space", False),
+                "font": values.get("font"),
+            }
         )
         self.last_tokens = []
 
-    def UpdateGui(self, **kwargs):
-        kwargs["characters"] = self._generate_characters(kwargs["project"], kwargs["tokens"])
-        TextProjection.UpdateGui(self, **kwargs)
+    def UpdateGui(self, values):
+        values["characters"] = self._generate_characters(values["project"], values["tokens"])
+        TextProjection.UpdateGui(self, values)
 
     def _generate_characters(self, project, tokens):
         characters = []
@@ -4733,9 +4735,9 @@ class TableOfContentsRow(TableOfContentsRowGui):
         return self.indentation*self.INDENTATION_SIZE
     def _set_cursor(self, event):
         if event.GetModifiers() == wx.MOD_CONTROL:
-            self.text.UpdateGui(cursor="beam")
+            self.text.UpdateGui({"cursor": "beam"})
         else:
-            self.text.UpdateGui(cursor=None)
+            self.text.UpdateGui({"cursor": None})
     def _on_click_old(self, event):
         self.project.open_pages([self.page.id], column_index=0)
     def _on_right_click_old(self, event):
@@ -4920,9 +4922,9 @@ class Column(ColumnGui):
             TokenType.RLiterate.Link,
             TokenType.RLiterate.Reference,
         ]:
-            event.widget.UpdateGui(cursor="hand")
+            event.widget.UpdateGui({"cursor": "hand"})
         else:
-            event.widget.UpdateGui(cursor=None)
+            event.widget.UpdateGui({"cursor": None})
 
     def _on_token_click(self, event):
         if event.token.token_type == TokenType.RLiterate.Reference:
@@ -5876,11 +5878,11 @@ class Divider(DividerGui):
     }
 
     def Show(self, left_space=0):
-        self.UpdateGui(left_space=left_space, active=True)
+        self.UpdateGui({"left_space": left_space, "active": True})
         self.Layout()
 
     def Hide(self):
-        self.UpdateGui(active=False)
+        self.UpdateGui({"active": False})
         self.Layout()
 class Character(namedtuple("Character", "text style marker extra")):
 
@@ -6519,8 +6521,8 @@ if __name__ == "__main__":
     else:
         app = wx.App()
         project = Project(sys.argv[1])
-        main_frame = MainFrame(project=project)
+        main_frame = MainFrame(None, {"project": project})
         main_frame.Show()
-        project.listen(lambda: main_frame.UpdateGui(project=project))
+        project.listen(lambda: main_frame.UpdateGui({"project": project}))
         app.MainLoop()
         project.wait_for_save()
