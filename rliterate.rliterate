@@ -6406,7 +6406,7 @@
 "type":"variable"
 },
 {
-"text":"(*args, **kwargs)\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
+"text":"(*args, **kwargs)\n\ndef can_undo(self):\n    return self.get_undo_operation() is not None\n\ndef undo(self):\n    self.get_undo_operation()[1]()\n\ndef get_undo_operation(self, *args, **kwargs):\n    return self.document.get_undo_operation(*args, **kwargs)\n\ndef can_redo(self):\n    return self.get_redo_operation() is not None\n\ndef redo(self):\n    self.get_redo_operation()[1]()\n\ndef get_redo_operation(self, *args, **kwargs):\n    return self.document.get_redo_operation(*args, **kwargs)\n\ndef rename_path(self, *args, **kwargs):\n    return self.document.rename_path(*args, **kwargs)\n\ndef lookup_variable(self, *args, **kwargs):\n    return self.document.lookup_variable(*args, **kwargs)\n\ndef rename_variable(self, *args, **kwargs):\n    return self.document.rename_variable(*args, **kwargs)\n",
 "type":"code"
 }
 ],
@@ -7593,7 +7593,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    panel(\n        focus     = True\n    ) %hbox {}\n    ",
+"text":" %vbox {\n    #project\n    #main_frame\n    panel(\n        focus     = True\n    ) %hbox {}\n    ",
 "type":"code"
 },
 {
@@ -7601,7 +7601,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        project   = self.project\n        %expand\n    )\n    HBorder(project=self.project %expand)\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        VBorder(project=self.project %expand)\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n}\n",
+"text":"(\n        project    = self.project\n        main_frame = self.main_frame\n        %expand\n    )\n    HBorder(project=self.project %expand)\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        VBorder(project=self.project %expand)\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -7630,7 +7630,7 @@
 "type":"variable"
 },
 {
-"text":"(wx.Frame):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        self.project = project\n        self.main_panel = MainFramePanel(self, project=self.project)\n        self.toolbar = ToolBar(self.main_panel, self.project)\n        self.SetToolBar(self.toolbar)\n        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)\n        self.project.listen(self.",
+"text":"(wx.Frame):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        self.project = project\n        self.main_panel = MainFramePanel(self, project=self.project, main_frame=self)\n        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)\n        self.project.listen(self.",
 "type":"code"
 },
 {
@@ -7638,7 +7638,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.get_undo_operation() is not None,\n                \"action_fn\": lambda: self.project.get_undo_operation()[1](),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n",
+"text":")\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n",
 "type":"code"
 },
 {
@@ -7690,7 +7690,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        self.toolbar.UpdateGui()\n        self.main_panel.",
+"text":"(self):\n        self.main_panel.",
 "type":"code"
 },
 {
@@ -7698,7 +7698,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            project=self.project,\n        )\n        self.Layout()\n        self.Update()\n\n",
+"text":"(\n            project=self.project,\n            main_frame=self,\n        )\n        self.Layout()\n        self.Update()\n\n",
 "type":"code"
 }
 ],
@@ -7727,8 +7727,6 @@
 ],
 "title":"Main frame"
 },
-{
-"children":[
 {
 "children":[],
 "id":"75b0b360e86f4160bf1187d9cdb8787e",
@@ -7934,186 +7932,6 @@
 }
 ],
 "title":"Quit"
-}
-],
-"id":"b311a34073564bc99fc72d44b3c74369",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"The ",
-"type":"text"
-},
-{
-"text":"ToolBar",
-"type":"code"
-},
-{
-"text":" has two responsiblities:",
-"type":"text"
-}
-],
-"id":"1466531b26504cd19d768312fce9a4d4",
-"type":"text"
-},
-{
-"child_type":"ordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Populate itself with buttons appropriate to the project state.",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Maintain the corresponding accelerator table (used for shortcuts).",
-"type":"text"
-}
-]
-}
-],
-"id":"957dd20eec664bd3994a2bf828ffde8e",
-"type":"list"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ToolBar(wx.ToolBar):\n\n    def __init__(self, parent, project, *args, **kwargs):\n        wx.ToolBar.__init__(self, parent, *args, **kwargs)\n        self._init_project(project)\n        self._init_tools()\n\n    def _init_project(self, project):\n        self.project = project\n\n    def _init_tools(self):\n        main_frame = self.GetTopLevelParent()\n        self._tool_groups = ToolGroups(main_frame)\n",
-"type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"ToolBar",
-"init tools"
-],
-"prefix":"        ",
-"type":"chunk"
-},
-{
-"text":"        self.UpdateGui()\n\n    @rltime(\"update toolbar\")\n    def UpdateGui(self):\n        self._tool_groups.populate(self)\n",
-"type":"code"
-}
-],
-"id":"c5e0fb1941dc421592abf8ccc5588916",
-"language":"",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"ToolGroups",
-"type":"code"
-},
-{
-"text":" maintains a list of groups of tools that can be populated into a tool bar:",
-"type":"text"
-}
-],
-"id":"abc5280bcfe84f6fa24db9fb31e1ff6d",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n        self._last_state = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def populate(self, toolbar):\n        new_state = self.get_state()\n        if new_state != self._last_state:\n            self._last_state = new_state\n            items = []\n            toolbar.ClearTools()\n            first = True\n            for group in self._tool_groups:\n                if group.is_active():\n                    if not first:\n                        toolbar.AddSeparator()\n                    first = False\n                    group.populate(toolbar)\n                    items.extend(group.accelerator_entries())\n            toolbar.Realize()\n            #self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n\n    def get_state(self):\n        return [group.get_state() for group in self._tool_groups]\n",
-"type":"code"
-}
-],
-"id":"89f873d06e9042dd89e3e559503aa733",
-"language":"",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"ToolGroup",
-"type":"code"
-},
-{
-"text":" maintains a list of tools that can be shown or not in the toolbar depending on the ",
-"type":"text"
-},
-{
-"text":"active_fn",
-"type":"code"
-},
-{
-"text":":",
-"type":"text"
-}
-],
-"id":"963e39d03d8645bab8dd840fb94bc2da",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class ToolGroup(object):\n\n    def __init__(self, frame, active_fn=None):\n        self._tools = []\n        self._frame = frame\n        self._active_fn = active_fn\n\n    def add_tool(self, *args, **kwargs):\n        self._tools.append(Tool(self._frame, *args, **kwargs))\n\n    def is_active(self):\n        if self._active_fn is None:\n            return True\n        else:\n            return self._active_fn()\n\n    def accelerator_entries(self):\n        entries = []\n        for tool in self._tools:\n            entries.extend(tool.accelerator_entries())\n        return entries\n\n    def populate(self, toolbar):\n        for tool in self._tools:\n            tool.populate(toolbar)\n\n    def get_state(self):\n        return (self.is_active(), [tool.get_state() for tool in self._tools])\n",
-"type":"code"
-}
-],
-"id":"4c0f55d407844142a68600b960dac1aa",
-"type":"code"
-},
-{
-"fragments":[
-{
-"text":"Tool",
-"type":"code"
-},
-{
-"text":" has information about a single tool and knows how to populate itselt in a tool bar:",
-"type":"text"
-}
-],
-"id":"41db7d30335d404aa1b2a3a324d0cfa4",
-"type":"text"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"class Tool(object):\n\n    def __init__(self, frame, art, action_fn, short_help=\"\", enabled_fn=None, shortcuts=[]):\n        self.id = wx.NewId()\n        frame.Bind(wx.EVT_MENU, self._on_action, id=self.id)\n        self.art = art\n        self.short_help = short_help\n        self.action_fn = action_fn\n        self.enabled_fn = enabled_fn\n        self.shortcuts = shortcuts\n\n    def _on_action(self, event):\n        if self.action_fn is not None:\n            self.action_fn()\n\n    def _is_enabled(self):\n        if self.enabled_fn is None:\n            return True\n        else:\n            return self.enabled_fn()\n\n    def accelerator_entries(self):\n        if self._is_enabled():\n            return [wx.AcceleratorEntry(a, b, self.id) for (a, b) in self.shortcuts]\n        else:\n            return []\n\n    def populate(self, toolbar):\n        toolbar.AddSimpleTool(\n            self.id,\n            wx.ArtProvider.GetBitmap(\n                self.art,\n                wx.ART_BUTTON,\n                (24, 24)\n            )\n        )\n        toolbar.EnableTool(self.id, self._is_enabled())\n        if callable(self.short_help):\n            text = self.short_help()\n        else:\n            text = self.short_help\n        if self.shortcuts:\n            text = \"{} ({})\".format(\n                text,\n                \" / \".join(x.ToString() for x in self.accelerator_entries())\n            )\n        toolbar.SetToolShortHelp(self.id, text)\n\n    def get_state(self):\n        return self._is_enabled()\n",
-"type":"code"
-}
-],
-"id":"7a0d10485c864d4582976b7d919e7c36",
-"type":"code"
-}
-],
-"title":"Toolbar"
 },
 {
 "children":[],
@@ -8136,7 +7954,7 @@
 "type":"variable"
 },
 {
-"text":" %hbox {\n    #project\n    BoxSpace(self.BORDER)\n    IconButton(\n        icon    = \"back\"\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    IconButton(\n        icon    = \"forward\"\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    VBorder(project=self.project %border[self.BORDER, TOP|RIGHT|BOTTOM] %expand)\n    IconButton(\n        icon    = \"undo\"\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    IconButton(\n        icon    = \"reod\"\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    VBorder(project=self.project %border[self.BORDER, TOP|RIGHT|BOTTOM] %expand)\n    IconButton(\n        icon    = \"quit\"\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    panel(%proportion[1]) %hbox {}\n    IconButton(\n        icon    = \"save\"\n        tooltip = \"Force save\"\n        @button = self.project.save()\n        %border[self.BORDER, TOP|BOTTOM]\n        %align_center_vertical\n    )\n    TextProjection(\n        characters = self._get_save_characters()\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    BoxSpace(10)\n}\n",
+"text":" %hbox {\n    #project\n    #main_frame\n    BoxSpace(self.BORDER)\n    IconButton(\n        icon    = \"back\"\n        tooltip = \"Go back\"\n        enabled = self.project.can_back()\n        @button = self.project.back()\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    IconButton(\n        icon    = \"forward\"\n        tooltip = \"Go forward\"\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        enabled = self.project.can_forward()\n        @button = self.project.forward()\n        %align_center_vertical\n    )\n    VBorder(project=self.project %border[self.BORDER, TOP|RIGHT|BOTTOM] %expand)\n    IconButton(\n        icon    = \"undo\"\n        tooltip = \"Undo\"\n        enabled = self.project.can_undo()\n        @button = self.project.undo()\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    IconButton(\n        icon    = \"redo\"\n        tooltip = \"Redo\"\n        enabled = self.project.can_redo()\n        @button = self.project.redo()\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    VBorder(project=self.project %border[self.BORDER, TOP|RIGHT|BOTTOM] %expand)\n    IconButton(\n        icon    = \"quit\"\n        tooltip = \"Quit RLiterate\"\n        @button = self.main_frame.Close()\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    panel(%proportion[1]) %hbox {}\n    IconButton(\n        icon    = \"save\"\n        tooltip = \"Force save\"\n        @button = self.project.save()\n        %border[self.BORDER, TOP|BOTTOM]\n        %align_center_vertical\n    )\n    TextProjection(\n        characters = self._get_save_characters()\n        %border[self.BORDER, TOP|RIGHT|BOTTOM]\n        %align_center_vertical\n    )\n    BoxSpace(10)\n}\n",
 "type":"code"
 }
 ],
@@ -16047,7 +15865,15 @@
 "type":"variable"
 },
 {
-"text":"(\"background\"):\n            self.SetBackgroundColour(self.values[\"background\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n        event.Skip()\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event, propagate=True)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event, propagate=True)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
+"text":"(\"background\"):\n            self.SetBackgroundColour(self.values[\"background\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n        if self.",
+"type":"code"
+},
+{
+"id":"49916c3d2ee1468e9cbcb40d6b37bed6",
+"type":"variable"
+},
+{
+"text":"(\"enabled\"):\n            self.Enable(self.values[\"enabled\"])\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n        event.Skip()\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event, propagate=True)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event, propagate=True)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
 "type":"code"
 },
 {
@@ -16425,7 +16251,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.BitmapButton.__init__(\n            self,\n            parent,\n            bitmap=wx.ArtProvider.GetBitmap(\n                {\n                    \"add\": wx.ART_ADD_BOOKMARK,\n                    \"save\": wx.ART_FILE_SAVE,\n                }.get(kwargs[\"icon\"], wx.ART_QUESTION),\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        )\n        ",
+"text":"):\n\n    def __init__(self, parent, **kwargs):\n        wx.BitmapButton.__init__(\n            self,\n            parent,\n            bitmap=wx.ArtProvider.GetBitmap(\n                {\n                    \"add\": wx.ART_ADD_BOOKMARK,\n                    \"back\": wx.ART_GO_BACK,\n                    \"forward\": wx.ART_GO_FORWARD,\n                    \"undo\": wx.ART_UNDO,\n                    \"redo\": wx.ART_REDO,\n                    \"quit\": wx.ART_QUIT,\n                    \"save\": wx.ART_FILE_SAVE,\n                }.get(kwargs[\"icon\"], wx.ART_QUESTION),\n                wx.ART_BUTTON,\n                (16, 16)\n            ),\n            style=wx.NO_BORDER\n        )\n        ",
 "type":"code"
 },
 {

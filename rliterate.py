@@ -167,6 +167,8 @@ class GuiFrameworkBaseMixin(object):
             self.SetBackgroundColour(self.values["background"])
         if self.values.get("focus", False) and not self.HasFocus():
             self.SetFocus()
+        if self.did_change("enabled"):
+            self.Enable(self.values["enabled"])
 
     def _on_left_down(self, event):
         self.down_pos = event.Position
@@ -335,6 +337,11 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
             bitmap=wx.ArtProvider.GetBitmap(
                 {
                     "add": wx.ART_ADD_BOOKMARK,
+                    "back": wx.ART_GO_BACK,
+                    "forward": wx.ART_GO_FORWARD,
+                    "undo": wx.ART_UNDO,
+                    "redo": wx.ART_REDO,
+                    "quit": wx.ART_QUIT,
                     "save": wx.ART_FILE_SAVE,
                 }.get(kwargs["icon"], wx.ART_QUESTION),
                 wx.ART_BUTTON,
@@ -383,6 +390,7 @@ class MainFramePanel(GuiFrameworkPanel):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
+        properties['main_frame'] = self.main_frame
         sizer["flag"] |= wx.EXPAND
         widget = parent.add(Toolbar, properties, handlers, sizer)
         parent = widget
@@ -448,6 +456,10 @@ class MainFramePanel(GuiFrameworkPanel):
     @property
     def project(self):
         return self.values["project"]
+
+    @property
+    def main_frame(self):
+        return self.values["main_frame"]
 class TableOfContentsGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -4047,8 +4059,20 @@ class Project(Observable):
     def add_paragraph(self, *args, **kwargs):
         return self.document.add_paragraph(*args, **kwargs)
 
+    def can_undo(self):
+        return self.get_undo_operation() is not None
+
+    def undo(self):
+        self.get_undo_operation()[1]()
+
     def get_undo_operation(self, *args, **kwargs):
         return self.document.get_undo_operation(*args, **kwargs)
+
+    def can_redo(self):
+        return self.get_redo_operation() is not None
+
+    def redo(self):
+        self.get_redo_operation()[1]()
 
     def get_redo_operation(self, *args, **kwargs):
         return self.document.get_redo_operation(*args, **kwargs)
@@ -4353,9 +4377,7 @@ class MainFrame(wx.Frame):
             title="{} - RLiterate".format(project.title)
         )
         self.project = project
-        self.main_panel = MainFramePanel(self, project=self.project)
-        self.toolbar = ToolBar(self.main_panel, self.project)
-        self.SetToolBar(self.toolbar)
+        self.main_panel = MainFramePanel(self, project=self.project, main_frame=self)
         self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)
         self.project.listen(self.UpdateGui)
@@ -4368,8 +4390,8 @@ class MainFrame(wx.Frame):
             {
                 "ctrl": True,
                 "key": "z",
-                "condition_fn": lambda: self.project.get_undo_operation() is not None,
-                "action_fn": lambda: self.project.get_undo_operation()[1](),
+                "condition_fn": lambda: self.project.can_undo(),
+                "action_fn": lambda: self.project.undo(),
             },
             {
                 "ctrl": True,
@@ -4381,9 +4403,9 @@ class MainFrame(wx.Frame):
     @rltime("update main frame")
     def UpdateGui(self):
         with flicker_free_drawing(self):
-            self.toolbar.UpdateGui()
             self.main_panel.UpdateGui(
                 project=self.project,
+                main_frame=self,
             )
             self.Layout()
             self.Update()
@@ -4414,173 +4436,6 @@ class MainFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, fn, id=command)
             entries.append(wx.AcceleratorEntry(flags, keycode, command))
         self.SetAcceleratorTable(wx.AcceleratorTable(entries))
-class ToolBar(wx.ToolBar):
-
-    def __init__(self, parent, project, *args, **kwargs):
-        wx.ToolBar.__init__(self, parent, *args, **kwargs)
-        self._init_project(project)
-        self._init_tools()
-
-    def _init_project(self, project):
-        self.project = project
-
-    def _init_tools(self):
-        main_frame = self.GetTopLevelParent()
-        self._tool_groups = ToolGroups(main_frame)
-        navigation_group = self._tool_groups.add_group()
-        navigation_group.add_tool(
-            wx.ART_GO_BACK,
-            lambda: self.project.back(),
-            short_help="Go back",
-            enabled_fn=lambda: self.project.can_back()
-        )
-        navigation_group.add_tool(
-            wx.ART_GO_FORWARD,
-            lambda: self.project.forward(),
-            short_help="Go forward",
-            enabled_fn=lambda: self.project.can_forward()
-        )
-        undo_group = self._tool_groups.add_group()
-        undo_group.add_tool(
-            wx.ART_UNDO,
-            lambda: self.project.get_undo_operation()[1](),
-            short_help=lambda: "Undo" if self.project.get_undo_operation() is None else "Undo '{}'".format(self.project.get_undo_operation()[0]),
-            enabled_fn=lambda: self.project.get_undo_operation() is not None,
-            shortcuts=[
-                (wx.ACCEL_CTRL, ord('Z')),
-            ]
-        )
-        undo_group.add_tool(
-            wx.ART_REDO,
-            lambda: self.project.get_redo_operation()[1](),
-            short_help=lambda: "Redo" if self.project.get_redo_operation() is None else "Redo '{}'".format(self.project.get_redo_operation()[0]),
-            enabled_fn=lambda: self.project.get_redo_operation() is not None
-        )
-        quit_group = self._tool_groups.add_group()
-        def quit():
-            main_frame.Close()
-        quit_group.add_tool(
-            wx.ART_QUIT,
-            quit,
-            short_help="Quit",
-            shortcuts=[
-                (wx.ACCEL_CTRL, ord('Q')),
-            ]
-        )
-        self.UpdateGui()
-
-    @rltime("update toolbar")
-    def UpdateGui(self):
-        self._tool_groups.populate(self)
-class ToolGroups(object):
-
-    def __init__(self, frame):
-        self._frame = frame
-        self._tool_groups = []
-        self._last_state = []
-
-    def add_group(self, *args, **kwargs):
-        group = ToolGroup(self._frame, *args, **kwargs)
-        self._tool_groups.append(group)
-        return group
-
-    def populate(self, toolbar):
-        new_state = self.get_state()
-        if new_state != self._last_state:
-            self._last_state = new_state
-            items = []
-            toolbar.ClearTools()
-            first = True
-            for group in self._tool_groups:
-                if group.is_active():
-                    if not first:
-                        toolbar.AddSeparator()
-                    first = False
-                    group.populate(toolbar)
-                    items.extend(group.accelerator_entries())
-            toolbar.Realize()
-            #self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))
-
-    def get_state(self):
-        return [group.get_state() for group in self._tool_groups]
-class ToolGroup(object):
-
-    def __init__(self, frame, active_fn=None):
-        self._tools = []
-        self._frame = frame
-        self._active_fn = active_fn
-
-    def add_tool(self, *args, **kwargs):
-        self._tools.append(Tool(self._frame, *args, **kwargs))
-
-    def is_active(self):
-        if self._active_fn is None:
-            return True
-        else:
-            return self._active_fn()
-
-    def accelerator_entries(self):
-        entries = []
-        for tool in self._tools:
-            entries.extend(tool.accelerator_entries())
-        return entries
-
-    def populate(self, toolbar):
-        for tool in self._tools:
-            tool.populate(toolbar)
-
-    def get_state(self):
-        return (self.is_active(), [tool.get_state() for tool in self._tools])
-class Tool(object):
-
-    def __init__(self, frame, art, action_fn, short_help="", enabled_fn=None, shortcuts=[]):
-        self.id = wx.NewId()
-        frame.Bind(wx.EVT_MENU, self._on_action, id=self.id)
-        self.art = art
-        self.short_help = short_help
-        self.action_fn = action_fn
-        self.enabled_fn = enabled_fn
-        self.shortcuts = shortcuts
-
-    def _on_action(self, event):
-        if self.action_fn is not None:
-            self.action_fn()
-
-    def _is_enabled(self):
-        if self.enabled_fn is None:
-            return True
-        else:
-            return self.enabled_fn()
-
-    def accelerator_entries(self):
-        if self._is_enabled():
-            return [wx.AcceleratorEntry(a, b, self.id) for (a, b) in self.shortcuts]
-        else:
-            return []
-
-    def populate(self, toolbar):
-        toolbar.AddSimpleTool(
-            self.id,
-            wx.ArtProvider.GetBitmap(
-                self.art,
-                wx.ART_BUTTON,
-                (24, 24)
-            )
-        )
-        toolbar.EnableTool(self.id, self._is_enabled())
-        if callable(self.short_help):
-            text = self.short_help()
-        else:
-            text = self.short_help
-        if self.shortcuts:
-            text = "{} ({})".format(
-                text,
-                " / ".join(x.ToString() for x in self.accelerator_entries())
-            )
-        toolbar.SetToolShortHelp(self.id, text)
-
-    def get_state(self):
-        return self._is_enabled()
 class ToolbarGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -4618,6 +4473,9 @@ class ToolbarGui(GuiFrameworkPanel):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['icon'] = 'back'
+        properties['tooltip'] = 'Go back'
+        properties['enabled'] = self.project.can_back()
+        handlers.append(('button', lambda event: self.project.back()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
         sizer["flag"] |= wx.RIGHT
@@ -4632,10 +4490,13 @@ class ToolbarGui(GuiFrameworkPanel):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['icon'] = 'forward'
+        properties['tooltip'] = 'Go forward'
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
         sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
+        properties['enabled'] = self.project.can_forward()
+        handlers.append(('button', lambda event: self.project.forward()))
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(IconButton, properties, handlers, sizer)
         parent = widget
@@ -4660,6 +4521,9 @@ class ToolbarGui(GuiFrameworkPanel):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['icon'] = 'undo'
+        properties['tooltip'] = 'Undo'
+        properties['enabled'] = self.project.can_undo()
+        handlers.append(('button', lambda event: self.project.undo()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
         sizer["flag"] |= wx.RIGHT
@@ -4673,7 +4537,10 @@ class ToolbarGui(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['icon'] = 'reod'
+        properties['icon'] = 'redo'
+        properties['tooltip'] = 'Redo'
+        properties['enabled'] = self.project.can_redo()
+        handlers.append(('button', lambda event: self.project.redo()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
         sizer["flag"] |= wx.RIGHT
@@ -4702,6 +4569,8 @@ class ToolbarGui(GuiFrameworkPanel):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['icon'] = 'quit'
+        properties['tooltip'] = 'Quit RLiterate'
+        handlers.append(('button', lambda event: self.main_frame.Close()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
         sizer["flag"] |= wx.RIGHT
@@ -4753,6 +4622,10 @@ class ToolbarGui(GuiFrameworkPanel):
     @property
     def project(self):
         return self.values["project"]
+
+    @property
+    def main_frame(self):
+        return self.values["main_frame"]
 class Toolbar(ToolbarGui):
 
     BORDER = 4
