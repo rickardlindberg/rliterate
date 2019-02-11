@@ -4478,7 +4478,6 @@ class ToolbarGui(GuiFrameworkPanel):
         handlers.append(('button', lambda event: self.project.back()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(IconButton, properties, handlers, sizer)
@@ -4493,7 +4492,6 @@ class ToolbarGui(GuiFrameworkPanel):
         properties['tooltip'] = 'Go forward'
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         properties['enabled'] = self.project.can_forward()
         handlers.append(('button', lambda event: self.project.forward()))
@@ -4508,9 +4506,7 @@ class ToolbarGui(GuiFrameworkPanel):
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
         sizer["border"] = self.BORDER
-        sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
-        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALL
         sizer["flag"] |= wx.EXPAND
         widget = parent.add(VBorder, properties, handlers, sizer)
         parent = widget
@@ -4526,7 +4522,6 @@ class ToolbarGui(GuiFrameworkPanel):
         handlers.append(('button', lambda event: self.project.undo()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(IconButton, properties, handlers, sizer)
@@ -4543,7 +4538,6 @@ class ToolbarGui(GuiFrameworkPanel):
         handlers.append(('button', lambda event: self.project.redo()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(IconButton, properties, handlers, sizer)
@@ -4556,9 +4550,7 @@ class ToolbarGui(GuiFrameworkPanel):
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
         sizer["border"] = self.BORDER
-        sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
-        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.ALL
         sizer["flag"] |= wx.EXPAND
         widget = parent.add(VBorder, properties, handlers, sizer)
         parent = widget
@@ -4573,7 +4565,6 @@ class ToolbarGui(GuiFrameworkPanel):
         handlers.append(('button', lambda event: self.main_frame.Close()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(IconButton, properties, handlers, sizer)
@@ -4599,7 +4590,6 @@ class ToolbarGui(GuiFrameworkPanel):
         handlers.append(('button', lambda event: self.project.save()))
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(IconButton, properties, handlers, sizer)
@@ -4613,7 +4603,6 @@ class ToolbarGui(GuiFrameworkPanel):
         properties['characters'] = self._get_save_characters()
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.TOP
-        sizer["flag"] |= wx.RIGHT
         sizer["flag"] |= wx.BOTTOM
         sizer["flag"] |= wx.ALIGN_CENTER_VERTICAL
         widget = parent.add(TextProjection, properties, handlers, sizer)
