@@ -7585,7 +7585,7 @@
 ],
 "fragments":[
 {
-"text":"panel ",
+"text":"frame ",
 "type":"code"
 },
 {
@@ -7593,7 +7593,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #main_frame\n    panel(\n        focus     = True\n    ) %hbox {}\n    ",
+"text":" %vbox {\n    #project\n    #min_size = tuple([920 500])\n    #title    = self._get_title()\n    panel(\n        focus     = True\n    ) %hbox {}\n    ",
 "type":"code"
 },
 {
@@ -7601,7 +7601,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        project    = self.project\n        main_frame = self.main_frame\n        %expand\n    )\n    HBorder(project=self.project %expand)\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        VBorder(project=self.project %expand)\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n}\n",
+"text":"(\n        project    = self.project\n        main_frame = self\n        %expand\n    )\n    HBorder(project=self.project %expand)\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        VBorder(project=self.project %expand)\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n}\n",
 "type":"code"
 }
 ],
@@ -7630,24 +7630,24 @@
 "type":"variable"
 },
 {
-"text":"(wx.Frame):\n\n    def __init__(self, project):\n        wx.Frame.__init__(\n            self,\n            None,\n            size=(920, 500),\n            title=\"{} - RLiterate\".format(project.title)\n        )\n        self.project = project\n        self.main_panel = MainFramePanel(self, project=self.project, main_frame=self)\n        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)\n        self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)\n        self.project.listen(self.",
+"text":"(",
 "type":"code"
 },
 {
-"id":"883ac73a999c403e8274442301acdbb3",
+"id":"022b19461779432dacb8005e42acdd77",
 "type":"variable"
 },
 {
-"text":")\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n",
+"text":"):\n\n    def _get_title(self):\n        return \"{} - RLiterate\".format(project.title)\n\n    def _create_gui(self):\n        ",
 "type":"code"
 },
 {
-"blank_lines_before":0,
-"path":[
-"MainFrame"
-],
-"prefix":"    ",
-"type":"chunk"
+"id":"022b19461779432dacb8005e42acdd77",
+"type":"variable"
+},
+{
+"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n",
+"type":"code"
 }
 ],
 "id":"1184388e07e149eea4b71458b275b38b",
@@ -7663,66 +7663,6 @@
 ],
 "id":"1a381ec6a72c4c5fa4bf798f542ce60e",
 "type":"text"
-},
-{
-"chunkpath":[
-"classes",
-"MainFrame"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@rltime(\"update main frame\")\ndef ",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(self):\n    with ",
-"type":"code"
-},
-{
-"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
-"type":"variable"
-},
-{
-"text":"(self):\n        self.main_panel.",
-"type":"code"
-},
-{
-"id":"883ac73a999c403e8274442301acdbb3",
-"type":"variable"
-},
-{
-"text":"(\n            project=self.project,\n            main_frame=self,\n        )\n        self.Layout()\n        self.Update()\n\n",
-"type":"code"
-}
-],
-"id":"a7fa13db227840368a426c8d2b512b04",
-"language":"",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes",
-"MainFrame"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"def set_keyboard_shortcuts(self, shortcuts):\n    def create_handler(condition_fn, action_fn):\n        def handler(event):\n            if condition_fn():\n                action_fn()\n        return handler\n    entries = []\n    for shortcut in shortcuts:\n        flags = wx.ACCEL_NORMAL\n        if shortcut.get(\"ctrl\", False):\n            flags |= wx.ACCEL_CTRL\n        key = shortcut.get(\"key\", \"\")\n        if len(key) == 1:\n            keycode = ord(key)\n        else:\n            keycode = {\n                \"esc\": wx.WXK_ESCAPE,\n            }[key]\n        command = wx.NewId()\n        fn = create_handler(\n            shortcut.get(\"condition_fn\", lambda: True),\n            shortcut.get(\"action_fn\", lambda: None)\n        )\n        self.Bind(wx.EVT_MENU, fn, id=command)\n        entries.append(wx.AcceleratorEntry(flags, keycode, command))\n    self.SetAcceleratorTable(wx.AcceleratorTable(entries))\n",
-"type":"code"
-}
-],
-"id":"f353afbd281849ff8f2f4576520d0dff",
-"language":"",
-"type":"code"
 }
 ],
 "title":"Main frame"
@@ -15075,7 +15015,7 @@
 "type":"tabstop"
 },
 {
-"text":"= 'panel' | 'scroll' | 'vscroll' | 'hscroll'\n  name ",
+"text":"= 'frame' | 'panel' | 'scroll' | 'vscroll' | 'hscroll'\n  name ",
 "type":"code"
 },
 {
@@ -15186,6 +15126,37 @@
 }
 ],
 "id":"e91ab38b002a413b9fef73440e3177ee",
+"language":"rlmeta",
+"post_process":[
+"python",
+"rlmeta/rlmeta.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"WxCodeGenerator",
+"ast"
+],
+"filepath":[
+"rlgui.py"
+],
+"fragments":[
+{
+"text":"| [\"frame\" .:name ast:y] -> {\n  \"class \" name \"(GuiFrameworkFrame):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      \"panel = wx.Panel(self)\\n\"\n      \"self.Sizer = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n      \"self.Sizer.Add(panel, flag=wx.EXPAND, proportion=1)\\n\"\n      \"self._root_widget = ",
+"type":"code"
+},
+{
+"id":"84efae9f935b4926b3f8658d9d4f39c2",
+"type":"variable"
+},
+{
+"text":"(panel)\\n\"\n      \"self._child_root(self._root_widget, first=True)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"with flicker_free_drawing(self):\\n\" >\n        \"self._child_root(self._root_widget)\\n\"\n        \"self.Layout()\\n\"\n        \"self.Refresh()\\n\"\n      <\n    <\n    \"\\ndef _child_root(self, parent, loopvar=None, first=False):\\n\" >\n      \"parent.reset()\\n\"\n      \"handlers = []\\n\"\n      #child\n      \"if first:\\n\" >\n        \"parent.listen(handlers)\\n\"\n      <\n    <\n    #methods\n    y\n  <\n}\n",
+"type":"code"
+}
+],
+"id":"ed7b7e2f8b2f41a88dff2a1840ee9299",
 "language":"rlmeta",
 "post_process":[
 "python",
@@ -15335,7 +15306,15 @@
 ],
 "fragments":[
 {
-"text":"widget =\n  | \"panel\"   -> \"",
+"text":"widget =\n  | \"frame\"   -> \"",
+"type":"code"
+},
+{
+"id":"61e3adf07b064ace88f51ee0cc8abf11",
+"type":"variable"
+},
+{
+"text":"\"\n  | \"panel\"   -> \"",
 "type":"code"
 },
 {
@@ -15716,6 +15695,82 @@
 "id":"d01b217740d64e10869e34e0c626d8ee",
 "language":"",
 "post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"61e3adf07b064ace88f51ee0cc8abf11",
+"type":"variable"
+},
+{
+"text":"(wx.Frame, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent=None, **kwargs):\n        wx.Frame.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, **kwargs)\n\n    def _update_builtin(self):\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"._update_builtin(self)\n        if self.did_change(\"title\"):\n            self.SetTitle(self.values[\"title\"])\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
+"Frame"
+],
+"prefix":"    ",
+"type":"chunk"
+}
+],
+"id":"925fea89db504f429533b9fc822737d3",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes",
+"Frame"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def set_keyboard_shortcuts(self, shortcuts):\n    def create_handler(condition_fn, action_fn):\n        def handler(event):\n            if condition_fn():\n                action_fn()\n        return handler\n    entries = []\n    for shortcut in shortcuts:\n        flags = wx.ACCEL_NORMAL\n        if shortcut.get(\"ctrl\", False):\n            flags |= wx.ACCEL_CTRL\n        key = shortcut.get(\"key\", \"\")\n        if len(key) == 1:\n            keycode = ord(key)\n        else:\n            keycode = {\n                \"esc\": wx.WXK_ESCAPE,\n            }[key]\n        command = wx.NewId()\n        fn = create_handler(\n            shortcut.get(\"condition_fn\", lambda: True),\n            shortcut.get(\"action_fn\", lambda: None)\n        )\n        self.Bind(wx.EVT_MENU, fn, id=command)\n        entries.append(wx.AcceleratorEntry(flags, keycode, command))\n    self.SetAcceleratorTable(wx.AcceleratorTable(entries))\n",
+"type":"code"
+}
+],
+"id":"f353afbd281849ff8f2f4576520d0dff",
+"language":"",
 "type":"code"
 },
 {
@@ -16852,7 +16907,7 @@
 "type":"variable"
 },
 {
-"text":"(project)\n    main_frame.Show()\n    app.MainLoop()\n    project.wait_for_save()\n",
+"text":"(project=project)\n    main_frame.Show()\n    project.listen(lambda: main_frame.UpdateGui(project=project))\n    app.MainLoop()\n    project.wait_for_save()\n",
 "type":"code"
 }
 ],
@@ -18807,7 +18862,7 @@
 },
 "variables":{
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
-"022b19461779432dacb8005e42acdd77":"MainFramePanel",
+"022b19461779432dacb8005e42acdd77":"MainFrameGui",
 "038ab2c5a2e54a9eb8e136640f3694c6":"DividerGui",
 "0397a216ff674867aa422a0778df2f44":"transaction",
 "03cf450743e9447da0a9becadacd7dda":"active_editor",
@@ -18917,6 +18972,7 @@
 "5eed749a876348189a57700a970644fc":"TableOfContentsRowGui",
 "60c633345528443da9cc98eedc41685e":"replace_child_at_index",
 "61a4f35b1538441ebd2d17e8cc02a14a":"TextGui",
+"61e3adf07b064ace88f51ee0cc8abf11":"GuiFrameworkFrame",
 "64ef4d70610f452d83e90f00a07a45f1":"InsertChild",
 "66079af187674e5db05ed5e19fa8b891":"create_this",
 "66ac3230cd674a0b9218fee28b51be5d":"WorkspaceColumn",

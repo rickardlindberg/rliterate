@@ -287,6 +287,43 @@ class GuiFrameworkWidgetInfo(object):
     def listen(self, event_handlers):
         for event_handler in event_handlers:
             self.widget.listen(*event_handler)
+class GuiFrameworkFrame(wx.Frame, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent=None, **kwargs):
+        wx.Frame.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, **kwargs)
+
+    def _update_builtin(self):
+        GuiFrameworkBaseMixin._update_builtin(self)
+        if self.did_change("title"):
+            self.SetTitle(self.values["title"])
+
+    def set_keyboard_shortcuts(self, shortcuts):
+        def create_handler(condition_fn, action_fn):
+            def handler(event):
+                if condition_fn():
+                    action_fn()
+            return handler
+        entries = []
+        for shortcut in shortcuts:
+            flags = wx.ACCEL_NORMAL
+            if shortcut.get("ctrl", False):
+                flags |= wx.ACCEL_CTRL
+            key = shortcut.get("key", "")
+            if len(key) == 1:
+                keycode = ord(key)
+            else:
+                keycode = {
+                    "esc": wx.WXK_ESCAPE,
+                }[key]
+            command = wx.NewId()
+            fn = create_handler(
+                shortcut.get("condition_fn", lambda: True),
+                shortcut.get("action_fn", lambda: None)
+            )
+            self.Bind(wx.EVT_MENU, fn, id=command)
+            entries.append(wx.AcceleratorEntry(flags, keycode, command))
+        self.SetAcceleratorTable(wx.AcceleratorTable(entries))
 class GuiFrameworkPanel(wx.Panel, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, **kwargs):
@@ -351,18 +388,26 @@ class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
         )
         GuiFrameworkBaseMixin.__init__(self, **kwargs)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
-class MainFramePanel(GuiFrameworkPanel):
+class MainFrameGui(GuiFrameworkFrame):
 
     def _get_derived(self):
         return {
+            'min_size': tuple([920, 500]),
+            'title': self._get_title(),
         }
 
     def _create_gui(self):
-        self._root_widget = GuiFrameworkWidgetInfo(self)
+        panel = wx.Panel(self)
+        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.Sizer.Add(panel, flag=wx.EXPAND, proportion=1)
+        self._root_widget = GuiFrameworkWidgetInfo(panel)
         self._child_root(self._root_widget, first=True)
 
     def _update_gui(self):
-        self._child_root(self._root_widget)
+        with flicker_free_drawing(self):
+            self._child_root(self._root_widget)
+            self.Layout()
+            self.Refresh()
 
     def _child_root(self, parent, loopvar=None, first=False):
         parent.reset()
@@ -390,7 +435,7 @@ class MainFramePanel(GuiFrameworkPanel):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['project'] = self.project
-        properties['main_frame'] = self.main_frame
+        properties['main_frame'] = self
         sizer["flag"] |= wx.EXPAND
         widget = parent.add(Toolbar, properties, handlers, sizer)
         parent = widget
@@ -456,10 +501,6 @@ class MainFramePanel(GuiFrameworkPanel):
     @property
     def project(self):
         return self.values["project"]
-
-    @property
-    def main_frame(self):
-        return self.values["main_frame"]
 class TableOfContentsGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -4367,20 +4408,13 @@ class SolarizedTheme(BaseTheme):
         TokenType.RLiterate.Working:   Style.create(foreground=yellow),
         TokenType.RLiterate.Success:   Style.create(foreground=green),
     }
-class MainFrame(wx.Frame):
+class MainFrame(MainFrameGui):
 
-    def __init__(self, project):
-        wx.Frame.__init__(
-            self,
-            None,
-            size=(920, 500),
-            title="{} - RLiterate".format(project.title)
-        )
-        self.project = project
-        self.main_panel = MainFramePanel(self, project=self.project, main_frame=self)
-        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)
-        self.project.listen(self.UpdateGui)
+    def _get_title(self):
+        return "{} - RLiterate".format(project.title)
+
+    def _create_gui(self):
+        MainFrameGui._create_gui(self)
         self.set_keyboard_shortcuts([
             {
                 "key": "esc",
@@ -4399,43 +4433,6 @@ class MainFrame(wx.Frame):
                 "action_fn": lambda: self.Close(),
             },
         ])
-
-    @rltime("update main frame")
-    def UpdateGui(self):
-        with flicker_free_drawing(self):
-            self.main_panel.UpdateGui(
-                project=self.project,
-                main_frame=self,
-            )
-            self.Layout()
-            self.Update()
-
-    def set_keyboard_shortcuts(self, shortcuts):
-        def create_handler(condition_fn, action_fn):
-            def handler(event):
-                if condition_fn():
-                    action_fn()
-            return handler
-        entries = []
-        for shortcut in shortcuts:
-            flags = wx.ACCEL_NORMAL
-            if shortcut.get("ctrl", False):
-                flags |= wx.ACCEL_CTRL
-            key = shortcut.get("key", "")
-            if len(key) == 1:
-                keycode = ord(key)
-            else:
-                keycode = {
-                    "esc": wx.WXK_ESCAPE,
-                }[key]
-            command = wx.NewId()
-            fn = create_handler(
-                shortcut.get("condition_fn", lambda: True),
-                shortcut.get("action_fn", lambda: None)
-            )
-            self.Bind(wx.EVT_MENU, fn, id=command)
-            entries.append(wx.AcceleratorEntry(flags, keycode, command))
-        self.SetAcceleratorTable(wx.AcceleratorTable(entries))
 class ToolbarGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -6531,7 +6528,8 @@ if __name__ == "__main__":
     else:
         app = wx.App()
         project = Project(sys.argv[1])
-        main_frame = MainFrame(project)
+        main_frame = MainFrame(project=project)
         main_frame.Show()
+        project.listen(lambda: main_frame.UpdateGui(project=project))
         app.MainLoop()
         project.wait_for_save()
