@@ -13113,7 +13113,15 @@
 "type":"variable"
 },
 {
-"text":" = True\n\ndef ",
+"text":" = True\n    self.",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"()\n\ndef ",
 "type":"code"
 },
 {
@@ -15415,14 +15423,6 @@
 },
 {
 "id":"887acc7e530b4d98933d11e223d58c42",
-"type":"variable"
-},
-{
-"text":"()\n        self.",
-"type":"code"
-},
-{
-"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
 "type":"variable"
 },
 {

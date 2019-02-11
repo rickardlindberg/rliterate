@@ -98,7 +98,6 @@ class GuiFrameworkBaseMixin(object):
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
         self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
         self._create_gui()
-        self._update_gui()
         self._update_builtin()
 
     def listen(self, event, handler):
@@ -2122,6 +2121,7 @@ class TextProjection(TextProjectionGui):
         TextProjectionGui._create_gui(self)
         self.timer = wx.Timer(self)
         self._show_beams = True
+        self._update_gui()
 
     def _update_gui(self):
         TextProjectionGui._update_gui(self)
