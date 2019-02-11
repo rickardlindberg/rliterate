@@ -12862,7 +12862,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    DEFAULTS = {\n        \"padding\": 0,\n        \"height\": 1,\n        \"left_space\": 0,\n        \"active\": False,\n    }\n\n    def Show(self, left_space=0):\n        self.UpdateGui({\"left_space\": left_space, \"active\": True})\n        self.Layout()\n\n    def Hide(self):\n        self.UpdateGui({\"active\": False})\n        self.Layout()\n",
+"text":"):\n\n    DEFAULTS = {\n        \"padding\": 0,\n        \"height\": 1,\n        \"left_space\": 0,\n        \"active\": False,\n    }\n\n    def Show(self, left_space=0):\n        self.UpdateGui({\"left_space\": left_space, \"active\": True})\n\n    def Hide(self):\n        self.UpdateGui({\"active\": False})\n",
 "type":"code"
 }
 ],
@@ -14271,7 +14271,7 @@
 "type":"variable"
 },
 {
-"text":"(self, values):\n        values[\"",
+"text":"(self, values, layout=True):\n        values[\"",
 "type":"code"
 },
 {
@@ -14295,7 +14295,7 @@
 "type":"variable"
 },
 {
-"text":"(self, values)\n\n    def _generate_characters(self, project, tokens):\n        characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    characters.append(",
+"text":"(self, values, layout)\n\n    def _generate_characters(self, project, tokens):\n        characters = []\n        for token in tokens:\n            style = project.get_style(token.token_type)\n            if token.extra.get(\"highlight\"):\n                style = style.highlight()\n            for subtoken in token.split():\n                for char in subtoken.text:\n                    characters.append(",
 "type":"code"
 },
 {
@@ -15120,7 +15120,7 @@
 "type":"variable"
 },
 {
-"text":"(self._root_panel)\\n\"\n      \"self._root_panel.SetFocus()\\n\"\n      \"self._child_root(self._root_widget, first=True)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"with flicker_free_drawing(self):\\n\" >\n        \"self._root_panel.SetFocus()\\n\"\n        \"self._child_root(self._root_widget)\\n\"\n        \"self.Layout()\\n\"\n        \"self.Refresh()\\n\"\n      <\n    <\n    \"\\ndef _child_root(self, parent, loopvar=None, first=False):\\n\" >\n      \"parent.reset()\\n\"\n      \"handlers = []\\n\"\n      #child\n      \"if first:\\n\" >\n        \"parent.listen(handlers)\\n\"\n      <\n    <\n    #methods\n    y\n  <\n}\n",
+"text":"(self._root_panel)\\n\"\n      \"self._root_panel.SetFocus()\\n\"\n      \"self._child_root(self._root_widget, first=True)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"self._root_panel.SetFocus()\\n\"\n      \"self._child_root(self._root_widget)\\n\"\n    <\n    \"\\ndef _child_root(self, parent, loopvar=None, first=False):\\n\" >\n      \"parent.reset()\\n\"\n      \"handlers = []\\n\"\n      #child\n      \"if first:\\n\" >\n        \"parent.listen(handlers)\\n\"\n      <\n    <\n    #methods\n    y\n  <\n}\n",
 "type":"code"
 }
 ],
@@ -15458,7 +15458,7 @@
 "type":"variable"
 },
 {
-"text":"(self, values={}):\n        self.",
+"text":"(self, values={}, layout=True):\n        self.",
 "type":"code"
 },
 {
@@ -15474,7 +15474,7 @@
 "type":"variable"
 },
 {
-"text":"())\n        self.",
+"text":"())\n        if layout:\n            with flicker_free_drawing(self):\n                self.",
 "type":"code"
 },
 {
@@ -15482,7 +15482,15 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._update_builtin()\n\n    def _update(self, values):\n        for key, value in values.items():\n            if key not in self.",
+"text":"()\n                self._update_builtin()\n                self.Layout()\n                self.Refresh()\n        else:\n            self.",
+"type":"code"
+},
+{
+"id":"1f5e6f3baaa0428cb1ce92e49af41f62",
+"type":"variable"
+},
+{
+"text":"()\n            self._update_builtin()\n\n    def _update(self, values):\n        for key, value in values.items():\n            if key not in self.",
 "type":"code"
 },
 {
@@ -15668,7 +15676,7 @@
 "type":"variable"
 },
 {
-"text":"(widget)\n            widget_info.listen(handlers)\n            self.children.insert(self.child_index, widget_info)\n        else:\n            widget_info = self.children[self.child_index]\n            widget_info.widget.UpdateGui(properties)\n        self.child_index += 1\n        self.sizer_index += 1\n        return widget_info\n\n    def add_space(self, space):\n        if self.child_index >= len(self.children):\n            x = self.sizer.Insert(self.sizer_index, self._get_space_size(space))\n            self.children.insert(self.child_index, x)\n        else:\n            self.children[self.child_index].SetMinSize(self._get_space_size(space))\n        self.sizer_index += 1\n        self.child_index += 1\n\n    def _get_space_size(self, size):\n        if self.sizer.Orientation == wx.HORIZONTAL:\n            return (size, 1)\n        else:\n            return (1, size)\n\n    def listen(self, event_handlers):\n        for event_handler in event_handlers:\n            self.widget.listen(*event_handler)\n",
+"text":"(widget)\n            widget_info.listen(handlers)\n            self.children.insert(self.child_index, widget_info)\n        else:\n            widget_info = self.children[self.child_index]\n            widget_info.widget.UpdateGui(properties, layout=False)\n        self.child_index += 1\n        self.sizer_index += 1\n        return widget_info\n\n    def add_space(self, space):\n        if self.child_index >= len(self.children):\n            x = self.sizer.Insert(self.sizer_index, self._get_space_size(space))\n            self.children.insert(self.child_index, x)\n        else:\n            self.children[self.child_index].SetMinSize(self._get_space_size(space))\n        self.sizer_index += 1\n        self.child_index += 1\n\n    def _get_space_size(self, size):\n        if self.sizer.Orientation == wx.HORIZONTAL:\n            return (size, 1)\n        else:\n            return (1, size)\n\n    def listen(self, event_handlers):\n        for event_handler in event_handlers:\n            self.widget.listen(*event_handler)\n",
 "type":"code"
 }
 ],

@@ -115,12 +115,19 @@ class GuiFrameworkBaseMixin(object):
     def has_changes(self):
         return self.changed is None or len(self.changed) > 0
 
-    def UpdateGui(self, values={}):
+    def UpdateGui(self, values={}, layout=True):
         self.changed = []
         self._update(values)
         self._update(self._get_derived())
-        self._update_gui()
-        self._update_builtin()
+        if layout:
+            with flicker_free_drawing(self):
+                self._update_gui()
+                self._update_builtin()
+                self.Layout()
+                self.Refresh()
+        else:
+            self._update_gui()
+            self._update_builtin()
 
     def _update(self, values):
         for key, value in values.items():
@@ -263,7 +270,7 @@ class GuiFrameworkWidgetInfo(object):
             self.children.insert(self.child_index, widget_info)
         else:
             widget_info = self.children[self.child_index]
-            widget_info.widget.UpdateGui(properties)
+            widget_info.widget.UpdateGui(properties, layout=False)
         self.child_index += 1
         self.sizer_index += 1
         return widget_info
@@ -404,11 +411,8 @@ class MainFrameGui(GuiFrameworkFrame):
         self._child_root(self._root_widget, first=True)
 
     def _update_gui(self):
-        with flicker_free_drawing(self):
-            self._root_panel.SetFocus()
-            self._child_root(self._root_widget)
-            self.Layout()
-            self.Refresh()
+        self._root_panel.SetFocus()
+        self._child_root(self._root_widget)
 
     def _child_root(self, parent, loopvar=None, first=False):
         parent.reset()
@@ -2480,9 +2484,9 @@ class TokenView(TextProjection):
         )
         self.last_tokens = []
 
-    def UpdateGui(self, values):
+    def UpdateGui(self, values, layout=True):
         values["characters"] = self._generate_characters(values["project"], values["tokens"])
-        TextProjection.UpdateGui(self, values)
+        TextProjection.UpdateGui(self, values, layout)
 
     def _generate_characters(self, project, tokens):
         characters = []
@@ -5879,11 +5883,9 @@ class Divider(DividerGui):
 
     def Show(self, left_space=0):
         self.UpdateGui({"left_space": left_space, "active": True})
-        self.Layout()
 
     def Hide(self):
         self.UpdateGui({"active": False})
-        self.Layout()
 class Character(namedtuple("Character", "text style marker extra")):
 
     @classmethod
