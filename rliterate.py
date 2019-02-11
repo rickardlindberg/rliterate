@@ -4359,6 +4359,24 @@ class MainFrame(wx.Frame):
         self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.Sizer.Add(self.main_panel, flag=wx.EXPAND, proportion=1)
         self.project.listen(self.UpdateGui)
+        self.set_keyboard_shortcuts([
+            {
+                "key": "esc",
+                "condition_fn": lambda: self.project.selection.present,
+                "action_fn": lambda: setattr(self.project, "selection", Selection.empty()),
+            },
+            {
+                "ctrl": True,
+                "key": "z",
+                "condition_fn": lambda: self.project.get_undo_operation() is not None,
+                "action_fn": lambda: self.project.get_undo_operation()[1](),
+            },
+            {
+                "ctrl": True,
+                "key": "q",
+                "action_fn": lambda: self.Close(),
+            },
+        ])
 
     @rltime("update main frame")
     def UpdateGui(self):
@@ -4370,6 +4388,32 @@ class MainFrame(wx.Frame):
             self.Layout()
             self.Update()
 
+    def set_keyboard_shortcuts(self, shortcuts):
+        def create_handler(condition_fn, action_fn):
+            def handler(event):
+                if condition_fn():
+                    action_fn()
+            return handler
+        entries = []
+        for shortcut in shortcuts:
+            flags = wx.ACCEL_NORMAL
+            if shortcut.get("ctrl", False):
+                flags |= wx.ACCEL_CTRL
+            key = shortcut.get("key", "")
+            if len(key) == 1:
+                keycode = ord(key)
+            else:
+                keycode = {
+                    "esc": wx.WXK_ESCAPE,
+                }[key]
+            command = wx.NewId()
+            fn = create_handler(
+                shortcut.get("condition_fn", lambda: True),
+                shortcut.get("action_fn", lambda: None)
+            )
+            self.Bind(wx.EVT_MENU, fn, id=command)
+            entries.append(wx.AcceleratorEntry(flags, keycode, command))
+        self.SetAcceleratorTable(wx.AcceleratorTable(entries))
 class ToolBar(wx.ToolBar):
 
     def __init__(self, parent, project, *args, **kwargs):
@@ -4455,7 +4499,7 @@ class ToolGroups(object):
                     group.populate(toolbar)
                     items.extend(group.accelerator_entries())
             toolbar.Realize()
-            self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))
+            #self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))
 
     def get_state(self):
         return [group.get_state() for group in self._tool_groups]

@@ -7638,7 +7638,7 @@
 "type":"variable"
 },
 {
-"text":")\n\n",
+"text":")\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.get_undo_operation() is not None,\n                \"action_fn\": lambda: self.project.get_undo_operation()[1](),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n",
 "type":"code"
 },
 {
@@ -7703,6 +7703,24 @@
 }
 ],
 "id":"a7fa13db227840368a426c8d2b512b04",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"MainFrame"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def set_keyboard_shortcuts(self, shortcuts):\n    def create_handler(condition_fn, action_fn):\n        def handler(event):\n            if condition_fn():\n                action_fn()\n        return handler\n    entries = []\n    for shortcut in shortcuts:\n        flags = wx.ACCEL_NORMAL\n        if shortcut.get(\"ctrl\", False):\n            flags |= wx.ACCEL_CTRL\n        key = shortcut.get(\"key\", \"\")\n        if len(key) == 1:\n            keycode = ord(key)\n        else:\n            keycode = {\n                \"esc\": wx.WXK_ESCAPE,\n            }[key]\n        command = wx.NewId()\n        fn = create_handler(\n            shortcut.get(\"condition_fn\", lambda: True),\n            shortcut.get(\"action_fn\", lambda: None)\n        )\n        self.Bind(wx.EVT_MENU, fn, id=command)\n        entries.append(wx.AcceleratorEntry(flags, keycode, command))\n    self.SetAcceleratorTable(wx.AcceleratorTable(entries))\n",
+"type":"code"
+}
+],
+"id":"f353afbd281849ff8f2f4576520d0dff",
 "language":"",
 "type":"code"
 }
@@ -8018,7 +8036,7 @@
 ],
 "fragments":[
 {
-"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n        self._last_state = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def populate(self, toolbar):\n        new_state = self.get_state()\n        if new_state != self._last_state:\n            self._last_state = new_state\n            items = []\n            toolbar.ClearTools()\n            first = True\n            for group in self._tool_groups:\n                if group.is_active():\n                    if not first:\n                        toolbar.AddSeparator()\n                    first = False\n                    group.populate(toolbar)\n                    items.extend(group.accelerator_entries())\n            toolbar.Realize()\n            self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n\n    def get_state(self):\n        return [group.get_state() for group in self._tool_groups]\n",
+"text":"class ToolGroups(object):\n\n    def __init__(self, frame):\n        self._frame = frame\n        self._tool_groups = []\n        self._last_state = []\n\n    def add_group(self, *args, **kwargs):\n        group = ToolGroup(self._frame, *args, **kwargs)\n        self._tool_groups.append(group)\n        return group\n\n    def populate(self, toolbar):\n        new_state = self.get_state()\n        if new_state != self._last_state:\n            self._last_state = new_state\n            items = []\n            toolbar.ClearTools()\n            first = True\n            for group in self._tool_groups:\n                if group.is_active():\n                    if not first:\n                        toolbar.AddSeparator()\n                    first = False\n                    group.populate(toolbar)\n                    items.extend(group.accelerator_entries())\n            toolbar.Realize()\n            #self._frame.SetAcceleratorTable(wx.AcceleratorTable(items))\n\n    def get_state(self):\n        return [group.get_state() for group in self._tool_groups]\n",
 "type":"code"
 }
 ],
