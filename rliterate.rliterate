@@ -7539,44 +7539,6 @@
 "id":"8ab608f28a5046548963649371cab5fe",
 "paragraphs":[
 {
-"fragments":[
-{
-"text":"The main frame lays out two widgets horizontally: the table of contents (",
-"type":"text"
-},
-{
-"page_id":"c456e147b7b745ed80697c4faeb02bcb",
-"text":null,
-"type":"reference"
-},
-{
-"text":") and the workspace (",
-"type":"text"
-},
-{
-"page_id":"4dd60465575c4297a25813f0478f15f9",
-"text":null,
-"type":"reference"
-},
-{
-"text":"). It also creates the project from the specified file path.",
-"type":"text"
-}
-],
-"id":"4cea9ae964e344c990fcf98f9baa6bd0",
-"type":"text"
-},
-{
-"fragments":[
-{
-"text":"We put all components in a panel, and let the panel be the only child of the top level window. Otherwise tab cycling will not work properly. Reference?",
-"type":"text"
-}
-],
-"id":"3c4256b981ae435ea615666b5c16f057",
-"type":"text"
-},
-{
 "chunkpath":[
 "base base classes"
 ],
@@ -7593,7 +7555,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #min_size = tuple([920 500])\n    #title    = self._get_title()\n    panel(\n        focus     = True\n    ) %hbox {}\n    ",
+"text":" %vbox {\n    #project\n    #min_size = tuple([920 500])\n    #title    = self._get_title()\n    ",
 "type":"code"
 },
 {
@@ -7653,16 +7615,6 @@
 "id":"1184388e07e149eea4b71458b275b38b",
 "language":"",
 "type":"code"
-},
-{
-"fragments":[
-{
-"text":"When the main frame re-renders itself, the current focus can be lost. If we don't re-focus something, no window will have focus and keyboard shortcuts will not work. (This one took me a few hours to figure out.) Setting focus to items in a scrolling container will cause automatic scroll when focused. We therefore use a dummy focus panel of zero size that gains focus. But if a selection is present somehwere, it will set focus to that control.",
-"type":"text"
-}
-],
-"id":"1a381ec6a72c4c5fa4bf798f542ce60e",
-"type":"text"
 }
 ],
 "title":"Main frame"
@@ -15144,7 +15096,15 @@
 ],
 "fragments":[
 {
-"text":"| [\"frame\" .:name ast:y] -> {\n  \"class \" name \"(GuiFrameworkFrame):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      \"panel = wx.Panel(self)\\n\"\n      \"self.Sizer = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n      \"self.Sizer.Add(panel, flag=wx.EXPAND, proportion=1)\\n\"\n      \"self._root_widget = ",
+"text":"| [\"frame\" .:name ast:y] -> {\n  \"class \" name \"(GuiFrameworkFrame):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      \"self._root_panel = ",
+"type":"code"
+},
+{
+"id":"946dd579e2a94e49a5679094477fefd0",
+"type":"variable"
+},
+{
+"text":"(self)\\n\"\n      \"self.Sizer = wx.BoxSizer(wx.HORIZONTAL)\\n\"\n      \"self.Sizer.Add(self._root_panel, flag=wx.EXPAND, proportion=1)\\n\"\n      \"self._root_widget = ",
 "type":"code"
 },
 {
@@ -15152,7 +15112,7 @@
 "type":"variable"
 },
 {
-"text":"(panel)\\n\"\n      \"self._child_root(self._root_widget, first=True)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"with flicker_free_drawing(self):\\n\" >\n        \"self._child_root(self._root_widget)\\n\"\n        \"self.Layout()\\n\"\n        \"self.Refresh()\\n\"\n      <\n    <\n    \"\\ndef _child_root(self, parent, loopvar=None, first=False):\\n\" >\n      \"parent.reset()\\n\"\n      \"handlers = []\\n\"\n      #child\n      \"if first:\\n\" >\n        \"parent.listen(handlers)\\n\"\n      <\n    <\n    #methods\n    y\n  <\n}\n",
+"text":"(self._root_panel)\\n\"\n      \"self._root_panel.SetFocus()\\n\"\n      \"self._child_root(self._root_widget, first=True)\\n\"\n    <\n    \"\\ndef _update_gui(self):\\n\" >\n      \"with flicker_free_drawing(self):\\n\" >\n        \"self._root_panel.SetFocus()\\n\"\n        \"self._child_root(self._root_widget)\\n\"\n        \"self.Layout()\\n\"\n        \"self.Refresh()\\n\"\n      <\n    <\n    \"\\ndef _child_root(self, parent, loopvar=None, first=False):\\n\" >\n      \"parent.reset()\\n\"\n      \"handlers = []\\n\"\n      #child\n      \"if first:\\n\" >\n        \"parent.listen(handlers)\\n\"\n      <\n    <\n    #methods\n    y\n  <\n}\n",
 "type":"code"
 }
 ],
@@ -15163,6 +15123,26 @@
 "rlmeta/rlmeta.py"
 ],
 "type":"code"
+},
+{
+"fragments":[
+{
+"text":"When a frame re-renders, the widget currently having focus might be removed. That leaves no widget focused. If no widget is focused, keyboard shortcuts don't work. (This one took me a few hours to figure out.) Therefore the root panel is always given focus. If child widgets re-rendered later wants focus they will take it.",
+"type":"text"
+}
+],
+"id":"1a381ec6a72c4c5fa4bf798f542ce60e",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"We put all components in a panel, and let the panel be the only child of the top level window. Otherwise tab cycling will not work properly. Reference?",
+"type":"text"
+}
+],
+"id":"3c4256b981ae435ea615666b5c16f057",
+"type":"text"
 },
 {
 "chunkpath":[

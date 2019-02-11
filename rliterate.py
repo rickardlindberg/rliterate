@@ -397,14 +397,16 @@ class MainFrameGui(GuiFrameworkFrame):
         }
 
     def _create_gui(self):
-        panel = wx.Panel(self)
+        self._root_panel = GuiFrameworkPanel(self)
         self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.Sizer.Add(panel, flag=wx.EXPAND, proportion=1)
-        self._root_widget = GuiFrameworkWidgetInfo(panel)
+        self.Sizer.Add(self._root_panel, flag=wx.EXPAND, proportion=1)
+        self._root_widget = GuiFrameworkWidgetInfo(self._root_panel)
+        self._root_panel.SetFocus()
         self._child_root(self._root_widget, first=True)
 
     def _update_gui(self):
         with flicker_free_drawing(self):
+            self._root_panel.SetFocus()
             self._child_root(self._root_widget)
             self.Layout()
             self.Refresh()
@@ -414,23 +416,12 @@ class MainFrameGui(GuiFrameworkFrame):
         handlers = []
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         self._child1(parent, loopvar)
+        self._child2(parent, loopvar)
         self._child3(parent, loopvar)
-        self._child4(parent, loopvar)
-        self._child5(parent, loopvar)
         if first:
             parent.listen(handlers)
 
     def _child1(self, parent, loopvar):
-        handlers = []
-        properties = {}
-        sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['focus'] = True
-        widget = parent.add(GuiFrameworkPanel, properties, handlers, sizer)
-        parent = widget
-        parent.reset()
-        parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
-
-    def _child3(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -441,7 +432,7 @@ class MainFrameGui(GuiFrameworkFrame):
         parent = widget
         parent.reset()
 
-    def _child4(self, parent, loopvar):
+    def _child2(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -451,7 +442,7 @@ class MainFrameGui(GuiFrameworkFrame):
         parent = widget
         parent.reset()
 
-    def _child5(self, parent, loopvar):
+    def _child3(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -461,11 +452,11 @@ class MainFrameGui(GuiFrameworkFrame):
         parent = widget
         parent.reset()
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._child5(parent, loopvar)
+        self._child6(parent, loopvar)
         self._child7(parent, loopvar)
-        self._child8(parent, loopvar)
-        self._child9(parent, loopvar)
 
-    def _child7(self, parent, loopvar):
+    def _child5(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -476,7 +467,7 @@ class MainFrameGui(GuiFrameworkFrame):
         parent = widget
         parent.reset()
 
-    def _child8(self, parent, loopvar):
+    def _child6(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
@@ -486,7 +477,7 @@ class MainFrameGui(GuiFrameworkFrame):
         parent = widget
         parent.reset()
 
-    def _child9(self, parent, loopvar):
+    def _child7(self, parent, loopvar):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
