@@ -97,6 +97,8 @@ class GuiFrameworkBaseMixin(object):
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
         self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
+        self.Bind(wx.EVT_ENTER_WINDOW, lambda event: self._call_handler("enter", event, propagate=True))
+        self.Bind(wx.EVT_LEAVE_WINDOW, lambda event: self._call_handler("leave", event, propagate=True))
         self._create_gui()
         self._update_builtin()
 
@@ -615,6 +617,8 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         handlers.append(('click', lambda event: self._on_click_old(event)))
         handlers.append(('right_click', lambda event: self._on_right_click_old(event)))
         handlers.append(('drag', lambda event: self._on_drag_old(event)))
+        handlers.append(('enter', lambda event: self._on_enter(event)))
+        handlers.append(('leave', lambda event: self._on_leave(event)))
         if first:
             parent.listen(handlers)
 
@@ -4771,6 +4775,11 @@ class TableOfContentsRow(TableOfContentsRowGui):
         drag_source = wx.DropSource(self)
         drag_source.SetData(data)
         result = drag_source.DoDragDrop(wx.Drag_DefaultMove)
+    def _on_enter(self, event):
+        self.UpdateGui({"background": "#cccccc"})
+
+    def _on_leave(self, event):
+        self.UpdateGui({"background": None})
 class TocTitleProjection(BaseProjection):
 
     def __init__(self, project, page, selection):

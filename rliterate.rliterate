@@ -8400,7 +8400,7 @@
 "type":"variable"
 },
 {
-"text":"[text](\n        projection     = TocTitleProjection(self.project self.page self.selection)\n        %border[self.BORDER, ALL]\n        @ctrl_click = self.text.Select(self.project event.Position)\n        @mouse_move = self._set_cursor(event)\n    )\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n}\n",
+"text":"[text](\n        projection     = TocTitleProjection(self.project self.page self.selection)\n        %border[self.BORDER, ALL]\n        @ctrl_click = self.text.Select(self.project event.Position)\n        @mouse_move = self._set_cursor(event)\n    )\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n    @enter       = self._on_enter(event)\n    @leave       = self._on_leave(event)\n}\n",
 "type":"code"
 }
 ],
@@ -8540,6 +8540,24 @@
 }
 ],
 "id":"a9521985419748e386e6d2503d07a957",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _on_enter(self, event):\n    self.UpdateGui({\"background\": \"#cccccc\"})\n\ndef _on_leave(self, event):\n    self.UpdateGui({\"background\": None})\n",
+"type":"code"
+}
+],
+"id":"afbfd1776e444c52b5a731e1c8445317",
 "language":"",
 "type":"code"
 },
@@ -15418,7 +15436,7 @@
 "type":"variable"
 },
 {
-"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self._default_cursor = self.GetCursor()\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.",
+"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self._default_cursor = self.GetCursor()\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.Bind(wx.EVT_ENTER_WINDOW, lambda event: self._call_handler(\"enter\", event, propagate=True))\n        self.Bind(wx.EVT_LEAVE_WINDOW, lambda event: self._call_handler(\"leave\", event, propagate=True))\n        self.",
 "type":"code"
 },
 {
