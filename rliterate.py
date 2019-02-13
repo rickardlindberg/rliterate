@@ -548,11 +548,13 @@ class TableOfContentsGui(GuiFrameworkPanel):
         parent.reset()
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         parent.loop_start()
-        for loopvar in self._get_rows():
-            pass
-            self._child4(parent, loopvar)
-            self._child5(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._get_rows():
+                pass
+                self._child4(parent, loopvar)
+                self._child5(parent, loopvar)
+        finally:
+            parent.loop_end(self)
 
     def _child4(self, parent, loopvar):
         handlers = []
@@ -714,10 +716,12 @@ class WorkspaceGui(GuiFrameworkHScroll):
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
         parent.add_space(self.project.theme.page_padding)
         parent.loop_start()
-        for loopvar in self._get_columns():
-            pass
-            self._child1(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._get_columns():
+                pass
+                self._child1(parent, loopvar)
+        finally:
+            parent.loop_end(self)
         if first:
             parent.listen(handlers)
 
@@ -765,10 +769,12 @@ class ColumnGui(GuiFrameworkVScroll):
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         parent.add_space(self.project.theme.page_padding)
         parent.loop_start()
-        for loopvar in self._get_rows():
-            pass
-            self._child1(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._get_rows():
+                pass
+                self._child1(parent, loopvar)
+        finally:
+            parent.loop_end(self)
         handlers.append(('page_open_request', lambda event: self.OpenPage(event)))
         if first:
             parent.listen(handlers)
@@ -955,11 +961,13 @@ class PageGui(GuiFrameworkPanel):
         self._child1(parent, loopvar)
         self._child2(parent, loopvar)
         parent.loop_start()
-        for loopvar in self._get_paragraphs():
-            pass
-            self._child3(parent, loopvar)
-            self._child4(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._get_paragraphs():
+                pass
+                self._child3(parent, loopvar)
+                self._child4(parent, loopvar)
+        finally:
+            parent.loop_end(self)
         self._child5(parent, loopvar)
         handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
         if first:
@@ -1243,10 +1251,12 @@ class ListGui(GuiFrameworkPanel):
         handlers = []
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         parent.loop_start()
-        for loopvar in self._get_rows():
-            pass
-            self._child1(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._get_rows():
+                pass
+                self._child1(parent, loopvar)
+        finally:
+            parent.loop_end(self)
         handlers.append(('drag', lambda event: self.DoDragDrop()))
         handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
         if first:
@@ -1311,16 +1321,20 @@ class CodeGui(GuiFrameworkPanel):
         handlers = []
         parent.sizer = wx.BoxSizer(wx.VERTICAL)
         parent.loop_start()
-        for loopvar in self._header():
-            pass
-            self._child1(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._header():
+                pass
+                self._child1(parent, loopvar)
+        finally:
+            parent.loop_end(self)
         self._child7(parent, loopvar)
         parent.loop_start()
-        for loopvar in self._post_process():
-            pass
-            self._child10(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._post_process():
+                pass
+                self._child10(parent, loopvar)
+        finally:
+            parent.loop_end(self)
         handlers.append(('drag', lambda event: self.DoDragDrop()))
         handlers.append(('right_click', lambda event: SimpleContextMenu.ShowRecursive(self)))
         handlers.append(('click', lambda event: setattr(self.project, 'selection', self.selection.create_this())))
@@ -1339,10 +1353,12 @@ class CodeGui(GuiFrameworkPanel):
         parent.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self._child3(parent, loopvar)
         parent.loop_start()
-        for loopvar in self._filetype():
-            pass
-            self._child4(parent, loopvar)
-        parent.loop_end(self)
+        try:
+            for loopvar in self._filetype():
+                pass
+                self._child4(parent, loopvar)
+        finally:
+            parent.loop_end(self)
 
     def _child3(self, parent, loopvar):
         handlers = []

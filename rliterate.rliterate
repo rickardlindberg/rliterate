@@ -15217,7 +15217,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"loop\" ast:x ast*:zs] -> {\n  @child {\n    \"parent.loop_start()\\n\"\n    \"for loopvar in \" x \":\\n\" >\n       \"pass\\n\"\n  }\n  zs\n  @child {\n    <\n    \"parent.loop_end(self)\\n\"\n  }\n}\n",
+"text":"| [\"loop\" ast:x ast*:zs] -> {\n  @child {\n    \"parent.loop_start()\\n\"\n    \"try:\\n\" >\n      \"for loopvar in \" x \":\\n\" >\n         \"pass\\n\"\n  }\n  zs\n  @child {\n    <<\n    \"finally:\\n\" >\n        \"parent.loop_end(self)\\n\"\n    <\n  }\n}\n",
 "type":"code"
 }
 ],
