@@ -18809,6 +18809,24 @@
 "type":"text"
 }
 ]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"When to call ",
+"type":"text"
+},
+{
+"text":"event.Skip()",
+"type":"code"
+},
+{
+"text":"? Only if no handler called?",
+"type":"text"
+}
+]
 }
 ],
 "fragments":[
