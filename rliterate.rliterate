@@ -15436,7 +15436,7 @@
 "type":"variable"
 },
 {
-"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self._default_cursor = self.GetCursor()\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.Bind(wx.EVT_ENTER_WINDOW, lambda event: self._call_handler(\"enter\", event, propagate=True))\n        self.Bind(wx.EVT_LEAVE_WINDOW, lambda event: self._call_handler(\"leave\", event, propagate=True))\n        self.",
+"text":" = None\n        self._handlers = {}\n        self.down_pos = None\n        self._default_cursor = self.GetCursor()\n        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)\n        self.Bind(wx.EVT_MOTION, self._on_motion)\n        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)\n        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)\n        self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)\n        self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter)\n        self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave)\n        self.",
 "type":"code"
 },
 {
@@ -15444,7 +15444,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._update_builtin()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n        elif event == \"timer\":\n            self.Bind(wx.EVT_TIMER, lambda event: self._call_handler(\"timer\", event))\n\n    @property\n    def ",
+"text":"()\n        self._update_builtin()\n\n    def _on_enter(self, event):\n        self._call_handler(\"enter\", event, propagate=True)\n        event.Skip()\n\n    def _on_leave(self, event):\n        self._call_handler(\"leave\", event, propagate=True)\n        event.Skip()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n        elif event == \"timer\":\n            self.Bind(wx.EVT_TIMER, lambda event: self._call_handler(\"timer\", event))\n\n    @property\n    def ",
 "type":"code"
 },
 {

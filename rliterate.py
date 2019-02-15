@@ -97,10 +97,18 @@ class GuiFrameworkBaseMixin(object):
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
         self.Bind(wx.EVT_RIGHT_UP, self._on_right_up)
-        self.Bind(wx.EVT_ENTER_WINDOW, lambda event: self._call_handler("enter", event, propagate=True))
-        self.Bind(wx.EVT_LEAVE_WINDOW, lambda event: self._call_handler("leave", event, propagate=True))
+        self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave)
         self._create_gui()
         self._update_builtin()
+
+    def _on_enter(self, event):
+        self._call_handler("enter", event, propagate=True)
+        event.Skip()
+
+    def _on_leave(self, event):
+        self._call_handler("leave", event, propagate=True)
+        event.Skip()
 
     def listen(self, event, handler):
         if event in self._handlers:
