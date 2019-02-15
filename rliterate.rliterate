@@ -18756,37 +18756,6 @@
 "type":"text"
 }
 ]
-}
-],
-"fragments":[
-{
-"text":"GUI framework",
-"type":"text"
-}
-]
-},
-{
-"child_type":"unordered",
-"children":[
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Write back as soon as file changes",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
-"text":"Fail if the paragraph no longer exists",
-"type":"text"
-}
-]
 },
 {
 "child_type":null,
@@ -18824,6 +18793,37 @@
 },
 {
 "text":"? Only if no handler called?",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"GUI framework",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Write back as soon as file changes",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Fail if the paragraph no longer exists",
 "type":"text"
 }
 ]
