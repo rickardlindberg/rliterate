@@ -17440,16 +17440,6 @@
 "children":[],
 "fragments":[
 {
-"text":"Highlighting of rows is not always up to date",
-"type":"text"
-}
-]
-},
-{
-"child_type":null,
-"children":[],
-"fragments":[
-{
 "text":"Should only expand first 3(?) levels when opening a file for the first time?",
 "type":"text"
 }
@@ -18794,6 +18784,28 @@
 "fragments":[
 {
 "text":"Fail if the paragraph no longer exists",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"enter",
+"type":"code"
+},
+{
+"text":"/",
+"type":"text"
+},
+{
+"text":"leave",
+"type":"code"
+},
+{
+"text":" events don't always fire correctly",
 "type":"text"
 }
 ]
