@@ -7535,7 +7535,85 @@
 {
 "children":[
 {
+"children":[
+{
 "children":[],
+"id":"da5549fee1f346ef90210565ea51571f",
+"paragraphs":[
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"dialog ",
+"type":"code"
+},
+{
+"id":"01742ac13fe74a5eb2bdbb699b0c4ccc",
+"type":"variable"
+},
+{
+"text":" %vbox {\n    #project\n    #text\n    BoxSpace(self.BORDER)\n    Label(\n        label = self.text\n        background = \"green\"\n        %border[self.BORDER, LEFT|BOTTOM|RIGHT]\n        %align_center\n    )\n    Gauge[gauge](\n        background = \"red\"\n        %border[self.BORDER, LEFT|BOTTOM|RIGHT]\n        %align_center\n    )\n    @timer = self.gauge.Pulse()\n}\n",
+"type":"code"
+}
+],
+"id":"a3f0dd177c494b5bbe949a216751cdb6",
+"language":"rlgui",
+"post_process":[
+"python",
+"rlgui.py"
+],
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"a1be321425814ac78c366c60f3378f5f",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"01742ac13fe74a5eb2bdbb699b0c4ccc",
+"type":"variable"
+},
+{
+"text":"):\n\n    BORDER = 8\n\n    def _create_gui(self):\n        ",
+"type":"code"
+},
+{
+"id":"01742ac13fe74a5eb2bdbb699b0c4ccc",
+"type":"variable"
+},
+{
+"text":"._create_gui(self)\n        self.Fit()\n        thread = threading.Thread(target=self._save)\n        thread.start()\n        self.timer = wx.Timer(self)\n        self.timer.Start(100)\n\n    def _save(self):\n        self.project.wait_for_save()\n        wx.CallAfter(self.Close)\n",
+"type":"code"
+}
+],
+"id":"b86aa1c9c70c43359c486916a3d9cc33",
+"language":"",
+"type":"code"
+}
+],
+"title":"New page..."
+}
+],
 "id":"8ab608f28a5046548963649371cab5fe",
 "paragraphs":[
 {
@@ -7608,7 +7686,15 @@
 "type":"variable"
 },
 {
-"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n    def PreClose(self):\n        project.wait_for_save()\n",
+"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n    def PreClose(self):\n        self.ShowModal(",
+"type":"code"
+},
+{
+"id":"a1be321425814ac78c366c60f3378f5f",
+"type":"variable"
+},
+{
+"text":", {\n            \"project\": self.project,\n            \"text\": \"Waiting for save...\",\n        })\n",
 "type":"code"
 }
 ],
@@ -15668,7 +15754,7 @@
 "type":"variable"
 },
 {
-"text":"):\n            self.Parent._call_handler(name, event, propagate=propagate)\n\n    def CallHandler(self, name, event):\n        self._call_handler(name, event, propagate=True)\n",
+"text":"):\n            self.Parent._call_handler(name, event, propagate=propagate)\n\n    def CallHandler(self, name, event):\n        self._call_handler(name, event, propagate=True)\n\n    def ShowModal(self, name, values):\n        dialog = name(self, values)\n        dialog.ShowModal()\n        dialog.Destroy()\n",
 "type":"code"
 }
 ],
@@ -16051,6 +16137,48 @@
 }
 ],
 "id":"ad2732c68e4e4076a3a82ad201912e86",
+"language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"87d0b73f41e44055b3d11856c1f82a04",
+"type":"variable"
+},
+{
+"text":"(wx.Gauge, ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, values):\n        wx.Gauge.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"c76c30d4944341fca0c9c8411f5aaee6",
+"type":"variable"
+},
+{
+"text":".__init__(self, values)\n",
+"type":"code"
+}
+],
+"id":"051c9877f1cb4c05a10dba1acee7f86d",
 "language":"",
 "post_process":[],
 "type":"code"
@@ -18963,6 +19091,7 @@
 "title":"RLiterate"
 },
 "variables":{
+"01742ac13fe74a5eb2bdbb699b0c4ccc":"WaitDialogGui",
 "0210b654a92741d198946966e8e5b82e":"MainFrame",
 "022b19461779432dacb8005e42acdd77":"MainFrameGui",
 "038ab2c5a2e54a9eb8e136640f3694c6":"DividerGui",
@@ -19108,6 +19237,7 @@
 "84efae9f935b4926b3f8658d9d4f39c2":"GuiFrameworkWidgetInfo",
 "84f83f7012144146b77d3fdd168b2d61":"TextProjectionEditor",
 "879f1ca439804909ab2e0ff943a7f46e":"_set_min_size",
+"87d0b73f41e44055b3d11856c1f82a04":"Gauge",
 "883ac73a999c403e8274442301acdbb3":"UpdateGui",
 "885085190cef47709dd3922b7c386fab":"fragments",
 "887acc7e530b4d98933d11e223d58c42":"_create_gui",
@@ -19135,6 +19265,7 @@
 "9e987210a686490c823a44d09e783833":"_load",
 "a06246c10a774985a26641cdb8aa2a3b":"ExpandedCodeGui",
 "a1a3aea5bbb04e38811ba056bf5fc139":"DocumentDictWrapper",
+"a1be321425814ac78c366c60f3378f5f":"WaitDialog",
 "a29da8b06afb474dbef1b70fba3db24e":"create_font",
 "a33817e31cd444b395920c3fa219db52":"edit_in_gvim",
 "a3b92b83131e489a8903a1245a1c435b":"ListGui",

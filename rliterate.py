@@ -228,6 +228,11 @@ class GuiFrameworkBaseMixin(object):
 
     def CallHandler(self, name, event):
         self._call_handler(name, event, propagate=True)
+
+    def ShowModal(self, name, values):
+        dialog = name(self, values)
+        dialog.ShowModal()
+        dialog.Destroy()
 class GuiFrameworkWidgetInfo(object):
 
     def __init__(self, widget):
@@ -383,6 +388,11 @@ class Button(wx.Button, GuiFrameworkBaseMixin):
         wx.Button.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, values)
         self.Bind(wx.EVT_BUTTON, lambda event: self._call_handler("button", event, propagate=True))
+class Gauge(wx.Gauge, GuiFrameworkBaseMixin):
+
+    def __init__(self, parent, values):
+        wx.Gauge.__init__(self, parent)
+        GuiFrameworkBaseMixin.__init__(self, values)
 class Label(wx.StaticText, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, values):
@@ -522,6 +532,75 @@ class MainFrameGui(GuiFrameworkFrame):
     @property
     def project(self):
         return self.values["project"]
+class WaitDialogGui(GuiFrameworkDialog):
+
+    def _get_derived(self):
+        return {
+        }
+
+    def _create_gui(self):
+        self._root_panel = GuiFrameworkPanel(self, {})
+        self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.Sizer.Add(self._root_panel, flag=wx.EXPAND, proportion=1)
+        self._root_widget = GuiFrameworkWidgetInfo(self._root_panel)
+        self._root_panel.SetFocus()
+        self._child_root(self._root_widget, first=True)
+
+    def _update_gui(self):
+        self._root_panel.SetFocus()
+        self._child_root(self._root_widget)
+
+    def _child_root(self, parent, loopvar=None, first=False):
+        parent.reset()
+        handlers = []
+        parent.sizer = wx.BoxSizer(wx.VERTICAL)
+        parent.add_space(self.BORDER)
+        self._child1(parent, loopvar)
+        self._child2(parent, loopvar)
+        handlers.append(('timer', lambda event: self.gauge.Pulse()))
+        if first:
+            parent.listen(handlers)
+
+    def _child1(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['label'] = self.text
+        properties['background'] = 'green'
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.LEFT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.ALIGN_CENTER
+        widget = parent.add(Label, properties, handlers, sizer)
+        parent = widget
+        parent.reset()
+
+    def _child2(self, parent, loopvar):
+        handlers = []
+        properties = {}
+        sizer = {"flag": 0, "border": 0, "proportion": 0}
+        properties['background'] = 'red'
+        sizer["border"] = self.BORDER
+        sizer["flag"] |= wx.LEFT
+        sizer["flag"] |= wx.BOTTOM
+        sizer["flag"] |= wx.RIGHT
+        sizer["flag"] |= wx.ALIGN_CENTER
+        widget = parent.add(Gauge, properties, handlers, sizer)
+        if parent.inside_loop:
+            parent.add_loop_var('gauge', widget.widget)
+        else:
+            self.gauge = widget.widget
+        parent = widget
+        parent.reset()
+
+    @property
+    def project(self):
+        return self.values["project"]
+
+    @property
+    def text(self):
+        return self.values["text"]
 class TableOfContentsGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -4476,7 +4555,25 @@ class MainFrame(MainFrameGui):
         ])
 
     def PreClose(self):
-        project.wait_for_save()
+        self.ShowModal(WaitDialog, {
+            "project": self.project,
+            "text": "Waiting for save...",
+        })
+class WaitDialog(WaitDialogGui):
+
+    BORDER = 8
+
+    def _create_gui(self):
+        WaitDialogGui._create_gui(self)
+        self.Fit()
+        thread = threading.Thread(target=self._save)
+        thread.start()
+        self.timer = wx.Timer(self)
+        self.timer.Start(100)
+
+    def _save(self):
+        self.project.wait_for_save()
+        wx.CallAfter(self.Close)
 class ToolbarGui(GuiFrameworkPanel):
 
     def _get_derived(self):
