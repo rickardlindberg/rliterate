@@ -303,10 +303,9 @@ class GuiFrameworkWidgetInfo(object):
     def listen(self, event_handlers):
         for event_handler in event_handlers:
             self.widget.listen(*event_handler)
-class GuiFrameworkFrame(wx.Frame, GuiFrameworkBaseMixin):
+class GuiFrameworkTopBaseMixin(GuiFrameworkBaseMixin):
 
-    def __init__(self, parent, values):
-        wx.Frame.__init__(self, parent)
+    def __init__(self, values):
         GuiFrameworkBaseMixin.__init__(self, values)
         self.Bind(wx.EVT_CLOSE, self._on_close)
 
@@ -348,6 +347,16 @@ class GuiFrameworkFrame(wx.Frame, GuiFrameworkBaseMixin):
             self.Bind(wx.EVT_MENU, fn, id=command)
             entries.append(wx.AcceleratorEntry(flags, keycode, command))
         self.SetAcceleratorTable(wx.AcceleratorTable(entries))
+class GuiFrameworkFrame(wx.Frame, GuiFrameworkTopBaseMixin):
+
+    def __init__(self, parent, values):
+        wx.Frame.__init__(self, parent)
+        GuiFrameworkTopBaseMixin.__init__(self, values)
+class GuiFrameworkDialog(wx.Dialog, GuiFrameworkTopBaseMixin):
+
+    def __init__(self, parent, values):
+        wx.Dialog.__init__(self, parent)
+        GuiFrameworkTopBaseMixin.__init__(self, values)
 class GuiFrameworkPanel(wx.Panel, GuiFrameworkBaseMixin):
 
     def __init__(self, parent, values):

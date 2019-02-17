@@ -14993,7 +14993,7 @@
 "type":"tabstop"
 },
 {
-"text":"= 'frame' | 'panel' | 'scroll' | 'vscroll' | 'hscroll'\n  name ",
+"text":"= 'frame' | 'dialog' | 'panel' | 'scroll' | 'vscroll' | 'hscroll'\n  name ",
 "type":"code"
 },
 {
@@ -15122,7 +15122,7 @@
 ],
 "fragments":[
 {
-"text":"| [\"frame\" .:name ast:y] -> {\n  \"class \" name \"(GuiFrameworkFrame):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      \"self._root_panel = ",
+"text":"| [topLevel:x .:name ast:y] -> {\n  \"class \" name \"(\" x \"):\\n\" >\n    \"\\ndef _get_derived(self):\\n\" >\n      \"return {\\n\" > #derived < \"}\\n\"\n    <\n    \"\\ndef _create_gui(self):\\n\" >\n      \"self._root_panel = ",
 "type":"code"
 },
 {
@@ -15312,15 +15312,7 @@
 ],
 "fragments":[
 {
-"text":"widget =\n  | \"frame\"   -> \"",
-"type":"code"
-},
-{
-"id":"61e3adf07b064ace88f51ee0cc8abf11",
-"type":"variable"
-},
-{
-"text":"\"\n  | \"panel\"   -> \"",
+"text":"widget =\n  | \"panel\"   -> \"",
 "type":"code"
 },
 {
@@ -15349,6 +15341,22 @@
 },
 {
 "id":"22b14d6c952c469eb7f9f8d6d0f7c8cc",
+"type":"variable"
+},
+{
+"text":"\"\ntopLevel =\n  | \"frame\"   -> \"",
+"type":"code"
+},
+{
+"id":"61e3adf07b064ace88f51ee0cc8abf11",
+"type":"variable"
+},
+{
+"text":"\"\n  | \"dialog\"  -> \"",
+"type":"code"
+},
+{
+"id":"6b651ebdac294be5a6655efc8180973d",
 "type":"variable"
 },
 {
@@ -15716,11 +15724,11 @@
 "type":"code"
 },
 {
-"id":"61e3adf07b064ace88f51ee0cc8abf11",
+"id":"b4a78b67c3464196af285a3013da928e",
 "type":"variable"
 },
 {
-"text":"(wx.Frame, ",
+"text":"(",
 "type":"code"
 },
 {
@@ -15728,7 +15736,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, parent, values):\n        wx.Frame.__init__(self, parent)\n        ",
+"text":"):\n\n    def __init__(self, values):\n        ",
 "type":"code"
 },
 {
@@ -15744,16 +15752,8 @@
 "type":"variable"
 },
 {
-"text":"._update_builtin(self)\n        if self.did_change(\"title\"):\n            self.SetTitle(self.values[\"title\"])\n\n    def _on_close(self, event):\n        self.PreClose()\n        event.Skip()\n\n    def PreClose(self):\n        pass\n\n",
+"text":"._update_builtin(self)\n        if self.did_change(\"title\"):\n            self.SetTitle(self.values[\"title\"])\n\n    def _on_close(self, event):\n        self.PreClose()\n        event.Skip()\n\n    def PreClose(self):\n        pass\n\n    def set_keyboard_shortcuts(self, shortcuts):\n        def create_handler(condition_fn, action_fn):\n            def handler(event):\n                if condition_fn():\n                    action_fn()\n            return handler\n        entries = []\n        for shortcut in shortcuts:\n            flags = wx.ACCEL_NORMAL\n            if shortcut.get(\"ctrl\", False):\n                flags |= wx.ACCEL_CTRL\n            key = shortcut.get(\"key\", \"\")\n            if len(key) == 1:\n                keycode = ord(key)\n            else:\n                keycode = {\n                    \"esc\": wx.WXK_ESCAPE,\n                }[key]\n            command = wx.NewId()\n            fn = create_handler(\n                shortcut.get(\"condition_fn\", lambda: True),\n                shortcut.get(\"action_fn\", lambda: None)\n            )\n            self.Bind(wx.EVT_MENU, fn, id=command)\n            entries.append(wx.AcceleratorEntry(flags, keycode, command))\n        self.SetAcceleratorTable(wx.AcceleratorTable(entries))\n",
 "type":"code"
-},
-{
-"blank_lines_before":0,
-"path":[
-"Frame"
-],
-"prefix":"    ",
-"type":"chunk"
 }
 ],
 "id":"925fea89db504f429533b9fc822737d3",
@@ -15763,20 +15763,86 @@
 },
 {
 "chunkpath":[
-"base base base classes",
-"Frame"
+"base base base classes"
 ],
 "filepath":[
 "rliterate.py"
 ],
 "fragments":[
 {
-"text":"def set_keyboard_shortcuts(self, shortcuts):\n    def create_handler(condition_fn, action_fn):\n        def handler(event):\n            if condition_fn():\n                action_fn()\n        return handler\n    entries = []\n    for shortcut in shortcuts:\n        flags = wx.ACCEL_NORMAL\n        if shortcut.get(\"ctrl\", False):\n            flags |= wx.ACCEL_CTRL\n        key = shortcut.get(\"key\", \"\")\n        if len(key) == 1:\n            keycode = ord(key)\n        else:\n            keycode = {\n                \"esc\": wx.WXK_ESCAPE,\n            }[key]\n        command = wx.NewId()\n        fn = create_handler(\n            shortcut.get(\"condition_fn\", lambda: True),\n            shortcut.get(\"action_fn\", lambda: None)\n        )\n        self.Bind(wx.EVT_MENU, fn, id=command)\n        entries.append(wx.AcceleratorEntry(flags, keycode, command))\n    self.SetAcceleratorTable(wx.AcceleratorTable(entries))\n",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"61e3adf07b064ace88f51ee0cc8abf11",
+"type":"variable"
+},
+{
+"text":"(wx.Frame, ",
+"type":"code"
+},
+{
+"id":"b4a78b67c3464196af285a3013da928e",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, values):\n        wx.Frame.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"b4a78b67c3464196af285a3013da928e",
+"type":"variable"
+},
+{
+"text":".__init__(self, values)\n",
 "type":"code"
 }
 ],
-"id":"f353afbd281849ff8f2f4576520d0dff",
+"id":"a97f5cf5fb084587a87ad77ed517d4e3",
 "language":"",
+"post_process":[],
+"type":"code"
+},
+{
+"chunkpath":[
+"base base base classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"6b651ebdac294be5a6655efc8180973d",
+"type":"variable"
+},
+{
+"text":"(wx.Dialog, ",
+"type":"code"
+},
+{
+"id":"b4a78b67c3464196af285a3013da928e",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, parent, values):\n        wx.Dialog.__init__(self, parent)\n        ",
+"type":"code"
+},
+{
+"id":"b4a78b67c3464196af285a3013da928e",
+"type":"variable"
+},
+{
+"text":".__init__(self, values)\n",
+"type":"code"
+}
+],
+"id":"db4fff365e3c4c46b255457cbb5acaad",
+"language":"",
+"post_process":[],
 "type":"code"
 },
 {
@@ -19016,6 +19082,7 @@
 "693482dc04b14cac9b3fe810dcae59a5":"get_style",
 "6a754b8a39e24518b76e88d57a89eff6":"container_border",
 "6a9ba1a85a8845b4b4f28b8b99c07f83":"QuoteGui",
+"6b651ebdac294be5a6655efc8180973d":"GuiFrameworkDialog",
 "6df9f93cf2db4cecb5effb2ad31fb7fb":"CreateEdit",
 "6e076e2955c4476fbe194f0a38a97cee":"index_with_id",
 "6f631ce82ca14586b46f270fb83c1b97":"ImageGui",
@@ -19100,6 +19167,7 @@
 "b3ef449947274fc597372ebb7fa1eaf7":"max_width",
 "b425fa2a021340e0be02f8c7a152ba19":"create_font",
 "b4434572c6644fd1875382eeade819fc":"ToolbarGui",
+"b4a78b67c3464196af285a3013da928e":"GuiFrameworkTopBaseMixin",
 "b7d3ecae71fd4c3ead275b008cfc71e8":"_save_status",
 "b7da0c1f7b7845c8a2c816963948740d":"document_dict",
 "b89d6b27982b458d9b9318ed8fa709e2":"highlighted_variable",
