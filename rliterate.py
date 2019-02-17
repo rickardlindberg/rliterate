@@ -235,8 +235,12 @@ class GuiFrameworkBaseMixin(object):
         dialog.Destroy()
 class GuiFrameworkWidgetInfo(object):
 
-    def __init__(self, widget):
+    def __init__(self, widget, handler_widget=None):
         self.widget = widget
+        if handler_widget is None:
+            self.handler_widget = widget
+        else:
+            self.handler_widget = handler_widget
         self.children = []
         self.reset()
 
@@ -307,7 +311,7 @@ class GuiFrameworkWidgetInfo(object):
 
     def listen(self, event_handlers):
         for event_handler in event_handlers:
-            self.widget.listen(*event_handler)
+            self.handler_widget.listen(*event_handler)
 class GuiFrameworkTopBaseMixin(GuiFrameworkBaseMixin):
 
     def __init__(self, values):
@@ -443,7 +447,7 @@ class MainFrameGui(GuiFrameworkFrame):
         self._root_panel = GuiFrameworkPanel(self, {})
         self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.Sizer.Add(self._root_panel, flag=wx.EXPAND, proportion=1)
-        self._root_widget = GuiFrameworkWidgetInfo(self._root_panel)
+        self._root_widget = GuiFrameworkWidgetInfo(self._root_panel, self)
         self._root_panel.SetFocus()
         self._child_root(self._root_widget, first=True)
 
@@ -542,7 +546,7 @@ class WaitDialogGui(GuiFrameworkDialog):
         self._root_panel = GuiFrameworkPanel(self, {})
         self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.Sizer.Add(self._root_panel, flag=wx.EXPAND, proportion=1)
-        self._root_widget = GuiFrameworkWidgetInfo(self._root_panel)
+        self._root_widget = GuiFrameworkWidgetInfo(self._root_panel, self)
         self._root_panel.SetFocus()
         self._child_root(self._root_widget, first=True)
 
