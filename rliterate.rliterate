@@ -13195,7 +13195,7 @@
 "type":"variable"
 },
 {
-"text":":\n            self.timer.Start(400)\n        else:\n            self.timer.Stop()\n        self.Refresh()\n",
+"text":":\n            self.timer.Start(400)\n        else:\n            self.timer.Stop()\n",
 "type":"code"
 }
 ],
@@ -13229,7 +13229,7 @@
 "type":"variable"
 },
 {
-"text":"\n    self.Refresh()\n",
+"text":"\n    self.UpdateGui()\n",
 "type":"code"
 }
 ],

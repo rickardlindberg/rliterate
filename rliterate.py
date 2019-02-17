@@ -2164,11 +2164,10 @@ class TextProjection(TextProjectionGui):
                 self.timer.Start(400)
             else:
                 self.timer.Stop()
-            self.Refresh()
 
     def _on_timer(self, event):
         self._show_beams = not self._show_beams
-        self.Refresh()
+        self.UpdateGui()
 
     def _layout(self):
         self._partition_characters()
