@@ -308,11 +308,19 @@ class GuiFrameworkFrame(wx.Frame, GuiFrameworkBaseMixin):
     def __init__(self, parent, values):
         wx.Frame.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, values)
+        self.Bind(wx.EVT_CLOSE, self._on_close)
 
     def _update_builtin(self):
         GuiFrameworkBaseMixin._update_builtin(self)
         if self.did_change("title"):
             self.SetTitle(self.values["title"])
+
+    def _on_close(self, event):
+        self.PreClose()
+        event.Skip()
+
+    def PreClose(self):
+        pass
 
     def set_keyboard_shortcuts(self, shortcuts):
         def create_handler(condition_fn, action_fn):
@@ -4457,6 +4465,9 @@ class MainFrame(MainFrameGui):
                 "action_fn": lambda: self.Close(),
             },
         ])
+
+    def PreClose(self):
+        project.wait_for_save()
 class ToolbarGui(GuiFrameworkPanel):
 
     def _get_derived(self):
@@ -6559,4 +6570,3 @@ if __name__ == "__main__":
         main_frame.Show()
         project.listen(lambda: main_frame.UpdateGui({"project": project}))
         app.MainLoop()
-        project.wait_for_save()

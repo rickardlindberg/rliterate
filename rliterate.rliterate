@@ -7608,7 +7608,7 @@
 "type":"variable"
 },
 {
-"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n",
+"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n    def PreClose(self):\n        project.wait_for_save()\n",
 "type":"code"
 }
 ],
@@ -15736,7 +15736,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, values)\n\n    def _update_builtin(self):\n        ",
+"text":".__init__(self, values)\n        self.Bind(wx.EVT_CLOSE, self._on_close)\n\n    def _update_builtin(self):\n        ",
 "type":"code"
 },
 {
@@ -15744,7 +15744,7 @@
 "type":"variable"
 },
 {
-"text":"._update_builtin(self)\n        if self.did_change(\"title\"):\n            self.SetTitle(self.values[\"title\"])\n\n",
+"text":"._update_builtin(self)\n        if self.did_change(\"title\"):\n            self.SetTitle(self.values[\"title\"])\n\n    def _on_close(self, event):\n        self.PreClose()\n        event.Skip()\n\n    def PreClose(self):\n        pass\n\n",
 "type":"code"
 },
 {
@@ -16913,7 +16913,7 @@
 "type":"variable"
 },
 {
-"text":"(None, {\"project\": project})\n    main_frame.Show()\n    project.listen(lambda: main_frame.UpdateGui({\"project\": project}))\n    app.MainLoop()\n    project.wait_for_save()\n",
+"text":"(None, {\"project\": project})\n    main_frame.Show()\n    project.listen(lambda: main_frame.UpdateGui({\"project\": project}))\n    app.MainLoop()\n",
 "type":"code"
 }
 ],
