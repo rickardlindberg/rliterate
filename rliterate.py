@@ -6624,14 +6624,6 @@ def find_first(items, action):
         if result is not None:
             return result
     return None
-@contextlib.contextmanager
-def flicker_free_drawing(widget):
-    if "wxMSW" in wx.PlatformInfo:
-        widget.Freeze()
-        yield
-        widget.Thaw()
-    else:
-        yield
 def create_font(monospace=False, size=10, bold=False):
     return wx.Font(
         size,
@@ -6650,6 +6642,14 @@ def show_text_entry(parent, **kwargs):
     if dialog.ShowModal() == wx.ID_OK:
         kwargs.get("ok_fn", lambda value: None)(dialog.Value)
     dialog.Destroy()
+@contextlib.contextmanager
+def flicker_free_drawing(widget):
+    if "wxMSW" in wx.PlatformInfo:
+        widget.Freeze()
+        yield
+        widget.Thaw()
+    else:
+        yield
 def load_json_from_file(path):
     with open(path, "r") as f:
         return json.load(f)

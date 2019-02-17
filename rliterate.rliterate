@@ -14588,48 +14588,6 @@
 },
 {
 "children":[],
-"id":"32b95f00956d4ea08e09d4a7d7fd4bb2",
-"paragraphs":[
-{
-"fragments":[
-{
-"text":"This code seems to be needed on Windows only. If many layout operations are done, the GUI otherwise becomes slow and flickers.",
-"type":"text"
-}
-],
-"id":"8858d0bc4faa47aa971b47a969c87f5b",
-"type":"text"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"rliterate.py"
-],
-"fragments":[
-{
-"text":"@contextlib.contextmanager\ndef ",
-"type":"code"
-},
-{
-"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
-"type":"variable"
-},
-{
-"text":"(widget):\n    if \"wxMSW\" in wx.PlatformInfo:\n        widget.Freeze()\n        yield\n        widget.Thaw()\n    else:\n        yield\n",
-"type":"code"
-}
-],
-"id":"a1614750c637409bb1f56849b5749e3f",
-"language":"",
-"type":"code"
-}
-],
-"title":"Flicker free drawing"
-},
-{
-"children":[],
 "id":"fddc930e6caa4a38bf6e7259e6e1034a",
 "paragraphs":[
 {
@@ -15462,7 +15420,50 @@
 "title":"Code generator"
 },
 {
+"children":[
+{
 "children":[],
+"id":"32b95f00956d4ea08e09d4a7d7fd4bb2",
+"paragraphs":[
+{
+"fragments":[
+{
+"text":"This code seems to be needed on Windows only. If many layout operations are done, the GUI otherwise becomes slow and flickers.",
+"type":"text"
+}
+],
+"id":"8858d0bc4faa47aa971b47a969c87f5b",
+"type":"text"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"@contextlib.contextmanager\ndef ",
+"type":"code"
+},
+{
+"id":"fe5fe3f1bdad48b0841dbdc9aa677bf9",
+"type":"variable"
+},
+{
+"text":"(widget):\n    if \"wxMSW\" in wx.PlatformInfo:\n        widget.Freeze()\n        yield\n        widget.Thaw()\n    else:\n        yield\n",
+"type":"code"
+}
+],
+"id":"a1614750c637409bb1f56849b5749e3f",
+"language":"",
+"type":"code"
+}
+],
+"title":"Flicker free drawing"
+}
+],
 "id":"6565ec4684064857aa685fd30a934442",
 "paragraphs":[
 {
