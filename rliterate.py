@@ -120,6 +120,8 @@ class GuiFrameworkBaseMixin(object):
             self.Bind(wx.EVT_PAINT, lambda event: self._call_handler("paint", event))
         elif event == "timer":
             self.Bind(wx.EVT_TIMER, lambda event: self._call_handler("timer", event))
+        elif event == "close":
+            self.Bind(wx.EVT_CLOSE, lambda event: self._call_handler("close", event))
 
     @property
     def has_changes(self):
@@ -314,21 +316,10 @@ class GuiFrameworkWidgetInfo(object):
             self.handler_widget.listen(*event_handler)
 class GuiFrameworkTopBaseMixin(GuiFrameworkBaseMixin):
 
-    def __init__(self, values):
-        GuiFrameworkBaseMixin.__init__(self, values)
-        self.Bind(wx.EVT_CLOSE, self._on_close)
-
     def _update_builtin(self):
         GuiFrameworkBaseMixin._update_builtin(self)
         if self.did_change("title"):
             self.SetTitle(self.values["title"])
-
-    def _on_close(self, event):
-        self.PreClose()
-        event.Skip()
-
-    def PreClose(self):
-        pass
 
     def set_keyboard_shortcuts(self, shortcuts):
         def create_handler(condition_fn, action_fn):
@@ -462,6 +453,7 @@ class MainFrameGui(GuiFrameworkFrame):
         self._child1(parent, loopvar)
         self._child2(parent, loopvar)
         self._child3(parent, loopvar)
+        handlers.append(('close', lambda event: self._show_closing_dialog(event)))
         if first:
             parent.listen(handlers)
 
@@ -540,6 +532,7 @@ class WaitDialogGui(GuiFrameworkDialog):
 
     def _get_derived(self):
         return {
+            'title': self.text,
         }
 
     def _create_gui(self):
@@ -562,6 +555,7 @@ class WaitDialogGui(GuiFrameworkDialog):
         self._child1(parent, loopvar)
         self._child2(parent, loopvar)
         handlers.append(('timer', lambda event: self.gauge.Pulse()))
+        handlers.append(('close', lambda event: self._close(event)))
         if first:
             parent.listen(handlers)
 
@@ -570,7 +564,6 @@ class WaitDialogGui(GuiFrameworkDialog):
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
         properties['label'] = self.text
-        properties['background'] = 'green'
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.LEFT
         sizer["flag"] |= wx.BOTTOM
@@ -584,7 +577,6 @@ class WaitDialogGui(GuiFrameworkDialog):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['background'] = 'red'
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.LEFT
         sizer["flag"] |= wx.BOTTOM
@@ -4558,11 +4550,12 @@ class MainFrame(MainFrameGui):
             },
         ])
 
-    def PreClose(self):
+    def _show_closing_dialog(self, event):
         self.ShowModal(WaitDialog, {
             "project": self.project,
             "text": "Waiting for save...",
         })
+        event.Skip()
 class WaitDialog(WaitDialogGui):
 
     BORDER = 8
@@ -4574,9 +4567,17 @@ class WaitDialog(WaitDialogGui):
         thread.start()
         self.timer = wx.Timer(self)
         self.timer.Start(100)
+        self.done = False
+
+    def _close(self, event):
+        if self.done:
+            event.Skip()
+        else:
+            event.Veto()
 
     def _save(self):
         self.project.wait_for_save()
+        wx.CallAfter(setattr, self, "done", True)
         wx.CallAfter(self.Close)
 class ToolbarGui(GuiFrameworkPanel):
 

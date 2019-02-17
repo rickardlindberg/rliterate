@@ -7557,7 +7557,7 @@
 "type":"variable"
 },
 {
-"text":" %vbox {\n    #project\n    #text\n    BoxSpace(self.BORDER)\n    Label(\n        label = self.text\n        background = \"green\"\n        %border[self.BORDER, LEFT|BOTTOM|RIGHT]\n        %align_center\n    )\n    Gauge[gauge](\n        background = \"red\"\n        %border[self.BORDER, LEFT|BOTTOM|RIGHT]\n        %align_center\n    )\n    @timer = self.gauge.Pulse()\n}\n",
+"text":" %vbox {\n    #project\n    #text\n    #title = self.text\n    BoxSpace(self.BORDER)\n    Label(\n        label = self.text\n        %border[self.BORDER, LEFT|BOTTOM|RIGHT]\n        %align_center\n    )\n    Gauge[gauge](\n        %border[self.BORDER, LEFT|BOTTOM|RIGHT]\n        %align_center\n    )\n    @timer = self.gauge.Pulse()\n    @close = self._close(event)\n}\n",
 "type":"code"
 }
 ],
@@ -7602,7 +7602,7 @@
 "type":"variable"
 },
 {
-"text":"._create_gui(self)\n        self.Fit()\n        thread = threading.Thread(target=self._save)\n        thread.start()\n        self.timer = wx.Timer(self)\n        self.timer.Start(100)\n\n    def _save(self):\n        self.project.wait_for_save()\n        wx.CallAfter(self.Close)\n",
+"text":"._create_gui(self)\n        self.Fit()\n        thread = threading.Thread(target=self._save)\n        thread.start()\n        self.timer = wx.Timer(self)\n        self.timer.Start(100)\n        self.done = False\n\n    def _close(self, event):\n        if self.done:\n            event.Skip()\n        else:\n            event.Veto()\n\n    def _save(self):\n        self.project.wait_for_save()\n        wx.CallAfter(setattr, self, \"done\", True)\n        wx.CallAfter(self.Close)\n",
 "type":"code"
 }
 ],
@@ -7641,7 +7641,7 @@
 "type":"variable"
 },
 {
-"text":"(\n        project    = self.project\n        main_frame = self\n        %expand\n    )\n    HBorder(project=self.project %expand)\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        VBorder(project=self.project %expand)\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n}\n",
+"text":"(\n        project    = self.project\n        main_frame = self\n        %expand\n    )\n    HBorder(project=self.project %expand)\n    panel(\n        %expand\n        %proportion[1]\n    ) %hbox {\n        TableOfContents(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"toc\")\n            %expand\n        )\n        VBorder(project=self.project %expand)\n        Workspace(\n            project   = self.project\n            selection = self.project.selection.get(\"main_frame\").get(\"workspace\")\n            %expand\n            %proportion[1]\n        )\n    }\n    @close = self._show_closing_dialog(event)\n}\n",
 "type":"code"
 }
 ],
@@ -7686,7 +7686,7 @@
 "type":"variable"
 },
 {
-"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n    def PreClose(self):\n        self.ShowModal(",
+"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n    def _show_closing_dialog(self, event):\n        self.ShowModal(",
 "type":"code"
 },
 {
@@ -7694,7 +7694,7 @@
 "type":"variable"
 },
 {
-"text":", {\n            \"project\": self.project,\n            \"text\": \"Waiting for save...\",\n        })\n",
+"text":", {\n            \"project\": self.project,\n            \"text\": \"Waiting for save...\",\n        })\n        event.Skip()\n",
 "type":"code"
 }
 ],
@@ -15538,7 +15538,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._update_builtin()\n\n    def _on_enter(self, event):\n        self._call_handler(\"enter\", event, propagate=True)\n        event.Skip()\n\n    def _on_leave(self, event):\n        self._call_handler(\"leave\", event, propagate=True)\n        event.Skip()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n        elif event == \"timer\":\n            self.Bind(wx.EVT_TIMER, lambda event: self._call_handler(\"timer\", event))\n\n    @property\n    def ",
+"text":"()\n        self._update_builtin()\n\n    def _on_enter(self, event):\n        self._call_handler(\"enter\", event, propagate=True)\n        event.Skip()\n\n    def _on_leave(self, event):\n        self._call_handler(\"leave\", event, propagate=True)\n        event.Skip()\n\n    def listen(self, event, handler):\n        if event in self._handlers:\n            raise Exception(\"only one handler per event allowed\")\n        self._handlers[event] = handler\n        if event == \"char\":\n            self.Bind(wx.EVT_CHAR, lambda event: self._call_handler(\"char\", event))\n        elif event == \"paint\":\n            self.Bind(wx.EVT_PAINT, lambda event: self._call_handler(\"paint\", event))\n        elif event == \"timer\":\n            self.Bind(wx.EVT_TIMER, lambda event: self._call_handler(\"timer\", event))\n        elif event == \"close\":\n            self.Bind(wx.EVT_CLOSE, lambda event: self._call_handler(\"close\", event))\n\n    @property\n    def ",
 "type":"code"
 },
 {
@@ -15822,7 +15822,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, values):\n        ",
+"text":"):\n\n    def _update_builtin(self):\n        ",
 "type":"code"
 },
 {
@@ -15830,15 +15830,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, values)\n        self.Bind(wx.EVT_CLOSE, self._on_close)\n\n    def _update_builtin(self):\n        ",
-"type":"code"
-},
-{
-"id":"c76c30d4944341fca0c9c8411f5aaee6",
-"type":"variable"
-},
-{
-"text":"._update_builtin(self)\n        if self.did_change(\"title\"):\n            self.SetTitle(self.values[\"title\"])\n\n    def _on_close(self, event):\n        self.PreClose()\n        event.Skip()\n\n    def PreClose(self):\n        pass\n\n    def set_keyboard_shortcuts(self, shortcuts):\n        def create_handler(condition_fn, action_fn):\n            def handler(event):\n                if condition_fn():\n                    action_fn()\n            return handler\n        entries = []\n        for shortcut in shortcuts:\n            flags = wx.ACCEL_NORMAL\n            if shortcut.get(\"ctrl\", False):\n                flags |= wx.ACCEL_CTRL\n            key = shortcut.get(\"key\", \"\")\n            if len(key) == 1:\n                keycode = ord(key)\n            else:\n                keycode = {\n                    \"esc\": wx.WXK_ESCAPE,\n                }[key]\n            command = wx.NewId()\n            fn = create_handler(\n                shortcut.get(\"condition_fn\", lambda: True),\n                shortcut.get(\"action_fn\", lambda: None)\n            )\n            self.Bind(wx.EVT_MENU, fn, id=command)\n            entries.append(wx.AcceleratorEntry(flags, keycode, command))\n        self.SetAcceleratorTable(wx.AcceleratorTable(entries))\n",
+"text":"._update_builtin(self)\n        if self.did_change(\"title\"):\n            self.SetTitle(self.values[\"title\"])\n\n    def set_keyboard_shortcuts(self, shortcuts):\n        def create_handler(condition_fn, action_fn):\n            def handler(event):\n                if condition_fn():\n                    action_fn()\n            return handler\n        entries = []\n        for shortcut in shortcuts:\n            flags = wx.ACCEL_NORMAL\n            if shortcut.get(\"ctrl\", False):\n                flags |= wx.ACCEL_CTRL\n            key = shortcut.get(\"key\", \"\")\n            if len(key) == 1:\n                keycode = ord(key)\n            else:\n                keycode = {\n                    \"esc\": wx.WXK_ESCAPE,\n                }[key]\n            command = wx.NewId()\n            fn = create_handler(\n                shortcut.get(\"condition_fn\", lambda: True),\n                shortcut.get(\"action_fn\", lambda: None)\n            )\n            self.Bind(wx.EVT_MENU, fn, id=command)\n            entries.append(wx.AcceleratorEntry(flags, keycode, command))\n        self.SetAcceleratorTable(wx.AcceleratorTable(entries))\n",
 "type":"code"
 }
 ],
