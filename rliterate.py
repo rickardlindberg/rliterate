@@ -28,13 +28,38 @@ import wx.lib.newevent
 UNDO_BUFFER_SIZE = 10
 TokenClick, EVT_TOKEN_CLICK = wx.lib.newevent.NewCommandEvent()
 HoveredTokenChanged, EVT_HOVERED_TOKEN_CHANGED = wx.lib.newevent.NewCommandEvent()
+RLTIMES = {}
+
+def rltime_reset():
+    def wrap(fn):
+        def fn_with_timing(*args, **kwargs):
+            global RLTIMES
+            RLTIMES = {}
+            value = fn(*args, **kwargs)
+            print("---")
+            for text, ms in sorted(
+                RLTIMES.items(),
+                key=lambda x: sum(x[1]),
+                reverse=True
+            ):
+                print("{: <25} {: <6} {}ms".format(text, len(ms), sum(ms)))
+            return value
+        if "--profile" in sys.argv:
+            return fn_with_timing
+        else:
+            return fn
+    return wrap
+
 def rltime(text):
     def wrap(fn):
         def fn_with_timing(*args, **kwargs):
             t1 = time.time()
             value = fn(*args, **kwargs)
             t2 = time.time()
-            print("{: <20} {}ms".format(text, (1000*(t2-t1))))
+            global RLTIMES
+            if text not in RLTIMES:
+                RLTIMES[text] = []
+            RLTIMES[text].append(1000*(t2-t1))
             return value
         if "--profile" in sys.argv:
             return fn_with_timing
@@ -2517,6 +2542,7 @@ class BaseProjection(object):
         self.create_projection(editor)
         return self.characters
 
+    @rltime("text projection add")
     def add(self, text, style, selection=None, path=None, one_selection=None, flag=False, extra={}):
         for index, char in enumerate(text):
             if index == 0 and selection == 0:
@@ -4551,6 +4577,7 @@ class MainFrame(MainFrameGui):
             },
         ])
 
+    @rltime_reset()
     @rltime("update main frame")
     def _update_gui(self):
         MainFrameGui._update_gui(self)
