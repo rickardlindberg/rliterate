@@ -100,7 +100,7 @@ class GuiFrameworkBaseMixin(object):
         self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter)
         self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave)
         self._create_gui()
-        self._update_builtin()
+        self._update_builtin(self.values.keys())
 
     def _on_enter(self, event):
         self._call_handler("enter", event, propagate=True)
@@ -134,12 +134,12 @@ class GuiFrameworkBaseMixin(object):
         if layout:
             with flicker_free_drawing(self):
                 self._update_gui()
-                self._update_builtin()
+                self._update_builtin(self.changed)
                 self.Layout()
                 self.Refresh()
         else:
             self._update_gui()
-            self._update_builtin()
+            self._update_builtin(self.changed)
 
     def _update(self, values):
         for key, value in values.items():
@@ -162,31 +162,32 @@ class GuiFrameworkBaseMixin(object):
     def _update_gui(self):
         pass
 
-    def _update_builtin(self):
-        if self.did_change("tooltip"):
-            value = self.values.get("tooltip", None)
-            if value is None:
-                self.UnsetToolTip()
-            else:
-                self.SetToolTipString(value)
-        if self.did_change("cursor"):
-            self.SetCursor({
-                "hand": wx.StockCursor(wx.CURSOR_HAND),
-                "beam": wx.StockCursor(wx.CURSOR_IBEAM),
-                None: self._default_cursor,
-            }.get(self.values["cursor"]))
-        if self.did_change("min_size"):
-            self.SetMinSize(self.values["min_size"])
-        if self.did_change("label"):
-            self.SetLabel(self.values["label"])
-        if self.did_change("visible"):
-            self.Show(self.values["visible"])
-        if self.did_change("background"):
-            self.SetBackgroundColour(self.values["background"])
+    def _update_builtin(self, names):
+        for name in names:
+            if name == "tooltip":
+                value = self.values.get("tooltip", None)
+                if value is None:
+                    self.UnsetToolTip()
+                else:
+                    self.SetToolTipString(value)
+            if name == "cursor":
+                self.SetCursor({
+                    "hand": wx.StockCursor(wx.CURSOR_HAND),
+                    "beam": wx.StockCursor(wx.CURSOR_IBEAM),
+                    None: self._default_cursor,
+                }.get(self.values["cursor"]))
+            if name == "min_size":
+                self.SetMinSize(self.values["min_size"])
+            if name == "label":
+                self.SetLabel(self.values["label"])
+            if name == "visible":
+                self.Show(self.values["visible"])
+            if name == "background":
+                self.SetBackgroundColour(self.values["background"])
+            if name == "enabled":
+                self.Enable(self.values["enabled"])
         if self.values.get("focus", False) and not self.HasFocus():
             self.SetFocus()
-        if self.did_change("enabled"):
-            self.Enable(self.values["enabled"])
 
     def _on_left_down(self, event):
         self.down_pos = event.Position
@@ -316,8 +317,8 @@ class GuiFrameworkWidgetInfo(object):
             self.handler_widget.listen(*event_handler)
 class GuiFrameworkTopBaseMixin(GuiFrameworkBaseMixin):
 
-    def _update_builtin(self):
-        GuiFrameworkBaseMixin._update_builtin(self)
+    def _update_builtin(self, names):
+        GuiFrameworkBaseMixin._update_builtin(self, names)
         if self.did_change("title"):
             self.SetTitle(self.values["title"])
 
@@ -399,8 +400,8 @@ class Bitmap(wx.StaticBitmap, GuiFrameworkBaseMixin):
         wx.StaticBitmap.__init__(self, parent)
         GuiFrameworkBaseMixin.__init__(self, values)
 
-    def _update_builtin(self):
-        GuiFrameworkBaseMixin._update_builtin(self)
+    def _update_builtin(self, names):
+        GuiFrameworkBaseMixin._update_builtin(self, names)
         if self.did_change("bitmap"):
             self.SetBitmap(self.values["bitmap"])
 class IconButton(wx.BitmapButton, GuiFrameworkBaseMixin):
