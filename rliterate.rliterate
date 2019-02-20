@@ -7686,7 +7686,15 @@
 "type":"variable"
 },
 {
-"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n    def _show_closing_dialog(self, event):\n        self.ShowModal(",
+"text":"._create_gui(self)\n        self.set_keyboard_shortcuts([\n            {\n                \"key\": \"esc\",\n                \"condition_fn\": lambda: self.project.selection.present,\n                \"action_fn\": lambda: setattr(self.project, \"selection\", Selection.empty()),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"z\",\n                \"condition_fn\": lambda: self.project.can_undo(),\n                \"action_fn\": lambda: self.project.undo(),\n            },\n            {\n                \"ctrl\": True,\n                \"key\": \"q\",\n                \"action_fn\": lambda: self.Close(),\n            },\n        ])\n\n    @rltime(\"update main frame\")\n    def _update_gui(self):\n        ",
+"type":"code"
+},
+{
+"id":"022b19461779432dacb8005e42acdd77",
+"type":"variable"
+},
+{
+"text":"._update_gui(self)\n\n    def _show_closing_dialog(self, event):\n        self.ShowModal(",
 "type":"code"
 },
 {
@@ -7763,7 +7771,15 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    BORDER = 4\n\n    def _get_save_characters(self):\n        status = self.project.save_status\n        return [\n            Character.create(\n                x,\n                self.project.get_style(\n                    TokenType.RLiterate.Working\n                    if status[\"working\"]\n                    else\n                    TokenType.RLiterate.Success\n                )\n            )\n            for x in status[\"text\"]\n        ]\n",
+"text":"):\n\n    BORDER = 4\n\n    @rltime(\"update toolbar\")\n    def _update_gui(self):\n        ",
+"type":"code"
+},
+{
+"id":"b4434572c6644fd1875382eeade819fc",
+"type":"variable"
+},
+{
+"text":"._update_gui(self)\n\n    def _get_save_characters(self):\n        status = self.project.save_status\n        return [\n            Character.create(\n                x,\n                self.project.get_style(\n                    TokenType.RLiterate.Working\n                    if status[\"working\"]\n                    else\n                    TokenType.RLiterate.Success\n                )\n            )\n            for x in status[\"text\"]\n        ]\n",
 "type":"code"
 }
 ],

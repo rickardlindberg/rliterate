@@ -4551,6 +4551,10 @@ class MainFrame(MainFrameGui):
             },
         ])
 
+    @rltime("update main frame")
+    def _update_gui(self):
+        MainFrameGui._update_gui(self)
+
     def _show_closing_dialog(self, event):
         self.ShowModal(WaitDialog, {
             "project": self.project,
@@ -4763,6 +4767,10 @@ class ToolbarGui(GuiFrameworkPanel):
 class Toolbar(ToolbarGui):
 
     BORDER = 4
+
+    @rltime("update toolbar")
+    def _update_gui(self):
+        ToolbarGui._update_gui(self)
 
     def _get_save_characters(self):
         status = self.project.save_status
