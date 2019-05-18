@@ -6391,10 +6391,9 @@ class HTMLBuilder(object):
                 "src": "data:image/png;base64,{}".format(paragraph.image_base64)
             }):
                 pass
-        if paragraph.tokens:
-            with self.tag("div", args={"class": "rliterate-image-text"}):
-                with self.tag("p"):
-                    self.tokens(paragraph.tokens)
+        with self.tag("div", args={"class": "rliterate-image-text"}):
+            with self.tag("p"):
+                self.tokens(paragraph.tokens)
 
     def paragraph_unknown(self, paragraph):
         with self.tag("p"):
