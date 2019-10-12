@@ -2961,7 +2961,7 @@
 "type":"variable"
 },
 {
-"text":":\n                fragment.fill_text_version(text_version)\n            text_version.add(\"\\n\")\n            for index, child in enumerate(item.children):\n                with text_version.index(index):\n                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)\n        text_version = TextVersion()\n        for index, child in enumerate(self.children):\n            with text_version.index(index):\n                list_item_to_text(text_version, self.child_type, child, index=index)\n        return text_version\n\n    @text_version.setter\n    def text_version(self, value):\n        child_type, children = LegacyListParser(value).parse_items()\n        self.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n\n    def iter_text_fragments(self):\n        for item in self.children:\n            for fragment in item.iter_text_fragments():\n                yield fragment\n",
+"text":":\n                fragment.fill_text_version(text_version)\n            text_version.add(\"\\n\")\n            for index, child in enumerate(item.children):\n                with text_version.index(index):\n                    list_item_to_text(text_version, item.child_type, child, index=index, indent=indent+1)\n        text_version = TextVersion()\n        for index, child in enumerate(self.children):\n            with text_version.index(index):\n                list_item_to_text(text_version, self.child_type, child, index=index)\n        return text_version\n\n    @text_version.setter\n    def text_version(self, value):\n        child_type, children = ListParser(value).parse_items()\n        self.update({\n            \"child_type\": child_type,\n            \"children\": children\n        })\n\n    def iter_text_fragments(self):\n        for item in self.children:\n            for fragment in item.iter_text_fragments():\n                yield fragment\n",
 "type":"code"
 }
 ],
@@ -3088,6 +3088,38 @@
 ],
 "id":"b1df900b20ce4fd195ba8b9e6040ab24",
 "language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"class ListParser(object):\n\n    ITEM_START_RE = re.compile(r\"( *)([*]|\\d+[.]) (.*)\")\n\n    def __init__(self, text):\n        self.lines = text.strip().split(\"\\n\")\n\n    def parse_items(self, level=0):\n        items = []\n        list_type = None\n        while True:\n            type_and_item = self.parse_item(level)\n            if type_and_item is None:\n                return list_type, items\n            else:\n                item_type, item = type_and_item\n                if list_type is None:\n                    list_type = item_type\n                items.append(item)\n\n    def parse_item(self, level):\n        parts = self.consume_bodies()\n        next_level = level + 1\n        item_type = None\n        if self.lines:\n            match = self.ITEM_START_RE.match(self.lines[0])\n            if match:\n                matched_level = len(match.group(1))\n                if matched_level >= level:\n                    parts.append(match.group(3))\n                    self.lines.pop(0)\n                    parts.extend(self.consume_bodies())\n                    next_level = matched_level + 1\n                    if \"*\" in match.group(2):\n                        item_type = \"unordered\"\n                    else:\n                        item_type = \"ordered\"\n        if parts:\n            child_type, children = self.parse_items(next_level)\n            return (item_type, {\n                \"",
+"type":"code"
+},
+{
+"id":"e4e393ca4c6944fa8ebc24a3c67f3a54",
+"type":"variable"
+},
+{
+"text":"\": ",
+"type":"code"
+},
+{
+"id":"307841bedc3c4f2cba2dbbf68a410075",
+"type":"variable"
+},
+{
+"text":"().parse(\" \".join(parts)),\n                \"children\": children,\n                \"child_type\": child_type,\n            })\n\n    def consume_bodies(self):\n        bodies = []\n        while self.lines:\n            if self.ITEM_START_RE.match(self.lines[0]):\n                break\n            else:\n                bodies.append(self.lines.pop(0))\n        return bodies\n",
+"type":"code"
+}
+],
+"id":"204423aff6884802a86e575624ca8ec1",
 "type":"code"
 }
 ],
@@ -8502,7 +8534,7 @@
 "type":"variable"
 },
 {
-"text":"[text](\n        projection     = TocTitleProjection(self.project self.page self.selection)\n        %border[self.BORDER, ALL]\n        @ctrl_click = self.text.Select(self.project event.Position)\n        @mouse_move = self._set_cursor(event)\n    )\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n    @enter       = self._on_enter(event)\n    @leave       = self._on_leave(event)\n}\n",
+"text":"[text](\n        projection     = self._create_projection()\n        %border[self.BORDER, ALL]\n        @ctrl_click = self.text.Select(self.project event.Position)\n        @mouse_move = self._set_cursor(event)\n    )\n    @click       = self._on_click_old(event)\n    @right_click = self._on_right_click_old(event)\n    @drag        = self._on_drag_old(event)\n    @enter       = self._on_enter(event)\n    @leave       = self._on_leave(event)\n}\n",
 "type":"code"
 }
 ],
@@ -8570,6 +8602,24 @@
 }
 ],
 "id":"5265be2a09ab44b6a1d858cbed502736",
+"language":"",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes",
+"TableOfContentsRow"
+],
+"filepath":[
+"rliterate.py"
+],
+"fragments":[
+{
+"text":"def _create_projection(self):\n    if hasattr(self, \"_projection\"):\n        self._projection.project = self.project\n        self._projection.page = self.page\n        self._projection.selection = self.selection\n    else:\n        self._projection = TocTitleProjection(self.project, self.page, self.selection)\n    return self._projection\n",
+"type":"code"
+}
+],
+"id":"785065cae1c44f89bbc3b9c5ffd7c9ef",
 "language":"",
 "type":"code"
 },
@@ -14216,7 +14266,7 @@
 ],
 "fragments":[
 {
-"text":"class BaseProjection(object):\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self._character_selection = None\n        self.characters = []\n        self.create_projection(editor)\n        return self.characters\n\n    @rltime(\"text projection add\")\n    def add(self, text, style, selection=None, path=None, one_selection=None, flag=False, extra={}):\n        for index, char in enumerate(text):\n            if index == 0 and selection == 0:\n                marker = \"beam_left\"\n                if flag:\n                    marker = \"beam_left_flag\"\n                self._character_selection = (len(self.characters), \"left\")\n            elif index == len(text) - 1 and selection == index + 1:\n                marker = \"beam_right\"\n                if flag:\n                    marker = \"beam_right_flag\"\n                self._character_selection = (len(self.characters), \"right\")\n            elif index == selection:\n                marker = \"beam_left\"\n                self._character_selection = (len(self.characters), \"left\")\n            else:\n                marker = None\n            extra = dict(extra)\n            if path is not None:\n                extra[\"left_selection\"] = path.",
+"text":"class BaseProjection(object):\n\n    old_memo = {}\n    new_memo = {}\n\n    @property\n    def expects_input(self):\n        return self._key_handler is not None\n\n    def handle_key(self, event):\n        return self._key_handler.handle_key(event)\n\n    def get_characters(self, editor):\n        self._key_handler = None\n        self._character_selection = None\n        self.characters = []\n        self.new_memo = {}\n        self.create_projection(editor)\n        self.old_memo = self.new_memo\n        return self.characters\n\n    @rltime(\"text projection add\")\n    def add(self, text, style, selection=None, path=None, one_selection=None, flag=False, extra={}):\n        key = (text, style, selection, path, one_selection, flag, extra)\n        memo_key, memo_value = self.old_memo.get(len(self.characters), (None, None))\n        if memo_key != key:\n            characters = []\n            character_selection = None\n            for index, char in enumerate(text):\n                if index == 0 and selection == 0:\n                    marker = \"beam_left\"\n                    if flag:\n                        marker = \"beam_left_flag\"\n                    character_selection = (len(self.characters)+len(characters), \"left\")\n                elif index == len(text) - 1 and selection == index + 1:\n                    marker = \"beam_right\"\n                    if flag:\n                        marker = \"beam_right_flag\"\n                    character_selection = (len(self.characters)+len(characters), \"right\")\n                elif index == selection:\n                    marker = \"beam_left\"\n                    character_selection = (len(self.characters)+len(characters), \"left\")\n                else:\n                    marker = None\n                extra = dict(extra)\n                if path is not None:\n                    extra[\"left_selection\"] = path.",
 "type":"code"
 },
 {
@@ -14224,7 +14274,7 @@
 "type":"variable"
 },
 {
-"text":"(index)\n                extra[\"right_selection\"] = path.",
+"text":"(index)\n                    extra[\"right_selection\"] = path.",
 "type":"code"
 },
 {
@@ -14232,7 +14282,7 @@
 "type":"variable"
 },
 {
-"text":"(index+1)\n            elif one_selection is not None:\n                extra[\"left_selection\"] = one_selection\n                extra[\"right_selection\"] = one_selection\n            self.characters.append(Character.create(\n                char,\n                style,\n                marker,\n                extra=extra\n            ))\n",
+"text":"(index+1)\n                elif one_selection is not None:\n                    extra[\"left_selection\"] = one_selection\n                    extra[\"right_selection\"] = one_selection\n                characters.append(Character.create(\n                    char,\n                    style,\n                    marker,\n                    extra=extra\n                ))\n            memo_value = (characters, character_selection)\n        self.new_memo[len(self.characters)] = (key, memo_value)\n        self.characters.extend(memo_value[0])\n        if memo_value[1] is not None:\n            self._character_selection = memo_value[1]\n",
 "type":"code"
 }
 ],

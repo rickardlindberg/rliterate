@@ -766,7 +766,7 @@ class TableOfContentsRowGui(GuiFrameworkPanel):
         handlers = []
         properties = {}
         sizer = {"flag": 0, "border": 0, "proportion": 0}
-        properties['projection'] = TocTitleProjection(self.project, self.page, self.selection)
+        properties['projection'] = self._create_projection()
         sizer["border"] = self.BORDER
         sizer["flag"] |= wx.ALL
         handlers.append(('ctrl_click', lambda event: self.text.Select(self.project, event.Position)))
@@ -2528,6 +2528,9 @@ class TextProjectionEditor(TextProjectionEditorGui):
             first = False
 class BaseProjection(object):
 
+    old_memo = {}
+    new_memo = {}
+
     @property
     def expects_input(self):
         return self._key_handler is not None
@@ -2539,40 +2542,52 @@ class BaseProjection(object):
         self._key_handler = None
         self._character_selection = None
         self.characters = []
+        self.new_memo = {}
         self.create_projection(editor)
+        self.old_memo = self.new_memo
         return self.characters
 
     @rltime("text projection add")
     def add(self, text, style, selection=None, path=None, one_selection=None, flag=False, extra={}):
-        for index, char in enumerate(text):
-            if index == 0 and selection == 0:
-                marker = "beam_left"
-                if flag:
-                    marker = "beam_left_flag"
-                self._character_selection = (len(self.characters), "left")
-            elif index == len(text) - 1 and selection == index + 1:
-                marker = "beam_right"
-                if flag:
-                    marker = "beam_right_flag"
-                self._character_selection = (len(self.characters), "right")
-            elif index == selection:
-                marker = "beam_left"
-                self._character_selection = (len(self.characters), "left")
-            else:
-                marker = None
-            extra = dict(extra)
-            if path is not None:
-                extra["left_selection"] = path.create(index)
-                extra["right_selection"] = path.create(index+1)
-            elif one_selection is not None:
-                extra["left_selection"] = one_selection
-                extra["right_selection"] = one_selection
-            self.characters.append(Character.create(
-                char,
-                style,
-                marker,
-                extra=extra
-            ))
+        key = (text, style, selection, path, one_selection, flag, extra)
+        memo_key, memo_value = self.old_memo.get(len(self.characters), (None, None))
+        if memo_key != key:
+            characters = []
+            character_selection = None
+            for index, char in enumerate(text):
+                if index == 0 and selection == 0:
+                    marker = "beam_left"
+                    if flag:
+                        marker = "beam_left_flag"
+                    character_selection = (len(self.characters)+len(characters), "left")
+                elif index == len(text) - 1 and selection == index + 1:
+                    marker = "beam_right"
+                    if flag:
+                        marker = "beam_right_flag"
+                    character_selection = (len(self.characters)+len(characters), "right")
+                elif index == selection:
+                    marker = "beam_left"
+                    character_selection = (len(self.characters)+len(characters), "left")
+                else:
+                    marker = None
+                extra = dict(extra)
+                if path is not None:
+                    extra["left_selection"] = path.create(index)
+                    extra["right_selection"] = path.create(index+1)
+                elif one_selection is not None:
+                    extra["left_selection"] = one_selection
+                    extra["right_selection"] = one_selection
+                characters.append(Character.create(
+                    char,
+                    style,
+                    marker,
+                    extra=extra
+                ))
+            memo_value = (characters, character_selection)
+        self.new_memo[len(self.characters)] = (key, memo_value)
+        self.characters.extend(memo_value[0])
+        if memo_value[1] is not None:
+            self._character_selection = memo_value[1]
 class NavigationKeyHandler(object):
 
     def __init__(self, editor, project, character_selection):
@@ -3293,7 +3308,7 @@ class ListParagraph(Paragraph):
 
     @text_version.setter
     def text_version(self, value):
-        child_type, children = LegacyListParser(value).parse_items()
+        child_type, children = ListParser(value).parse_items()
         self.update({
             "child_type": child_type,
             "children": children
@@ -3335,6 +3350,59 @@ class ListItem(DocumentFragment):
         for child in self.children:
             for fragment in child.iter_text_fragments():
                 yield fragment
+class ListParser(object):
+
+    ITEM_START_RE = re.compile(r"( *)([*]|\d+[.]) (.*)")
+
+    def __init__(self, text):
+        self.lines = text.strip().split("\n")
+
+    def parse_items(self, level=0):
+        items = []
+        list_type = None
+        while True:
+            type_and_item = self.parse_item(level)
+            if type_and_item is None:
+                return list_type, items
+            else:
+                item_type, item = type_and_item
+                if list_type is None:
+                    list_type = item_type
+                items.append(item)
+
+    def parse_item(self, level):
+        parts = self.consume_bodies()
+        next_level = level + 1
+        item_type = None
+        if self.lines:
+            match = self.ITEM_START_RE.match(self.lines[0])
+            if match:
+                matched_level = len(match.group(1))
+                if matched_level >= level:
+                    parts.append(match.group(3))
+                    self.lines.pop(0)
+                    parts.extend(self.consume_bodies())
+                    next_level = matched_level + 1
+                    if "*" in match.group(2):
+                        item_type = "unordered"
+                    else:
+                        item_type = "ordered"
+        if parts:
+            child_type, children = self.parse_items(next_level)
+            return (item_type, {
+                "fragments": TextParser().parse(" ".join(parts)),
+                "children": children,
+                "child_type": child_type,
+            })
+
+    def consume_bodies(self):
+        bodies = []
+        while self.lines:
+            if self.ITEM_START_RE.match(self.lines[0]):
+                break
+            else:
+                bodies.append(self.lines.pop(0))
+        return bodies
 class CodeParagraph(Paragraph):
 
     @property
@@ -4922,6 +4990,14 @@ class TableOfContentsRow(TableOfContentsRowGui):
 
     def _indentation_size(self):
         return self.indentation*self.INDENTATION_SIZE
+    def _create_projection(self):
+        if hasattr(self, "_projection"):
+            self._projection.project = self.project
+            self._projection.page = self.page
+            self._projection.selection = self.selection
+        else:
+            self._projection = TocTitleProjection(self.project, self.page, self.selection)
+        return self._projection
     def _set_cursor(self, event):
         if event.GetModifiers() == wx.MOD_CONTROL:
             self.text.UpdateGui({"cursor": "beam"})
