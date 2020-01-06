@@ -6718,14 +6718,14 @@ def fit_image(image, width):
     )
 def edit_in_gvim(text, filename):
     with tempfile.NamedTemporaryFile(suffix="-rliterate-external-"+filename) as f:
-        f.write(text)
+        f.write(text.encode("utf-8"))
         f.flush()
         p = subprocess.Popen(["gvim", "--nofork", f.name])
         while p.poll() is None:
             wx.Yield()
             time.sleep(0.1)
         f.seek(0)
-        return f.read()
+        return f.read().decode("utf-8")
 def post_token_click(widget, token):
     wx.PostEvent(widget, TokenClick(0, widget=widget, token=token))
 def post_hovered_token_changed(widget, token):

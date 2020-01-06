@@ -12101,7 +12101,7 @@
 "type":"variable"
 },
 {
-"text":"(text, filename):\n    with tempfile.NamedTemporaryFile(suffix=\"-rliterate-external-\"+filename) as f:\n        f.write(text)\n        f.flush()\n        p = subprocess.Popen([\"gvim\", \"--nofork\", f.name])\n        while p.poll() is None:\n            wx.Yield()\n            time.sleep(0.1)\n        f.seek(0)\n        return f.read()\n",
+"text":"(text, filename):\n    with tempfile.NamedTemporaryFile(suffix=\"-rliterate-external-\"+filename) as f:\n        f.write(text.encode(\"utf-8\"))\n        f.flush()\n        p = subprocess.Popen([\"gvim\", \"--nofork\", f.name])\n        while p.poll() is None:\n            wx.Yield()\n            time.sleep(0.1)\n        f.seek(0)\n        return f.read().decode(\"utf-8\")\n",
 "type":"code"
 }
 ],
