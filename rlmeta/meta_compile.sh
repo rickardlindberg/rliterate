@@ -12,7 +12,7 @@ cd "$(dirname "$0")"
 
 diff rlmeta2.py rlmeta3.py
 
-diff support.py <(python rlmeta3.py --support)
+diff support.py <(python3 rlmeta3.py --support)
 
 mv rlmeta3.py rlmeta2.py
 

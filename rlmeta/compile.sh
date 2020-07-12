@@ -7,13 +7,13 @@ rlmeta_compiler="$(pwd)/$1"
 cd "$(dirname "$0")"
 
 to_python_string() {
-    python -c 'import sys; sys.stdout.write(repr(sys.stdin.read()))'
+    python3 -c 'import sys; sys.stdout.write(repr(sys.stdin.read()))'
 }
 
 support_py=$(cat support.py)
 support_py_string=$(to_python_string < support.py)
-parser_py=$(python "$rlmeta_compiler" < parser.rlmeta)
-codegenerator_py=$(python "$rlmeta_compiler" < codegenerator.rlmeta)
+parser_py=$(python3 "$rlmeta_compiler" < parser.rlmeta)
+codegenerator_py=$(python3 "$rlmeta_compiler" < codegenerator.rlmeta)
 
 cat <<EOF
 import sys

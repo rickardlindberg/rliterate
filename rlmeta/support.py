@@ -300,7 +300,7 @@ class _Stream(object):
 
     @classmethod
     def from_object(cls, memo, input_object):
-        if isinstance(input_object, basestring):
+        if isinstance(input_object, str):
             return _CharStream(memo, list(input_object))
         else:
             return _ObjectStream(memo, [input_object])
