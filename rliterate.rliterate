@@ -12889,7 +12889,7 @@
 ],
 "fragments":[
 {
-"text":"class RliterateDataObject(wx.CustomDataObject):\n\n    def __init__(self, kind, json=None):\n        wx.CustomDataObject.__init__(self, \"rliterate/{}\".format(kind))\n        if json is not None:\n            self.set_json(json)\n\n    def set_json(self, data):\n        self.SetData(json.dumps(data))\n\n    def get_json(self):\n        return json.loads(self.GetData())\n",
+"text":"class RliterateDataObject(wx.CustomDataObject):\n\n    def __init__(self, kind, json=None):\n        wx.CustomDataObject.__init__(self, \"rliterate/{}\".format(kind))\n        if json is not None:\n            self.set_json(json)\n\n    def set_json(self, data):\n        self.SetData(json.dumps(data).encode(\"utf-8\"))\n\n    def get_json(self):\n        return json.loads(self.GetData().tobytes().decode(\"utf-8\"))\n",
 "type":"code"
 }
 ],

@@ -6134,10 +6134,10 @@ class RliterateDataObject(wx.CustomDataObject):
             self.set_json(json)
 
     def set_json(self, data):
-        self.SetData(json.dumps(data))
+        self.SetData(json.dumps(data).encode("utf-8"))
 
     def get_json(self):
-        return json.loads(self.GetData())
+        return json.loads(self.GetData().tobytes().decode("utf-8"))
 class Divider(DividerGui):
 
     DEFAULTS = {
