@@ -6148,7 +6148,7 @@
 ],
 "fragments":[
 {
-"text":"class SavingThread(threading.Thread):\n\n    def __init__(self, project):\n        threading.Thread.__init__(self)\n        self.project = project\n        self.daemon = True\n        self.queue = Queue.Queue()\n        self.start()\n\n    def queue_save(self, document):\n        self.queue.put_nowait((document.path, document.document_dict))\n\n    def wait_until_done(self):\n        self.queue.join()\n\n    def run(self):\n        while True:\n            self._report(\"All saved!\", working=False)\n            path, document_dict = self.queue.get()\n            self._report(\"Waiting...\")\n            while True:\n                try:\n                    path, document_dict = self.queue.get(timeout=3)\n                    self.queue.task_done()\n                except Queue.Empty:\n                    break\n            self._report(\"Saving document...\")\n            document = Document(path, document_dict)\n            document.save()\n            self._report(\"Saving files...\")\n            CodeExpander(document).generate_files()\n            self.queue.task_done()\n\n    def _report(self, text, working=True):\n        wx.CallAfter(\n            setattr,\n            self.project, \"save_status\", {\"text\": text, \"working\": working}\n        )\n",
+"text":"class SavingThread(threading.Thread):\n\n    def __init__(self, project):\n        threading.Thread.__init__(self)\n        self.project = project\n        self.daemon = True\n        self.queue = queue.Queue()\n        self.start()\n\n    def queue_save(self, document):\n        self.queue.put_nowait((document.path, document.document_dict))\n\n    def wait_until_done(self):\n        self.queue.join()\n\n    def run(self):\n        while True:\n            self._report(\"All saved!\", working=False)\n            path, document_dict = self.queue.get()\n            self._report(\"Waiting...\")\n            while True:\n                try:\n                    path, document_dict = self.queue.get(timeout=3)\n                    self.queue.task_done()\n                except queue.Empty:\n                    break\n            self._report(\"Saving document...\")\n            document = Document(path, document_dict)\n            document.save()\n            self._report(\"Saving files...\")\n            CodeExpander(document).generate_files()\n            self.queue.task_done()\n\n    def _report(self, text, working=True):\n        wx.CallAfter(\n            setattr,\n            self.project, \"save_status\", {\"text\": text, \"working\": working}\n        )\n",
 "type":"code"
 }
 ],
@@ -7596,7 +7596,7 @@
 "id":"a3f0dd177c494b5bbe949a216751cdb6",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -7680,7 +7680,7 @@
 "id":"00f0366f3f634c5cb3ceb2ef6c098255",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -7773,7 +7773,7 @@
 "id":"598939650f4d4c468bd8e5299a3f4277",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -7871,7 +7871,7 @@
 "id":"5b3db6dc57184ce6a4a2ff0b4245a8ff",
 "language":"",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -8541,7 +8541,7 @@
 "id":"70b28cef364a4bcb9afec06916eaf2c8",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -8796,7 +8796,7 @@
 "id":"c0909c3aaf764002b23269553b22306f",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -9009,7 +9009,7 @@
 "id":"403eefa14804492db4ff3ce4a927c911",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -9397,7 +9397,7 @@
 "id":"b542a6172c4b442dbbd3aee777c3eab9",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -9727,7 +9727,7 @@
 "id":"517d6ff6d3d7453da62f6dd31fd86ed9",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -9898,7 +9898,7 @@
 "id":"54e5111e83d24dedad586d9214538f82",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -10286,7 +10286,7 @@
 "id":"b069cd5fab6541a0a3c5b95fe1ec4b09",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -10499,7 +10499,7 @@
 "id":"a95bd9901ed243fcbf2036c63db0d5d7",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -10595,7 +10595,7 @@
 "id":"2896c892480a4d439b1e37ff6339d52d",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -10673,7 +10673,7 @@
 "id":"d028b613bd164904ab10da6a2c872846",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -11299,7 +11299,7 @@
 "id":"a6f3df34afa1415480de044d1a5b6da5",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -11653,7 +11653,7 @@
 "id":"ff1ddb3847cf432fafe5eab1a0b4164b",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -11733,7 +11733,7 @@
 "type":"variable"
 },
 {
-"text":"(data, max_width):\n    try:\n        image = fit_image(wx.ImageFromStream(\n            StringIO.StringIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), max_width)\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (64, 64)\n        )\n",
+"text":"(data, max_width):\n    try:\n        image = fit_image(wx.Image(\n            io.BytesIO(base64.b64decode(data)),\n            wx.BITMAP_TYPE_ANY\n        ), max_width)\n        return image.ConvertToBitmap()\n    except:\n        return wx.ArtProvider.GetBitmap(\n            wx.ART_MISSING_IMAGE,\n            wx.ART_BUTTON,\n            (64, 64)\n        )\n",
 "type":"code"
 }
 ],
@@ -11749,7 +11749,7 @@
 ],
 "fragments":[
 {
-"text":"def bitmap_to_base64(bitmap):\n    output = StringIO.StringIO()\n    image = wx.ImageFromBitmap(bitmap)\n    image.SaveStream(output, wx.BITMAP_TYPE_PNG)\n    return base64.b64encode(output.getvalue())\n",
+"text":"def bitmap_to_base64(bitmap):\n    output = io.StringIO()\n    image = wx.ImageFromBitmap(bitmap)\n    image.SaveStream(output, wx.BITMAP_TYPE_PNG)\n    return base64.b64encode(output.getvalue())\n",
 "type":"code"
 }
 ],
@@ -11803,7 +11803,7 @@
 "id":"2514414f17054f7382b6a8ab41e17775",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -11897,7 +11897,7 @@
 "id":"da08352dff844b84b44eabce55bfd1e5",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -12164,7 +12164,7 @@
 "id":"9fdd250615894b27937ad324d1194419",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -12782,7 +12782,7 @@
 "id":"5c8dfef1861544b8b2443eeb16dd6ac0",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -12811,7 +12811,7 @@
 "id":"36e0c9457451452c83667ccc76736608",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -13010,7 +13010,7 @@
 "id":"64a178306e6046c98e8914dc74d75cda",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -13089,7 +13089,7 @@
 "id":"e32957f37ea14e3d8879090bf848b2c4",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -13555,7 +13555,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.EmptyBitmap(1, 1))\n    self.",
+"text":"(self):\n    dc = wx.MemoryDC()\n    dc.SetFont(self.GetFont())\n    dc.SelectObject(wx.Bitmap(1, 1))\n    self.",
 "type":"code"
 },
 {
@@ -13587,7 +13587,7 @@
 "type":"variable"
 },
 {
-"text":".iteritems():\n        style.",
+"text":".items():\n        style.",
 "type":"code"
 },
 {
@@ -13843,7 +13843,7 @@
 "type":"variable"
 },
 {
-"text":".iteritems():\n        style.",
+"text":".items():\n        style.",
 "type":"code"
 },
 {
@@ -14118,7 +14118,7 @@
 "id":"7fc7482c70c542b9bc43e2b88fa7b483",
 "language":"rlgui",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -15781,7 +15781,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        pass\n\n    def _update_builtin(self, names):\n        for name in names:\n            if name == \"tooltip\":\n                value = self.values.get(\"tooltip\", None)\n                if value is None:\n                    self.UnsetToolTip()\n                else:\n                    self.SetToolTipString(value)\n            if name == \"cursor\":\n                self.SetCursor({\n                    \"hand\": wx.StockCursor(wx.CURSOR_HAND),\n                    \"beam\": wx.StockCursor(wx.CURSOR_IBEAM),\n                    None: self._default_cursor,\n                }.get(self.values[\"cursor\"]))\n            if name == \"min_size\":\n                self.SetMinSize(self.values[\"min_size\"])\n            if name == \"label\":\n                self.SetLabel(self.values[\"label\"])\n            if name == \"visible\":\n                self.Show(self.values[\"visible\"])\n            if name == \"background\":\n                self.SetBackgroundColour(self.values[\"background\"])\n            if name == \"enabled\":\n                self.Enable(self.values[\"enabled\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n        event.Skip()\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event, propagate=True)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event, propagate=True)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
+"text":"(self):\n        pass\n\n    def _update_builtin(self, names):\n        for name in names:\n            if name == \"tooltip\":\n                value = self.values.get(\"tooltip\", None)\n                if value is None:\n                    self.UnsetToolTip()\n                else:\n                    self.SetToolTip(value)\n            if name == \"cursor\":\n                self.SetCursor({\n                    \"hand\": wx.Cursor(wx.CURSOR_HAND),\n                    \"beam\": wx.Cursor(wx.CURSOR_IBEAM),\n                    None: self._default_cursor,\n                }.get(self.values[\"cursor\"]))\n            if name == \"min_size\":\n                self.SetMinSize(self.values[\"min_size\"])\n            if name == \"label\":\n                self.SetLabel(self.values[\"label\"])\n            if name == \"visible\":\n                self.Show(self.values[\"visible\"])\n            if name == \"background\":\n                self.SetBackgroundColour(self.values[\"background\"])\n            if name == \"enabled\":\n                self.Enable(self.values[\"enabled\"])\n        if self.values.get(\"focus\", False) and not self.HasFocus():\n            self.SetFocus()\n\n    def _on_left_down(self, event):\n        self.down_pos = event.Position\n        event.Skip()\n\n    def _on_motion(self, event):\n        if self.down_pos is None:\n            self._call_handler(\"mouse_move\", event, propagate=True)\n        if self._should_drag(event.Position):\n            self.down_pos = None\n            self._call_handler(\"drag\", event, propagate=True)\n\n    def _should_drag(self, pos):\n        if self.down_pos is not None:\n            diff = self.down_pos - pos\n            if abs(diff.x) > 2:\n                return True\n            if abs(diff.y) > 2:\n                return True\n        return False\n\n    def _on_left_up(self, event):\n        if self.down_pos is not None:\n            if event.GetModifiers() == wx.MOD_CONTROL:\n                self._call_handler(\"ctrl_click\", event, propagate=True)\n            else:\n                self._call_handler(\"click\", event, propagate=True)\n        self.down_pos = None\n\n    def _on_left_dclick(self, event):\n        self._call_handler(\"double_click\", event, propagate=True)\n\n    def _on_right_up(self, event):\n        self._call_handler(\"right_click\", event, propagate=True)\n\n    def _call_handler(self, name, event, propagate=False):\n        if name in self._handlers:\n            self._handlers[name](event)\n        elif propagate and isinstance(self.Parent, ",
 "type":"code"
 },
 {
@@ -16407,7 +16407,7 @@
 "id":"c3cc8ceafb7a4e77b16f2eafc15893f0",
 "language":"",
 "post_process":[
-"python",
+"python3",
 "rlmeta/rlmeta.py",
 "--support"
 ],
@@ -16436,7 +16436,7 @@
 "id":"d062f05568b141f3977d2618c849eedb",
 "language":"",
 "post_process":[
-"python",
+"python3",
 "rlgui.py"
 ],
 "type":"code"
@@ -16636,7 +16636,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        self._render(chain, paragraphs, [], post_process=post_process)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, tabstops, post_process, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix, tabstops)\n            if paragraph.post_process and post_process:\n                try:\n                    value = subprocess.Popen(\n                        paragraph.post_process,\n                        stdin=subprocess.PIPE,\n                        stdout=subprocess.PIPE\n                    ).communicate(\n                        \"\".join(\n                            char.value for\n                            char in self.expand_id(paragraph.id, post_process=False)[1]\n                        )\n                    )[0]\n                except Exception as e:\n                    value = str(e)\n                    sys.stderr.write(\"Command {} failed: {}\".format(paragraph.post_process, value))\n                self._add_text_to_chain(value, chain, prefix, tabstops)\n            else:\n                for fragment in paragraph.",
+"text":"()\n        self._render(chain, paragraphs, [], post_process=post_process)\n        chain.align_tabstops()\n        return chain\n\n    def _render(self, chain, paragraphs, tabstops, post_process, prefix=\"\", blank_lines_before=0):\n        for index, paragraph in enumerate(paragraphs):\n            if index > 0:\n                self._add_text_to_chain(\"\\n\"*blank_lines_before, chain, prefix, tabstops)\n            if paragraph.post_process and post_process:\n                try:\n                    value = subprocess.Popen(\n                        paragraph.post_process,\n                        stdin=subprocess.PIPE,\n                        stdout=subprocess.PIPE\n                    ).communicate(\n                        \"\".join(\n                            char.value for\n                            char in self.expand_id(paragraph.id, post_process=False)[1]\n                        ).encode(\"utf-8\")\n                    )[0].decode(\"utf-8\")\n                except Exception as e:\n                    value = str(e)\n                    sys.stderr.write(\"Command {} failed: {}\".format(paragraph.post_process, value))\n                self._add_text_to_chain(value, chain, prefix, tabstops)\n            else:\n                for fragment in paragraph.",
 "type":"code"
 },
 {
@@ -17006,7 +17006,7 @@
 ],
 "fragments":[
 {
-"text":"@contextlib.contextmanager\ndef safely_write_file(path):\n    with tempfile.NamedTemporaryFile(\n        dir=os.path.dirname(path),\n        prefix=os.path.basename(path) + \".tmp\",\n        delete=False\n    ) as tmp:\n        yield tmp\n    os.rename(tmp.name, path)\n",
+"text":"@contextlib.contextmanager\ndef safely_write_file(path):\n    with tempfile.NamedTemporaryFile(\n        mode=\"w\",\n        encoding=\"utf-8\",\n        dir=os.path.dirname(path),\n        prefix=os.path.basename(path) + \".tmp\",\n        delete=False\n    ) as tmp:\n        yield tmp\n    os.rename(tmp.name, path)\n",
 "type":"code"
 }
 ],
@@ -17284,7 +17284,7 @@
 ],
 "fragments":[
 {
-"text":"from collections import defaultdict, namedtuple, OrderedDict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport StringIO\nimport base64\nimport copy\nimport Queue\nimport threading\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
+"text":"from collections import defaultdict, namedtuple, OrderedDict\nimport contextlib\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport uuid\nimport webbrowser\nimport xml.sax.saxutils\nimport io\nimport base64\nimport copy\nimport queue\nimport threading\n\nimport pygments.lexers\nimport pygments.token\nfrom pygments.token import Token as TokenType\nimport wx\nimport wx.richtext\nimport wx.lib.newevent\n",
 "type":"code"
 }
 ],

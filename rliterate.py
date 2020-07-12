@@ -13,10 +13,10 @@ import time
 import uuid
 import webbrowser
 import xml.sax.saxutils
-import StringIO
+import io
 import base64
 import copy
-import Queue
+import queue
 import threading
 
 import pygments.lexers
@@ -194,11 +194,11 @@ class GuiFrameworkBaseMixin(object):
                 if value is None:
                     self.UnsetToolTip()
                 else:
-                    self.SetToolTipString(value)
+                    self.SetToolTip(value)
             if name == "cursor":
                 self.SetCursor({
-                    "hand": wx.StockCursor(wx.CURSOR_HAND),
-                    "beam": wx.StockCursor(wx.CURSOR_IBEAM),
+                    "hand": wx.Cursor(wx.CURSOR_HAND),
+                    "beam": wx.Cursor(wx.CURSOR_IBEAM),
                     None: self._default_cursor,
                 }.get(self.values["cursor"]))
             if name == "min_size":
@@ -2308,9 +2308,9 @@ class TextProjection(TextProjectionGui):
     def _measure_character_size(self):
         dc = wx.MemoryDC()
         dc.SetFont(self.GetFont())
-        dc.SelectObject(wx.EmptyBitmap(1, 1))
+        dc.SelectObject(wx.Bitmap(1, 1))
         self._line_height_pixels = int(round(dc.GetTextExtent("M")[1]*self.values["line_height"]))
-        for style, boxes in self._boxes_by_style.iteritems():
+        for style, boxes in self._boxes_by_style.items():
             style.apply_to_wx_dc(dc, self.GetFont())
             for box in boxes:
                 box.rect.Size = dc.GetTextExtent(box.char.text)
@@ -2376,7 +2376,7 @@ class TextProjection(TextProjectionGui):
 
     def _on_paint(self, event):
         dc = wx.PaintDC(self)
-        for style, strings_positions in self._strings_by_style.iteritems():
+        for style, strings_positions in self._strings_by_style.items():
             style.apply_to_wx_dc(dc, self.GetFont())
             dc.DrawTextList(*strings_positions)
         if self._show_beams:
@@ -4400,7 +4400,7 @@ class SavingThread(threading.Thread):
         threading.Thread.__init__(self)
         self.project = project
         self.daemon = True
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self.start()
 
     def queue_save(self, document):
@@ -4418,7 +4418,7 @@ class SavingThread(threading.Thread):
                 try:
                     path, document_dict = self.queue.get(timeout=3)
                     self.queue.task_done()
-                except Queue.Empty:
+                except queue.Empty:
                     break
             self._report("Saving document...")
             document = Document(path, document_dict)
@@ -6279,8 +6279,8 @@ class CodeExpander(object):
                         "".join(
                             char.value for
                             char in self.expand_id(paragraph.id, post_process=False)[1]
-                        )
-                    )[0]
+                        ).encode("utf-8")
+                    )[0].decode("utf-8")
                 except Exception as e:
                     value = str(e)
                     sys.stderr.write("Command {} failed: {}".format(paragraph.post_process, value))
@@ -6691,8 +6691,8 @@ def min_or_none(items, key):
     return min(items, key=key)
 def base64_to_bitmap(data, max_width):
     try:
-        image = fit_image(wx.ImageFromStream(
-            StringIO.StringIO(base64.b64decode(data)),
+        image = fit_image(wx.Image(
+            io.BytesIO(base64.b64decode(data)),
             wx.BITMAP_TYPE_ANY
         ), max_width)
         return image.ConvertToBitmap()
@@ -6703,7 +6703,7 @@ def base64_to_bitmap(data, max_width):
             (64, 64)
         )
 def bitmap_to_base64(bitmap):
-    output = StringIO.StringIO()
+    output = io.StringIO()
     image = wx.ImageFromBitmap(bitmap)
     image.SaveStream(output, wx.BITMAP_TYPE_PNG)
     return base64.b64encode(output.getvalue())
@@ -6774,6 +6774,8 @@ def write_json_to_file(path, data):
 @contextlib.contextmanager
 def safely_write_file(path):
     with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
         dir=os.path.dirname(path),
         prefix=os.path.basename(path) + ".tmp",
         delete=False
