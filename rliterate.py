@@ -2386,27 +2386,27 @@ class TextProjection(TextProjectionGui):
             for box in self._markers:
                 if box.char.marker == "beam_left_flag":
                     dc.DrawLines([
-                        box.rect.TopLeft    + (THICKNESS/2+CURVE_SIZE, 1  ),
-                        box.rect.TopLeft    + (THICKNESS/2+0, 1+CURVE_SIZE),
-                        box.rect.BottomLeft + (THICKNESS/2+0,  -CURVE_SIZE),
-                        box.rect.BottomLeft + (THICKNESS/2+CURVE_SIZE, 0),
+                        box.rect.TopLeft    + (THICKNESS//2+CURVE_SIZE, 1  ),
+                        box.rect.TopLeft    + (THICKNESS//2+0, 1+CURVE_SIZE),
+                        box.rect.BottomLeft + (THICKNESS//2+0,  -CURVE_SIZE),
+                        box.rect.BottomLeft + (THICKNESS//2+CURVE_SIZE, 0),
                     ])
                 elif box.char.marker == "beam_left":
                     dc.DrawLines([
-                        box.rect.TopLeft    + (THICKNESS/2, 0),
-                        box.rect.BottomLeft + (THICKNESS/2, 0),
+                        box.rect.TopLeft    + (THICKNESS//2, 0),
+                        box.rect.BottomLeft + (THICKNESS//2, 0),
                     ])
                 elif box.char.marker == "beam_right":
                     dc.DrawLines([
-                        box.rect.TopRight    - (THICKNESS/2, 0),
-                        box.rect.BottomRight - (THICKNESS/2, 0),
+                        box.rect.TopRight    - (THICKNESS//2, 0),
+                        box.rect.BottomRight - (THICKNESS//2, 0),
                     ])
                 elif box.char.marker == "beam_right_flag":
                     dc.DrawLines([
-                        box.rect.TopRight    + (-THICKNESS/2-CURVE_SIZE, 1  ),
-                        box.rect.TopRight    + (-THICKNESS/2+0, 1+CURVE_SIZE),
-                        box.rect.BottomRight + (-THICKNESS/2+0,  -CURVE_SIZE),
-                        box.rect.BottomRight + (-THICKNESS/2-CURVE_SIZE, 0),
+                        box.rect.TopRight    + (-THICKNESS//2-CURVE_SIZE, 1  ),
+                        box.rect.TopRight    + (-THICKNESS//2+0, 1+CURVE_SIZE),
+                        box.rect.BottomRight + (-THICKNESS//2+0,  -CURVE_SIZE),
+                        box.rect.BottomRight + (-THICKNESS//2-CURVE_SIZE, 0),
                     ])
 
     def GetCharacterAt(self, position):
@@ -2614,7 +2614,7 @@ class PlainTextKeyHandler(NavigationKeyHandler):
     def handle_key(self, event):
         if event.GetUnicodeKey() >= 32:
             self.save(
-                self.text[:self.index]+unichr(event.GetUnicodeKey())+self.text[self.index:],
+                self.text[:self.index]+chr(event.GetUnicodeKey())+self.text[self.index:],
                 self.index+1
             )
         elif event.GetKeyCode() == wx.WXK_BACK and self.index > 0:
